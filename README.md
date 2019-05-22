@@ -1,2 +1,3 @@
-# ice-stark
-ice工作台解决方案，多个react项目的集成工具
+# icestark
+
+[WIP] 面向大型中台系统的前端解决方案。
