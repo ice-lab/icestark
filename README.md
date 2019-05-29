@@ -15,53 +15,39 @@
 npm install icestark --save
 ```
 
-## Run Demo
-
-Run child：
-```bash
-cd demo/child
-npm install
-npm start
-```
-
-Run child2
-```bash
-cd demo/child2
-npm install
-npm start
-```
-
-Run layout：
-```bash
-cd demo/layout
-npm install
-npm start
-```
-
-Open up http://localhost:3333 in a web browser
-
 ## Example
 
 ```javascript
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { AppRouter, AppRoute } from 'icestark';
+
 class Layout extends React.Component {
+  onRouteChange = (pathname, query) => {
+    console.log(pathname, query);
+  }
+
   render() {
     return (
       <div>
-        <Header />
-        <AppLoader
-          env="local"
-          apps={apps}
-          getBundleUrl={({ repo, version, localPort, localIp, env, type }) => {
-            if (env === 'local') {
-              return `//${localIp}:${localPort}/${type}/index.${type}`;
-            }
-            const cdnHost = env === 'production' ? 'production.com' : 'daily.com';
-            return `//${cdnHost}/${repo}/${version}/${type}/index.${type}`;
-          }}
-          NotFoundComponent={NotFound}
+        <div>this is common header</div>
+        <AppRouter
           onRouteChange={this.onRouteChange}
-        />
-        <Footer />
+          useShadow
+        >
+          <AppRoute
+            path={['/', '/home', '/about']}
+            exact
+            title="主页"
+            url={['//127.0.0.1:4444/js/index.js', '//127.0.0.1:4444/css/index.css']}
+          />
+          <AppRoute
+            path="/user"
+            title="用户页面"
+            url={['//127.0.0.1:5555/js/index.js', '//127.0.0.1:5555/css/index.css']}
+          />
+        </AppRouter>
+        <div>this is common footer</div>
       </div>
     );
   }
@@ -70,16 +56,26 @@ class Layout extends React.Component {
 
 ## Configuration
 
-|        Property        |                               Description                               |        Type        |   Default    |
-| :--------------------: | :---------------------------------------------------------------------: | :----------------: | :----------: |
-|          env           | bundle environment, can be set to `local` `daily` `prepub` `production` |       string       | `production` |
-|          apps          |  app configuration includes `localPort`, `basePath`, `title` and so on  |       array        |      []      |
-|      getBundleUrl      |            transform current app configuration to bundleUrl             |      function      |     noop     |
-|     onRouteChange      |                  callback executed when route changed                   |      function      |     noop     |
-|   NotFoundComponent    |                   render when the route changed error                   | function/ReactNode |              |
-|  BundleErrorComponent  |                  render when the bundle pulls an error                  | function/ReactNode |              |
-| BundleLoadingComponent |                      render when Bundle is Loading                      | function/ReactNode |              |
-|       shadowRoot       |                        whether to use shadowRoot                        |        bool        |     true     |
+### AppRouter
 
+|        Property        |              Description              |     Type     | Default |
+| :--------------------: | :-----------------------------------: | :----------: | :-----: |
+|     onRouteChange      | callback executed when route changed  |   function   |  noop   |
+|   NotFoundComponent    |  render when the route changed error  | ReactElement |         |
+|  BundleErrorComponent  | render when the bundle pulls an error | ReactElement |         |
+| BundleLoadingComponent |     render when Bundle is Loading     | ReactElement |         |
+|       shadowRoot       |       whether to use shadowRoot       |   boolean    |  false  |
+
+
+### AppRoute
+
+| Property  |                    Description                    |      Type       | Default |
+| :-------: | :-----------------------------------------------: | :-------------: | :-----: |
+|   path    | app router path, reference react-router, required | string/string[] |         |
+|    url    |             assets load url, required             | string/string[] |         |
+|   title   |                   documentTitle                   |     string      |         |
+|   exact   |              reference react-router               |     boolean     |  false  |
+|  strict   |              reference react-router               |     boolean     |  false  |
+| sensitive |              reference react-router               |     boolean     |  false  |
 
 
