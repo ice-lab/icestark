@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "jsx": "react",
+    "experimentalDecorators": true,
+    "declaration": true,
+    "sourceMap": true,
+    "outDir": "lib"
+  },
+  "files": ["src/index.ts"],
+  "exclude": ["node_modules"]
+}
