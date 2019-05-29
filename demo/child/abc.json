@@ -1,5 +1,0 @@
-{
-  "name": "layout",
-  "type": "iceworks",
-  "builder": "@ali/builder-iceworks"
-}
