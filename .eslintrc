@@ -5,6 +5,7 @@
     "project": "./tsconfig.json"
   },
   "extends": [
+    "plugin:import/typescript",
     "plugin:@typescript-eslint/recommended",
     "plugin:react/recommended",
     "plugin:prettier/recommended",
