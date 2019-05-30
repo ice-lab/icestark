@@ -1,12 +1,14 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "jsx": "react",
+    "jsx": "preserve",
     "experimentalDecorators": true,
     "declaration": true,
     "sourceMap": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "outDir": "lib"
   },
-  "files": ["src/index.ts"],
+  "include": ["src/*"],
   "exclude": ["node_modules"]
 }

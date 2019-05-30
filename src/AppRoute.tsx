@@ -1,9 +1,9 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { default as loadAssets, emptyAssets } from './loadAssets';
+import { loadAssets, emptyAssets } from './loadAssets';
 import { ICESTSRK_404, setIcestark } from './constant';
 
-const nodeId: string = 'icestarkNode';
+const nodeId = 'icestarkNode';
 
 const getValidStr = (ele: string | string[]) => {
   if (Array.isArray(ele)) {
@@ -140,7 +140,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     return (
       <div
-        key={title || getValidStr(path)}
+        key={`${getValidStr(path)}-${title}`}
         id={nodeId}
         className={this.state.cssLoading ? 'ice-stark-loading' : 'ice-stark-loaded'}
       />
