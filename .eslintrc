@@ -1,19 +1,22 @@
 {
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint", "react", "import"],
   "parserOptions": {
     "sourceType": "module",
     "project": "./tsconfig.json"
   },
   "extends": [
-    "airbnb-base",
     "plugin:import/typescript",
     "plugin:@typescript-eslint/recommended",
-    "plugin:react/recommended"
+    "plugin:react/recommended",
+    "plugin:prettier/recommended",
+    "prettier/react"
   ],
   "settings": {
     "react": {
       "version": "detect"
     }
+  },
+  "rules": {
+    "@typescript-eslint/indent": ["error", 2]
   }
 }

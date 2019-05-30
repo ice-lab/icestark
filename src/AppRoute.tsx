@@ -1,9 +1,9 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { default as loadAssets, emptyAssets } from './loadAssets';
+import { loadAssets, emptyAssets } from './loadAssets';
 import { ICESTSRK_404, setIcestark } from './constant';
 
-const nodeId: string = 'icestarkNode';
+const nodeId = 'icestarkNode';
 
 const getValidStr = (ele: string | string[]) => {
   if (Array.isArray(ele)) {
