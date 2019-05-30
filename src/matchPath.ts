@@ -1,8 +1,8 @@
 import * as pathToRegexp from 'path-to-regexp';
 
 const cache: any = {};
-const cacheLimit: number = 10000;
-let cacheCount: number = 0;
+const cacheLimit = 10000;
+let cacheCount = 0;
 
 function compilePath(path, options) {
   const cacheKey = `${options.end}${options.strict}${options.sensitive}`;

@@ -17,12 +17,13 @@ const AppLink: React.SFC<AppLinkProps> = (props: AppLinkProps) => {
       href={to}
       onClick={e => {
         e.preventDefault();
-        if (message && confirm(message) === false) {
+        if (message && window.confirm(message) === false) {
           return false;
         }
         history.push(to, {
           forceRender: true,
         });
+        return false;
       }}
     >
       {children}
