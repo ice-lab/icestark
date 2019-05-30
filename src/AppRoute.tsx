@@ -140,7 +140,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     return (
       <div
-        key={title || getValidStr(path)}
+        key={`${getValidStr(path)}-${title}`}
         id={nodeId}
         className={this.state.cssLoading ? 'ice-stark-loading' : 'ice-stark-loaded'}
       />
