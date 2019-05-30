@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as urlParse from 'url-parse';
-import AppRoute from './AppRoute';
-import matchPath from './matchPath';
+import { default as AppRoute } from './AppRoute';
+import { default as matchPath } from './matchPath';
 import { ICESTSRK_404, setIcestark } from './constant';
 
 type RouteType = 'pushState' | 'replaceState';
