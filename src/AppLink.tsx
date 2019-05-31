@@ -23,7 +23,6 @@ const AppLink: React.SFC<AppLinkProps> = (props: AppLinkProps) => {
         history.push(to, {
           forceRender: true,
         });
-        return false;
       }}
     >
       {children}

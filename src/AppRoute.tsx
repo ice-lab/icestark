@@ -25,9 +25,9 @@ export interface AppRouteProps {
   exact?: boolean;
   strict?: boolean;
   sensitive?: boolean;
-  ErrorComponent?: React.ReactType;
-  LoadingComponent?: React.ReactType;
-  NotFoundComponent?: React.ReactType;
+  ErrorComponent?: any;
+  LoadingComponent?: any;
+  NotFoundComponent?: any;
   forceRender?: boolean;
 }
 
@@ -102,7 +102,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     // Handle NotFound
     if (path === ICESTSRK_404 && url === ICESTSRK_404) {
-      ReactDOM.render(<NotFoundComponent />, root);
+      React.isValidElement(NotFoundComponent)
+        ? ReactDOM.render(NotFoundComponent, root)
+        : ReactDOM.render(<NotFoundComponent />, root);
       return;
     }
 
@@ -114,7 +116,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     // Handle loading
     this.setState({ cssLoading: true });
     if (LoadingComponent) {
-      ReactDOM.render(<LoadingComponent />, root);
+      React.isValidElement(LoadingComponent)
+        ? ReactDOM.render(LoadingComponent, root)
+        : ReactDOM.render(<LoadingComponent />, root);
     }
 
     loadAssets(
@@ -123,7 +127,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       (err: any): boolean => {
         if (err) {
           // Handle error
-          ReactDOM.render(<ErrorComponent />, root);
+          React.isValidElement(ErrorComponent)
+            ? ReactDOM.render(ErrorComponent, root)
+            : ReactDOM.render(<ErrorComponent />, root);
           return true;
         }
 
