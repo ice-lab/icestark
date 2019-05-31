@@ -8,9 +8,9 @@ type RouteType = 'pushState' | 'replaceState';
 
 export interface AppRouterProps {
   onRouteChange?: (pathname: string, query: object, type: RouteType | 'init') => void;
-  NotFoundComponent?: React.ReactType;
-  ErrorComponent?: React.ReactType;
-  LoadingComponent?: React.ReactType;
+  ErrorComponent?: any;
+  LoadingComponent?: any;
+  NotFoundComponent?: any;
   useShadow?: boolean;
 }
 
@@ -22,6 +22,7 @@ interface AppRouterState {
 export default class AppRouter extends React.Component<AppRouterProps, AppRouterState> {
   static defaultProps = {
     ErrorComponent: <div>js bundle loaded error</div>,
+    NotFoundComponent: <div>NotFound</div>,
     useShadow: false,
   };
 

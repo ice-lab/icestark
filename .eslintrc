@@ -1,21 +1,27 @@
 {
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "sourceType": "module",
-    "project": "./tsconfig.json"
-  },
   "extends": [
-    "plugin:@typescript-eslint/recommended",
+    "eslint:recommended",
     "plugin:react/recommended",
-    "plugin:prettier/recommended",
-    "prettier/react"
+    "plugin:@typescript-eslint/recommended",
+    "prettier/@typescript-eslint",
+    "plugin:prettier/recommended"
   ],
+  "plugins": ["react", "@typescript-eslint", "prettier"],
+  "env": {
+    "browser": true,
+    "jasmine": true,
+    "jest": true
+  },
+  "rules": {
+    "prettier/prettier": ["error", { "singleQuote": true }],
+    "@typescript-eslint/explicit-member-accessibility": "off",
+    "@typescript-eslint/explicit-function-return-type": "off"
+  },
   "settings": {
     "react": {
+      "pragma": "React",
       "version": "detect"
     }
   },
-  "rules": {
-    "@typescript-eslint/indent": ["error", 2]
-  }
+  "parser": "@typescript-eslint/parser"
 }
