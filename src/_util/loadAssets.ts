@@ -1,7 +1,5 @@
-import { getIcestarkRoot } from './getMountNode';
-import { PREFIX } from './constant';
-
-const tagData = 'asset';
+import { PREFIX, DYNAMIC } from '../constant';
+import { getIcestarkRoot } from './index';
 
 /**
  * load assets
@@ -27,7 +25,7 @@ function loadAsset(
 
   element = document.createElement(type);
   element.id = id;
-  element.setAttribute(PREFIX, tagData);
+  element.setAttribute(PREFIX, DYNAMIC);
 
   if (isCss) {
     element.setAttribute('rel', 'stylesheet');
@@ -50,7 +48,7 @@ function loadAsset(
   root.appendChild(element);
 }
 
-export function loadAssets(
+export default function loadAssets(
   bundleList: string[],
   useShadow: boolean,
   jsCallback: (err: any) => boolean,
@@ -111,24 +109,4 @@ export function loadAssets(
     loadCss();
     loadJs();
   }
-}
-
-/**
- * empty useless assets
- */
-export function emptyAssets(useShadow: boolean): void {
-  const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
-  const cssRoot: HTMLElement | ShadowRoot = useShadow
-    ? getIcestarkRoot()
-    : document.getElementsByTagName('head')[0];
-
-  const jsList: NodeListOf<HTMLElement> = jsRoot.querySelectorAll(`script[${PREFIX}=${tagData}]`);
-  jsList.forEach(js => {
-    jsRoot.removeChild(js);
-  });
-
-  const cssList: NodeListOf<HTMLElement> = cssRoot.querySelectorAll(`link[${PREFIX}=${tagData}]`);
-  cssList.forEach(css => {
-    cssRoot.removeChild(css);
-  });
 }

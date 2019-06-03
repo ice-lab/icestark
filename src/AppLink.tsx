@@ -1,13 +1,10 @@
 import * as React from 'react';
-import { createBrowserHistory } from 'history';
 
 export type AppLinkProps = {
   to: string;
   message?: string;
   children?: React.ReactNode;
 } & React.AnchorHTMLAttributes<any>;
-
-const history = createBrowserHistory();
 
 const AppLink: React.SFC<AppLinkProps> = (props: AppLinkProps) => {
   const { to, message, children, ...rest } = props;
@@ -20,9 +17,14 @@ const AppLink: React.SFC<AppLinkProps> = (props: AppLinkProps) => {
         if (message && window.confirm(message) === false) {
           return false;
         }
-        history.push(to, {
-          forceRender: true,
-        });
+
+        window.history.pushState(
+          {
+            forceRender: true,
+          },
+          null,
+          to,
+        );
       }}
     >
       {children}
