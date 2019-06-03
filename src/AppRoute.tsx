@@ -1,16 +1,18 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { loadAssets, emptyAssets } from './loadAssets';
-import { ICESTSRK_404, setIcestark } from './constant';
+import { ICESTSRK_NOT_FOUND } from './constant';
+import loadAssets from './_util/loadAssets';
+import emptyAssets from './_util/emptyAssets';
+import { setIcestark } from './_util/index';
 
 const nodeId = 'icestarkNode';
 
-const getValidStr = (ele: string | string[]) => {
-  if (Array.isArray(ele)) {
-    return ele.join(',');
+const converArray2String = (list: string | string[]) => {
+  if (Array.isArray(list)) {
+    return list.join(',');
   }
 
-  return String(ele);
+  return String(list);
 };
 
 interface AppRouteState {
@@ -53,8 +55,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     const { path, url, title, forceRender } = this.props;
 
     if (
-      getValidStr(path) !== getValidStr(prevProps.path) ||
-      getValidStr(url) !== getValidStr(prevProps.url) ||
+      converArray2String(path) !== converArray2String(prevProps.path) ||
+      converArray2String(url) !== converArray2String(prevProps.url) ||
       title !== prevProps.title ||
       (forceRender && !prevProps.forceRender)
     ) {
@@ -101,7 +103,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     emptyAssets(useShadow);
 
     // Handle NotFound
-    if (path === ICESTSRK_404 && url === ICESTSRK_404) {
+    if (path === ICESTSRK_NOT_FOUND && url === ICESTSRK_NOT_FOUND) {
       React.isValidElement(NotFoundComponent)
         ? ReactDOM.render(NotFoundComponent, root)
         : ReactDOM.render(<NotFoundComponent />, root);
@@ -146,7 +148,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     return (
       <div
-        key={`${getValidStr(path)}-${title}`}
+        key={`${converArray2String(path)}-${title}`}
         id={nodeId}
         className={this.state.cssLoading ? 'ice-stark-loading' : 'ice-stark-loaded'}
       />

@@ -25,7 +25,7 @@ function compilePath(path, options) {
 /**
  * Public API for matching a URL pathname to a path.
  */
-function matchPath(pathname: string, options: any = {}) {
+export default function matchPath(pathname: string, options: any = {}) {
   if (typeof options === 'string') options = { path: options };
 
   const { path, exact = false, strict = false, sensitive = false } = options;
@@ -61,5 +61,3 @@ function matchPath(pathname: string, options: any = {}) {
     };
   }, null);
 }
-
-export default matchPath;

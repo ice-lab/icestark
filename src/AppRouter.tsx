@@ -1,8 +1,9 @@
 import * as React from 'react';
 import * as urlParse from 'url-parse';
 import AppRoute from './AppRoute';
-import matchPath from './matchPath';
-import { ICESTSRK_404, setIcestark } from './constant';
+import { ICESTSRK_NOT_FOUND } from './constant';
+import matchPath from './_util/matchPath';
+import { setIcestark } from './_util/index';
 
 type RouteType = 'pushState' | 'replaceState';
 
@@ -42,7 +43,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   }
 
   componentWillUnmount() {
-    this.UnHijackHistory();
+    this.unHijackHistory();
     setIcestark('handleNotFound', null);
   }
 
@@ -50,7 +51,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    * Render NotFoundComponent
    */
   handleNotFound = () => {
-    this.setState({ url: ICESTSRK_404 });
+    this.setState({ url: ICESTSRK_NOT_FOUND });
     // Compatible processing return renderNotFound();
     return null;
   };
@@ -62,34 +63,33 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     this.originalPush = window.history.pushState;
     this.originalReplace = window.history.replaceState;
 
-    const self = this;
     // hijack route change
     const onRouteChange = (state: any, url: string, routeType?: RouteType): void => {
       // deal with forceRender
-      if ((state && state.state && state.state.forceRender) || (state && state.forceRender)) {
-        self.setState({ url, forceRender: true });
-      } else if (self.state.forceRender) {
-        self.setState({ forceRender: false });
+      if (state && (state.forceRender || (state.state && state.state.forceRender))) {
+        this.setState({ url, forceRender: true });
+      } else if (this.state.forceRender) {
+        this.setState({ forceRender: false });
       }
 
       // trigger onRouteChange
-      self.handleRouteChange(url, routeType);
+      this.handleRouteChange(url, routeType);
     };
 
-    window.history.pushState = function(state: any, title: string, url?: string) {
+    window.history.pushState = (state: any, title: string, url?: string, ...rest) => {
       onRouteChange(state, url, 'pushState');
-      self.originalPush.apply(window.history, arguments);
+      this.originalPush.apply(window.history, [state, title, url, ...rest]);
     };
-    window.history.replaceState = function(state, title, url) {
+    window.history.replaceState = (state, title, url, ...rest) => {
       onRouteChange(state, url, 'replaceState');
-      self.originalReplace.apply(window.history, arguments);
+      this.originalReplace.apply(window.history, [state, title, url, ...rest]);
     };
   };
 
   /**
    * Unhijacking history
    */
-  UnHijackHistory = (): void => {
+  unHijackHistory = (): void => {
     window.history.pushState = this.originalPush;
     window.history.replaceState = this.originalReplace;
   };
@@ -144,8 +144,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     } else {
       realComponent = (
         <AppRoute
-          path={ICESTSRK_404}
-          url={ICESTSRK_404}
+          path={ICESTSRK_NOT_FOUND}
+          url={ICESTSRK_NOT_FOUND}
           NotFoundComponent={NotFoundComponent}
           useShadow={useShadow}
         />
