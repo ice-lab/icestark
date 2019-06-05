@@ -2,8 +2,8 @@ import * as React from 'react';
 import * as urlParse from 'url-parse';
 import AppRoute from './AppRoute';
 import { ICESTSRK_NOT_FOUND } from './constant';
-import matchPath from './_util/matchPath';
-import { setIcestark } from './_util/index';
+import matchPath from './util/matchPath';
+import { setIcestark } from './util/index';
 
 type RouteType = 'pushState' | 'replaceState';
 

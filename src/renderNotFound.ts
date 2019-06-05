@@ -1,4 +1,4 @@
-import { getIcestark } from './_util/index';
+import { getIcestark } from './util/index';
 
 export default (getIcestark('handleNotFound')
   ? getIcestark('handleNotFound')
