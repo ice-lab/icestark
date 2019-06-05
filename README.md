@@ -2,17 +2,17 @@
 
 > Icestark is a JavaScript library for multiple react projects, Ice workbench solution.
 
-[![NPM version](https://img.shields.io/npm/v/icestark.svg?style=flat)](https://npmjs.org/package/icestark)
-[![Package Quality](https://npm.packagequality.com/shield/icestark.svg)](https://packagequality.com/#?package=icestark)
-[![build status](https://img.shields.io/travis/ice-lab/icestark.svg?style=flat-square)](https://travis-ci.org/ice-lab/icestark)
-[![Test coverage](https://img.shields.io/codecov/c/github/ice-lab/icestark.svg?style=flat-square)](https://codecov.io/gh/ice-lab/icestark)
-[![NPM downloads](http://img.shields.io/npm/dm/icestark.svg?style=flat)](https://npmjs.org/package/icestark)
-[![David deps](https://img.shields.io/david/ice-lab/icestark.svg?style=flat-square)](https://david-dm.org/ice-lab/icestark)
+[![NPM version](https://img.shields.io/npm/v/@ice/stark.svg?style=flat)](https://npmjs.org/package/@ice/stark)
+[![Package Quality](https://npm.packagequality.com/shield/@ice/stark.svg)](https://packagequality.com/#?package=@ice/stark)
+[![build status](https://img.shields.io/travis/ice-lab/@ice/stark.svg?style=flat-square)](https://travis-ci.org/ice-lab/@ice/stark)
+[![Test coverage](https://img.shields.io/codecov/c/github/ice-lab/@ice/stark.svg?style=flat-square)](https://codecov.io/gh/ice-lab/@ice/stark)
+[![NPM downloads](http://img.shields.io/npm/dm/@ice/stark.svg?style=flat)](https://npmjs.org/package/@ice/stark)
+[![David deps](https://img.shields.io/david/ice-lab/@ice/stark.svg?style=flat-square)](https://david-dm.org/ice-lab/@ice/stark)
 
 ## Installation
 
 ```bash
-npm install icestark --save
+npm install @ice/stark --save
 ```
 
 ## Example
@@ -20,7 +20,7 @@ npm install icestark --save
 ```javascript
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { AppRouter, AppRoute } from 'icestark';
+import { AppRouter, AppRoute } from '@ice/stark';
 
 class Layout extends React.Component {
   onRouteChange = (pathname, query) => {
@@ -77,5 +77,3 @@ class Layout extends React.Component {
 |   exact   |              reference react-router               |     boolean     |  false  |
 |  strict   |              reference react-router               |     boolean     |  false  |
 | sensitive |              reference react-router               |     boolean     |  false  |
-
-
