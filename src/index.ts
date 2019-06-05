@@ -4,3 +4,4 @@ export { default as AppLink } from './AppLink';
 export { default as getMountNode } from './getMountNode';
 export { default as renderNotFound } from './renderNotFound';
 export { default as getBasename } from './getBasename';
+export { default as appHistory } from './appHistory';

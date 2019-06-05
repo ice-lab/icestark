@@ -8,7 +8,11 @@ import { setIcestark } from './_util/index';
 type RouteType = 'pushState' | 'replaceState';
 
 export interface AppRouterProps {
-  onRouteChange?: (pathname: string, query: object, type: RouteType | 'init') => void;
+  onRouteChange?: (
+    pathname: string,
+    query: object,
+    type: RouteType | 'init' | 'onpopstate',
+  ) => void;
   ErrorComponent?: any;
   LoadingComponent?: any;
   NotFoundComponent?: any;
@@ -17,7 +21,6 @@ export interface AppRouterProps {
 
 interface AppRouterState {
   url: string;
-  forceRender: boolean;
 }
 
 export default class AppRouter extends React.Component<AppRouterProps, AppRouterState> {
@@ -29,8 +32,11 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
   state: AppRouterState = {
     url: location.href,
-    forceRender: false,
   };
+
+  private forceRender: boolean = false;
+
+  private isBrowserForce: boolean = false;
 
   private originalPush: (state: any, title: string, url?: string) => void;
 
@@ -51,7 +57,19 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    * Render NotFoundComponent
    */
   handleNotFound = () => {
-    this.setState({ url: ICESTSRK_NOT_FOUND });
+    // return null for browser or history forward / back
+    if (this.isBrowserForce) {
+      return null;
+    }
+
+    window.history.replaceState(
+      {
+        forceRender: true,
+      },
+      null,
+      '/404',
+    );
+
     // Compatible processing return renderNotFound();
     return null;
   };
@@ -65,11 +83,14 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
     // hijack route change
     const onRouteChange = (state: any, url: string, routeType?: RouteType): void => {
+      this.isBrowserForce = false;
+
       // deal with forceRender
       if (state && (state.forceRender || (state.state && state.state.forceRender))) {
-        this.setState({ url, forceRender: true });
-      } else if (this.state.forceRender) {
-        this.setState({ forceRender: false });
+        this.forceRender = true;
+        this.setState({ url });
+      } else if (this.forceRender) {
+        this.forceRender = false;
       }
 
       // trigger onRouteChange
@@ -84,6 +105,17 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       onRouteChange(state, url, 'replaceState');
       this.originalReplace.apply(window.history, [state, title, url, ...rest]);
     };
+
+    // handle browser or history forward / back
+    window.onpopstate = () => {
+      this.isBrowserForce = true;
+      this.forceRender = true;
+
+      const url = location.href;
+      this.setState({ url });
+      // trigger onRouteChange
+      this.handleRouteChange(url, 'onpopstate');
+    };
   };
 
   /**
@@ -97,7 +129,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   /**
    * Trigger onRouteChange
    */
-  handleRouteChange = (url: string, type: RouteType | 'init'): void => {
+  handleRouteChange = (url: string, type: RouteType | 'init' | 'onpopstate'): void => {
     const { onRouteChange } = this.props;
     const { pathname, query } = urlParse(url, true);
 
@@ -106,7 +138,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
   render() {
     const { NotFoundComponent, ErrorComponent, LoadingComponent, useShadow, children } = this.props;
-    const { url, forceRender } = this.state;
+    const { url } = this.state;
 
     const { pathname, query } = urlParse(url, true);
     const { localUrl } = query;
@@ -128,7 +160,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       ErrorComponent,
       LoadingComponent,
       useShadow,
-      forceRender,
+      forceRender: this.forceRender,
     };
     if (localUrl) {
       extraProps.url = localUrl;
