@@ -1,9 +1,9 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { ICESTSRK_NOT_FOUND } from './constant';
-import loadAssets from './_util/loadAssets';
-import emptyAssets from './_util/emptyAssets';
-import { setIcestark } from './_util/index';
+import loadAssets from './util/loadAssets';
+import emptyAssets from './util/emptyAssets';
+import { setIcestark } from './util/index';
 
 const nodeId = 'icestarkNode';
 
