@@ -3,6 +3,7 @@ import * as urlParse from 'url-parse';
 import AppRoute from './AppRoute';
 import { ICESTSRK_NOT_FOUND } from './constant';
 import matchPath from './util/matchPath';
+import recordAssets from './util/recordAssets';
 import { setIcestark } from './util/index';
 
 type RouteType = 'pushState' | 'replaceState';
@@ -30,9 +31,13 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     useShadow: false,
   };
 
-  state: AppRouterState = {
-    url: location.href,
-  };
+  constructor(props: AppRouterProps) {
+    super(props);
+    this.state = {
+      url: location.href,
+    };
+    recordAssets();
+  }
 
   private forceRender: boolean = false;
 

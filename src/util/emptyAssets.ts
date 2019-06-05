@@ -1,4 +1,4 @@
-import { PREFIX, DYNAMIC } from '../constant';
+import { PREFIX, DYNAMIC, STATIC } from '../constant';
 import { getIcestarkRoot } from './index';
 
 /**
@@ -10,6 +10,7 @@ export default function emptyAssets(useShadow: boolean): void {
     ? getIcestarkRoot()
     : document.getElementsByTagName('head')[0];
 
+  // remove dynamic assets
   const jsList: NodeListOf<HTMLElement> = jsRoot.querySelectorAll(`script[${PREFIX}=${DYNAMIC}]`);
   jsList.forEach(js => {
     jsRoot.removeChild(js);
@@ -19,4 +20,20 @@ export default function emptyAssets(useShadow: boolean): void {
   cssList.forEach(css => {
     cssRoot.removeChild(css);
   });
+
+  // remove extra assets
+  const styleList: NodeListOf<HTMLElement> = document.querySelectorAll(
+    `style:not([${PREFIX}=${STATIC}])`,
+  );
+  styleList.forEach(style => style.parentNode.removeChild(style));
+
+  const linkList: NodeListOf<HTMLElement> = document.querySelectorAll(
+    `link:not([${PREFIX}=${STATIC}])`,
+  );
+  linkList.forEach(link => link.parentNode.removeChild(link));
+
+  const jsExtraList: NodeListOf<HTMLElement> = document.querySelectorAll(
+    `script:not([${PREFIX}=${STATIC}])`,
+  );
+  jsExtraList.forEach(js => js.parentNode.removeChild(js));
 }
