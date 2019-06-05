@@ -91,7 +91,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     root = node;
     // create ShadowRoot
-    if (useShadow) {
+    if (useShadow && !node.shadowRoot) {
       root = node.attachShadow
         ? node.attachShadow({ mode: 'open', delegatesFocus: false })
         : (node as any).createShadowRoot();
