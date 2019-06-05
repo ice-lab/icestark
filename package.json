@@ -1,5 +1,5 @@
 {
-  "name": "icestark",
+  "name": "@ice/stark",
   "version": "0.0.9",
   "description": "Icestark is a JavaScript library for multiple react projects, Ice workbench solution.",
   "scripts": {
@@ -25,7 +25,7 @@
   "bugs": {
     "url": "https://github.com/ice-lab/icestark/issues"
   },
-  "homepage": "https://unpkg.com/icestark@0.0.1/build/index.html",
+  "homepage": "https://github.com/ice-lab/icestark",
   "husky": {
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
