@@ -27,6 +27,7 @@ export interface AppRouteProps {
   exact?: boolean;
   strict?: boolean;
   sensitive?: boolean;
+  rootId?: string;
   ErrorComponent?: any;
   LoadingComponent?: any;
   NotFoundComponent?: any;
@@ -52,12 +53,13 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   }
 
   componentDidUpdate(prevProps) {
-    const { path, url, title, forceRender } = this.props;
+    const { path, url, title, rootId, forceRender } = this.props;
 
     if (
       converArray2String(path) !== converArray2String(prevProps.path) ||
       converArray2String(url) !== converArray2String(prevProps.url) ||
       title !== prevProps.title ||
+      rootId !== prevProps.rootId ||
       (forceRender && !prevProps.forceRender)
     ) {
       this.renderChild();
@@ -77,6 +79,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       path,
       url,
       title,
+      rootId,
       ErrorComponent,
       LoadingComponent,
       NotFoundComponent,
@@ -86,7 +89,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     let root: any;
 
     // Prevent duplicate creation of shadowRoot
-    const node: HTMLElement = document.querySelector(`#${nodeId}`);
+    const node: HTMLElement = document.querySelector(`#${rootId || nodeId}`);
     if (!node) return;
 
     root = node;
@@ -144,12 +147,12 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   render() {
-    const { path, title } = this.props;
+    const { path, title, rootId } = this.props;
 
     return (
       <div
         key={`${converArray2String(path)}-${title}`}
-        id={nodeId}
+        id={rootId || nodeId}
         className={this.state.cssLoading ? 'ice-stark-loading' : 'ice-stark-loaded'}
       />
     );

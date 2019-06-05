@@ -21,19 +21,19 @@ function loadAsset(
     type = 'link';
   }
 
-  let element: HTMLElement;
+  let element: HTMLScriptElement | HTMLLinkElement | HTMLElement;
 
   element = document.createElement(type);
   element.id = id;
   element.setAttribute(PREFIX, DYNAMIC);
 
   if (isCss) {
-    element.setAttribute('rel', 'stylesheet');
-    element.setAttribute('href', url);
+    (element as HTMLLinkElement).rel = 'stylesheet';
+    (element as HTMLLinkElement).href = url;
   } else {
-    element.setAttribute('type', 'text/javascript');
-    element.setAttribute('async', '');
-    element.setAttribute('src', url);
+    (element as HTMLScriptElement).type = 'text/javascript';
+    (element as HTMLScriptElement).src = url;
+    (element as HTMLScriptElement).async = false;
   }
 
   element.addEventListener(
