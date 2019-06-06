@@ -64,16 +64,17 @@ class Layout extends React.Component {
 |   NotFoundComponent    |  render when the route changed error  | ReactElement |         |
 |  BundleErrorComponent  | render when the bundle pulls an error | ReactElement |         |
 | BundleLoadingComponent |     render when Bundle is Loading     | ReactElement |         |
-|       shadowRoot       |       whether to use shadowRoot       |   boolean    |  false  |
+|       useShadow        |       whether to use shadowRoot       |   boolean    |  false  |
 
 
 ### AppRoute
 
-| Property  |                    Description                    |      Type       | Default |
-| :-------: | :-----------------------------------------------: | :-------------: | :-----: |
-|   path    | app router path, reference react-router, required | string/string[] |         |
-|    url    |             assets load url, required             | string/string[] |         |
-|   title   |                   documentTitle                   |     string      |         |
-|   exact   |              reference react-router               |     boolean     |  false  |
-|  strict   |              reference react-router               |     boolean     |  false  |
-| sensitive |              reference react-router               |     boolean     |  false  |
+| Property  |                    Description                    |      Type       |    Default     |
+| :-------: | :-----------------------------------------------: | :-------------: | :------------: |
+|   path    | app router path, reference react-router, required | string/string[] |                |
+|    url    |             assets load url, required             | string/string[] |                |
+|   title   |                   documentTitle                   |     string      |                |
+|   exact   |              reference react-router               |     boolean     |     false      |
+|  strict   |              reference react-router               |     boolean     |     false      |
+| sensitive |              reference react-router               |     boolean     |     false      |
+|  rootId   |          id for ReactDOM render element           |     string      | 'icestarkNode' |
