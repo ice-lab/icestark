@@ -58,13 +58,13 @@ class Layout extends React.Component {
 
 ### AppRouter
 
-|        Property        |              Description              |     Type     | Default |
-| :--------------------: | :-----------------------------------: | :----------: | :-----: |
-|     onRouteChange      | callback executed when route changed  |   function   |  noop   |
-|   NotFoundComponent    |  render when the route changed error  | ReactElement |         |
-|  BundleErrorComponent  | render when the bundle pulls an error | ReactElement |         |
-| BundleLoadingComponent |     render when Bundle is Loading     | ReactElement |         |
-|       useShadow        |       whether to use shadowRoot       |   boolean    |  false  |
+|     Property      |              Description              |     Type     | Default |
+| :---------------: | :-----------------------------------: | :----------: | :-----: |
+|   onRouteChange   | callback executed when route changed  |   function   |  noop   |
+| NotFoundComponent |  render when the route changed error  | ReactElement |         |
+|  ErrorComponent   | render when the assets pulls an error | ReactElement |         |
+| LoadingComponent  |     render when assets is Loading     | ReactElement |         |
+|     useShadow     |       whether to use shadowRoot       |   boolean    |  false  |
 
 
 ### AppRoute
