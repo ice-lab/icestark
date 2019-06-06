@@ -116,9 +116,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     if (title) document.title = title;
 
     // generate bundleList
-    const bundleList: string[] = Array.isArray(url)
-      ? url
-      : [`${url}/js/index.js`, `${url}/css/index.css`];
+    const bundleList: string[] = Array.isArray(url) ? url : [url];
 
     // Handle loading
     this.setState({ cssLoading: true });
