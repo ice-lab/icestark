@@ -39,12 +39,18 @@ class Layout extends React.Component {
             path={['/', '/home', '/about']}
             exact
             title="主页"
-            url={['//127.0.0.1:4444/js/index.js', '//127.0.0.1:4444/css/index.css']}
+            url={[
+              '//g.alicdn.com/icestark-demo/child/0.1.2/js/index.js',
+              '//g.alicdn.com/icestark-demo/child/0.1.2/css/index.css'
+            ]}
           />
           <AppRoute
             path="/user"
             title="用户页面"
-            url={['//127.0.0.1:5555/js/index.js', '//127.0.0.1:5555/css/index.css']}
+            url={[
+              '//g.alicdn.com/icestark-demo/child2/0.1.2/js/index.js',
+              '//g.alicdn.com/icestark-demo/child2/0.1.2/css/index.css'
+            ]}
           />
         </AppRouter>
         <div>this is common footer</div>
