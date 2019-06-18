@@ -39,7 +39,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     recordAssets();
   }
 
-  private forceRender: boolean = false;
+  private forceCount: number = 0;
 
   private isBrowserForce: boolean = false;
 
@@ -92,10 +92,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
       // deal with forceRender
       if (state && (state.forceRender || (state.state && state.state.forceRender))) {
-        this.forceRender = true;
+        this.forceCount++;
         this.setState({ url });
-      } else if (this.forceRender) {
-        this.forceRender = false;
       }
 
       // trigger onRouteChange
@@ -114,7 +112,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     // handle browser or history forward / back
     window.onpopstate = () => {
       this.isBrowserForce = true;
-      this.forceRender = true;
+      this.forceCount++;
 
       const url = location.href;
       this.setState({ url });
@@ -165,7 +163,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       ErrorComponent,
       LoadingComponent,
       useShadow,
-      forceRender: this.forceRender,
+      forceCount: this.forceCount,
     };
     if (localUrl) {
       extraProps.url = localUrl;
