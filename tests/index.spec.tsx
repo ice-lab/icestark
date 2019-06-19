@@ -11,7 +11,8 @@ import {
   getMountNode,
   renderNotFound,
 } from '../src/index';
-import { func } from 'prop-types';
+import matchPath from '../src/util/matchPath';
+import loadAssets from '../src/util/loadAssets';
 
 describe('AppRouter', () => {
   test('render the AppRouter', () => {
@@ -81,5 +82,35 @@ describe('getMountNode', () => {
 describe('renderNotFound', () => {
   test('renderNotFound', () => {
     expect(renderNotFound()).toBe('Current sub-application is running independently');
+  });
+});
+
+describe('matchPath', () => {
+  test('matchPath', () => {
+    expect(matchPath('/test/123', { path: '/test' })).not.toBeNull();
+    expect(matchPath('/test/123', { path: '/test/:id' })).not.toBeNull();
+    expect(matchPath('/test/123', { path: '/test', exact: true })).toBeNull();
+  });
+});
+
+describe('loadAssets', () => {
+  test('loadAssets', () => {
+    loadAssets(
+      [
+        'http://icestark.com/test.js',
+        'http://icestark.com/test.css',
+        'http://icestark.com/test1.js',
+      ],
+      false,
+      jest.fn(),
+      jest.fn(),
+    );
+    const jsElement0 = document.getElementById('icestark-js-0');
+    const jsElement1 = document.getElementById('icestark-js-1');
+
+    expect((jsElement0 as HTMLScriptElement).src).toEqual('http://icestark.com/test.js');
+    expect((jsElement0 as HTMLScriptElement).async).toEqual(false);
+    expect((jsElement1 as HTMLScriptElement).src).toEqual('http://icestark.com/test1.js');
+    expect((jsElement1 as HTMLScriptElement).async).toEqual(false);
   });
 });
