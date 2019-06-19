@@ -29,7 +29,7 @@ export interface AppRouteProps {
   ErrorComponent?: any;
   LoadingComponent?: any;
   NotFoundComponent?: any;
-  forceCount?: number;
+  forceRenderCount?: number;
 }
 
 export default class AppRoute extends React.Component<AppRouteProps, AppRouteState> {
@@ -52,14 +52,14 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   }
 
   componentDidUpdate(prevProps) {
-    const { path, url, title, rootId, forceCount } = this.props;
+    const { path, url, title, rootId, forceRenderCount } = this.props;
 
     if (
       converArray2String(path) !== converArray2String(prevProps.path) ||
       converArray2String(url) !== converArray2String(prevProps.url) ||
       title !== prevProps.title ||
       rootId !== prevProps.rootId ||
-      forceCount !== prevProps.forceCount
+      forceRenderCount !== prevProps.forceRenderCount
     ) {
       this.renderChild();
     }
