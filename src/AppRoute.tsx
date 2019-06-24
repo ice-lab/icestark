@@ -5,8 +5,6 @@ import loadAssets from './util/loadAssets';
 import emptyAssets from './util/emptyAssets';
 import { setIcestark } from './util/index';
 
-const nodeId = 'icestarkNode';
-
 const converArray2String = (list: string | string[]) => {
   if (Array.isArray(list)) {
     return list.join(',');
@@ -31,7 +29,7 @@ export interface AppRouteProps {
   ErrorComponent?: any;
   LoadingComponent?: any;
   NotFoundComponent?: any;
-  forceRender?: boolean;
+  forceRenderCount?: number;
 }
 
 export default class AppRoute extends React.Component<AppRouteProps, AppRouteState> {
@@ -39,6 +37,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     exact: false,
     strict: false,
     sensitive: false,
+    rootId: 'icestarkNode',
   };
 
   state = {
@@ -53,14 +52,14 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   }
 
   componentDidUpdate(prevProps) {
-    const { path, url, title, rootId, forceRender } = this.props;
+    const { path, url, title, rootId, forceRenderCount } = this.props;
 
     if (
       converArray2String(path) !== converArray2String(prevProps.path) ||
       converArray2String(url) !== converArray2String(prevProps.url) ||
       title !== prevProps.title ||
       rootId !== prevProps.rootId ||
-      (forceRender && !prevProps.forceRender)
+      forceRenderCount !== prevProps.forceRenderCount
     ) {
       this.renderChild();
     }
@@ -89,7 +88,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     let root: any;
 
     // Prevent duplicate creation of shadowRoot
-    const node: HTMLElement = document.querySelector(`#${rootId || nodeId}`);
+    const node: HTMLElement = document.querySelector(`#${rootId}`);
     if (!node) return;
 
     root = node;
@@ -152,7 +151,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     return (
       <div
         key={`${converArray2String(path)}-${title}`}
-        id={rootId || nodeId}
+        id={rootId}
         className={this.state.cssLoading ? 'ice-stark-loading' : 'ice-stark-loaded'}
       />
     );
