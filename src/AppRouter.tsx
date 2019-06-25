@@ -173,7 +173,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     if (match) {
       const { path, basename } = element.props as any;
 
-      setIcestark('basename', basename || (Array.isArray(path) ? path[0] : path));
+      basename && setIcestark('basename', basename);
 
       realComponent = React.cloneElement(element, extraProps);
     } else {
