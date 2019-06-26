@@ -2,7 +2,9 @@
   "private": true,
   "scripts": {
     "lint": "npm run lint:nofix -- --fix",
-    "lint:nofix": "eslint --cache --ext .ts,.tsx ./"
+    "lint:nofix": "eslint --cache --ext .ts,.tsx ./",
+    "test": "cd ./packages/icestark && npm install && npm run test",
+    "codecov": "cd ./packages/icestark && codecov"
   },
   "husky": {
     "hooks": {
