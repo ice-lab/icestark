@@ -4,6 +4,8 @@ node_js:
   - '8'
 script:
   - npm run lint:nofix
+  - cd packages/icestark
+  - npm install
   - npm run test
 after_success:
   - npm run coverage
