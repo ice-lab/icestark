@@ -1,0 +1,73 @@
+{
+  "name": "@ice/stark-router",
+  "version": "0.1.0",
+  "description": "A router package for @ice/srark.",
+  "scripts": {
+    "build": "rm -rf lib && tsc",
+    "watch": "tsc -w",
+    "prepublishOnly": "npm run lint && npm run build",
+    "lint": "npm run lint:nofix -- --fix",
+    "lint:nofix": "eslint --cache --ext .ts,.tsx ./",
+    "coverage": "codecov"
+  },
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "router",
+    "react",
+    "@ice/stark"
+  ],
+  "bugs": {
+    "url": "https://github.com/daysai/icestark-router/issues"
+  },
+  "homepage": "https://github.com/daysai/icestark-router",
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daysai/icestark-router.git"
+  },
+  "peerDependencies": {
+    "react": ">=15.0.0",
+    "react-router-dom": ">=4.0.0",
+    "@ice/stark": ">=0.1.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^7.5.2",
+    "@commitlint/config-conventional": "^7.5.0",
+    "@ice/stark": "^0.1.0",
+    "@types/jest": "^24.0.12",
+    "@types/node": "^12.0.0",
+    "@types/react": "^16.8.19",
+    "@types/react-router-dom": "^4.3.4",
+    "@typescript-eslint/eslint-plugin": "^1.9.0",
+    "@typescript-eslint/parser": "^1.9.0",
+    "codecov": "^3.4.0",
+    "eslint": "^5.16.0",
+    "eslint-config-prettier": "^4.3.0",
+    "eslint-config-react": "^1.1.7",
+    "eslint-plugin-prettier": "^3.1.0",
+    "eslint-plugin-react": "^7.13.0",
+    "husky": "^2.2.0",
+    "jest": "^24.7.1",
+    "jest-dom": "^3.4.0",
+    "prettier": "^1.17.1",
+    "react": "^16.7.0",
+    "react-router-dom": "^5.0.1",
+    "react-testing-library": "^7.0.0",
+    "ts-jest": "^24.0.2",
+    "typescript": "^3.4.4"
+  },
+  "jest": {
+    "coverageDirectory": "./coverage/",
+    "collectCoverage": true,
+    "preset": "ts-jest"
+  }
+}
