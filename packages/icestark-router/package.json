@@ -1,6 +1,6 @@
 {
   "name": "@ice/stark-router",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A router package for @ice/srark.",
   "scripts": {
     "build": "rm -rf lib && tsc",

@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { getBasename } from '@ice/stark';
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
+import * as path from 'path';
 
 interface MyChild {
   component: any;
@@ -35,7 +36,7 @@ const StarkRouter: React.SFC<StarkRouterProps> = (props: StarkRouterProps) => {
     <Router basename={getBasename()}>
       <Switch>
         {routes.map((route, id) => {
-          const { children, component: RouteComponent, key, name, path, ...others } = route;
+          const { children, component: RouteComponent, key, name, ...others } = route;
           return children ? (
             <Route
               {...others}
@@ -44,8 +45,14 @@ const StarkRouter: React.SFC<StarkRouterProps> = (props: StarkRouterProps) => {
                 <RouteComponent {...others} {...props}>
                   <Switch>
                     {children.map((child, cId) => {
-                      const { key: cKey, name: cName } = child;
-                      return <RouteItem {...child} key={cKey || cName || `${id}-${cId}`} />;
+                      const { key: childKey, name: childName, path: childPath, ...others } = child;
+                      return (
+                        <RouteItem
+                          {...others}
+                          path={childPath && path.join(route.path as string, childPath as string)}
+                          key={childKey || childName || `${id}-${cId}`}
+                        />
+                      );
                     })}
                   </Switch>
                 </RouteComponent>
