@@ -14,7 +14,7 @@ npm install @ice/stark-router --save
 
 ```javascript
 import React from 'react';
-import IceStarkRouter from '@ice/stark-router';
+import StarkRouter from '@ice/stark-router';
 
 class App extends React.Component {
   render() {
@@ -34,7 +34,7 @@ class App extends React.Component {
     }];
     return (
       <div>
-        <IceStarkRouter routers={routers}/>
+        <StarkRouter routers={routers}/>
       </div>
     );
   }

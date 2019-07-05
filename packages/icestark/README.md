@@ -79,6 +79,7 @@ class Layout extends React.Component {
 | :-------: | :-----------------------------------------------: | :-------------: | :------------: |
 |   path    | app router path, reference react-router, required | string/string[] |                |
 |    url    |             assets load url, required             | string/string[] |                |
+| basename  |               react router basename               |     string      |                |
 |   title   |                   documentTitle                   |     string      |                |
 |   exact   |              reference react-router               |     boolean     |     false      |
 |  strict   |              reference react-router               |     boolean     |     false      |
