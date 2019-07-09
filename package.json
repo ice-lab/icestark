@@ -46,7 +46,7 @@
   "devDependencies": {
     "@commitlint/cli": "^7.5.2",
     "@commitlint/config-conventional": "^7.5.0",
-    "@ice/spec": "^0.1.4-beta.3",
+    "@ice/spec": "^0.1.4",
     "@types/history": "^4.7.0",
     "@types/jest": "^24.0.12",
     "@types/node": "^12.0.0",
