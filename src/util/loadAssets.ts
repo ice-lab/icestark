@@ -21,9 +21,7 @@ function loadAsset(
     type = 'link';
   }
 
-  let element: HTMLScriptElement | HTMLLinkElement | HTMLElement;
-
-  element = document.createElement(type);
+  const element: HTMLScriptElement | HTMLLinkElement | HTMLElement = document.createElement(type);
   element.id = id;
   element.setAttribute(PREFIX, DYNAMIC);
 

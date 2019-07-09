@@ -25,6 +25,14 @@ interface AppRouterState {
 }
 
 export default class AppRouter extends React.Component<AppRouterProps, AppRouterState> {
+  private forceRenderCount: number = 0;
+
+  private isBrowserForce: boolean = false;
+
+  private originalPush: (state: any, title: string, url?: string) => void;
+
+  private originalReplace: (state: any, title: string, url?: string) => void;
+
   static defaultProps = {
     ErrorComponent: <div>js bundle loaded error</div>,
     NotFoundComponent: <div>NotFound</div>,
@@ -38,14 +46,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     };
     recordAssets();
   }
-
-  private forceRenderCount: number = 0;
-
-  private isBrowserForce: boolean = false;
-
-  private originalPush: (state: any, title: string, url?: string) => void;
-
-  private originalReplace: (state: any, title: string, url?: string) => void;
 
   componentDidMount() {
     this.hijackHistory();
