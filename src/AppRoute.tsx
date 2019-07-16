@@ -44,6 +44,10 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     cssLoading: false,
   };
 
+  private myRefBase: HTMLDivElement = null;
+
+  private myRefComp: HTMLDivElement = null;
+
   private unmounted: boolean = false;
 
   componentDidMount() {
@@ -87,16 +91,26 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     let root: any;
 
-    // Prevent duplicate creation of shadowRoot
-    const node: HTMLElement = document.querySelector(`#${rootId}`);
+    const node: HTMLElement = this.myRefBase;
     if (!node) return;
 
-    root = node;
-    // create ShadowRoot
-    if (useShadow && !node.shadowRoot) {
-      root = node.attachShadow
-        ? node.attachShadow({ mode: 'open', delegatesFocus: false })
-        : (node as any).createShadowRoot();
+    // update rootElement to remove react instance
+    let rootElement: HTMLDivElement = node.querySelector(`#${rootId}`)
+    if (rootElement) {
+      node.removeChild(rootElement);
+    }
+
+    rootElement = document.createElement('div');
+    rootElement.id = rootId;
+    node.appendChild(rootElement);
+
+    root = rootElement;
+
+    // Prevent duplicate creation of shadowRoot
+    if (useShadow && !rootElement.shadowRoot) {
+      root = rootElement.attachShadow
+        ? rootElement.attachShadow({ mode: 'open', delegatesFocus: false })
+        : (rootElement as any).createShadowRoot();
     }
 
     setIcestark('root', root);
@@ -106,9 +120,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     // Handle NotFound
     if (path === ICESTSRK_NOT_FOUND && url === ICESTSRK_NOT_FOUND) {
-      React.isValidElement(NotFoundComponent)
-        ? ReactDOM.render(NotFoundComponent, root)
-        : ReactDOM.render(<NotFoundComponent />, root);
+      this.renderComponent(NotFoundComponent);
       return;
     }
 
@@ -120,9 +132,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     // Handle loading
     this.setState({ cssLoading: true });
     if (LoadingComponent) {
-      React.isValidElement(LoadingComponent)
-        ? ReactDOM.render(LoadingComponent, root)
-        : ReactDOM.render(<LoadingComponent />, root);
+      this.renderComponent(LoadingComponent);
     }
 
     loadAssets(
@@ -131,11 +141,10 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       (err: any): boolean => {
         if (err) {
           // Handle error
-          React.isValidElement(ErrorComponent)
-            ? ReactDOM.render(ErrorComponent, root)
-            : ReactDOM.render(<ErrorComponent />, root);
+          this.renderComponent(ErrorComponent);
           return true;
         }
+        ReactDOM.unmountComponentAtNode(this.myRefComp);
 
         return this.unmounted;
       },
@@ -145,15 +154,25 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     );
   };
 
+  renderComponent = (Component) => {
+    const myRefComp = this.myRefComp;
+    ReactDOM.unmountComponentAtNode(myRefComp);
+    React.isValidElement(Component)
+            ? ReactDOM.render(Component, myRefComp)
+            : ReactDOM.render(<Component />, myRefComp);
+  }
+
   render() {
-    const { path, title, rootId } = this.props;
+    const { path, title } = this.props;
 
     return (
       <div
         key={`${converArray2String(path)}-${title}`}
-        id={rootId}
+        ref={(element) => {this.myRefBase = element}}
         className={this.state.cssLoading ? 'ice-stark-loading' : 'ice-stark-loaded'}
-      />
+      >
+          <div ref={(element) => {this.myRefComp = element}} />
+        </div>
     );
   }
 }
