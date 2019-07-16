@@ -1,6 +1,8 @@
+English | [简体中文](./README.zh-CN.md)
+
 # icestark
 
-> Icestark is a JavaScript library for multiple react projects, Ice workbench solution.
+> Large-scale mid-background multi-application coexistence solution.
 
 [![NPM version](https://img.shields.io/npm/v/@ice/stark.svg?style=flat)](https://npmjs.org/package/@ice/stark)
 [![Package Quality](https://npm.packagequality.com/shield/@ice%2Fstark.svg)](https://packagequality.com/#?package=@ice/stark)
