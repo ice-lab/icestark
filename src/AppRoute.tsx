@@ -5,6 +5,28 @@ import loadAssets from './util/loadAssets';
 import emptyAssets from './util/emptyAssets';
 import { setIcestark } from './util/index';
 
+const renderElememtId = 'icestarkRender';
+
+const updateElement = (parent, elementId) => {
+  let childElement: HTMLDivElement = parent.querySelector(`#${elementId}`);
+
+  if (childElement && elementId === renderElememtId) {
+    // still contain renderElement, just remove react instance
+    ReactDOM.unmountComponentAtNode(childElement)
+    return childElement;
+  }
+
+  if (childElement) {
+    parent.removeChild(childElement);
+  }
+
+  childElement = document.createElement('div');
+  childElement.id = elementId;
+  parent.appendChild(childElement);
+
+  return childElement;
+}
+
 const converArray2String = (list: string | string[]) => {
   if (Array.isArray(list)) {
     return list.join(',');
@@ -46,7 +68,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
   private myRefBase: HTMLDivElement = null;
 
-  private myRefComp: HTMLDivElement = null;
+  private renderElement: HTMLDivElement = null;
 
   private unmounted: boolean = false;
 
@@ -95,22 +117,16 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     if (!node) return;
 
     // update rootElement to remove react instance
-    let rootElement: HTMLDivElement = node.querySelector(`#${rootId}`)
-    if (rootElement) {
-      node.removeChild(rootElement);
-    }
+    root = updateElement(node, rootId);
 
-    rootElement = document.createElement('div');
-    rootElement.id = rootId;
-    node.appendChild(rootElement);
-
-    root = rootElement;
+    // update renderElement
+    this.renderElement = updateElement(node, renderElememtId);
 
     // Prevent duplicate creation of shadowRoot
-    if (useShadow && !rootElement.shadowRoot) {
-      root = rootElement.attachShadow
-        ? rootElement.attachShadow({ mode: 'open', delegatesFocus: false })
-        : (rootElement as any).createShadowRoot();
+    if (useShadow && !root.shadowRoot) {
+      root = root.attachShadow
+        ? root.attachShadow({ mode: 'open', delegatesFocus: false })
+        : (root as any).createShadowRoot();
     }
 
     setIcestark('root', root);
@@ -144,7 +160,11 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
           this.renderComponent(ErrorComponent);
           return true;
         }
-        ReactDOM.unmountComponentAtNode(this.myRefComp);
+        const myBase = this.myRefBase;
+        if (myBase) {
+          const renderElement = myBase.querySelector(`#${renderElememtId}`);
+          renderElement && myBase.removeChild(renderElement);
+        }
 
         return this.unmounted;
       },
@@ -155,11 +175,11 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   renderComponent = (Component) => {
-    const myRefComp = this.myRefComp;
-    ReactDOM.unmountComponentAtNode(myRefComp);
+    const renderElement = this.renderElement;
+    ReactDOM.unmountComponentAtNode(renderElement);
     React.isValidElement(Component)
-      ? ReactDOM.render(Component, myRefComp)
-      : ReactDOM.render(<Component />, myRefComp);
+      ? ReactDOM.render(Component, renderElement)
+      : ReactDOM.render(<Component />, renderElement);
   }
 
   render() {
@@ -170,9 +190,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         key={`${converArray2String(path)}-${title}`}
         ref={(element) => {this.myRefBase = element}}
         className={this.state.cssLoading ? 'ice-stark-loading' : 'ice-stark-loaded'}
-      >
-        <div ref={(element) => {this.myRefComp = element}} />
-      </div>
+      />
     );
   }
 }
