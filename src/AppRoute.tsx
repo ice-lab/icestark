@@ -118,7 +118,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     // Handle NotFound
     if (path === ICESTSRK_NOT_FOUND && url === ICESTSRK_NOT_FOUND) {
-      this.updateStatusElement(NotFoundComponent);
+      this.renderStatusElement(NotFoundComponent);
       return;
     }
 
@@ -130,7 +130,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     // Handle loading
     this.setState({ cssLoading: true });
     if (LoadingComponent) {
-      this.updateStatusElement(LoadingComponent);
+      this.renderStatusElement(LoadingComponent);
     }
 
     loadAssets(
@@ -139,7 +139,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       (err: any): boolean => {
         if (err) {
           // Handle error
-          this.updateStatusElement(ErrorComponent);
+          this.renderStatusElement(ErrorComponent);
           return true;
         }
 
@@ -154,9 +154,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   /**
-   * Create / Update statusElement
+   * Render statusElement
    */
-  updateStatusElement = (Component) => {
+  renderStatusElement = (Component) => {
     const statusElement = this.statusElement;
     ReactDOM.unmountComponentAtNode(statusElement);
     React.isValidElement(Component)
