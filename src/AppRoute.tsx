@@ -158,8 +158,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     const myRefComp = this.myRefComp;
     ReactDOM.unmountComponentAtNode(myRefComp);
     React.isValidElement(Component)
-            ? ReactDOM.render(Component, myRefComp)
-            : ReactDOM.render(<Component />, myRefComp);
+      ? ReactDOM.render(Component, myRefComp)
+      : ReactDOM.render(<Component />, myRefComp);
   }
 
   render() {
@@ -171,8 +171,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         ref={(element) => {this.myRefBase = element}}
         className={this.state.cssLoading ? 'ice-stark-loading' : 'ice-stark-loaded'}
       >
-          <div ref={(element) => {this.myRefComp = element}} />
-        </div>
+        <div ref={(element) => {this.myRefComp = element}} />
+      </div>
     );
   }
 }
