@@ -91,25 +91,27 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       useShadow,
     } = this.props;
 
-    let root: any;
 
-    const node: HTMLElement = this.myRefBase;
-    if (!node) return;
+    const myBase: HTMLElement = this.myRefBase;
+    if (!myBase) return;
 
-    // Update rootElement to remove react instance
-    root = this.updateChildElement(node, rootId);
+    // ReCreate rootElement to remove React Component instance,
+    // rootElement is created for render Child App
+    this.removeElementFromBase(rootId);
+    let rootElement: any = this.appendElementToBase(rootId);
 
-    // Update statusElement
-    this.statusElement = this.updateChildElement(node, statusElementId);
+    // ReCreate statusElement for render Loading/Error/NotFound Component
+    this.removeElementFromBase(statusElementId);
+    this.statusElement = this.appendElementToBase(statusElementId);
 
     // Prevent duplicate creation of shadowRoot
-    if (useShadow && !root.shadowRoot) {
-      root = root.attachShadow
-        ? root.attachShadow({ mode: 'open', delegatesFocus: false })
-        : (root as any).createShadowRoot();
+    if (useShadow && !rootElement.shadowRoot) {
+      rootElement = rootElement.attachShadow
+        ? rootElement.attachShadow({ mode: 'open', delegatesFocus: false })
+        : (rootElement as any).createShadowRoot();
     }
 
-    setIcestark('root', root);
+    setIcestark('root', rootElement);
 
     // Empty useless assets before loading
     emptyAssets(useShadow);
@@ -141,7 +143,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
           return true;
         }
 
-        this.removeStatusElement();
+        this.removeElementFromBase(statusElementId);
+        this.statusElement = null;
         return this.unmounted;
       },
       (): void => {
@@ -150,40 +153,35 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     );
   };
 
-  updateChildElement = (parent, childElementId) => {
-    let childElement: HTMLDivElement = parent.querySelector(`#${childElementId}`);
-
-    if (childElement && childElementId === statusElementId) {
-      // If contain statusElement, just remove react instance
-      ReactDOM.unmountComponentAtNode(childElement)
-      return childElement;
-    }
-
-    if (childElement) {
-      parent.removeChild(childElement);
-    }
-
-    childElement = document.createElement('div');
-    childElement.id = childElementId;
-    parent.appendChild(childElement);
-
-    return childElement;
-  }
-
-  removeStatusElement = () => {
-    const myBase = this.myRefBase;
-    if (myBase) {
-      const statusElement = myBase.querySelector(`#${statusElementId}`);
-      statusElement && myBase.removeChild(statusElement);
-    }
-  }
-
+  /**
+   * Create / Update statusElement
+   */
   updateStatusElement = (Component) => {
     const statusElement = this.statusElement;
     ReactDOM.unmountComponentAtNode(statusElement);
     React.isValidElement(Component)
       ? ReactDOM.render(Component, statusElement)
       : ReactDOM.render(<Component />, statusElement);
+  }
+
+  appendElementToBase = (elementId) => {
+    const myBase = this.myRefBase;
+    if (!myBase) return;
+
+    const element = document.createElement('div');
+    element.id = elementId;
+    myBase.appendChild(element);
+    return element;
+  }
+
+  removeElementFromBase = (elementId) => {
+    const myBase = this.myRefBase;
+    if (!myBase) return;
+
+    const element = myBase.querySelector(`#${elementId}`);
+    if (element) {
+      myBase.removeChild(element);
+    }
   }
 
   render() {
