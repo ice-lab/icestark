@@ -5,27 +5,7 @@ import loadAssets from './util/loadAssets';
 import emptyAssets from './util/emptyAssets';
 import { setIcestark } from './util/index';
 
-const renderElememtId = 'icestarkRender';
-
-const updateElement = (parent, elementId) => {
-  let childElement: HTMLDivElement = parent.querySelector(`#${elementId}`);
-
-  if (childElement && elementId === renderElememtId) {
-    // still contain renderElement, just remove react instance
-    ReactDOM.unmountComponentAtNode(childElement)
-    return childElement;
-  }
-
-  if (childElement) {
-    parent.removeChild(childElement);
-  }
-
-  childElement = document.createElement('div');
-  childElement.id = elementId;
-  parent.appendChild(childElement);
-
-  return childElement;
-}
+const statusElementId = 'icestarkStatusContainer';
 
 const converArray2String = (list: string | string[]) => {
   if (Array.isArray(list)) {
@@ -68,7 +48,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
   private myRefBase: HTMLDivElement = null;
 
-  private renderElement: HTMLDivElement = null;
+  private statusElement: HTMLDivElement = null;
 
   private unmounted: boolean = false;
 
@@ -116,11 +96,11 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     const node: HTMLElement = this.myRefBase;
     if (!node) return;
 
-    // update rootElement to remove react instance
-    root = updateElement(node, rootId);
+    // Update rootElement to remove react instance
+    root = this.updateChildElement(node, rootId);
 
-    // update renderElement
-    this.renderElement = updateElement(node, renderElememtId);
+    // Update statusElement
+    this.statusElement = this.updateChildElement(node, statusElementId);
 
     // Prevent duplicate creation of shadowRoot
     if (useShadow && !root.shadowRoot) {
@@ -131,24 +111,24 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     setIcestark('root', root);
 
-    // empty useless assets before loading
+    // Empty useless assets before loading
     emptyAssets(useShadow);
 
     // Handle NotFound
     if (path === ICESTSRK_NOT_FOUND && url === ICESTSRK_NOT_FOUND) {
-      this.renderComponent(NotFoundComponent);
+      this.updateStatusElement(NotFoundComponent);
       return;
     }
 
     if (title) document.title = title;
 
-    // generate bundleList
+    // Generate bundleList
     const bundleList: string[] = Array.isArray(url) ? url : [url];
 
     // Handle loading
     this.setState({ cssLoading: true });
     if (LoadingComponent) {
-      this.renderComponent(LoadingComponent);
+      this.updateStatusElement(LoadingComponent);
     }
 
     loadAssets(
@@ -157,15 +137,11 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       (err: any): boolean => {
         if (err) {
           // Handle error
-          this.renderComponent(ErrorComponent);
+          this.updateStatusElement(ErrorComponent);
           return true;
         }
-        const myBase = this.myRefBase;
-        if (myBase) {
-          const renderElement = myBase.querySelector(`#${renderElememtId}`);
-          renderElement && myBase.removeChild(renderElement);
-        }
 
+        this.removeStatusElement();
         return this.unmounted;
       },
       (): void => {
@@ -174,12 +150,40 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     );
   };
 
-  renderComponent = (Component) => {
-    const renderElement = this.renderElement;
-    ReactDOM.unmountComponentAtNode(renderElement);
+  updateChildElement = (parent, childElementId) => {
+    let childElement: HTMLDivElement = parent.querySelector(`#${childElementId}`);
+
+    if (childElement && childElementId === statusElementId) {
+      // If contain statusElement, just remove react instance
+      ReactDOM.unmountComponentAtNode(childElement)
+      return childElement;
+    }
+
+    if (childElement) {
+      parent.removeChild(childElement);
+    }
+
+    childElement = document.createElement('div');
+    childElement.id = childElementId;
+    parent.appendChild(childElement);
+
+    return childElement;
+  }
+
+  removeStatusElement = () => {
+    const myBase = this.myRefBase;
+    if (myBase) {
+      const statusElement = myBase.querySelector(`#${statusElementId}`);
+      statusElement && myBase.removeChild(statusElement);
+    }
+  }
+
+  updateStatusElement = (Component) => {
+    const statusElement = this.statusElement;
+    ReactDOM.unmountComponentAtNode(statusElement);
     React.isValidElement(Component)
-      ? ReactDOM.render(Component, renderElement)
-      : ReactDOM.render(<Component />, renderElement);
+      ? ReactDOM.render(Component, statusElement)
+      : ReactDOM.render(<Component />, statusElement);
   }
 
   render() {
