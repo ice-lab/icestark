@@ -23,11 +23,10 @@ describe('AppRouter', () => {
     };
     const { container, getByTestId } = render(<AppRouter {...props} />);
 
-    const appRouteNode = container.querySelector('#icestarkNode');
+    const appRouteNode = container.querySelector('.ice-stark-loaded');
     const textNode = getByTestId('icestarkDefalut');
 
-    expect(appRouteNode.className).toBe('ice-stark-loaded');
-    expect(appRouteNode.childNodes.length).toBe(1);
+    expect(appRouteNode.childNodes.length).toBe(2);
     expect(textNode).toHaveTextContent('NotFound');
     expect(props.onRouteChange).toHaveBeenCalledTimes(1);
   });
@@ -40,11 +39,25 @@ describe('AppRoute', () => {
       url: [],
       title: '主页',
       useShadow: false,
+      LoadingComponent: <div>Loading</div>,
     };
     const { container } = render(<AppRoute {...props} />);
 
-    const appRouteNode = container.querySelector('#icestarkNode');
-    expect(appRouteNode.className).toBe('ice-stark-loading');
+    const appRouteNode = container.querySelector('.ice-stark-loading');
+    expect(appRouteNode.childNodes.length).toBe(2);
+  });
+
+  test('render the AppRoute without LoadingComponent', () => {
+    const props = {
+      path: '/',
+      url: [],
+      title: '主页',
+      useShadow: false,
+    };
+    const { container } = render(<AppRoute {...props} />);
+
+    const appRouteNode = container.querySelector('.ice-stark-loading');
+    expect(appRouteNode.childNodes.length).toBe(1);
   });
 });
 
