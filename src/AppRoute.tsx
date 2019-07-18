@@ -48,8 +48,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
   private myRefBase: HTMLDivElement = null;
 
-  private statusElement: HTMLDivElement = null;
-
   private unmounted: boolean = false;
 
   componentDidMount() {
@@ -140,7 +138,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         }
 
         this.removeElementFromBase(statusElementId);
-        this.statusElement = null;
         return this.unmounted;
       },
       (): void => {
@@ -153,11 +150,14 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
    * Render statusElement
    */
   renderStatusElement = (Component) => {
-    if (!this.statusElement) {
-      this.statusElement = this.appendElementToBase(statusElementId);
+    const myBase = this.myRefBase;
+    if (!myBase) return;
+
+    let statusElement = myBase.querySelector(`#${statusElementId}`);
+    if (!statusElement) {
+      statusElement = this.appendElementToBase(statusElementId);
     }
 
-    const statusElement = this.statusElement;
     ReactDOM.unmountComponentAtNode(statusElement);
     React.isValidElement(Component)
       ? ReactDOM.render(Component, statusElement)
