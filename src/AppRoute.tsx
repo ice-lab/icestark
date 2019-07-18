@@ -100,10 +100,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     this.removeElementFromBase(rootId);
     let rootElement: any = this.appendElementToBase(rootId);
 
-    // ReCreate statusElement for render Loading/Error/NotFound Component
-    this.removeElementFromBase(statusElementId);
-    this.statusElement = this.appendElementToBase(statusElementId);
-
     // Prevent duplicate creation of shadowRoot
     if (useShadow && !rootElement.shadowRoot) {
       rootElement = rootElement.attachShadow
@@ -157,6 +153,10 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
    * Render statusElement
    */
   renderStatusElement = (Component) => {
+    if (!this.statusElement) {
+      this.statusElement = this.appendElementToBase(statusElementId);
+    }
+
     const statusElement = this.statusElement;
     ReactDOM.unmountComponentAtNode(statusElement);
     React.isValidElement(Component)
