@@ -39,11 +39,25 @@ describe('AppRoute', () => {
       url: [],
       title: '主页',
       useShadow: false,
+      LoadingComponent: <div>Loading</div>,
     };
     const { container } = render(<AppRoute {...props} />);
 
     const appRouteNode = container.querySelector('.ice-stark-loading');
     expect(appRouteNode.childNodes.length).toBe(2);
+  });
+
+  test('render the AppRoute without LoadingComponent', () => {
+    const props = {
+      path: '/',
+      url: [],
+      title: '主页',
+      useShadow: false,
+    };
+    const { container } = render(<AppRoute {...props} />);
+
+    const appRouteNode = container.querySelector('.ice-stark-loading');
+    expect(appRouteNode.childNodes.length).toBe(1);
   });
 });
 

@@ -123,9 +123,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     // Handle loading
     this.setState({ cssLoading: true });
-    if (LoadingComponent) {
-      this.renderStatusElement(LoadingComponent);
-    }
+    this.renderStatusElement(LoadingComponent);
 
     loadAssets(
       bundleList,
@@ -151,7 +149,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
    */
   renderStatusElement = (Component) => {
     const myBase = this.myRefBase;
-    if (!myBase) return;
+    if (!myBase || !Component) return;
 
     let statusElement = myBase.querySelector(`#${statusElementId}`);
     if (!statusElement) {
