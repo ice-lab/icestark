@@ -5,6 +5,8 @@ import loadAssets from './util/loadAssets';
 import emptyAssets from './util/emptyAssets';
 import { setIcestark } from './util/index';
 
+const statusElementId = 'icestarkStatusContainer';
+
 const converArray2String = (list: string | string[]) => {
   if (Array.isArray(list)) {
     return list.join(',');
@@ -43,6 +45,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   state = {
     cssLoading: false,
   };
+
+  private myRefBase: HTMLDivElement = null;
 
   private unmounted: boolean = false;
 
@@ -85,45 +89,41 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       useShadow,
     } = this.props;
 
-    let root: any;
+
+    const myBase: HTMLElement = this.myRefBase;
+    if (!myBase) return;
+
+    // ReCreate rootElement to remove React Component instance,
+    // rootElement is created for render Child App
+    this.removeElementFromBase(rootId);
+    let rootElement: any = this.appendElementToBase(rootId);
 
     // Prevent duplicate creation of shadowRoot
-    const node: HTMLElement = document.querySelector(`#${rootId}`);
-    if (!node) return;
-
-    root = node;
-    // create ShadowRoot
-    if (useShadow && !node.shadowRoot) {
-      root = node.attachShadow
-        ? node.attachShadow({ mode: 'open', delegatesFocus: false })
-        : (node as any).createShadowRoot();
+    if (useShadow && !rootElement.shadowRoot) {
+      rootElement = rootElement.attachShadow
+        ? rootElement.attachShadow({ mode: 'open', delegatesFocus: false })
+        : (rootElement as any).createShadowRoot();
     }
 
-    setIcestark('root', root);
+    setIcestark('root', rootElement);
 
-    // empty useless assets before loading
+    // Empty useless assets before loading
     emptyAssets(useShadow);
 
     // Handle NotFound
     if (path === ICESTSRK_NOT_FOUND && url === ICESTSRK_NOT_FOUND) {
-      React.isValidElement(NotFoundComponent)
-        ? ReactDOM.render(NotFoundComponent, root)
-        : ReactDOM.render(<NotFoundComponent />, root);
+      this.renderStatusElement(NotFoundComponent);
       return;
     }
 
     if (title) document.title = title;
 
-    // generate bundleList
+    // Generate bundleList
     const bundleList: string[] = Array.isArray(url) ? url : [url];
 
     // Handle loading
     this.setState({ cssLoading: true });
-    if (LoadingComponent) {
-      React.isValidElement(LoadingComponent)
-        ? ReactDOM.render(LoadingComponent, root)
-        : ReactDOM.render(<LoadingComponent />, root);
-    }
+    this.renderStatusElement(LoadingComponent);
 
     loadAssets(
       bundleList,
@@ -131,12 +131,11 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       (err: any): boolean => {
         if (err) {
           // Handle error
-          React.isValidElement(ErrorComponent)
-            ? ReactDOM.render(ErrorComponent, root)
-            : ReactDOM.render(<ErrorComponent />, root);
+          this.renderStatusElement(ErrorComponent);
           return true;
         }
 
+        this.removeElementFromBase(statusElementId);
         return this.unmounted;
       },
       (): void => {
@@ -145,13 +144,51 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     );
   };
 
+  /**
+   * Render statusElement
+   */
+  renderStatusElement = (Component) => {
+    const myBase = this.myRefBase;
+    if (!myBase || !Component) return;
+
+    let statusElement = myBase.querySelector(`#${statusElementId}`);
+    if (!statusElement) {
+      statusElement = this.appendElementToBase(statusElementId);
+    }
+
+    ReactDOM.unmountComponentAtNode(statusElement);
+    React.isValidElement(Component)
+      ? ReactDOM.render(Component, statusElement)
+      : ReactDOM.render(<Component />, statusElement);
+  }
+
+  appendElementToBase = (elementId) => {
+    const myBase = this.myRefBase;
+    if (!myBase) return;
+
+    const element = document.createElement('div');
+    element.id = elementId;
+    myBase.appendChild(element);
+    return element;
+  }
+
+  removeElementFromBase = (elementId) => {
+    const myBase = this.myRefBase;
+    if (!myBase) return;
+
+    const element = myBase.querySelector(`#${elementId}`);
+    if (element) {
+      myBase.removeChild(element);
+    }
+  }
+
   render() {
-    const { path, title, rootId } = this.props;
+    const { path, title } = this.props;
 
     return (
       <div
         key={`${converArray2String(path)}-${title}`}
-        id={rootId}
+        ref={(element) => {this.myRefBase = element}}
         className={this.state.cssLoading ? 'ice-stark-loading' : 'ice-stark-loaded'}
       />
     );
