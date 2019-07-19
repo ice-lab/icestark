@@ -89,8 +89,8 @@ class Layout extends React.Component {
 }
 ```
 - `AppRouter` 定位子应用渲染节点
--  `AppRoute` 设置子应用相关配置，`path` 配置有效路由信息、`basename` 配置统一的路由前缀，`url` 配置静态资源路径
--  `icestark` 会按照类似 `react-router` 的路由解析规则，判断当前生效 `path`，加载对应子应用的静态资源，进行渲染
+- `AppRoute` 设置子应用相关配置，`path` 配置有效路由信息、`basename` 配置统一的路由前缀，`url` 配置静态资源路径
+- `icestark` 会按照类似 `react-router` 的路由解析规则，判断当前生效 `path`，加载对应子应用的静态资源，进行渲染
 
 ### 子应用
 
