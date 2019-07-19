@@ -21,11 +21,11 @@ npm install @ice/stark --save
 
 `icestark` is a micro frontends solution for large application, contains:
 
-- Combine multiple SPA applications in a modular fashion based on route
-- Maintain repository independence across multiple applications for business decoupling, independent development and deployment
-- Unified portal, page style through a common framework application
-- With few retrofit costs, existing reacting applications can be migrated to the icestark system
-- Retain the SPA-level user experience
+- Modular management of multiple independent applications based on route
+- Independent application independent warehouse, independent development and deployment
+- Unified management page public content (Common Header, Common Sidebar, etc.)
+- Support for low-cost migration
+- SPA user experience
 
 
 ### Application architecture
