@@ -2,7 +2,7 @@
 
 # icestark
 
-> 大型中后台多应用共存的解决方案。
+> 面向大型应用的微前端解决方案。
 
 [![NPM version](https://img.shields.io/npm/v/@ice/stark.svg?style=flat)](https://npmjs.org/package/@ice/stark)
 [![Package Quality](https://npm.packagequality.com/shield/@ice%2Fstark.svg)](https://packagequality.com/#?package=@ice%2Fstark)
@@ -19,7 +19,7 @@ npm install @ice/stark --save
 
 ## 简介
 
-`icestark` 是针对大型中后台多应用共存的解决方案。他可以：
+`icestark` 是面向大型应用的微前端解决方案。他可以：
 
 - 以路由为基础，模块化方式组合多个 SPA 应用
 - 多个应用间保持仓库独立，实现业务解耦、独立开发部署

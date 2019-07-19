@@ -2,7 +2,7 @@ English | [简体中文](./README.zh-CN.md)
 
 # icestark
 
-> Large-scale mid-background multi-application coexistence solution.
+> Micro Frontends solution for large application.
 
 [![NPM version](https://img.shields.io/npm/v/@ice/stark.svg?style=flat)](https://npmjs.org/package/@ice/stark)
 [![Package Quality](https://npm.packagequality.com/shield/@ice%2Fstark.svg)](https://packagequality.com/#?package=@ice%2Fstark)
@@ -19,7 +19,7 @@ npm install @ice/stark --save
 
 ## Introduction
 
-`icestark` is a solution for multi-application coexistence of large-scale mid-background, contains:
+`icestark` is a micro frontends solution for large application, contains:
 
 - Combine multiple SPA applications in a modular fashion based on route
 - Maintain repository independence across multiple applications for business decoupling, independent development and deployment
