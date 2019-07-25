@@ -37,7 +37,7 @@ npm install @ice/stark --save
 
 ### 兼容性
 
-`icestark` 支持不同版本的 react 共存，建议使用 react 版本 15+ ，react-router 版本 4+
+`icestark` 要求使用 react 版本 15+，支持框架应用和子应用使用不同版本的 react
 
 ## 快速开始
 
