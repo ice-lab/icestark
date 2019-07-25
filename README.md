@@ -38,7 +38,7 @@ npm install @ice/stark --save
 
 ### Compatibility
 
-`icestark` supports coexistence of different versions of react, it is recommended to use react version 15+ , react-router version 4+
+`icestark` requires the use of react version 15+, supports framework application and sub-applications using different versions of react
 
 ## Getting Started
 
