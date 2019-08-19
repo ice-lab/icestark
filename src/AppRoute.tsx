@@ -70,6 +70,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   }
 
   componentWillUnmount() {
+    // Empty useless assets before unmount
+    const { useShadow } = this.props;
+    emptyAssets(useShadow);
     this.unmounted = true;
     setIcestark('root', null);
   }
