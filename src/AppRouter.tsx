@@ -27,9 +27,11 @@ interface AppRouterState {
 }
 
 export default class AppRouter extends React.Component<AppRouterProps, AppRouterState> {
-  private originalPush: (state: any, title: string, url?: string) => void = window.history.pushState;
+  private originalPush: (state: any, title: string, url?: string) => void =
+    window.history.pushState;
 
-  private originalReplace: (state: any, title: string, url?: string) => void = window.history.replaceState;
+  private originalReplace: (state: any, title: string, url?: string) => void =
+    window.history.replaceState;
 
   static defaultProps = {
     ErrorComponent: <div>js bundle loaded error</div>,
@@ -100,7 +102,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   handleStateChange = (state: any, url: string, routeType?: RouteType): void => {
     // deal with forceRender
     if (state && (state.forceRender || (state.state && state.state.forceRender))) {
-      this.setState({ url, forceRenderCount: this.state.forceRenderCount + 1 });
+      const { forceRenderCount } = this.state;
+      this.setState({ url, forceRenderCount: forceRenderCount + 1 });
     } else {
       this.setState({ url });
     }
