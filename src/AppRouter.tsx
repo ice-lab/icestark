@@ -26,12 +26,14 @@ interface AppRouterState {
   forceRenderCount: number;
 }
 
-export default class AppRouter extends React.Component<AppRouterProps, AppRouterState> {
-  private originalPush: (state: any, title: string, url?: string) => void =
-    window.history.pushState;
+interface OriginalStateFunction {
+  (state: any, title: string, url?: string): void;
+}
 
-  private originalReplace: (state: any, title: string, url?: string) => void =
-    window.history.replaceState;
+export default class AppRouter extends React.Component<AppRouterProps, AppRouterState> {
+  private originalPush: OriginalStateFunction = window.history.pushState;
+
+  private originalReplace: OriginalStateFunction = window.history.replaceState;
 
   static defaultProps = {
     ErrorComponent: <div>js bundle loaded error</div>,
