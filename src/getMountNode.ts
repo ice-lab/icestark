@@ -1,4 +1,4 @@
-import { getIcestark } from './util/index';
+import { getIcestark } from './constant';
 
 export default function getMountNode(element?: any): any {
   if (getIcestark('root')) {

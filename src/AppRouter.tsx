@@ -1,10 +1,9 @@
 import * as React from 'react';
 import * as urlParse from 'url-parse';
 import AppRoute from './AppRoute';
-import { ICESTSRK_NOT_FOUND } from './constant';
-import matchPath from './util/matchPath';
-import recordAssets from './util/recordAssets';
-import { setIcestark } from './util/index';
+import matchPath from './matchPath';
+import { recordAssets } from './handleAssets';
+import { ICESTSRK_NOT_FOUND, setIcestark } from './constant';
 
 type RouteType = 'pushState' | 'replaceState';
 
