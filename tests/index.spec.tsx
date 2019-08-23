@@ -19,9 +19,14 @@ describe('AppRouter', () => {
     const props = {
       onRouteChange: jest.fn(),
       useShadow: false,
+      NotFoundComponent: <div data-testid="icestarkDefalut">NotFound</div>,
     };
-    render(<AppRouter {...props} />);
+    const { container, getByTestId } = render(<AppRouter {...props} />);
+    const appRouteNode = container.querySelector('.ice-stark-loaded');
+    const textNode = getByTestId('icestarkDefalut');
 
+    expect(appRouteNode.childNodes.length).toBe(2);
+    expect(textNode).toHaveTextContent('NotFound');
     expect(props.onRouteChange).toHaveBeenCalledTimes(1);
   });
 });
