@@ -1,4 +1,4 @@
-import { getIcestark } from './util/index';
+import { getIcestark } from './constant';
 
 export default () => {
   const getRenderFunction = getIcestark('handleNotFound');

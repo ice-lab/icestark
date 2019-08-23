@@ -1,9 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { ICESTSRK_NOT_FOUND } from './constant';
-import loadAssets from './util/loadAssets';
-import emptyAssets from './util/emptyAssets';
-import { setIcestark } from './util/index';
+import { loadAssets, emptyAssets } from './handleAssets';
+import { ICESTSRK_NOT_FOUND, setIcestark } from './constant';
 
 const statusElementId = 'icestarkStatusContainer';
 
@@ -92,7 +90,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       useShadow,
     } = this.props;
 
-
     const myBase: HTMLElement = this.myRefBase;
     if (!myBase) return;
 
@@ -150,7 +147,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   /**
    * Render statusElement
    */
-  renderStatusElement = (Component) => {
+  renderStatusElement = Component => {
     const myBase = this.myRefBase;
     if (!myBase || !Component) return;
 
@@ -163,9 +160,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     React.isValidElement(Component)
       ? ReactDOM.render(Component, statusElement)
       : ReactDOM.render(<Component />, statusElement);
-  }
+  };
 
-  appendElementToBase = (elementId) => {
+  appendElementToBase = elementId => {
     const myBase = this.myRefBase;
     if (!myBase) return;
 
@@ -173,9 +170,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     element.id = elementId;
     myBase.appendChild(element);
     return element;
-  }
+  };
 
-  removeElementFromBase = (elementId) => {
+  removeElementFromBase = elementId => {
     const myBase = this.myRefBase;
     if (!myBase) return;
 
@@ -183,7 +180,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     if (element) {
       myBase.removeChild(element);
     }
-  }
+  };
 
   render() {
     const { path, title } = this.props;
@@ -191,7 +188,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     return (
       <div
         key={`${converArray2String(path)}-${title}`}
-        ref={(element) => {this.myRefBase = element}}
+        ref={element => {
+          this.myRefBase = element;
+        }}
         className={this.state.cssLoading ? 'ice-stark-loading' : 'ice-stark-loaded'}
       />
     );

@@ -1,3 +1,3 @@
-import { getIcestark } from './util/index';
+import { getIcestark } from './constant';
 
 export default () => (getIcestark('basename') ? getIcestark('basename') : '/');
