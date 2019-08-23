@@ -48,6 +48,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
   private unmounted: boolean = false;
 
+  private triggerNotFound: boolean = false;
+
   componentDidMount() {
     setIcestark('root', null);
     this.renderChild();
@@ -112,9 +114,13 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     // Handle NotFound
     if (path === ICESTSRK_NOT_FOUND && url === ICESTSRK_NOT_FOUND) {
+      // loadAssets callback maybe slower than render NotFoundComponent
+      this.triggerNotFound = true;
       this.renderStatusElement(NotFoundComponent);
       return;
     }
+
+    this.triggerNotFound = false;
 
     if (title) document.title = title;
 
@@ -135,7 +141,11 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
           return true;
         }
 
-        this.removeElementFromBase(statusElementId);
+        if (!this.triggerNotFound) {
+          // loadAssets callback maybe slower than render NotFoundComponent
+          this.removeElementFromBase(statusElementId);
+        }
+
         return this.unmounted;
       },
       (): void => {

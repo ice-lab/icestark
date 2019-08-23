@@ -52,29 +52,21 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   componentDidMount() {
     this.hijackHistory();
     this.handleRouteChange(location.href, 'init');
-    setIcestark('handleNotFound', this.handleNotFound);
+
+    // render NotFoundComponent eventListener
+    window.addEventListener('icestark:not-found', () => {
+      this.setState({ url: ICESTSRK_NOT_FOUND });
+    });
   }
 
   componentWillUnmount() {
     this.unHijackHistory();
-    setIcestark('handleNotFound', null);
   }
-
-  /**
-   * Render NotFoundComponent
-   */
-  handleNotFound = () => {
-    this.setState({ url: ICESTSRK_NOT_FOUND });
-
-    // Compatible processing return renderNotFound();
-    return null;
-  };
 
   /**
    * Hijack window.history
    */
   hijackHistory = (): void => {
-    // hijack route change
     window.history.pushState = (state: any, title: string, url?: string, ...rest) => {
       this.originalPush.apply(window.history, [state, title, url, ...rest]);
       this.handleStateChange(state, url, 'pushState');
@@ -166,7 +158,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       setIcestark('basename', basename || (Array.isArray(path) ? path[0] : path));
 
       realComponent = React.cloneElement(element, extraProps);
-    } else if (url === ICESTSRK_NOT_FOUND) {
+    } else {
       realComponent = (
         <AppRoute
           path={ICESTSRK_NOT_FOUND}
