@@ -71,6 +71,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       this.originalPush.apply(window.history, [state, title, url, ...rest]);
       this.handleStateChange(state, url, 'pushState');
     };
+
     window.history.replaceState = (state: any, title: string, url?: string, ...rest) => {
       this.originalReplace.apply(window.history, [state, title, url, ...rest]);
       this.handleStateChange(state, url, 'replaceState');

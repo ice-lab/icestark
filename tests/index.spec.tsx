@@ -22,6 +22,7 @@ describe('AppRouter', () => {
       NotFoundComponent: <div data-testid="icestarkDefalut">NotFound</div>,
     };
     const { container, getByTestId } = render(<AppRouter {...props} />);
+
     const appRouteNode = container.querySelector('.ice-stark-loaded');
     const textNode = getByTestId('icestarkDefalut');
 
