@@ -3,7 +3,8 @@ import * as urlParse from 'url-parse';
 import AppRoute from './AppRoute';
 import matchPath from './matchPath';
 import { recordAssets } from './handleAssets';
-import { ICESTSRK_NOT_FOUND, setIcestark } from './constant';
+import { ICESTSRK_NOT_FOUND } from './constant';
+import { setIcestark } from './common';
 
 type RouteType = 'pushState' | 'replaceState';
 

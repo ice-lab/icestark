@@ -1,4 +1,5 @@
-import { PREFIX, DYNAMIC, STATIC, getIcestark } from './constant';
+import { PREFIX, DYNAMIC, STATIC } from './constant';
+import { getIcestark } from './common';
 
 const getIcestarkRoot = () => getIcestark('root');
 

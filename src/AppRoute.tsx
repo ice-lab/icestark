@@ -1,7 +1,8 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { loadAssets, emptyAssets } from './handleAssets';
-import { ICESTSRK_NOT_FOUND, setIcestark } from './constant';
+import { ICESTSRK_NOT_FOUND } from './constant';
+import { setIcestark } from './common';
 
 const statusElementId = 'icestarkStatusContainer';
 
