@@ -1,4 +1,4 @@
-import { getIcestark } from './constant';
+import { getIcestark } from './common';
 
 /**
  * CustomEvent Polyfill for IE
