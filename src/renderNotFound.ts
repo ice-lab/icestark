@@ -1,4 +1,4 @@
-import { getIcestark } from './common';
+import { getCache } from './cache';
 
 /**
  * CustomEvent Polyfill for IE
@@ -20,7 +20,7 @@ import { getIcestark } from './common';
  * Trigger customEvent icestark:not-found
  */
 export default () => {
-  if (getIcestark('root')) {
+  if (getCache('root')) {
     window.dispatchEvent(new CustomEvent('icestark:not-found'));
 
     // Compatible processing return renderNotFound();

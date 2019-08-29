@@ -4,7 +4,7 @@ import AppRoute from './AppRoute';
 import matchPath from './matchPath';
 import { recordAssets } from './handleAssets';
 import { ICESTSRK_NOT_FOUND } from './constant';
-import { setIcestark } from './common';
+import { setCache } from './cache';
 
 type RouteType = 'pushState' | 'replaceState';
 
@@ -78,7 +78,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       this.handleStateChange(state, url, 'replaceState');
     };
 
-    window.addEventListener('popstate', this.handlePopState);
+    window.addEventListener('popstate', this.handlePopState, false);
   };
 
   /**
@@ -88,7 +88,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     window.history.pushState = this.originalPush;
     window.history.replaceState = this.originalReplace;
 
-    window.removeEventListener('popstate', this.handlePopState);
+    window.removeEventListener('popstate', this.handlePopState, false);
   };
 
   /**
@@ -157,7 +157,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     if (match) {
       const { path, basename } = element.props as any;
 
-      setIcestark('basename', basename || (Array.isArray(path) ? path[0] : path));
+      setCache('basename', basename || (Array.isArray(path) ? path[0] : path));
 
       realComponent = React.cloneElement(element, extraProps);
     } else {

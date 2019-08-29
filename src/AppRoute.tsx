@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { loadAssets, emptyAssets } from './handleAssets';
 import { ICESTSRK_NOT_FOUND } from './constant';
-import { setIcestark } from './common';
+import { setCache } from './cache';
 
 const statusElementId = 'icestarkStatusContainer';
 
@@ -33,6 +33,10 @@ export interface AppRouteProps {
   forceRenderCount?: number;
 }
 
+interface StatusComponentProps {
+  err?: any;
+}
+
 export default class AppRoute extends React.Component<AppRouteProps, AppRouteState> {
   static defaultProps = {
     exact: false,
@@ -52,7 +56,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   private triggerNotFound: boolean = false;
 
   componentDidMount() {
-    setIcestark('root', null);
+    setCache('root', null);
     this.renderChild();
   }
 
@@ -75,7 +79,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     const { useShadow } = this.props;
     emptyAssets(useShadow);
     this.unmounted = true;
-    setIcestark('root', null);
+    setCache('root', null);
   }
 
   /**
@@ -108,7 +112,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         : (rootElement as any).createShadowRoot();
     }
 
-    setIcestark('root', rootElement);
+    setCache('root', rootElement);
 
     // Empty useless assets before loading
     emptyAssets(useShadow);
@@ -138,7 +142,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       (err: any): boolean => {
         if (err) {
           // Handle error
-          this.renderStatusElement(ErrorComponent);
+          this.renderStatusElement(ErrorComponent, { err });
           return true;
         }
 
@@ -158,7 +162,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   /**
    * Render statusElement
    */
-  renderStatusElement = Component => {
+  renderStatusElement = (Component: any, props: StatusComponentProps = {}) => {
     const myBase = this.myRefBase;
     if (!myBase || !Component) return;
 
@@ -170,10 +174,10 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     ReactDOM.unmountComponentAtNode(statusElement);
     React.isValidElement(Component)
       ? ReactDOM.render(Component, statusElement)
-      : ReactDOM.render(<Component />, statusElement);
+      : ReactDOM.render(<Component {...props} />, statusElement);
   };
 
-  appendElementToBase = elementId => {
+  appendElementToBase = (elementId: string) => {
     const myBase = this.myRefBase;
     if (!myBase) return;
 
@@ -183,7 +187,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     return element;
   };
 
-  removeElementFromBase = elementId => {
+  removeElementFromBase = (elementId: string) => {
     const myBase = this.myRefBase;
     if (!myBase) return;
 
