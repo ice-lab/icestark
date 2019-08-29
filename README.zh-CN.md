@@ -29,7 +29,7 @@ npm install @ice/stark --save
 
 ### 应用架构
 
-![应用架构](https://img.alicdn.com/tfs/TB1kbF7bbY1gK0jSZTEXXXDQVXa-1421-1416.png)
+![应用架构](https://img.alicdn.com/tfs/TB1bvbieEY1gK0jSZFMXXaWcVXa-1421-1416.png)
 
 - 按照 UI 结构进行框架应用、子应用的拆分
 - 框架应用：负责子应用的注册、加载，公共内容展示（Common Header、Common Sidebar、Common Footer 等）
@@ -37,7 +37,7 @@ npm install @ice/stark --save
 
 ### 兼容性
 
-`icestark` 要求使用 react 版本 15+，支持框架应用和子应用使用不同版本的 react
+`icestark` 要求框架应用使用 react 版本 15+，对子应用的技术栈没有限制，支持 react、vue、angular 等不同技术栈，也支持同一技术栈的多版本共存
 
 ## 快速开始
 
@@ -294,7 +294,6 @@ export default class SelfLink extends React.Component {
 ## Todos
 
 - [ ] js、css 隔离方案优化
-- [ ] 支持非 react 体系
 
 ## Contributors
 
