@@ -1,5 +1,7 @@
-import { PREFIX, DYNAMIC } from '../constant';
-import { getIcestarkRoot } from './index';
+import { PREFIX, DYNAMIC, STATIC } from './constant';
+import { getCache } from './cache';
+
+const getCacheRoot = () => getCache('root');
 
 /**
  * load assets
@@ -11,7 +13,7 @@ function loadAsset(
   root: HTMLElement | ShadowRoot,
   callback: (err?: any) => void,
 ): void {
-  if (isCss && !getIcestarkRoot()) return;
+  if (isCss && !getCacheRoot()) return;
 
   let id = `${PREFIX}-js-${index}`;
   let type = 'script';
@@ -46,7 +48,7 @@ function loadAsset(
   root.appendChild(element);
 }
 
-export default function loadAssets(
+export function loadAssets(
   bundleList: string[],
   useShadow: boolean,
   jsCallback: (err: any) => boolean,
@@ -54,7 +56,7 @@ export default function loadAssets(
 ): void {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
   const cssRoot: HTMLElement | ShadowRoot = useShadow
-    ? getIcestarkRoot()
+    ? getCacheRoot()
     : document.getElementsByTagName('head')[0];
 
   const jsList: string[] = [];
@@ -107,4 +109,66 @@ export default function loadAssets(
     loadCss();
     loadJs();
   }
+}
+
+/**
+ * record static assets
+ */
+export function recordAssets(): void {
+  // getElementsByTagName is faster than querySelectorAll
+  const styleList: HTMLCollectionOf<HTMLStyleElement> = document.getElementsByTagName('style');
+  const linkList: HTMLCollectionOf<HTMLStyleElement> = document.getElementsByTagName('link');
+  const jsList: HTMLCollectionOf<HTMLScriptElement> = document.getElementsByTagName('script');
+
+  for (let i = 0; i < styleList.length; i++) {
+    const style = styleList[i];
+    style.setAttribute(PREFIX, STATIC);
+  }
+
+  for (let i = 0; i < linkList.length; i++) {
+    const link = linkList[i];
+    link.setAttribute(PREFIX, STATIC);
+  }
+
+  for (let i = 0; i < jsList.length; i++) {
+    const js = jsList[i];
+    js.setAttribute(PREFIX, STATIC);
+  }
+}
+
+/**
+ * empty useless assets
+ */
+export function emptyAssets(useShadow: boolean): void {
+  const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
+  const cssRoot: HTMLElement | ShadowRoot = useShadow
+    ? getCacheRoot()
+    : document.getElementsByTagName('head')[0];
+
+  // remove dynamic assets
+  const jsList: NodeListOf<HTMLElement> = jsRoot.querySelectorAll(`script[${PREFIX}=${DYNAMIC}]`);
+  jsList.forEach(js => {
+    jsRoot.removeChild(js);
+  });
+
+  const cssList: NodeListOf<HTMLElement> = cssRoot.querySelectorAll(`link[${PREFIX}=${DYNAMIC}]`);
+  cssList.forEach(css => {
+    cssRoot.removeChild(css);
+  });
+
+  // remove extra assets
+  const styleList: NodeListOf<HTMLElement> = document.querySelectorAll(
+    `style:not([${PREFIX}=${STATIC}])`,
+  );
+  styleList.forEach(style => style.parentNode.removeChild(style));
+
+  const linkList: NodeListOf<HTMLElement> = document.querySelectorAll(
+    `link:not([${PREFIX}=${STATIC}])`,
+  );
+  linkList.forEach(link => link.parentNode.removeChild(link));
+
+  const jsExtraList: NodeListOf<HTMLElement> = document.querySelectorAll(
+    `script:not([${PREFIX}=${STATIC}])`,
+  );
+  jsExtraList.forEach(js => js.parentNode.removeChild(js));
 }

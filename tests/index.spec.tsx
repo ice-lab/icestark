@@ -11,8 +11,8 @@ import {
   getMountNode,
   renderNotFound,
 } from '../src/index';
-import matchPath from '../src/util/matchPath';
-import loadAssets from '../src/util/loadAssets';
+import matchPath from '../src/matchPath';
+import { loadAssets } from '../src/handleAssets';
 
 describe('AppRouter', () => {
   test('render the AppRouter', () => {
