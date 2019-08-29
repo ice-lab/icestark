@@ -30,7 +30,7 @@ npm install @ice/stark --save
 
 ### Application architecture
 
-![Application architecture](https://img.alicdn.com/tfs/TB17oR2aHH1gK0jSZFwXXc7aXXa-1421-1416.png)
+![Application architecture](https://img.alicdn.com/tfs/TB167fiexD1gK0jSZFsXXbldVXa-1421-1416.png)
 
 - Framework application and sub-application split according to UI structure
 - Framework application: responsible for sub-applications registration, loading, common content display (Common Header, Common Sidebar, Common Footer, etc.)
@@ -38,7 +38,7 @@ npm install @ice/stark --save
 
 ### Compatibility
 
-`icestark` requires the use of react version 15+, supports framework application and sub-applications using different versions of react
+`icestark` requires the framework application to use react version 15+, which has no restrictions on the technology stack of the sub-application, supports different technology stacks such as react, vue, angular, etc., and supports multi-version coexistence of the same technology stack.
 
 ## Getting Started
 
@@ -295,7 +295,6 @@ export default class SelfLink extends React.Component {
 ## Todos
 
 - [ ] Js, css isolation optimization
-- [ ] Support the non-react system
 
 ## Contributors
 
