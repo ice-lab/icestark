@@ -38,7 +38,7 @@ npm install @ice/stark --save
 
 ### Compatibility
 
-`icestark` requires the framework application use of react version 15+, supports framework application and sub-applications using different versions of react or different technology stacks such as vue and angular
+`icestark` requires the framework application to use react version 15+, which has no restrictions on the technology stack of the sub-application, supports different technology stacks such as react, vue, angular, etc., and supports multi-version coexistence of the same technology stack.
 
 ## Getting Started
 

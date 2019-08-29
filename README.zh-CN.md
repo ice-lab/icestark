@@ -37,7 +37,7 @@ npm install @ice/stark --save
 
 ### 兼容性
 
-`icestark` 要求框架应用使用 react 版本 15+，支持子应用使用不同版本的 react 或者 vue、angular 等不同技术栈
+`icestark` 要求框架应用使用 react 版本 15+，对子应用的技术栈没有限制，支持 react、vue、angular 等不同技术栈，也支持同一技术栈的多版本共存
 
 ## 快速开始
 
