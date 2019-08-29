@@ -1,7 +1,7 @@
 import { PREFIX, DYNAMIC, STATIC } from './constant';
-import { getIcestark } from './common';
+import { getCache } from './cache';
 
-const getIcestarkRoot = () => getIcestark('root');
+const getCacheRoot = () => getCache('root');
 
 /**
  * load assets
@@ -13,7 +13,7 @@ function loadAsset(
   root: HTMLElement | ShadowRoot,
   callback: (err?: any) => void,
 ): void {
-  if (isCss && !getIcestarkRoot()) return;
+  if (isCss && !getCacheRoot()) return;
 
   let id = `${PREFIX}-js-${index}`;
   let type = 'script';
@@ -56,7 +56,7 @@ export function loadAssets(
 ): void {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
   const cssRoot: HTMLElement | ShadowRoot = useShadow
-    ? getIcestarkRoot()
+    ? getCacheRoot()
     : document.getElementsByTagName('head')[0];
 
   const jsList: string[] = [];
@@ -142,7 +142,7 @@ export function recordAssets(): void {
 export function emptyAssets(useShadow: boolean): void {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
   const cssRoot: HTMLElement | ShadowRoot = useShadow
-    ? getIcestarkRoot()
+    ? getCacheRoot()
     : document.getElementsByTagName('head')[0];
 
   // remove dynamic assets

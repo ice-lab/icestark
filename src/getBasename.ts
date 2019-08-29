@@ -1,3 +1,3 @@
-import { getIcestark } from './common';
+import { getCache } from './cache';
 
-export default () => (getIcestark('basename') ? getIcestark('basename') : '/');
+export default () => (getCache('basename') ? getCache('basename') : '/');
