@@ -1,8 +1,8 @@
-import { getIcestark } from './util/index';
+import { getCache } from './cache';
 
 export default function getMountNode(element?: any): any {
-  if (getIcestark('root')) {
-    return getIcestark('root');
+  if (getCache('root')) {
+    return getCache('root');
   }
 
   if (element) {

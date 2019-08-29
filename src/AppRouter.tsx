@@ -1,10 +1,10 @@
 import * as React from 'react';
 import * as urlParse from 'url-parse';
 import AppRoute from './AppRoute';
+import matchPath from './matchPath';
+import { recordAssets } from './handleAssets';
 import { ICESTSRK_NOT_FOUND } from './constant';
-import matchPath from './util/matchPath';
-import recordAssets from './util/recordAssets';
-import { setIcestark } from './util/index';
+import { setCache } from './cache';
 
 type RouteType = 'pushState' | 'replaceState';
 
@@ -12,7 +12,8 @@ export interface AppRouterProps {
   onRouteChange?: (
     pathname: string,
     query: object,
-    type: RouteType | 'init' | 'onpopstate',
+    hash?: string,
+    type?: RouteType | 'init' | 'popstate',
   ) => void;
   ErrorComponent?: any;
   LoadingComponent?: any;
@@ -22,16 +23,17 @@ export interface AppRouterProps {
 
 interface AppRouterState {
   url: string;
+  forceRenderCount: number;
+}
+
+interface OriginalStateFunction {
+  (state: any, title: string, url?: string): void;
 }
 
 export default class AppRouter extends React.Component<AppRouterProps, AppRouterState> {
-  private forceRenderCount: number = 0;
+  private originalPush: OriginalStateFunction = window.history.pushState;
 
-  private isBrowserForce: boolean = false;
-
-  private originalPush: (state: any, title: string, url?: string) => void;
-
-  private originalReplace: (state: any, title: string, url?: string) => void;
+  private originalReplace: OriginalStateFunction = window.history.replaceState;
 
   static defaultProps = {
     ErrorComponent: <div>js bundle loaded error</div>,
@@ -43,6 +45,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     super(props);
     this.state = {
       url: location.href,
+      forceRenderCount: 0,
     };
     recordAssets();
   }
@@ -50,75 +53,32 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   componentDidMount() {
     this.hijackHistory();
     this.handleRouteChange(location.href, 'init');
-    setIcestark('handleNotFound', this.handleNotFound);
+
+    // render NotFoundComponent eventListener
+    window.addEventListener('icestark:not-found', () => {
+      this.setState({ url: ICESTSRK_NOT_FOUND });
+    });
   }
 
   componentWillUnmount() {
     this.unHijackHistory();
-    setIcestark('handleNotFound', null);
   }
-
-  /**
-   * Render NotFoundComponent
-   */
-  handleNotFound = () => {
-    // return null for browser or history forward / back
-    if (this.isBrowserForce) {
-      return null;
-    }
-
-    window.history.replaceState(
-      {
-        forceRender: true,
-      },
-      null,
-      '/404',
-    );
-
-    // Compatible processing return renderNotFound();
-    return null;
-  };
 
   /**
    * Hijack window.history
    */
   hijackHistory = (): void => {
-    this.originalPush = window.history.pushState;
-    this.originalReplace = window.history.replaceState;
-
-    // hijack route change
-    const onRouteChange = (state: any, url: string, routeType?: RouteType): void => {
-      this.isBrowserForce = false;
-
-      // deal with forceRender
-      if (state && (state.forceRender || (state.state && state.state.forceRender))) {
-        this.forceRenderCount++;
-        this.setState({ url });
-      }
-
-      // trigger onRouteChange
-      this.handleRouteChange(url, routeType);
-    };
-
     window.history.pushState = (state: any, title: string, url?: string, ...rest) => {
-      onRouteChange(state, url, 'pushState');
       this.originalPush.apply(window.history, [state, title, url, ...rest]);
+      this.handleStateChange(state, url, 'pushState');
     };
-    window.history.replaceState = (state, title, url, ...rest) => {
-      onRouteChange(state, url, 'replaceState');
+
+    window.history.replaceState = (state: any, title: string, url?: string, ...rest) => {
       this.originalReplace.apply(window.history, [state, title, url, ...rest]);
+      this.handleStateChange(state, url, 'replaceState');
     };
 
-    // handle browser or history forward / back
-    window.onpopstate = () => {
-      this.isBrowserForce = true;
-      this.forceRenderCount++;
-
-      const url = location.href;
-      this.setState({ url });
-      // trigger onRouteChange
-      this.handleRouteChange(url, 'onpopstate');
-    };
+    window.addEventListener('popstate', this.handlePopState, false);
   };
 
   /**
@@ -127,21 +87,45 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   unHijackHistory = (): void => {
     window.history.pushState = this.originalPush;
     window.history.replaceState = this.originalReplace;
+
+    window.removeEventListener('popstate', this.handlePopState, false);
+  };
+
+  /**
+   * Trigger statechange: pushState | replaceState
+   */
+  handleStateChange = (state: any, url: string, routeType?: RouteType): void => {
+    // deal with forceRender
+    if (state && (state.forceRender || (state.state && state.state.forceRender))) {
+      const { forceRenderCount } = this.state;
+      this.setState({ url, forceRenderCount: forceRenderCount + 1 });
+    } else {
+      this.setState({ url });
+    }
+    this.handleRouteChange(url, routeType);
+  };
+
+  /**
+   * Trigger popstate
+   */
+  handlePopState = (): void => {
+    const url = location.href;
+
+    this.setState({ url });
+    this.handleRouteChange(url, 'popstate');
   };
 
   /**
    * Trigger onRouteChange
    */
-  handleRouteChange = (url: string, type: RouteType | 'init' | 'onpopstate'): void => {
-    const { onRouteChange } = this.props;
-    const { pathname, query } = urlParse(url, true);
-
-    onRouteChange(pathname, query, type);
+  handleRouteChange = (url: string, type: RouteType | 'init' | 'popstate'): void => {
+    const { pathname, query, hash } = urlParse(url, true);
+    this.props.onRouteChange(pathname, query, hash, type);
   };
 
   render() {
     const { NotFoundComponent, ErrorComponent, LoadingComponent, useShadow, children } = this.props;
-    const { url } = this.state;
+    const { url, forceRenderCount } = this.state;
 
     const { pathname, query } = urlParse(url, true);
     const { localUrl } = query;
@@ -163,17 +147,17 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       ErrorComponent,
       LoadingComponent,
       useShadow,
-      forceRenderCount: this.forceRenderCount,
+      forceRenderCount,
     };
     if (localUrl) {
       extraProps.url = localUrl;
     }
 
-    let realComponent: any;
+    let realComponent: any = null;
     if (match) {
       const { path, basename } = element.props as any;
 
-      setIcestark('basename', basename || (Array.isArray(path) ? path[0] : path));
+      setCache('basename', basename || (Array.isArray(path) ? path[0] : path));
 
       realComponent = React.cloneElement(element, extraProps);
     } else {

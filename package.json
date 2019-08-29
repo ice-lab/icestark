@@ -1,6 +1,6 @@
 {
   "name": "@ice/stark",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Icestark is a JavaScript library for multiple react projects, Ice workbench solution.",
   "scripts": {
     "build": "rm -rf lib && tsc",
@@ -54,10 +54,10 @@
     "@types/url-parse": "^1.4.3",
     "codecov": "^3.4.0",
     "eslint": "^5.16.0",
+    "stylelint": "^10.1.0",
     "husky": "^2.2.0",
     "jest": "^24.7.1",
     "jest-dom": "^3.4.0",
-    "prettier": "^1.17.1",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
     "react-testing-library": "^7.0.0",
