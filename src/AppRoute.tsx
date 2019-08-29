@@ -85,7 +85,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   /**
    * Load assets and render child app
    */
-  renderChild = () => {
+  renderChild = (): void => {
     const {
       path,
       url,
@@ -162,7 +162,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   /**
    * Render statusElement
    */
-  renderStatusElement = (Component: any, props: StatusComponentProps = {}) => {
+  renderStatusElement = (Component: any, props: StatusComponentProps = {}): void => {
     const myBase = this.myRefBase;
     if (!myBase || !Component) return;
 
@@ -177,7 +177,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       : ReactDOM.render(<Component {...props} />, statusElement);
   };
 
-  appendElementToBase = (elementId: string) => {
+  appendElementToBase = (elementId: string): HTMLElement => {
     const myBase = this.myRefBase;
     if (!myBase) return;
 
@@ -187,7 +187,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     return element;
   };
 
-  removeElementFromBase = (elementId: string) => {
+  removeElementFromBase = (elementId: string): void => {
     const myBase = this.myRefBase;
     if (!myBase) return;
 

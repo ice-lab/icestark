@@ -1,3 +1,3 @@
 import { getCache } from './cache';
 
-export default () => (getCache('basename') ? getCache('basename') : '/');
+export default (): string => (getCache('basename') ? getCache('basename') : '/');
