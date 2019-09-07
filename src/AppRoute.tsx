@@ -21,8 +21,9 @@ interface AppRouteState {
 export interface AppRouteProps {
   path: string | string[];
   url: string | string[];
-  useShadow: boolean;
+  useShadow?: boolean;
   title?: string;
+  basename?: string;
   exact?: boolean;
   strict?: boolean;
   sensitive?: boolean;
