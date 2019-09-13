@@ -30,6 +30,25 @@ interface OriginalStateFunction {
   (state: any, title: string, url?: string): void;
 }
 
+function addLeadingSlash(path: string): string {
+  return path.charAt(0) === '/' ? path : `/${path}`;
+}
+
+const HashPathCoders = {
+  hashbang: path => (path.charAt(0) === '!' ? path.substr(1) : path),
+  noslash: addLeadingSlash,
+  slash: addLeadingSlash,
+};
+
+function getHashPath(hash: string = '/'): string {
+  const hashIndex = hash.indexOf('#');
+  const hashPath = hashIndex === -1 ? hash : hash.substr(hashIndex + 1);
+
+  // remove hash query
+  const searchIndex = hashPath.indexOf('?');
+  return searchIndex === -1 ? hashPath : hashPath.substr(0, searchIndex);
+}
+
 export default class AppRouter extends React.Component<AppRouterProps, AppRouterState> {
   private originalPush: OriginalStateFunction = window.history.pushState;
 
@@ -127,7 +146,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     const { NotFoundComponent, ErrorComponent, LoadingComponent, useShadow, children } = this.props;
     const { url, forceRenderCount } = this.state;
 
-    const { pathname, query } = urlParse(url, true);
+    const { pathname, query, hash } = urlParse(url, true);
     const { localUrl } = query;
 
     let match: any = null;
@@ -137,9 +156,22 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       if (match == null && React.isValidElement(child)) {
         element = child;
 
-        const { path } = child.props as any;
+        const { path, hashType, matchPath: matchPathFunction } = child.props as any;
 
-        match = path ? matchPath(pathname, { ...child.props }) : null;
+        if (matchPathFunction !== undefined) {
+          if (typeof matchPathFunction !== 'function') {
+            throw new Error('matchPath must be funtion.');
+          }
+
+          match = matchPathFunction() || null;
+        } else if (hashType) {
+          const decodePath = HashPathCoders[hashType === true ? 'slash' : hashType];
+          const hashPath = decodePath(getHashPath(hash));
+
+          match = path ? matchPath(hashPath, { ...child.props }) : null;
+        } else {
+          match = path ? matchPath(pathname, { ...child.props }) : null;
+        }
       }
     });
 

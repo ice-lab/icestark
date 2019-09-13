@@ -18,11 +18,15 @@ interface AppRouteState {
   cssLoading: boolean;
 }
 
+type hashType = 'hashbang' | 'noslash' | 'slash';
 export interface AppRouteProps {
   path: string | string[];
   url: string | string[];
   useShadow: boolean;
   title?: string;
+  hashType?: boolean | hashType;
+  matchPath?: () => boolean;
+  basename?: string;
   exact?: boolean;
   strict?: boolean;
   sensitive?: boolean;
