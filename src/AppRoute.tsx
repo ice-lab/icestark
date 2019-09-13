@@ -19,26 +19,59 @@ interface AppRouteState {
 }
 
 type hashType = 'hashbang' | 'noslash' | 'slash';
-export interface AppRouteProps {
-  path: string | string[];
-  url: string | string[];
-  useShadow: boolean;
+
+export interface AppConfig {
   title?: string;
   hashType?: boolean | hashType;
-  matchPath?: () => boolean;
   basename?: string;
   exact?: boolean;
   strict?: boolean;
   sensitive?: boolean;
   rootId?: string;
+}
+
+export interface AppRouteProps extends AppConfig {
+  path: string | string[];
+  url: string | string[];
+  useShadow: boolean;
+  matchPath?: () => boolean;
   ErrorComponent?: any;
   LoadingComponent?: any;
   NotFoundComponent?: any;
   forceRenderCount?: number;
+  onAppEnter?: (appConfig: AppConfig) => void;
+  onAppLeave?: (appConfig: AppConfig) => void;
 }
 
 interface StatusComponentProps {
   err?: any;
+}
+
+/**
+ * Get app config from AppRoute props
+ */
+function getAppConfig(appRouteProps: AppRouteProps): AppConfig {
+  const appConfig: AppConfig = {};
+  const uselessList = [
+    'forceRenderCount',
+    'url',
+    'useShadow',
+    'matchPath',
+    'ErrorComponent',
+    'LoadingComponent',
+    'NotFoundComponent',
+    'useShadow',
+    'onAppEnter',
+    'onAppLeave',
+  ];
+
+  Object.keys(appRouteProps).forEach(key => {
+    if (uselessList.indexOf(key) === -1) {
+      appConfig[key] = appRouteProps[key];
+    }
+  });
+
+  return appConfig;
 }
 
 export default class AppRoute extends React.Component<AppRouteProps, AppRouteState> {
@@ -74,7 +107,10 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       rootId !== prevProps.rootId ||
       forceRenderCount !== prevProps.forceRenderCount
     ) {
-      this.renderChild();
+      // record config for prev App
+      const prevAppConfig = getAppConfig(prevProps);
+
+      this.renderChild(prevAppConfig);
     }
   }
 
@@ -89,7 +125,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   /**
    * Load assets and render child app
    */
-  renderChild = (): void => {
+  renderChild = (prevAppConfig?: AppConfig): void => {
     const {
       path,
       url,
@@ -99,10 +135,14 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       LoadingComponent,
       NotFoundComponent,
       useShadow,
+      onAppEnter,
+      onAppLeave,
     } = this.props;
 
     const myBase: HTMLElement = this.myRefBase;
     if (!myBase) return;
+
+    if (typeof onAppLeave === 'function' && prevAppConfig) onAppLeave(prevAppConfig);
 
     // ReCreate rootElement to remove React Component instance,
     // rootElement is created for render Child App
@@ -139,6 +179,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     // Handle loading
     this.setState({ cssLoading: true });
     this.renderStatusElement(LoadingComponent);
+
+    if (typeof onAppEnter === 'function') onAppEnter(getAppConfig(this.props));
 
     loadAssets(
       bundleList,

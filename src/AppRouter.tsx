@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as urlParse from 'url-parse';
-import AppRoute from './AppRoute';
+import AppRoute, { AppConfig } from './AppRoute';
 import matchPath from './matchPath';
 import { recordAssets } from './handleAssets';
 import { ICESTSRK_NOT_FOUND } from './constant';
@@ -19,6 +19,8 @@ export interface AppRouterProps {
   LoadingComponent?: any;
   NotFoundComponent?: any;
   useShadow?: boolean;
+  onAppEnter?: (appConfig: AppConfig) => void;
+  onAppLeave?: (appConfig: AppConfig) => void;
 }
 
 interface AppRouterState {
@@ -143,7 +145,15 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   };
 
   render() {
-    const { NotFoundComponent, ErrorComponent, LoadingComponent, useShadow, children } = this.props;
+    const {
+      NotFoundComponent,
+      ErrorComponent,
+      LoadingComponent,
+      useShadow,
+      onAppEnter,
+      onAppLeave,
+      children,
+    } = this.props;
     const { url, forceRenderCount } = this.state;
 
     const { pathname, query, hash } = urlParse(url, true);
@@ -180,6 +190,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       LoadingComponent,
       useShadow,
       forceRenderCount,
+      onAppEnter,
+      onAppLeave,
     };
     if (localUrl) {
       extraProps.url = localUrl;
