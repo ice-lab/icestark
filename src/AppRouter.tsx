@@ -36,7 +36,7 @@ function addLeadingSlash(path: string): string {
   return path.charAt(0) === '/' ? path : `/${path}`;
 }
 
-const HashPathCoders = {
+const HashPathDecoders = {
   hashbang: path => (path.charAt(0) === '!' ? path.substr(1) : path),
   noslash: addLeadingSlash,
   slash: addLeadingSlash,
@@ -175,7 +175,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
           match = matchPathFunction() || null;
         } else if (hashType) {
-          const decodePath = HashPathCoders[hashType === true ? 'slash' : hashType];
+          const decodePath = HashPathDecoders[hashType === true ? 'slash' : hashType];
           const hashPath = decodePath(getHashPath(hash));
 
           match = path ? matchPath(hashPath, { ...child.props }) : null;
