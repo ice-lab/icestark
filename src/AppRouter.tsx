@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as urlParse from 'url-parse';
-import AppRoute, { AppConfig } from './AppRoute';
+import AppRoute, { AppConfig, AppRouteProps } from './AppRoute';
 import matchPath from './matchPath';
 import { recordAssets } from './handleAssets';
 import { ICESTSRK_NOT_FOUND } from './constant';
@@ -166,7 +166,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       if (match == null && React.isValidElement(child)) {
         element = child;
 
-        const { path, hashType, matchPath: matchPathFunction } = child.props as any;
+        const { path, hashType, matchPath: matchPathFunction } = child.props as AppRouteProps;
 
         if (matchPathFunction !== undefined) {
           if (typeof matchPathFunction !== 'function') {
@@ -199,7 +199,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
     let realComponent: any = null;
     if (match) {
-      const { path, basename } = element.props as any;
+      const { path, basename } = element.props as AppRouteProps;
 
       setCache('basename', basename || (Array.isArray(path) ? path[0] : path));
 

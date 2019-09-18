@@ -18,6 +18,9 @@ interface AppRouteState {
   cssLoading: boolean;
 }
 
+// "slash" - hashes like #/ and #/sunshine/lollipops
+// "noslash" - hashes like # and #sunshine/lollipops
+// "hashbang" - “ajax crawlable” (deprecated by Google) hashes like #!/ and #!/sunshine/lollipops
 type hashType = 'hashbang' | 'noslash' | 'slash';
 
 export interface AppConfig {
@@ -33,7 +36,7 @@ export interface AppConfig {
 export interface AppRouteProps extends AppConfig {
   path: string | string[];
   url: string | string[];
-  useShadow: boolean;
+  useShadow?: boolean;
   matchPath?: () => boolean;
   ErrorComponent?: any;
   LoadingComponent?: any;
@@ -76,6 +79,7 @@ function getAppConfig(appRouteProps: AppRouteProps): AppConfig {
 
 export default class AppRoute extends React.Component<AppRouteProps, AppRouteState> {
   static defaultProps = {
+    useShadow: false,
     exact: false,
     strict: false,
     sensitive: false,
