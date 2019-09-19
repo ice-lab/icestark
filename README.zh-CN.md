@@ -4,12 +4,7 @@
 
 > 面向大型应用的微前端解决方案。
 
-[![NPM version](https://img.shields.io/npm/v/@ice/stark.svg?style=flat)](https://npmjs.org/package/@ice/stark)
-[![Package Quality](https://npm.packagequality.com/shield/@ice%2Fstark.svg)](https://packagequality.com/#?package=@ice%2Fstark)
-[![build status](https://img.shields.io/travis/ice-lab/icestark.svg?style=flat-square)](https://travis-ci.org/ice-lab/icestark)
-[![Test coverage](https://img.shields.io/codecov/c/github/ice-lab/icestark.svg?style=flat-square)](https://codecov.io/gh/ice-lab/icestark)
-[![NPM downloads](http://img.shields.io/npm/dm/@ice/stark.svg?style=flat)](https://npmjs.org/package/@ice/stark)
-[![David deps](https://img.shields.io/david/ice-lab/icestark.svg?style=flat-square)](https://david-dm.org/ice-lab/icestark)
+[![NPM version](https://img.shields.io/npm/v/@ice/stark.svg?style=flat)](https://npmjs.org/package/@ice/stark) [![Package Quality](https://npm.packagequality.com/shield/@ice%2Fstark.svg)](https://packagequality.com/#?package=@ice%2Fstark) [![build status](https://img.shields.io/travis/ice-lab/icestark.svg?style=flat-square)](https://travis-ci.org/ice-lab/icestark) [![Test coverage](https://img.shields.io/codecov/c/github/ice-lab/icestark.svg?style=flat-square)](https://codecov.io/gh/ice-lab/icestark) [![NPM downloads](http://img.shields.io/npm/dm/@ice/stark.svg?style=flat)](https://npmjs.org/package/@ice/stark) [![David deps](https://img.shields.io/david/ice-lab/icestark.svg?style=flat-square)](https://david-dm.org/ice-lab/icestark)
 
 ## 安装
 
@@ -51,7 +46,7 @@ import { AppRouter, AppRoute } from '@ice/stark';
 class Layout extends React.Component {
   onRouteChange = (pathname, query) => {
     console.log(pathname, query);
-  }
+  };
 
   render() {
     return (
@@ -88,6 +83,7 @@ class Layout extends React.Component {
   }
 }
 ```
+
 - `AppRouter` 定位子应用渲染节点
 - `AppRoute` 设置子应用相关配置，`path` 配置有效路由信息、`basename` 配置统一的路由前缀，`url` 配置静态资源路径
 - `icestark` 会按照类似 `react-router` 的路由解析规则，判断当前生效 `path`，加载对应子应用的静态资源，进行渲染
@@ -102,6 +98,7 @@ import router from './router';
 
 ReactDOM.render(router(), getMountNode());
 ```
+
 > 通过 `getMountNode` 获取渲染 `DOM` 节点
 
 ```javascript
@@ -137,8 +134,9 @@ export default class App extends React.Component {
   }
 }
 ```
-> 子应用通过 `getBasename` 获取框架应用中配置的 `basename`
-> `renderNotFound` 触发框架应用渲染 404
+
+- 子应用通过 `getBasename` 获取框架应用中配置的 `basename`
+- `renderNotFound` 触发框架应用渲染 404
 
 ## API
 
@@ -182,7 +180,7 @@ export default class App extends React.Component {
 
 #### path
 
-- 子应用有效路由信息，参照 `React Router`，比如默认域名为`www.icestark.com`，`path` 设置为 `/user`，表示当访问 `www.icestark.com/user` 时，渲染此应用，必填
+- path-to-regexp@^1.7.0 可以理解的任何有效 URL 路径或路径数组，参考 [Route.path](https://reacttraining.com/react-router/web/api/Route/path-string-string)，比如默认域名为`www.icestark.com`，`path` 设置为 `/user`，表示当访问 `www.icestark.com/user` 时，渲染此应用，必填
 - 类型：`string | string[]`
 - 默认值：`-`
 
@@ -206,19 +204,19 @@ export default class App extends React.Component {
 
 #### exact
 
-- 是否完全匹配，参考 `React Router`，选填
+- 完全匹配，参考 [Route.exact](https://reacttraining.com/react-router/web/api/Route/exact-bool)，选填
 - 类型：`boolean`
 - 默认值：`false`
 
 #### strict
 
-- 参考 `React Router`，选填
+- 严格匹配，参考 [Route.strict](https://reacttraining.com/react-router/web/api/Route/strict-bool)，选填
 - 类型：`boolean`
 - 默认值：`false`
 
 #### sensitive
 
-- 参考 `React Router`，选填
+- 区分大小写，参考 [Route.strict](https://reacttraining.com/react-router/web/api/Route/strict-bool)，选填
 - 类型：`boolean`
 - 默认值：`false`
 
@@ -230,8 +228,7 @@ export default class App extends React.Component {
 
 ### AppLink
 
-子应用之间跳转，替代 React Router 的 `Link` 组件，表示本次跳转需要重新加载静态资源
-子应用内部跳转仍然使用 `Link`
+提供声明式的，可访问的导航，表示本次跳转需要重新加载静态资源。子应用内部跳转仍然使用 `Link`
 
 #### to
 
@@ -276,9 +273,11 @@ import { appHistory } from '@ice/stark';
 export default class SelfLink extends React.Component {
   render() {
     return (
-      <span onClick={() => {
-        appHistory.push('/home');
-      }}>
+      <span
+        onClick={() => {
+          appHistory.push('/home');
+        }}
+      >
         selfLink
       </span>
     );

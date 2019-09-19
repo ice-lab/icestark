@@ -2,12 +2,13 @@ import * as React from 'react';
 
 export type AppLinkProps = {
   to: string;
+  replace?: boolean;
   message?: string;
   children?: React.ReactNode;
 } & React.AnchorHTMLAttributes<any>;
 
 const AppLink: React.SFC<AppLinkProps> = (props: AppLinkProps) => {
-  const { to, message, children, ...rest } = props;
+  const { to, replace, message, children, ...rest } = props;
   return (
     <a
       {...rest}
@@ -18,7 +19,9 @@ const AppLink: React.SFC<AppLinkProps> = (props: AppLinkProps) => {
           return false;
         }
 
-        window.history.pushState(
+        const changeState = window.history[replace ? 'replaceState' : 'pushState'];
+
+        changeState(
           {
             forceRender: true,
           },

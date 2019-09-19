@@ -4,12 +4,7 @@ English | [简体中文](./README.zh-CN.md)
 
 > Micro Frontends solution for large application.
 
-[![NPM version](https://img.shields.io/npm/v/@ice/stark.svg?style=flat)](https://npmjs.org/package/@ice/stark)
-[![Package Quality](https://npm.packagequality.com/shield/@ice%2Fstark.svg)](https://packagequality.com/#?package=@ice%2Fstark)
-[![build status](https://img.shields.io/travis/ice-lab/icestark.svg?style=flat-square)](https://travis-ci.org/ice-lab/icestark)
-[![Test coverage](https://img.shields.io/codecov/c/github/ice-lab/icestark.svg?style=flat-square)](https://codecov.io/gh/ice-lab/icestark)
-[![NPM downloads](http://img.shields.io/npm/dm/@ice/stark.svg?style=flat)](https://npmjs.org/package/@ice/stark)
-[![David deps](https://img.shields.io/david/ice-lab/icestark.svg?style=flat-square)](https://david-dm.org/ice-lab/icestark)
+[![NPM version](https://img.shields.io/npm/v/@ice/stark.svg?style=flat)](https://npmjs.org/package/@ice/stark) [![Package Quality](https://npm.packagequality.com/shield/@ice%2Fstark.svg)](https://packagequality.com/#?package=@ice%2Fstark) [![build status](https://img.shields.io/travis/ice-lab/icestark.svg?style=flat-square)](https://travis-ci.org/ice-lab/icestark) [![Test coverage](https://img.shields.io/codecov/c/github/ice-lab/icestark.svg?style=flat-square)](https://codecov.io/gh/ice-lab/icestark) [![NPM downloads](http://img.shields.io/npm/dm/@ice/stark.svg?style=flat)](https://npmjs.org/package/@ice/stark) [![David deps](https://img.shields.io/david/ice-lab/icestark.svg?style=flat-square)](https://david-dm.org/ice-lab/icestark)
 
 ## Installation
 
@@ -26,7 +21,6 @@ npm install @ice/stark --save
 - Unified management page public content (Common Header, Common Sidebar, etc.)
 - Support for low-cost migration
 - SPA user experience
-
 
 ### Application architecture
 
@@ -52,7 +46,7 @@ import { AppRouter, AppRoute } from '@ice/stark';
 class Layout extends React.Component {
   onRouteChange = (pathname, query) => {
     console.log(pathname, query);
-  }
+  };
 
   render() {
     return (
@@ -89,6 +83,7 @@ class Layout extends React.Component {
   }
 }
 ```
+
 - `AppRouter` locates the sub-application rendering node
 - `AppRoute` corresponds to the configuration of a sub-application, `path` configures all route information, `basename` configures a uniform route prefix, `url` configures assets url
 - `icestark` will follow the route parsing rules like to determine the current `path`, load the static resources of the corresponding sub-application, and render
@@ -103,6 +98,7 @@ import router from './router';
 
 ReactDOM.render(router(), getMountNode());
 ```
+
 > Get the render `DOM` via `getMountNode`
 
 ```javascript
@@ -138,6 +134,7 @@ export default class App extends React.Component {
   }
 }
 ```
+
 - Get the `basename` configuration in the framework application via `getBasename`
 - `renderNotFound` triggers the framework application rendering global NotFound
 
@@ -207,19 +204,20 @@ Sub-application registration component
 
 #### exact
 
-- Perfect match, refer to `React Router`, optional
+- Match from exactly, equivalent to [Route.exact](https://reacttraining.com/react-router/web/api/Route/exact-bool), optional
 - Type: `boolean`
 - Default: `false`
 
 #### strict
 
+- Match from strictly, equivalent to [Route.strict](https://reacttraining.com/react-router/web/api/Route/strict-bool), optional
 - Refer to `React Router`, optional
 - Type: `boolean`
 - Default: `false`
 
 #### sensitive
 
-- Refer to `React Router`, optional
+- Match from case sensitive, equivalent to [Route.sensitive](https://reacttraining.com/react-router/web/api/Route/sensitive-bool), optional
 - Type: `boolean`
 - Default: `false`
 
@@ -231,8 +229,7 @@ Sub-application registration component
 
 ### AppLink
 
-Replace the `React Router`'s `Link` component, indicating that this jump needs to reload assets
-Sub-application internal jumps still use `Link`
+Provides declarative, accessible navigation around your application, indicating that this jump needs to reload assets. Sub-application internal jumps still use `Link`
 
 #### to
 
@@ -277,9 +274,11 @@ import { appHistory } from '@ice/stark';
 export default class SelfLink extends React.Component {
   render() {
     return (
-      <span onClick={() => {
-        appHistory.push('/home');
-      }}>
+      <span
+        onClick={() => {
+          appHistory.push('/home');
+        }}
+      >
         selfLink
       </span>
     );
