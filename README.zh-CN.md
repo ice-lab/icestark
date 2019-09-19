@@ -236,6 +236,12 @@ export default class App extends React.Component {
 - 类型：`string`
 - 默认值：`-`
 
+#### replace
+
+- 如果为 true，则单击链接将替换历史记录中的当前记录，而不是添加新记录。
+- 类型：`boolean`
+- 默认值：`false`
+
 ### getBasename
 
 配置子应用 `React Router` 中的 `basename` 参数的方法，根据 `AppRoute` 中的 `basename` 或者 `path` 配置生成最终结果

@@ -237,6 +237,12 @@ Provides declarative, accessible navigation around your application, indicating 
 - Type: `string`
 - Default: `-`
 
+#### replace
+
+- When true, clicking the link will replace the current entry in the history stack instead of adding a new one, optional
+- Type: `boolean`
+- Default: `false`
+
 ### getBasename
 
 Configure the method of the `basename` parameter in the sub-application `React Router`. Generates the final result according to the `basename` or `path` configuration in `AppRoute`
