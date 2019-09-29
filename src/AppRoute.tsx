@@ -37,7 +37,6 @@ export interface AppRouteProps extends AppConfig {
   path: string | string[];
   url: string | string[];
   useShadow?: boolean;
-  matchPath?: () => boolean;
   ErrorComponent?: any;
   LoadingComponent?: any;
   NotFoundComponent?: any;
@@ -59,7 +58,6 @@ function getAppConfig(appRouteProps: AppRouteProps): AppConfig {
     'forceRenderCount',
     'url',
     'useShadow',
-    'matchPath',
     'ErrorComponent',
     'LoadingComponent',
     'NotFoundComponent',

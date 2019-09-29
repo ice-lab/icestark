@@ -166,15 +166,9 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       if (match == null && React.isValidElement(child)) {
         element = child;
 
-        const { path, hashType, matchPath: matchPathFunction } = child.props as AppRouteProps;
+        const { path, hashType } = child.props as AppRouteProps;
 
-        if (matchPathFunction !== undefined) {
-          if (typeof matchPathFunction !== 'function') {
-            throw new Error('matchPath must be funtion.');
-          }
-
-          match = matchPathFunction() || null;
-        } else if (hashType) {
+        if (hashType) {
           const decodePath = HashPathDecoders[hashType === true ? 'slash' : hashType];
           const hashPath = decodePath(getHashPath(hash));
 
