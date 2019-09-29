@@ -191,23 +191,21 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       extraProps.url = localUrl;
     }
 
-    let realComponent: any = null;
     if (match) {
       const { path, basename } = element.props as AppRouteProps;
 
       setCache('basename', basename || (Array.isArray(path) ? path[0] : path));
 
-      realComponent = React.cloneElement(element, extraProps);
-    } else {
-      realComponent = (
-        <AppRoute
-          path={ICESTSRK_NOT_FOUND}
-          url={ICESTSRK_NOT_FOUND}
-          NotFoundComponent={NotFoundComponent}
-          useShadow={useShadow}
-        />
-      );
+      return React.cloneElement(element, extraProps);
     }
-    return realComponent;
+
+    return (
+      <AppRoute
+        path={ICESTSRK_NOT_FOUND}
+        url={ICESTSRK_NOT_FOUND}
+        NotFoundComponent={NotFoundComponent}
+        useShadow={useShadow}
+      />
+    );
   }
 }
