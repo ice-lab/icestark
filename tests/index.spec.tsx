@@ -3,14 +3,7 @@ import 'jest-dom/extend-expect';
 
 import * as React from 'react';
 import { render } from 'react-testing-library';
-import {
-  AppRouter,
-  AppRoute,
-  AppLink,
-  getBasename,
-  getMountNode,
-  renderNotFound,
-} from '../src/index';
+import { AppRouter, AppRoute, AppLink } from '../src/index';
 import matchPath from '../src/matchPath';
 import { loadAssets } from '../src/handleAssets';
 
@@ -75,26 +68,6 @@ describe('AppLink', () => {
 
     expect(appLinkNode).toHaveTextContent(TestText);
     expect(appLinkNode).toHaveAttribute('href');
-  });
-});
-
-describe('getBasename', () => {
-  test('getBasename', () => {
-    expect(getBasename()).toBe('/');
-  });
-});
-
-describe('getMountNode', () => {
-  test('getMountNode', () => {
-    expect(function() {
-      getMountNode();
-    }).toThrowError('Current page does not exist <div id="ice-container"></div> element.');
-  });
-});
-
-describe('renderNotFound', () => {
-  test('renderNotFound', () => {
-    expect(renderNotFound()).toBe('Current sub-application is running independently');
   });
 });
 

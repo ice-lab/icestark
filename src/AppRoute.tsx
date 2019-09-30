@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { loadAssets, emptyAssets } from './handleAssets';
 import { ICESTSRK_NOT_FOUND } from './constant';
-import { setCache } from './cache';
+import { setCache, getCache } from './cache';
 
 const statusElementId = 'icestarkStatusContainer';
 
@@ -144,7 +144,18 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     const myBase: HTMLElement = this.myRefBase;
     if (!myBase) return;
 
-    if (typeof onAppLeave === 'function' && prevAppConfig) onAppLeave(prevAppConfig);
+    if (prevAppConfig) {
+      // trigger registerAppLeaveCallback
+      const registerAppLeaveCallback = getCache('appLeave');
+
+      if (registerAppLeaveCallback) {
+        registerAppLeaveCallback();
+        setCache('appLeave', null);
+      }
+
+      // trigger onAppLeave
+      if (typeof onAppLeave === 'function') onAppLeave(prevAppConfig);
+    }
 
     // ReCreate rootElement to remove React Component instance,
     // rootElement is created for render Child App

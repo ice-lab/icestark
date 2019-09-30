@@ -1,7 +1,7 @@
 {
   "name": "@ice/stark",
   "version": "0.1.4",
-  "description": "Icestark is a JavaScript library for multiple react projects, Ice workbench solution.",
+  "description": "Icestark is a JavaScript library for multiple projects, Ice workbench solution.",
   "scripts": {
     "build": "rm -rf lib && tsc",
     "watch": "tsc -w",
@@ -19,7 +19,7 @@
   "keywords": [
     "ice",
     "react",
-    "spa"
+    "microfrontends"
   ],
   "bugs": {
     "url": "https://github.com/ice-lab/icestark/issues"
