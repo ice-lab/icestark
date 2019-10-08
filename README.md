@@ -156,7 +156,8 @@ export default class App extends React.Component {
 
 ## Todos
 
-- [ ] Js, css isolation optimization
+- [ ] Possible js pollution problem between sub-applications
+- [ ] Possible style pollution between framework application and sub-application
 
 ## Contributors
 
