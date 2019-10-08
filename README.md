@@ -34,6 +34,11 @@ npm install @ice/stark --save
 
 `icestark` requires the framework application to use react version 15+, which has no restrictions on the technology stack of the sub-application, supports different technology stacks such as react, vue, angular, etc., and supports multi-version coexistence of the same technology stack.
 
+## Why is the sub-application api to be drawn separately @ice/stark-app ?
+
+- The apis used by sub-applications are very stable and do not have to be updated frequently with the main package
+- Sub-application apis are more compatible and support non-relay systems
+
 ## Getting Started
 
 ### Framework
@@ -93,8 +98,13 @@ class Layout extends React.Component {
 ```javascript
 // src/index.js
 import ReactDOM from 'react-dom';
-import { getMountNode } from '@ice/stark';
+import { getMountNode, registerAppLeave } from '@ice/stark-app';
 import router from './router';
+
+// make sure the unmount event is triggered
+registerAppLeave(() => {
+  ReactDOM.unmountComponentAtNode(getMountNode());
+});
 
 ReactDOM.render(router(), getMountNode());
 ```
@@ -105,7 +115,7 @@ ReactDOM.render(router(), getMountNode());
 // src/router.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
-import { renderNotFound, getBasename } from '@ice/stark';
+import { renderNotFound, getBasename } from '@ice/stark-app';
 
 function List() {
   return <div>List</div>;
@@ -138,7 +148,7 @@ export default class App extends React.Component {
 - Get the `basename` configuration in the framework application via `getBasename`
 - `renderNotFound` triggers the framework application rendering global NotFound
 
-## API
+## @ice/stark API
 
 ### AppRouter
 
@@ -243,6 +253,41 @@ Provides declarative, accessible navigation around your application, indicating 
 - Type: `boolean`
 - Default: `false`
 
+### appHistory
+
+Provides a method for manually switching trigger routing jumps and reloading assets
+
+#### appHistory.push
+
+- Type: `Function`
+- Example:
+
+```js
+import React from 'react';
+import { appHistory } from '@ice/stark';
+
+export default class SelfLink extends React.Component {
+  render() {
+    return (
+      <span
+        onClick={() => {
+          appHistory.push('/home');
+        }}
+      >
+        selfLink
+      </span>
+    );
+  }
+}
+```
+
+#### appHistory.replace
+
+- Type: `Function`
+- Example reference `appHistory.push`
+
+## @ice/stark-app API
+
 ### getBasename
 
 Configure the method of the `basename` parameter in the sub-application `React Router`. Generates the final result according to the `basename` or `path` configuration in `AppRoute`
@@ -264,6 +309,26 @@ Sub-application triggers the method of rendering global 404
 
 - Type: `function`
 
+### registerAppLeave
+
+Sub-application registration uninstall event
+
+- Type: `function`
+- Example:
+
+```js
+import ReactDOM from 'react-dom';
+import { getMountNode, registerAppLeave } from '@ice/stark-app';
+import router from './router';
+
+// make sure the unmount event is triggered
+registerAppLeave(() => {
+  ReactDOM.unmountComponentAtNode(getMountNode());
+});
+
+ReactDOM.render(router(), getMountNode());
+```
+
 ### appHistory
 
 Provides a method for manually switching trigger routing jumps and reloading assets
@@ -275,7 +340,7 @@ Provides a method for manually switching trigger routing jumps and reloading ass
 
 ```js
 import React from 'react';
-import { appHistory } from '@ice/stark';
+import { appHistory } from '@ice/stark-app';
 
 export default class SelfLink extends React.Component {
   render() {

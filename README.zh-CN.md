@@ -34,6 +34,11 @@ npm install @ice/stark --save
 
 `icestark` 要求框架应用使用 react 版本 15+，对子应用的技术栈没有限制，支持 react、vue、angular 等不同技术栈，也支持同一技术栈的多版本共存
 
+## 为什么子应用 api 要单独抽成 @ice/stark-app ？
+
+- 子应用使用的 api 都是非常稳定的，不必跟着主包频繁升级
+- 子应用的 api 兼容性更广，支持非 react 体系
+
 ## 快速开始
 
 ### 框架应用
@@ -93,8 +98,13 @@ class Layout extends React.Component {
 ```javascript
 // src/index.js
 import ReactDOM from 'react-dom';
-import { getMountNode } from '@ice/stark';
+import { getMountNode, registerAppLeave } from '@ice/stark-app';
 import router from './router';
+
+// make sure the unmount event is triggered
+registerAppLeave(() => {
+  ReactDOM.unmountComponentAtNode(getMountNode());
+});
 
 ReactDOM.render(router(), getMountNode());
 ```
@@ -105,7 +115,7 @@ ReactDOM.render(router(), getMountNode());
 // src/router.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
-import { renderNotFound, getBasename } from '@ice/stark';
+import { renderNotFound, getBasename } from '@ice/stark-app';
 
 function List() {
   return <div>List</div>;
@@ -138,7 +148,7 @@ export default class App extends React.Component {
 - 子应用通过 `getBasename` 获取框架应用中配置的 `basename`
 - `renderNotFound` 触发框架应用渲染 404
 
-## API
+## @ice/stark API
 
 ### AppRouter
 
@@ -242,6 +252,41 @@ export default class App extends React.Component {
 - 类型：`boolean`
 - 默认值：`false`
 
+### appHistory
+
+提供手动切换不同应用的方法。
+
+#### appHistory.push
+
+- 类型：`function`
+- 代码示例：
+
+```js
+import React from 'react';
+import { appHistory } from '@ice/stark';
+
+export default class SelfLink extends React.Component {
+  render() {
+    return (
+      <span
+        onClick={() => {
+          appHistory.push('/home');
+        }}
+      >
+        selfLink
+      </span>
+    );
+  }
+}
+```
+
+#### appHistory.replace
+
+- 类型：`function`
+- 代码示例参考 `appHistory.push`
+
+## @ice/stark-app API
+
 ### getBasename
 
 配置子应用 `React Router` 中的 `basename` 参数的方法，根据 `AppRoute` 中的 `basename` 或者 `path` 配置生成最终结果
@@ -274,7 +319,7 @@ export default class App extends React.Component {
 
 ```js
 import React from 'react';
-import { appHistory } from '@ice/stark';
+import { appHistory } from '@ice/stark-app';
 
 export default class SelfLink extends React.Component {
   render() {
