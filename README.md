@@ -34,21 +34,17 @@ npm install @ice/stark --save
 
 `icestark` requires the framework application to use react version 15+, which has no restrictions on the technology stack of the sub-application, supports different technology stacks such as react, vue, angular, etc., and supports multi-version coexistence of the same technology stack.
 
-## Why is the sub-application api to be drawn separately @ice/stark-app ?
-
-- The apis used by sub-applications are very stable and do not have to be updated frequently with the main package
-- Sub-application apis are more compatible and support non-relay systems
-
 ## Getting Started
 
-### Framework
+### Framework Application
 
 ```javascript
+// src/index.js
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { AppRouter, AppRoute } from '@ice/stark';
 
-class Layout extends React.Component {
+class App extends React.Component {
   onRouteChange = (pathname, query) => {
     console.log(pathname, query);
   };
@@ -87,6 +83,11 @@ class Layout extends React.Component {
     );
   }
 }
+
+ReactDOM.render(
+  <App />,
+  document.getElementById('ice-container')
+);
 ```
 
 - `AppRouter` locates the sub-application rendering node
@@ -94,6 +95,9 @@ class Layout extends React.Component {
 - `icestark` will follow the route parsing rules like to determine the current `path`, load the static resources of the corresponding sub-application, and render
 
 ### Sub-application
+
+- Get the render `DOM` via `getMountNode`
+- Trigger app unmount manually via `registerAppLeave`
 
 ```javascript
 // src/index.js
@@ -109,7 +113,8 @@ registerAppLeave(() => {
 ReactDOM.render(router(), getMountNode());
 ```
 
-> Get the render `DOM` via `getMountNode`
+- Get the `basename` configuration in the framework application via `getBasename`
+- `renderNotFound` triggers the framework application rendering global NotFound
 
 ```javascript
 // src/router.js
@@ -145,230 +150,18 @@ export default class App extends React.Component {
 }
 ```
 
-- Get the `basename` configuration in the framework application via `getBasename`
-- `renderNotFound` triggers the framework application rendering global NotFound
+## API
 
-## @ice/stark API
-
-### AppRouter
-
-Positioning sub-application rendering node
-
-#### onRouteChange
-
-- Callback when the sub-application route changes, optional
-- Type: `Function(pathname, query, type)`
-- Default: `-`
-
-#### NotFoundComponent
-
-- Rendering global 404 content, optional
-- Type: `string | ReactNode`
-- Default: `<div>NotFound</div>`
-
-#### ErrorComponent
-
-- Sub-application js bundle loading error display content, optional
-- Type: `string | ReactNode`
-- Default: `<div>js bundle loaded error</div>`
-
-#### LoadingComponent
-
-- Sub-application static resource loading display content, optional
-- Type: `string | ReactNode`
-- Default: `-`
-
-#### useShadow
-
-- Enable shadowRoot isolation css, optional
-- Type: `boolean`
-- Default: `false`
-
-### AppRoute
-
-Sub-application registration component
-
-#### path
-
-- Sub-application valid routing information, refer to `React Router`. For example, the default domain name is `www.icestark.com`, and `path` is set to `/user`, which means that when accessing `www.icestark.com/user`, render this Sub-application, required
-- Type: `string | string[]`
-- Default: `-`
-
-#### url
-
-- The cdn address corresponding to the assets of the sub-application, required.
-- Type: `string | string[]`
-- Default: `-`
-
-#### title
-
-- The documentTitle displayed when the sub-application is rendered, optional
-- Type: `string`
-- Default: `-`
-
-#### basename
-
-- When the sub-application is rendered, it is transparently passed to the `basename` of `React Router`, and if it is not filled, it will be obtained from `path` by default.
-- Type: `string`
-- Default: `Array.isArray(path) ? path[0] : path`
-
-#### exact
-
-- Match from exactly, equivalent to [Route.exact](https://reacttraining.com/react-router/web/api/Route/exact-bool), optional
-- Type: `boolean`
-- Default: `false`
-
-#### strict
-
-- Match from strictly, equivalent to [Route.strict](https://reacttraining.com/react-router/web/api/Route/strict-bool), optional
-- Refer to `React Router`, optional
-- Type: `boolean`
-- Default: `false`
-
-#### sensitive
-
-- Match from case sensitive, equivalent to [Route.sensitive](https://reacttraining.com/react-router/web/api/Route/sensitive-bool), optional
-- Type: `boolean`
-- Default: `false`
-
-#### rootId
-
-- The id of the DOM node rendered for the sub-application, optional
-- Type: `string`
-- Default: `icestarkNode`
-
-### AppLink
-
-Provides declarative, accessible navigation around your application, indicating that this jump needs to reload assets. Sub-application internal jumps still use `Link`
-
-#### to
-
-- A string representation of the location to link to, required
-- Type: `string`
-- Default: `-`
-
-#### replace
-
-- When true, clicking the link will replace the current entry in the history stack instead of adding a new one, optional
-- Type: `boolean`
-- Default: `false`
-
-### appHistory
-
-Provides a method for manually switching trigger routing jumps and reloading assets
-
-#### appHistory.push
-
-- Type: `Function`
-- Example:
-
-```js
-import React from 'react';
-import { appHistory } from '@ice/stark';
-
-export default class SelfLink extends React.Component {
-  render() {
-    return (
-      <span
-        onClick={() => {
-          appHistory.push('/home');
-        }}
-      >
-        selfLink
-      </span>
-    );
-  }
-}
-```
-
-#### appHistory.replace
-
-- Type: `Function`
-- Example reference `appHistory.push`
-
-## @ice/stark-app API
-
-### getBasename
-
-Configure the method of the `basename` parameter in the sub-application `React Router`. Generates the final result according to the `basename` or `path` configuration in `AppRoute`
-
-- Type: `function`
-- Default: `() => basename || (Array.isArray(path) ? path[0] : path)) || "/"`
-
-### getMountNode
-
-According to the sub-application running environment, return the sub-application loading node method
-
-- Type: `function`
-- Default: `<div id="ice-container"></div>`
-- Rules: The method supports the parameter passing, and the parameter represents the default rendered DOM node. The default node only takes effect when the child application is started separately. Support `string | HTMLElement | function`, `string` indicates that the default DOM node's `id`, `function` support function returns the value as the default DOM node.
-
-### renderNotFound
-
-Sub-application triggers the method of rendering global 404
-
-- Type: `function`
-
-### registerAppLeave
-
-Sub-application registration uninstall event
-
-- Type: `function`
-- Example:
-
-```js
-import ReactDOM from 'react-dom';
-import { getMountNode, registerAppLeave } from '@ice/stark-app';
-import router from './router';
-
-// make sure the unmount event is triggered
-registerAppLeave(() => {
-  ReactDOM.unmountComponentAtNode(getMountNode());
-});
-
-ReactDOM.render(router(), getMountNode());
-```
-
-### appHistory
-
-Provides a method for manually switching trigger routing jumps and reloading assets
-
-#### appHistory.push
-
-- Type: `Function`
-- Example:
-
-```js
-import React from 'react';
-import { appHistory } from '@ice/stark-app';
-
-export default class SelfLink extends React.Component {
-  render() {
-    return (
-      <span
-        onClick={() => {
-          appHistory.push('/home');
-        }}
-      >
-        selfLink
-      </span>
-    );
-  }
-}
-```
-
-#### appHistory.replace
-
-- Type: `Function`
-- Example reference `appHistory.push`
+[See the doc](https://ice.work/docs/icestark/api/app-router).
 
 ## Todos
 
-- [ ] Js, css isolation optimization
+- [ ] Possible js pollution problem between sub-applications
+- [ ] Possible style pollution between framework application and sub-application
 
 ## Contributors
 
-Feel free to report any questions as an [issue](https://github.com/alibaba/ice/issues/new), we'd love to have your helping hand on `ice-scripts`.
+Feel free to report any questions as an [issue](https://github.com/alibaba/ice/issues/new), we'd love to have your helping hand on `icestark`.
 
 If you're interested in `icestark`, see [CONTRIBUTING.md](https://github.com/alibaba/ice/blob/master/.github/CONTRIBUTING.md) for more information to learn how to get started.
 
