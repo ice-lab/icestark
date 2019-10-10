@@ -1,72 +1,26 @@
 {
-  "name": "@ice/stark",
-  "version": "1.0.0-0",
-  "description": "Icestark is a JavaScript library for multiple projects, Ice workbench solution.",
+  "private": true,
   "scripts": {
-    "build": "rm -rf lib && tsc",
-    "watch": "tsc -w",
-    "prepublishOnly": "npm run lint && npm run test && npm run build",
-    "lint": "eslint --cache --ext .ts,.tsx ./",
-    "test": "NODE_ENV=unittest jest",
-    "coverage": "codecov"
+    "lint": "eslint --cache --ext .js,.jsx ./",
+    "ci": "npm run lint",
+    "install:batch": "lerna exec -- npm install",
+    "test": "lerna exec -- npm run test"
   },
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
-  "files": [
-    "lib"
-  ],
-  "license": "MIT",
-  "keywords": [
-    "ice",
-    "react",
-    "microfrontends"
-  ],
-  "bugs": {
-    "url": "https://github.com/ice-lab/icestark/issues"
-  },
-  "homepage": "https://github.com/ice-lab/icestark",
   "husky": {
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ice-lab/icestark.git"
-  },
-  "peerDependencies": {
-    "react": ">=15.0.0",
-    "react-dom": ">=15.0.0"
-  },
-  "dependencies": {
-    "path-to-regexp": "^1.7.0",
-    "url-parse": "^1.1.9"
-  },
   "devDependencies": {
     "@commitlint/cli": "^7.5.2",
     "@commitlint/config-conventional": "^7.5.0",
     "@ice/spec": "^0.1.4",
-    "@types/jest": "^24.0.12",
-    "@types/node": "^12.0.0",
-    "@types/path-to-regexp": "^1.7.0",
-    "@types/react": "^16.8.19",
-    "@types/react-dom": "^16.0.11",
-    "@types/url-parse": "^1.4.3",
-    "codecov": "^3.4.0",
-    "eslint": "^5.16.0",
-    "stylelint": "^10.1.0",
-    "husky": "^2.2.0",
-    "jest": "^24.7.1",
-    "jest-dom": "^3.4.0",
-    "react": "^16.7.0",
-    "react-dom": "^16.7.0",
-    "react-testing-library": "^7.0.0",
-    "ts-jest": "^24.0.2",
-    "typescript": "^3.4.4"
+    "eslint": "^6.0.1",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "husky": "^1.3.1",
+    "lerna": "^3.15.0"
   },
-  "jest": {
-    "coverageDirectory": "./coverage/",
-    "collectCoverage": true,
-    "preset": "ts-jest"
+  "dependencies": {
+    "@babel/plugin-proposal-function-bind": "^7.2.0"
   }
 }
