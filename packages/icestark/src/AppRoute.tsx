@@ -76,14 +76,6 @@ function getAppConfig(appRouteProps: AppRouteProps): AppConfig {
 }
 
 export default class AppRoute extends React.Component<AppRouteProps, AppRouteState> {
-  static defaultProps = {
-    useShadow: false,
-    exact: false,
-    strict: false,
-    sensitive: false,
-    rootId: 'icestarkNode',
-  };
-
   state = {
     cssLoading: false,
   };
@@ -93,6 +85,14 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   private unmounted: boolean = false;
 
   private triggerNotFound: boolean = false;
+
+  static defaultProps = {
+    useShadow: false,
+    exact: false,
+    strict: false,
+    sensitive: false,
+    rootId: 'icestarkNode',
+  };
 
   componentDidMount() {
     setCache('root', null);
