@@ -2,8 +2,6 @@ sudo: required
 language: node_js
 node_js:
   - '8'
-before_script:
-  - npm run install:batch
 script:
   - npm run lint
   - npm run test
