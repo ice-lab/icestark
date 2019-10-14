@@ -2,14 +2,9 @@ English | [简体中文](./README.zh-CN.md)
 
 # icestark
 
-> Micro Frontends solution for large application.
+> Micro Frontends solution for large application. [Docs](https://ice.work/docs/icestark/about).
 
-[![NPM version](https://img.shields.io/npm/v/@ice/stark.svg?style=flat)](https://npmjs.org/package/@ice/stark)
-[![Package Quality](https://npm.packagequality.com/shield/@ice%2Fstark.svg)](https://packagequality.com/#?package=@ice%2Fstark)
-[![build status](https://img.shields.io/travis/ice-lab/icestark.svg?style=flat-square)](https://travis-ci.org/ice-lab/icestark)
-[![Test coverage](https://img.shields.io/codecov/c/github/ice-lab/icestark.svg?style=flat-square)](https://codecov.io/gh/ice-lab/icestark)
-[![NPM downloads](http://img.shields.io/npm/dm/@ice/stark.svg?style=flat)](https://npmjs.org/package/@ice/stark)
-[![David deps](https://img.shields.io/david/ice-lab/icestark.svg?style=flat-square)](https://david-dm.org/ice-lab/icestark)
+[![NPM version](https://img.shields.io/npm/v/@ice/stark.svg?style=flat)](https://npmjs.org/package/@ice/stark) [![Package Quality](https://npm.packagequality.com/shield/@ice%2Fstark.svg)](https://packagequality.com/#?package=@ice%2Fstark) [![build status](https://img.shields.io/travis/ice-lab/icestark.svg?style=flat-square)](https://travis-ci.org/ice-lab/icestark) [![Test coverage](https://img.shields.io/codecov/c/github/ice-lab/icestark.svg?style=flat-square)](https://codecov.io/gh/ice-lab/icestark) [![NPM downloads](http://img.shields.io/npm/dm/@ice/stark.svg?style=flat)](https://npmjs.org/package/@ice/stark) [![David deps](https://img.shields.io/david/ice-lab/icestark.svg?style=flat-square)](https://david-dm.org/ice-lab/icestark)
 
 ## Installation
 
@@ -27,7 +22,6 @@ npm install @ice/stark --save
 - Support for low-cost migration
 - SPA user experience
 
-
 ### Application architecture
 
 ![Application architecture](https://img.alicdn.com/tfs/TB167fiexD1gK0jSZFsXXbldVXa-1421-1416.png)
@@ -42,17 +36,18 @@ npm install @ice/stark --save
 
 ## Getting Started
 
-### Framework
+### Framework Application
 
 ```javascript
+// src/index.js
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { AppRouter, AppRoute } from '@ice/stark';
 
-class Layout extends React.Component {
+class App extends React.Component {
   onRouteChange = (pathname, query) => {
     console.log(pathname, query);
-  }
+  };
 
   render() {
     return (
@@ -88,28 +83,44 @@ class Layout extends React.Component {
     );
   }
 }
+
+ReactDOM.render(
+  <App />,
+  document.getElementById('ice-container')
+);
 ```
+
 - `AppRouter` locates the sub-application rendering node
 - `AppRoute` corresponds to the configuration of a sub-application, `path` configures all route information, `basename` configures a uniform route prefix, `url` configures assets url
 - `icestark` will follow the route parsing rules like to determine the current `path`, load the static resources of the corresponding sub-application, and render
 
 ### Sub-application
 
+- Get the render `DOM` via `getMountNode`
+- Trigger app unmount manually via `registerAppLeave`
+
 ```javascript
 // src/index.js
 import ReactDOM from 'react-dom';
-import { getMountNode } from '@ice/stark';
+import { getMountNode, registerAppLeave } from '@ice/stark-app';
 import router from './router';
+
+// make sure the unmount event is triggered
+registerAppLeave(() => {
+  ReactDOM.unmountComponentAtNode(getMountNode());
+});
 
 ReactDOM.render(router(), getMountNode());
 ```
-> Get the render `DOM` via `getMountNode`
+
+- Get the `basename` configuration in the framework application via `getBasename`
+- `renderNotFound` triggers the framework application rendering global NotFound
 
 ```javascript
 // src/router.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
-import { renderNotFound, getBasename } from '@ice/stark';
+import { renderNotFound, getBasename } from '@ice/stark-app';
 
 function List() {
   return <div>List</div>;
@@ -138,167 +149,19 @@ export default class App extends React.Component {
   }
 }
 ```
-- Get the `basename` configuration in the framework application via `getBasename`
-- `renderNotFound` triggers the framework application rendering global NotFound
 
 ## API
 
-### AppRouter
-
-Positioning sub-application rendering node
-
-#### onRouteChange
-
-- Callback when the sub-application route changes, optional
-- Type: `Function(pathname, query, type)`
-- Default: `-`
-
-#### NotFoundComponent
-
-- Rendering global 404 content, optional
-- Type: `string | ReactNode`
-- Default: `<div>NotFound</div>`
-
-#### ErrorComponent
-
-- Sub-application js bundle loading error display content, optional
-- Type: `string | ReactNode`
-- Default: `<div>js bundle loaded error</div>`
-
-#### LoadingComponent
-
-- Sub-application static resource loading display content, optional
-- Type: `string | ReactNode`
-- Default: `-`
-
-#### useShadow
-
-- Enable shadowRoot isolation css, optional
-- Type: `boolean`
-- Default: `false`
-
-### AppRoute
-
-Sub-application registration component
-
-#### path
-
-- Sub-application valid routing information, refer to `React Router`. For example, the default domain name is `www.icestark.com`, and `path` is set to `/user`, which means that when accessing `www.icestark.com/user`, render this Sub-application, required
-- Type: `string | string[]`
-- Default: `-`
-
-#### url
-
-- The cdn address corresponding to the assets of the sub-application, required.
-- Type: `string | string[]`
-- Default: `-`
-
-#### title
-
-- The documentTitle displayed when the sub-application is rendered, optional
-- Type: `string`
-- Default: `-`
-
-#### basename
-
-- When the sub-application is rendered, it is transparently passed to the `basename` of `React Router`, and if it is not filled, it will be obtained from `path` by default.
-- Type: `string`
-- Default: `Array.isArray(path) ? path[0] : path`
-
-#### exact
-
-- Perfect match, refer to `React Router`, optional
-- Type: `boolean`
-- Default: `false`
-
-#### strict
-
-- Refer to `React Router`, optional
-- Type: `boolean`
-- Default: `false`
-
-#### sensitive
-
-- Refer to `React Router`, optional
-- Type: `boolean`
-- Default: `false`
-
-#### rootId
-
-- The id of the DOM node rendered for the sub-application, optional
-- Type: `string`
-- Default: `icestarkNode`
-
-### AppLink
-
-Replace the `React Router`'s `Link` component, indicating that this jump needs to reload assets
-Sub-application internal jumps still use `Link`
-
-#### to
-
-- A string representation of the location to link to, required
-- Type: `string`
-- Default: `-`
-
-### getBasename
-
-Configure the method of the `basename` parameter in the sub-application `React Router`. Generates the final result according to the `basename` or `path` configuration in `AppRoute`
-
-- Type: `function`
-- Default: `() => basename || (Array.isArray(path) ? path[0] : path)) || "/"`
-
-### getMountNode
-
-According to the sub-application running environment, return the sub-application loading node method
-
-- Type: `function`
-- Default: `<div id="ice-container"></div>`
-- Rules: The method supports the parameter passing, and the parameter represents the default rendered DOM node. The default node only takes effect when the child application is started separately. Support `string | HTMLElement | function`, `string` indicates that the default DOM node's `id`, `function` support function returns the value as the default DOM node.
-
-### renderNotFound
-
-Sub-application triggers the method of rendering global 404
-
-- Type: `function`
-
-### appHistory
-
-Provides a method for manually switching trigger routing jumps and reloading assets
-
-#### appHistory.push
-
-- Type: `Function`
-- Example:
-
-```js
-import React from 'react';
-import { appHistory } from '@ice/stark';
-
-export default class SelfLink extends React.Component {
-  render() {
-    return (
-      <span onClick={() => {
-        appHistory.push('/home');
-      }}>
-        selfLink
-      </span>
-    );
-  }
-}
-```
-
-#### appHistory.replace
-
-- Type: `Function`
-- Example reference `appHistory.push`
+[See the doc](https://ice.work/docs/icestark/api/app-router).
 
 ## Todos
 
-- [ ] Js, css isolation optimization
+- [ ] Possible js pollution problem between sub-applications
+- [ ] Possible style pollution between framework application and sub-application
 
 ## Contributors
 
-Feel free to report any questions as an [issue](https://github.com/alibaba/ice/issues/new), we'd love to have your helping hand on `ice-scripts`.
+Feel free to report any questions as an [issue](https://github.com/alibaba/ice/issues/new), we'd love to have your helping hand on `icestark`.
 
 If you're interested in `icestark`, see [CONTRIBUTING.md](https://github.com/alibaba/ice/blob/master/.github/CONTRIBUTING.md) for more information to learn how to get started.
 

@@ -3,14 +3,7 @@ import 'jest-dom/extend-expect';
 
 import * as React from 'react';
 import { render } from 'react-testing-library';
-import {
-  AppRouter,
-  AppRoute,
-  AppLink,
-  getBasename,
-  getMountNode,
-  renderNotFound,
-} from '../src/index';
+import { AppRouter, AppRoute, AppLink, appHistory } from '../src/index';
 import matchPath from '../src/matchPath';
 import { loadAssets } from '../src/handleAssets';
 
@@ -78,26 +71,6 @@ describe('AppLink', () => {
   });
 });
 
-describe('getBasename', () => {
-  test('getBasename', () => {
-    expect(getBasename()).toBe('/');
-  });
-});
-
-describe('getMountNode', () => {
-  test('getMountNode', () => {
-    expect(function() {
-      getMountNode();
-    }).toThrowError('Current page does not exist <div id="ice-container"></div> element.');
-  });
-});
-
-describe('renderNotFound', () => {
-  test('renderNotFound', () => {
-    expect(renderNotFound()).toBe('Current sub-application is running independently');
-  });
-});
-
 describe('matchPath', () => {
   test('matchPath', () => {
     expect(matchPath('/test/123', { path: '/test' })).not.toBeNull();
@@ -125,5 +98,21 @@ describe('loadAssets', () => {
     expect((jsElement0 as HTMLScriptElement).async).toEqual(false);
     expect((jsElement1 as HTMLScriptElement).src).toEqual('http://icestark.com/test1.js');
     expect((jsElement1 as HTMLScriptElement).async).toEqual(false);
+  });
+});
+
+describe('appHistory', () => {
+  test('appHistory', () => {
+    const mockPushState = jest.fn();
+    window.history.pushState = mockPushState;
+
+    appHistory.push('/test');
+    expect(mockPushState.mock.calls.length).toBe(1);
+
+    const mockReplaceState = jest.fn();
+    window.history.replaceState = mockReplaceState;
+
+    appHistory.replace('/test');
+    expect(mockReplaceState.mock.calls.length).toBe(1);
   });
 });
