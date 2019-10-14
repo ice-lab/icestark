@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as urlParse from 'url-parse';
-import AppRoute from './AppRoute';
+import AppRoute, { AppConfig, AppRouteProps } from './AppRoute';
 import matchPath from './matchPath';
 import { recordAssets } from './handleAssets';
 import { ICESTSRK_NOT_FOUND } from './constant';
@@ -19,6 +19,8 @@ export interface AppRouterProps {
   LoadingComponent?: any;
   NotFoundComponent?: any;
   useShadow?: boolean;
+  onAppEnter?: (appConfig: AppConfig) => void;
+  onAppLeave?: (appConfig: AppConfig) => void;
 }
 
 interface AppRouterState {
@@ -28,6 +30,25 @@ interface AppRouterState {
 
 interface OriginalStateFunction {
   (state: any, title: string, url?: string): void;
+}
+
+function addLeadingSlash(path: string): string {
+  return path.charAt(0) === '/' ? path : `/${path}`;
+}
+
+const HashPathDecoders = {
+  hashbang: path => (path.charAt(0) === '!' ? path.substr(1) : path),
+  noslash: addLeadingSlash,
+  slash: addLeadingSlash,
+};
+
+function getHashPath(hash: string = '/'): string {
+  const hashIndex = hash.indexOf('#');
+  const hashPath = hashIndex === -1 ? hash : hash.substr(hashIndex + 1);
+
+  // remove hash query
+  const searchIndex = hashPath.indexOf('?');
+  return searchIndex === -1 ? hashPath : hashPath.substr(0, searchIndex);
 }
 
 export default class AppRouter extends React.Component<AppRouterProps, AppRouterState> {
@@ -124,10 +145,18 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   };
 
   render() {
-    const { NotFoundComponent, ErrorComponent, LoadingComponent, useShadow, children } = this.props;
+    const {
+      NotFoundComponent,
+      ErrorComponent,
+      LoadingComponent,
+      useShadow,
+      onAppEnter,
+      onAppLeave,
+      children,
+    } = this.props;
     const { url, forceRenderCount } = this.state;
 
-    const { pathname, query } = urlParse(url, true);
+    const { pathname, query, hash } = urlParse(url, true);
     const { localUrl } = query;
 
     let match: any = null;
@@ -137,9 +166,16 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       if (match == null && React.isValidElement(child)) {
         element = child;
 
-        const { path } = child.props as any;
+        const { path, hashType } = child.props as AppRouteProps;
 
-        match = path ? matchPath(pathname, { ...child.props }) : null;
+        if (hashType) {
+          const decodePath = HashPathDecoders[hashType === true ? 'slash' : hashType];
+          const hashPath = decodePath(getHashPath(hash));
+
+          match = path ? matchPath(hashPath, { ...child.props }) : null;
+        } else {
+          match = path ? matchPath(pathname, { ...child.props }) : null;
+        }
       }
     });
 
@@ -148,28 +184,28 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       LoadingComponent,
       useShadow,
       forceRenderCount,
+      onAppEnter,
+      onAppLeave,
     };
     if (localUrl) {
       extraProps.url = localUrl;
     }
 
-    let realComponent: any = null;
     if (match) {
-      const { path, basename } = element.props as any;
+      const { path, basename } = element.props as AppRouteProps;
 
       setCache('basename', basename || (Array.isArray(path) ? path[0] : path));
 
-      realComponent = React.cloneElement(element, extraProps);
-    } else {
-      realComponent = (
-        <AppRoute
-          path={ICESTSRK_NOT_FOUND}
-          url={ICESTSRK_NOT_FOUND}
-          NotFoundComponent={NotFoundComponent}
-          useShadow={useShadow}
-        />
-      );
+      return React.cloneElement(element, extraProps);
     }
-    return realComponent;
+
+    return (
+      <AppRoute
+        path={ICESTSRK_NOT_FOUND}
+        url={ICESTSRK_NOT_FOUND}
+        NotFoundComponent={NotFoundComponent}
+        useShadow={useShadow}
+      />
+    );
   }
 }

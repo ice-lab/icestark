@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { loadAssets, emptyAssets } from './handleAssets';
 import { ICESTSRK_NOT_FOUND } from './constant';
-import { setCache } from './cache';
+import { setCache, getCache } from './cache';
 
 const statusElementId = 'icestarkStatusContainer';
 
@@ -18,33 +18,64 @@ interface AppRouteState {
   cssLoading: boolean;
 }
 
-export interface AppRouteProps {
-  path: string | string[];
-  url: string | string[];
-  useShadow: boolean;
+// "slash" - hashes like #/ and #/sunshine/lollipops
+// "noslash" - hashes like # and #sunshine/lollipops
+// "hashbang" - “ajax crawlable” (deprecated by Google) hashes like #!/ and #!/sunshine/lollipops
+type hashType = 'hashbang' | 'noslash' | 'slash';
+
+export interface AppConfig {
   title?: string;
+  hashType?: boolean | hashType;
+  basename?: string;
   exact?: boolean;
   strict?: boolean;
   sensitive?: boolean;
   rootId?: string;
+}
+
+export interface AppRouteProps extends AppConfig {
+  path: string | string[];
+  url: string | string[];
+  useShadow?: boolean;
   ErrorComponent?: any;
   LoadingComponent?: any;
   NotFoundComponent?: any;
   forceRenderCount?: number;
+  onAppEnter?: (appConfig: AppConfig) => void;
+  onAppLeave?: (appConfig: AppConfig) => void;
 }
 
 interface StatusComponentProps {
   err?: any;
 }
 
-export default class AppRoute extends React.Component<AppRouteProps, AppRouteState> {
-  static defaultProps = {
-    exact: false,
-    strict: false,
-    sensitive: false,
-    rootId: 'icestarkNode',
-  };
+/**
+ * Get app config from AppRoute props
+ */
+function getAppConfig(appRouteProps: AppRouteProps): AppConfig {
+  const appConfig: AppConfig = {};
+  const uselessList = [
+    'forceRenderCount',
+    'url',
+    'useShadow',
+    'ErrorComponent',
+    'LoadingComponent',
+    'NotFoundComponent',
+    'useShadow',
+    'onAppEnter',
+    'onAppLeave',
+  ];
 
+  Object.keys(appRouteProps).forEach(key => {
+    if (uselessList.indexOf(key) === -1) {
+      appConfig[key] = appRouteProps[key];
+    }
+  });
+
+  return appConfig;
+}
+
+export default class AppRoute extends React.Component<AppRouteProps, AppRouteState> {
   state = {
     cssLoading: false,
   };
@@ -54,6 +85,14 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   private unmounted: boolean = false;
 
   private triggerNotFound: boolean = false;
+
+  static defaultProps = {
+    useShadow: false,
+    exact: false,
+    strict: false,
+    sensitive: false,
+    rootId: 'icestarkNode',
+  };
 
   componentDidMount() {
     setCache('root', null);
@@ -70,7 +109,10 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       rootId !== prevProps.rootId ||
       forceRenderCount !== prevProps.forceRenderCount
     ) {
-      this.renderChild();
+      // record config for prev App
+      const prevAppConfig = getAppConfig(prevProps);
+
+      this.renderChild(prevAppConfig);
     }
   }
 
@@ -85,7 +127,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   /**
    * Load assets and render child app
    */
-  renderChild = (): void => {
+  renderChild = (prevAppConfig?: AppConfig): void => {
     const {
       path,
       url,
@@ -95,10 +137,25 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       LoadingComponent,
       NotFoundComponent,
       useShadow,
+      onAppEnter,
+      onAppLeave,
     } = this.props;
 
     const myBase: HTMLElement = this.myRefBase;
     if (!myBase) return;
+
+    if (prevAppConfig) {
+      // trigger registerAppLeaveCallback
+      const registerAppLeaveCallback = getCache('appLeave');
+
+      if (registerAppLeaveCallback) {
+        registerAppLeaveCallback();
+        setCache('appLeave', null);
+      }
+
+      // trigger onAppLeave
+      if (typeof onAppLeave === 'function') onAppLeave(prevAppConfig);
+    }
 
     // ReCreate rootElement to remove React Component instance,
     // rootElement is created for render Child App
@@ -135,6 +192,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     // Handle loading
     this.setState({ cssLoading: true });
     this.renderStatusElement(LoadingComponent);
+
+    if (typeof onAppEnter === 'function') onAppEnter(getAppConfig(this.props));
 
     loadAssets(
       bundleList,
