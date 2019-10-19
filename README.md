@@ -1,8 +1,8 @@
-English | [简体中文](./README.zh-CN.md)
+English | [简体中文](https://ice.work/docs/icestark/about)
 
 # icestark
 
-> Micro Frontends solution for large application. [Docs](https://ice.work/docs/icestark/about).
+> Micro Frontends solution for large application. [Website docs](https://ice.work/docs/icestark/about).
 
 [![NPM version](https://img.shields.io/npm/v/@ice/stark.svg?style=flat)](https://npmjs.org/package/@ice/stark) [![Package Quality](https://npm.packagequality.com/shield/@ice%2Fstark.svg)](https://packagequality.com/#?package=@ice%2Fstark) [![build status](https://img.shields.io/travis/ice-lab/icestark.svg?style=flat-square)](https://travis-ci.org/ice-lab/icestark) [![Test coverage](https://img.shields.io/codecov/c/github/ice-lab/icestark.svg?style=flat-square)](https://codecov.io/gh/ice-lab/icestark) [![NPM downloads](http://img.shields.io/npm/dm/@ice/stark.svg?style=flat)](https://npmjs.org/package/@ice/stark) [![David deps](https://img.shields.io/david/ice-lab/icestark.svg?style=flat-square)](https://david-dm.org/ice-lab/icestark)
 
@@ -39,7 +39,7 @@ npm install @ice/stark --save
 ### Framework Application
 
 ```javascript
-// src/index.js
+// src/App.jsx
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { AppRouter, AppRoute } from '@ice/stark';
@@ -59,22 +59,21 @@ class App extends React.Component {
           NotFoundComponent={<div>NotFound</div>}
         >
           <AppRoute
-            path={['/', '/list', '/detail']}
+            path={['/', '/message', '/about']}
             basename="/"
             exact
-            title="Merchant platform"
+            title="通用页面"
             url={[
-              '//g.alicdn.com/icestark-demo/child/0.2.1/js/index.js',
-              '//g.alicdn.com/icestark-demo/child/0.2.1/css/index.css',
+              '//unpkg.com/icestark-child-common/build/js/index.js',
             ]}
           />
           <AppRoute
-            path="/waiter"
-            basename="/waiter"
-            title="Waiter platform"
+            path="/seller"
+            basename="/seller"
+            title="商家平台"
             url={[
-              '//g.alicdn.com/icestark-demo/child2/0.2.1/js/index.js',
-              '//g.alicdn.com/icestark-demo/child2/0.2.1/css/index.css',
+              '//unpkg.com/icestark-child-seller/build/js/index.js',
+              '//unpkg.com/icestark-child-seller/build/css/index.css',
             ]}
           />
         </AppRouter>
@@ -149,10 +148,6 @@ export default class App extends React.Component {
   }
 }
 ```
-
-## API
-
-[See the doc](https://ice.work/docs/icestark/api/app-router).
 
 ## Todos
 
