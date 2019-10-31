@@ -156,8 +156,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     } = this.props;
     const { url, forceRenderCount } = this.state;
 
-    const { pathname, query, hash } = urlParse(url, true);
-    const { localUrl } = query;
+    const { pathname, hash } = urlParse(url, true);
 
     let match: any = null;
     let element: any;
@@ -187,9 +186,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       onAppEnter,
       onAppLeave,
     };
-    if (localUrl) {
-      extraProps.url = localUrl;
-    }
 
     if (match) {
       const { path, basename } = element.props as AppRouteProps;
