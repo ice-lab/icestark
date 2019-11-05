@@ -1,8 +1,5 @@
-import 'react-testing-library/cleanup-after-each';
-import 'jest-dom/extend-expect';
-
 import * as React from 'react';
-import { render } from 'react-testing-library';
+import { render } from '@testing-library/react';
 import { AppRouter, AppRoute, AppLink, appHistory } from '../src/index';
 import matchPath from '../src/matchPath';
 import { loadAssets } from '../src/handleAssets';
