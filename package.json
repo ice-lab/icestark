@@ -65,9 +65,6 @@
     "typescript": "^3.4.4"
   },
   "jest": {
-    "setupFilesAfterEnv": [
-      "./jest.setup.ts"
-    ],
     "coverageDirectory": "./coverage/",
     "collectCoverage": true,
     "preset": "ts-jest"
