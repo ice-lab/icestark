@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as urlParse from 'url-parse';
-import AppRoute, { AppConfig, AppRouteProps } from './AppRoute';
+import { AppConfig, AppRouteProps } from './AppRoute';
+import appHistory from './appHistory';
 import matchPath from './matchPath';
 import { recordAssets } from './handleAssets';
 import { ICESTSRK_NOT_FOUND } from './constant';
@@ -57,7 +58,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   private originalReplace: OriginalStateFunction = window.history.replaceState;
 
   static defaultProps = {
-    ErrorComponent: <div>js bundle loaded error</div>,
+    onRouteChange: () => {},
+    ErrorComponent: ({ err }) => <div>{err}</div>,
     NotFoundComponent: <div>NotFound</div>,
     useShadow: false,
   };
@@ -76,14 +78,20 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     this.handleRouteChange(location.href, 'init');
 
     // render NotFoundComponent eventListener
-    window.addEventListener('icestark:not-found', () => {
-      this.setState({ url: ICESTSRK_NOT_FOUND });
-    });
+    window.addEventListener('icestark:not-found', this.triggerNotFound);
   }
 
   componentWillUnmount() {
     this.unHijackHistory();
+    window.removeEventListener('icestark:not-found', this.triggerNotFound);
   }
+
+  /**
+   * Trigger NotFound
+   */
+  triggerNotFound = () => {
+    this.setState({ url: ICESTSRK_NOT_FOUND });
+  };
 
   /**
    * Hijack window.history
@@ -103,7 +111,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   };
 
   /**
-   * Unhijacking history
+   * Unhijack window.history
    */
   unHijackHistory = (): void => {
     window.history.pushState = this.originalPush;
@@ -144,6 +152,17 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     this.props.onRouteChange(pathname, query, hash, type);
   };
 
+  /**
+   * Render Component
+   */
+  renderElement = (Component: any, props = {}): React.ReactElement => {
+    return React.isValidElement(Component) ? (
+      React.cloneElement(Component, props)
+    ) : (
+      <Component {...props} />
+    );
+  };
+
   render() {
     const {
       NotFoundComponent,
@@ -157,7 +176,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     const { url, forceRenderCount } = this.state;
 
     const { pathname, query, hash } = urlParse(url, true);
-    const { localUrl } = query;
 
     let match: any = null;
     let element: any;
@@ -187,25 +205,26 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       onAppEnter,
       onAppLeave,
     };
-    if (localUrl) {
-      extraProps.url = localUrl;
-    }
 
     if (match) {
-      const { path, basename } = element.props as AppRouteProps;
+      const { path, basename, render, component } = element.props as AppRouteProps;
 
+      const commonProps = { location: { pathname, query, hash }, match, history: appHistory };
+
+      if (component) {
+        return this.renderElement(component, commonProps);
+      }
+
+      if (render && typeof render === 'function') {
+        return this.renderElement(render(), commonProps);
+      }
+
+      // render AppRoute
       setCache('basename', basename || (Array.isArray(path) ? path[0] : path));
 
       return React.cloneElement(element, extraProps);
     }
 
-    return (
-      <AppRoute
-        path={ICESTSRK_NOT_FOUND}
-        url={ICESTSRK_NOT_FOUND}
-        NotFoundComponent={NotFoundComponent}
-        useShadow={useShadow}
-      />
-    );
+    return this.renderElement(NotFoundComponent, {});
   }
 }

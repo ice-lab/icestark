@@ -1,6 +1,6 @@
 {
   "name": "@ice/stark",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Icestark is a JavaScript library for multiple projects, Ice workbench solution.",
   "scripts": {
     "build": "rm -rf lib && tsc",
@@ -65,7 +65,9 @@
     "typescript": "^3.4.4"
   },
   "jest": {
-    "setupFilesAfterEnv": ["./jest.setup.ts"],
+    "setupFilesAfterEnv": [
+      "./jest.setup.ts"
+    ],
     "coverageDirectory": "./coverage/",
     "collectCoverage": true,
     "preset": "ts-jest"
