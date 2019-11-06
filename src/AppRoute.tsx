@@ -1,7 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { loadAssets, emptyAssets } from './handleAssets';
-import { ICESTSRK_NOT_FOUND } from './constant';
 import { setCache, getCache } from './cache';
 
 const statusElementId = 'icestarkStatusContainer';
@@ -35,11 +34,12 @@ export interface AppConfig {
 
 export interface AppRouteProps extends AppConfig {
   path: string | string[];
-  url: string | string[];
+  url?: string | string[];
   useShadow?: boolean;
   ErrorComponent?: any;
   LoadingComponent?: any;
-  NotFoundComponent?: any;
+  component?: React.ReactElement;
+  render?: () => React.ReactElement;
   forceRenderCount?: number;
   onAppEnter?: (appConfig: AppConfig) => void;
   onAppLeave?: (appConfig: AppConfig) => void;
@@ -60,8 +60,6 @@ function getAppConfig(appRouteProps: AppRouteProps): AppConfig {
     'useShadow',
     'ErrorComponent',
     'LoadingComponent',
-    'NotFoundComponent',
-    'useShadow',
     'onAppEnter',
     'onAppLeave',
   ];
@@ -83,8 +81,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   private myRefBase: HTMLDivElement = null;
 
   private unmounted: boolean = false;
-
-  private triggerNotFound: boolean = false;
 
   static defaultProps = {
     useShadow: false,
@@ -129,13 +125,11 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
    */
   renderChild = (prevAppConfig?: AppConfig): void => {
     const {
-      path,
       url,
       title,
       rootId,
       ErrorComponent,
       LoadingComponent,
-      NotFoundComponent,
       useShadow,
       onAppEnter,
       onAppLeave,
@@ -162,7 +156,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     this.removeElementFromBase(rootId);
     let rootElement: any = this.appendElementToBase(rootId);
 
-    // Prevent duplicate creation of shadowRoot
+    // prevent duplicate creation of shadowRoot
     if (useShadow && !rootElement.shadowRoot) {
       rootElement = rootElement.attachShadow
         ? rootElement.attachShadow({ mode: 'open', delegatesFocus: false })
@@ -171,25 +165,15 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     setCache('root', rootElement);
 
-    // Empty useless assets before loading
+    // empty useless assets before loading
     emptyAssets(useShadow);
-
-    // Handle NotFound
-    if (path === ICESTSRK_NOT_FOUND && url === ICESTSRK_NOT_FOUND) {
-      // loadAssets callback maybe slower than render NotFoundComponent
-      this.triggerNotFound = true;
-      this.renderStatusElement(NotFoundComponent);
-      return;
-    }
-
-    this.triggerNotFound = false;
 
     if (title) document.title = title;
 
-    // Generate bundleList
+    // generate bundleList
     const bundleList: string[] = Array.isArray(url) ? url : [url];
 
-    // Handle loading
+    // handle loading
     this.setState({ cssLoading: true });
     this.renderStatusElement(LoadingComponent);
 
@@ -202,13 +186,12 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         if (err) {
           // Handle error
           this.renderStatusElement(ErrorComponent, { err });
+          this.removeElementFromBase(rootId);
+          this.setState({ cssLoading: false });
           return true;
         }
 
-        if (!this.triggerNotFound) {
-          // loadAssets callback maybe slower than render NotFoundComponent
-          this.removeElementFromBase(statusElementId);
-        }
+        this.removeElementFromBase(statusElementId);
 
         return this.unmounted;
       },
