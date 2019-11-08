@@ -1,6 +1,7 @@
 import { isArray, warn } from './utils';
+import { setCache, getCache } from './cache';
 
-const eventNameSpace: string = 'ICESTARK_EVENT';
+const eventNameSpace = 'event';
 
 interface Hooks {
   emit(key: string, value: any): void;
@@ -20,6 +21,7 @@ class Event implements Hooks {
     const keyEmitter = this.eventEmitter[key];
 
     if (!isArray(keyEmitter) || (isArray(keyEmitter) && keyEmitter.length === 0)) {
+      warn(`event.emit: no callback is called for ${key}`);
       return;
     }
 
@@ -70,10 +72,10 @@ class Event implements Hooks {
   }
 }
 
-let event = (window as any)[eventNameSpace];
+let event = getCache(eventNameSpace);
 if (!event) {
   event = new Event();
-  (window as any)[eventNameSpace] = event;
+  setCache(eventNameSpace, event);
 }
 
 export default event;

@@ -1,6 +1,7 @@
 import { isObject, isArray, warn } from './utils';
+import { setCache, getCache } from './cache';
 
-const storeNameSpace: string = 'ICESTARK_STORE';
+const storeNameSpace = 'store';
 
 interface IO {
   set(key: any, value?: any): void;
@@ -15,6 +16,7 @@ interface Hooks {
 
 class Store implements IO, Hooks {
   store: object;
+
   storeEmitter: object;
 
   constructor() {
@@ -120,10 +122,10 @@ class Store implements IO, Hooks {
   }
 }
 
-let store = (window as any)[storeNameSpace];
+let store = getCache(storeNameSpace);
 if (!store) {
   store = new Store();
-  (window as any)[storeNameSpace] = store;
+  setCache(storeNameSpace, store);
 }
 
 export default store;
