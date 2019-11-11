@@ -2,8 +2,8 @@ import '@testing-library/jest-dom/extend-expect';
 
 import store from '../src/store';
 
-const nameSpace = 'ICESTARK';
-const storeNameSpace = 'store';
+const namespace = 'ICESTARK';
+const storeNamespace = 'store';
 
 describe('store', () => {
   test('store.get', () => {
@@ -33,14 +33,14 @@ describe('store', () => {
     const testObj = {};
     const testFunc = () => {};
     store.set({ name: 'TOM', age: 18, testArray, testObj, testFunc });
-    expect(window[nameSpace][storeNameSpace].store.name).toBe('TOM');
-    expect(window[nameSpace][storeNameSpace].store.age).toBe(18);
-    expect(window[nameSpace][storeNameSpace].store.testArray).toBe(testArray);
-    expect(window[nameSpace][storeNameSpace].store.testObj).toBe(testObj);
-    expect(window[nameSpace][storeNameSpace].store.testFunc).toBe(testFunc);
+    expect(window[namespace][storeNamespace].store.name).toBe('TOM');
+    expect(window[namespace][storeNamespace].store.age).toBe(18);
+    expect(window[namespace][storeNamespace].store.testArray).toBe(testArray);
+    expect(window[namespace][storeNamespace].store.testObj).toBe(testObj);
+    expect(window[namespace][storeNamespace].store.testFunc).toBe(testFunc);
 
     store.set('name', 'LUCY');
-    expect(window[nameSpace][storeNameSpace].store.name).toBe('LUCY');
+    expect(window[namespace][storeNamespace].store.name).toBe('LUCY');
   });
 
   test('store.on', () => {
@@ -60,12 +60,12 @@ describe('store', () => {
     const testFunc = jest.fn();
     store.on('testOn', testFunc);
     expect(testFunc).toBeCalledTimes(0);
-    expect(window[nameSpace][storeNameSpace].storeEmitter.testOn[0]).toBe(testFunc);
+    expect(window[namespace][storeNamespace].storeEmitter.testOn[0]).toBe(testFunc);
 
     const testFuncForce = jest.fn();
     store.on('testOnForce', testFuncForce, true);
     expect(testFuncForce).toBeCalledTimes(1);
-    expect(window[nameSpace][storeNameSpace].storeEmitter.testOnForce[0]).toBe(testFuncForce);
+    expect(window[namespace][storeNamespace].storeEmitter.testOnForce[0]).toBe(testFuncForce);
   });
 
   test('store.off', () => {
@@ -81,12 +81,12 @@ describe('store', () => {
     expect(warnMockFn).toBeCalledWith('store.off: testOff has no callback');
 
     const testFunc = jest.fn();
-    window[nameSpace][storeNameSpace].storeEmitter.testOff = [testFunc];
+    window[namespace][storeNamespace].storeEmitter.testOff = [testFunc];
     store.off('testOff');
-    expect(window[nameSpace][storeNameSpace].storeEmitter.testOff).toBeUndefined();
+    expect(window[namespace][storeNamespace].storeEmitter.testOff).toBeUndefined();
 
-    window[nameSpace][storeNameSpace].storeEmitter.testOff = [testFunc];
+    window[namespace][storeNamespace].storeEmitter.testOff = [testFunc];
     store.off('testOff', testFunc);
-    expect(window[nameSpace][storeNameSpace].storeEmitter.testOff).toStrictEqual([]);
+    expect(window[namespace][storeNamespace].storeEmitter.testOff).toStrictEqual([]);
   });
 });

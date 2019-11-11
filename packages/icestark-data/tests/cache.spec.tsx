@@ -2,24 +2,24 @@ import '@testing-library/jest-dom/extend-expect';
 
 import { getCache, setCache } from '../src/cache';
 
-const nameSpace = 'ICESTARK';
+const namespace = 'ICESTARK';
 
 describe('cache', () => {
   test('getCache', () => {
-    window[nameSpace] = null;
+    window[namespace] = null;
     expect(getCache('name')).toBeNull();
 
-    window[nameSpace] = {};
+    window[namespace] = {};
     expect(getCache('name')).toBeNull();
 
-    window[nameSpace] = { name: 'TOM' };
+    window[namespace] = { name: 'TOM' };
     expect(getCache('name')).toBe('TOM');
   });
 
   test('getCache', () => {
-    window[nameSpace] = null;
+    window[namespace] = null;
 
     setCache('testSet', {});
-    expect(window[nameSpace].testSet).toStrictEqual({});
+    expect(window[namespace].testSet).toStrictEqual({});
   });
 });

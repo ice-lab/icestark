@@ -2,8 +2,8 @@ import '@testing-library/jest-dom/extend-expect';
 
 import event from '../src/event';
 
-const nameSpace = 'ICESTARK';
-const eventNameSpace = 'event';
+const namespace = 'ICESTARK';
+const eventNamespace = 'event';
 
 describe('event', () => {
   test('event.on', () => {
@@ -23,7 +23,7 @@ describe('event', () => {
     const testFunc = jest.fn();
     event.on('testOn', testFunc);
     expect(testFunc).toBeCalledTimes(0);
-    expect(window[nameSpace][eventNameSpace].eventEmitter.testOn[0]).toBe(testFunc);
+    expect(window[namespace][eventNamespace].eventEmitter.testOn[0]).toBe(testFunc);
   });
 
   test('event.off', () => {
@@ -39,13 +39,13 @@ describe('event', () => {
     expect(warnMockFn).toBeCalledWith('event.off: testOff has no callback');
 
     const testFunc = jest.fn();
-    window[nameSpace][eventNameSpace].eventEmitter.testOff = [testFunc];
+    window[namespace][eventNamespace].eventEmitter.testOff = [testFunc];
     event.off('testOff');
-    expect(window[nameSpace][eventNameSpace].eventEmitter.testOff).toBeUndefined();
+    expect(window[namespace][eventNamespace].eventEmitter.testOff).toBeUndefined();
 
-    window[nameSpace][eventNameSpace].eventEmitter.testOff = [testFunc];
+    window[namespace][eventNamespace].eventEmitter.testOff = [testFunc];
     event.off('testOff', testFunc);
-    expect(window[nameSpace][eventNameSpace].eventEmitter.testOff).toStrictEqual([]);
+    expect(window[namespace][eventNamespace].eventEmitter.testOff).toStrictEqual([]);
   });
 
   test('event.emit', () => {
@@ -56,7 +56,7 @@ describe('event', () => {
 
     const testFunc = jest.fn();
     const testFunc2 = jest.fn();
-    window[nameSpace][eventNameSpace].eventEmitter.testEmit = [testFunc, testFunc2];
+    window[namespace][eventNamespace].eventEmitter.testEmit = [testFunc, testFunc2];
 
     event.emit('testEmit', 'testData');
     expect(testFunc).toBeCalledWith('testData');
@@ -66,22 +66,22 @@ describe('event', () => {
     expect(testFunc).toBeCalledWith('testData2');
     expect(testFunc2).toBeCalledWith('testData2');
 
-    window[nameSpace][eventNameSpace].eventEmitter.testEmit = [];
+    window[namespace][eventNamespace].eventEmitter.testEmit = [];
     event.emit('testEmit', 'testData2');
     expect(warnMockFn).toBeCalledWith('event.emit: no callback is called for testEmit');
 
-    window[nameSpace][eventNameSpace].eventEmitter.testEmit = undefined;
+    window[namespace][eventNamespace].eventEmitter.testEmit = undefined;
     event.emit('testEmit', 'testData2');
     expect(warnMockFn).toBeCalledWith('event.emit: no callback is called for testEmit');
   });
 
   test('event.has', () => {
-    window[nameSpace][eventNameSpace].eventEmitter.testHas = undefined;
+    window[namespace][eventNamespace].eventEmitter.testHas = undefined;
     expect(event.has('testHas')).toBe(false);
 
     const testFunc = jest.fn();
     const testFunc2 = jest.fn();
-    window[nameSpace][eventNameSpace].eventEmitter.testHas = [testFunc, testFunc2];
+    window[namespace][eventNamespace].eventEmitter.testHas = [testFunc, testFunc2];
     expect(event.has('testHas')).toBe(true);
   });
 });
