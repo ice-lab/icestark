@@ -1,3 +1,5 @@
+/* eslint import/no-mutable-exports: 'off' */
+
 import { isArray, warn } from './utils';
 import { setCache, getCache } from './cache';
 

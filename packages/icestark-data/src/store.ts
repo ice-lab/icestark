@@ -1,3 +1,6 @@
+/* eslint no-underscore-dangle: ["error", { "allow": ["foo_", "_bar"], "allowAfterThis": true }] */
+/* eslint import/no-mutable-exports: 'off' */
+
 import { isObject, isArray, warn } from './utils';
 import { setCache, getCache } from './cache';
 
