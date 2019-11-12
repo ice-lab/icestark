@@ -78,15 +78,16 @@ describe('AppRouter', () => {
     expect(container.innerHTML).toContain('test');
     expect(props.onRouteChange).toHaveBeenCalledTimes(1);
 
-    fireEvent.click(getByText(/Jump NotFound/i));
-    expect(container.innerHTML).toContain('NotFound');
-
     fireEvent.click(getByText(/Jump Hash/i));
     expect(props.onRouteChange).toHaveBeenCalledTimes(2);
+
+    fireEvent.click(getByText(/Jump NotFound/i));
+    expect(container.innerHTML).toContain('NotFound');
 
     /**
      * test for HashType
      */
+    window.history.pushState({}, 'test', '/');
     rerender(
       <AppRouter {...props}>
         <AppRoute path="/" url={[]} hashType />
@@ -94,7 +95,7 @@ describe('AppRouter', () => {
     );
     const appRouteNode = container.querySelector('.ice-stark-loading');
     expect(container.innerHTML).toContain('Loading');
-    expect(appRouteNode.childNodes.length).toBe(2);
+    expect(appRouteNode.childNodes.length).toBe(1);
 
     /**
      * Load assets error
@@ -116,13 +117,16 @@ describe('AppRouter', () => {
     /**
      * Load assets success
      */
+    window.history.pushState({}, 'test', '/');
     setCache('appLeave', () => {});
 
-    // HTMLElement.attachShadow = jest.fn();
-
     rerender(
-      <AppRouter {...props}>
-        <AppRoute path="/" url={['//icestark.com/js/index.js', '//icestark.com/css/index.css']} />
+      <AppRouter {...props} useShadow>
+        <AppRoute
+          path="/"
+          url={['//icestark.com/js/index.js', '//icestark.com/css/index.css']}
+          useShadow={false}
+        />
       </AppRouter>,
     );
     expect(getCache('appLeave')).toBeNull();

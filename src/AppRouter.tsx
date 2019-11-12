@@ -4,7 +4,7 @@ import { AppConfig, AppRouteProps } from './AppRoute';
 import appHistory from './appHistory';
 import matchPath from './matchPath';
 import { recordAssets } from './handleAssets';
-import { ICESTSRK_NOT_FOUND } from './constant';
+import { ICESTSRK_NOT_FOUND, ICESTSRK_ERROR } from './constant';
 import { setCache } from './cache';
 
 type RouteType = 'pushState' | 'replaceState';
@@ -27,6 +27,7 @@ export interface AppRouterProps {
 interface AppRouterState {
   url: string;
   forceRenderCount: number;
+  showLoading: boolean;
 }
 
 interface OriginalStateFunction {
@@ -57,6 +58,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
   private originalReplace: OriginalStateFunction = window.history.replaceState;
 
+  private err: string = ''; // js assets load err
+
   static defaultProps = {
     onRouteChange: () => {},
     ErrorComponent: ({ err }) => <div>{err}</div>,
@@ -69,6 +72,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     this.state = {
       url: location.href,
       forceRenderCount: 0,
+      showLoading: false,
     };
     recordAssets();
   }
@@ -89,8 +93,26 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   /**
    * Trigger NotFound
    */
-  triggerNotFound = () => {
+  triggerNotFound = (): void => {
     this.setState({ url: ICESTSRK_NOT_FOUND });
+  };
+
+  /**
+   * Trigger Loading
+   */
+  triggerLoading = (newShowLoading: boolean): void => {
+    const { showLoading } = this.state;
+    if (showLoading !== newShowLoading) {
+      this.setState({ showLoading: newShowLoading });
+    }
+  };
+
+  /**
+   * Trigger Error
+   */
+  triggerError = (err: string): void => {
+    this.err = err;
+    this.setState({ url: ICESTSRK_ERROR });
   };
 
   /**
@@ -127,9 +149,9 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     // deal with forceRender
     if (state && (state.forceRender || (state.state && state.state.forceRender))) {
       const { forceRenderCount } = this.state;
-      this.setState({ url, forceRenderCount: forceRenderCount + 1 });
+      this.setState({ url, forceRenderCount: forceRenderCount + 1, showLoading: false });
     } else {
-      this.setState({ url });
+      this.setState({ url, showLoading: false });
     }
     this.handleRouteChange(url, routeType);
   };
@@ -140,7 +162,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   handlePopState = (): void => {
     const url = location.href;
 
-    this.setState({ url });
+    this.setState({ url, showLoading: false });
     this.handleRouteChange(url, 'popstate');
   };
 
@@ -173,7 +195,13 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       onAppLeave,
       children,
     } = this.props;
-    const { url, forceRenderCount } = this.state;
+    const { url, forceRenderCount, showLoading } = this.state;
+
+    if (url === ICESTSRK_NOT_FOUND) {
+      return this.renderElement(NotFoundComponent, {});
+    } else if (url === ICESTSRK_ERROR) {
+      return this.renderElement(ErrorComponent, { err: this.err });
+    }
 
     const { pathname, query, hash } = urlParse(url, true);
 
@@ -197,17 +225,14 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       }
     });
 
-    const extraProps: any = {
-      ErrorComponent,
-      LoadingComponent,
-      useShadow,
-      forceRenderCount,
-      onAppEnter,
-      onAppLeave,
-    };
-
     if (match) {
-      const { path, basename, render, component } = element.props as AppRouteProps;
+      const {
+        path,
+        basename,
+        render,
+        component,
+        useShadow: useAppRouteShadow,
+      } = element.props as AppRouteProps;
 
       const commonProps = { location: { pathname, query, hash }, match, history: appHistory };
 
@@ -222,7 +247,24 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       // render AppRoute
       setCache('basename', basename || (Array.isArray(path) ? path[0] : path));
 
-      return React.cloneElement(element, extraProps);
+      const extraProps: any = {
+        useShadow:
+          useAppRouteShadow !== undefined && useAppRouteShadow !== useShadow
+            ? useAppRouteShadow
+            : useShadow, // useShadow configured in AppRoute has a higher priority
+        forceRenderCount,
+        onAppEnter,
+        onAppLeave,
+        triggerLoading: this.triggerLoading,
+        triggerError: this.triggerError,
+      };
+
+      return (
+        <div>
+          {showLoading ? this.renderElement(LoadingComponent, {}) : null}
+          {React.cloneElement(element, extraProps)}
+        </div>
+      );
     }
 
     return this.renderElement(NotFoundComponent, {});

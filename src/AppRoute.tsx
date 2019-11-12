@@ -1,9 +1,6 @@
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
 import { loadAssets, emptyAssets } from './handleAssets';
 import { setCache, getCache } from './cache';
-
-const statusElementId = 'icestarkStatusContainer';
 
 const converArray2String = (list: string | string[]) => {
   if (Array.isArray(list)) {
@@ -36,13 +33,13 @@ export interface AppRouteProps extends AppConfig {
   path: string | string[];
   url?: string | string[];
   useShadow?: boolean;
-  ErrorComponent?: any;
-  LoadingComponent?: any;
   component?: React.ReactElement;
   render?: () => React.ReactElement;
   forceRenderCount?: number;
   onAppEnter?: (appConfig: AppConfig) => void;
   onAppLeave?: (appConfig: AppConfig) => void;
+  triggerLoading?: (loading: boolean) => void;
+  triggerError?: (err: string) => void;
 }
 
 interface StatusComponentProps {
@@ -58,10 +55,10 @@ function getAppConfig(appRouteProps: AppRouteProps): AppConfig {
     'forceRenderCount',
     'url',
     'useShadow',
-    'ErrorComponent',
-    'LoadingComponent',
     'onAppEnter',
     'onAppLeave',
+    'triggerLoading',
+    'triggerError',
   ];
 
   Object.keys(appRouteProps).forEach(key => {
@@ -128,11 +125,11 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       url,
       title,
       rootId,
-      ErrorComponent,
-      LoadingComponent,
       useShadow,
       onAppEnter,
       onAppLeave,
+      triggerLoading,
+      triggerError,
     } = this.props;
 
     const myBase: HTMLElement = this.myRefBase;
@@ -175,7 +172,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     // handle loading
     this.setState({ cssLoading: true });
-    this.renderStatusElement(LoadingComponent);
+    typeof triggerLoading === 'function' && triggerLoading(true);
 
     if (typeof onAppEnter === 'function') onAppEnter(getAppConfig(this.props));
 
@@ -185,13 +182,11 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       (err: any): boolean => {
         if (err) {
           // Handle error
-          this.renderStatusElement(ErrorComponent, { err });
-          this.removeElementFromBase(rootId);
-          this.setState({ cssLoading: false });
+          typeof triggerError === 'function' && triggerError(err);
           return true;
         }
 
-        this.removeElementFromBase(statusElementId);
+        typeof triggerLoading === 'function' && triggerLoading(false);
 
         return this.unmounted;
       },
@@ -199,24 +194,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         this.setState({ cssLoading: false });
       },
     );
-  };
-
-  /**
-   * Render statusElement
-   */
-  renderStatusElement = (Component: any, props: StatusComponentProps = {}): void => {
-    const myBase = this.myRefBase;
-    if (!myBase || !Component) return;
-
-    let statusElement = myBase.querySelector(`#${statusElementId}`);
-    if (!statusElement) {
-      statusElement = this.appendElementToBase(statusElementId);
-    }
-
-    ReactDOM.unmountComponentAtNode(statusElement);
-    React.isValidElement(Component)
-      ? ReactDOM.render(Component, statusElement)
-      : ReactDOM.render(<Component {...props} />, statusElement);
   };
 
   appendElementToBase = (elementId: string): HTMLElement => {
