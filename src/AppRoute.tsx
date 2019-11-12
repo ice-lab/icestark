@@ -39,7 +39,7 @@ export interface AppRouteProps extends AppConfig {
   ErrorComponent?: any;
   LoadingComponent?: any;
   component?: React.ReactElement;
-  render?: () => React.ReactElement;
+  render?: (props?: object) => React.ReactElement;
   forceRenderCount?: number;
   onAppEnter?: (appConfig: AppConfig) => void;
   onAppLeave?: (appConfig: AppConfig) => void;

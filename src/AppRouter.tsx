@@ -52,6 +52,17 @@ function getHashPath(hash: string = '/'): string {
   return searchIndex === -1 ? hashPath : hashPath.substr(0, searchIndex);
 }
 
+/**
+ * Render Component
+ */
+function renderComponent(Component: any, props = {}): React.ReactElement {
+  return React.isValidElement(Component) ? (
+    React.cloneElement(Component, props)
+  ) : (
+    <Component {...props} />
+  );
+}
+
 export default class AppRouter extends React.Component<AppRouterProps, AppRouterState> {
   private originalPush: OriginalStateFunction = window.history.pushState;
 
@@ -152,17 +163,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     this.props.onRouteChange(pathname, query, hash, type);
   };
 
-  /**
-   * Render Component
-   */
-  renderElement = (Component: any, props = {}): React.ReactElement => {
-    return React.isValidElement(Component) ? (
-      React.cloneElement(Component, props)
-    ) : (
-      <Component {...props} />
-    );
-  };
-
   render() {
     const {
       NotFoundComponent,
@@ -212,11 +212,11 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       const commonProps = { location: { pathname, query, hash }, match, history: appHistory };
 
       if (component) {
-        return this.renderElement(component, commonProps);
+        return renderComponent(component, commonProps);
       }
 
       if (render && typeof render === 'function') {
-        return this.renderElement(render(), commonProps);
+        return render(commonProps);
       }
 
       // render AppRoute
@@ -225,6 +225,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       return React.cloneElement(element, extraProps);
     }
 
-    return this.renderElement(NotFoundComponent, {});
+    return renderComponent(NotFoundComponent, {});
   }
 }
