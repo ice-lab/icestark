@@ -39,7 +39,7 @@ function loadAsset(
   element.addEventListener(
     'error',
     () => {
-      callback(isCss ? undefined : `JS asset loaded error: ${url}`);
+      callback(isCss ? undefined : `js asset loaded error: ${url}`);
     },
     false,
   );
