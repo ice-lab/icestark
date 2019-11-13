@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
+import { AppHistory } from './appHistory';
 import { loadAssets, emptyAssets } from './handleAssets';
 import { setCache, getCache } from './cache';
 
@@ -22,6 +23,25 @@ interface AppRouteState {
 // "hashbang" - “ajax crawlable” (deprecated by Google) hashes like #!/ and #!/sunshine/lollipops
 type hashType = 'hashbang' | 'noslash' | 'slash';
 
+interface match<Params extends { [K in keyof Params]?: string } = {}> {
+  params: Params;
+  isExact: boolean;
+  path: string;
+  url: string;
+}
+
+interface Location<Query extends { [K in keyof Query]?: string } = {}> {
+  pathname: string;
+  query: Query;
+  hash: string;
+}
+
+export interface AppRouteComponentProps<Params extends { [K in keyof Params]?: string } = {}> {
+  match: match<Params>;
+  location: Location;
+  history: AppHistory;
+}
+
 export interface AppConfig {
   title?: string;
   hashType?: boolean | hashType;
@@ -39,7 +59,7 @@ export interface AppRouteProps extends AppConfig {
   ErrorComponent?: any;
   LoadingComponent?: any;
   component?: React.ReactElement;
-  render?: (props?: object) => React.ReactElement;
+  render?: (props?: AppRouteComponentProps) => React.ReactElement;
   forceRenderCount?: number;
   onAppEnter?: (appConfig: AppConfig) => void;
   onAppLeave?: (appConfig: AppConfig) => void;

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as urlParse from 'url-parse';
-import { AppConfig, AppRouteProps } from './AppRoute';
+import { AppConfig, AppRouteProps, AppRouteComponentProps } from './AppRoute';
 import appHistory from './appHistory';
 import matchPath from './matchPath';
 import { recordAssets } from './handleAssets';
@@ -53,7 +53,7 @@ function getHashPath(hash: string = '/'): string {
 }
 
 /**
- * Render Component
+ * Render Component, compatible with Component and <Component>
  */
 function renderComponent(Component: any, props = {}): React.ReactElement {
   return React.isValidElement(Component) ? (
@@ -209,7 +209,11 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     if (match) {
       const { path, basename, render, component } = element.props as AppRouteProps;
 
-      const commonProps = { location: { pathname, query, hash }, match, history: appHistory };
+      const commonProps: AppRouteComponentProps = {
+        location: { pathname, query, hash },
+        match,
+        history: appHistory,
+      };
 
       if (component) {
         return renderComponent(component, commonProps);
