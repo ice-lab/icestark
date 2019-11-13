@@ -23,7 +23,7 @@ interface AppRouteState {
 // "hashbang" - “ajax crawlable” (deprecated by Google) hashes like #!/ and #!/sunshine/lollipops
 type hashType = 'hashbang' | 'noslash' | 'slash';
 
-interface match<Params extends { [K in keyof Params]?: string } = {}> {
+interface Match<Params extends { [K in keyof Params]?: string } = {}> {
   params: Params;
   isExact: boolean;
   path: string;
@@ -37,7 +37,7 @@ interface Location<Query extends { [K in keyof Query]?: string } = {}> {
 }
 
 export interface AppRouteComponentProps<Params extends { [K in keyof Params]?: string } = {}> {
-  match: match<Params>;
+  match: Match<Params>;
   location: Location;
   history: AppHistory;
 }
