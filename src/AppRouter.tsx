@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as urlParse from 'url-parse';
-import { AppConfig, AppRouteProps } from './AppRoute';
+import { AppConfig, AppRouteProps, AppRouteComponentProps } from './AppRoute';
 import appHistory from './appHistory';
 import matchPath from './matchPath';
 import { recordAssets } from './handleAssets';
@@ -51,6 +51,17 @@ function getHashPath(hash: string = '/'): string {
   // remove hash query
   const searchIndex = hashPath.indexOf('?');
   return searchIndex === -1 ? hashPath : hashPath.substr(0, searchIndex);
+}
+
+/**
+ * Render Component, compatible with Component and <Component>
+ */
+function renderComponent(Component: any, props = {}): React.ReactElement {
+  return React.isValidElement(Component) ? (
+    React.cloneElement(Component, props)
+  ) : (
+    <Component {...props} />
+  );
 }
 
 export default class AppRouter extends React.Component<AppRouterProps, AppRouterState> {
@@ -174,17 +185,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     this.props.onRouteChange(pathname, query, hash, type);
   };
 
-  /**
-   * Render Component
-   */
-  renderElement = (Component: any, props = {}): React.ReactElement => {
-    return React.isValidElement(Component) ? (
-      React.cloneElement(Component, props)
-    ) : (
-      <Component {...props} />
-    );
-  };
-
   render() {
     const {
       NotFoundComponent,
@@ -198,9 +198,9 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     const { url, forceRenderCount, showLoading } = this.state;
 
     if (url === ICESTSRK_NOT_FOUND) {
-      return this.renderElement(NotFoundComponent, {});
+      return renderComponent(NotFoundComponent, {});
     } else if (url === ICESTSRK_ERROR) {
-      return this.renderElement(ErrorComponent, { err: this.err });
+      return renderComponent(ErrorComponent, { err: this.err });
     }
 
     const { pathname, query, hash } = urlParse(url, true);
@@ -234,14 +234,18 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
         useShadow: useAppRouteShadow,
       } = element.props as AppRouteProps;
 
-      const commonProps = { location: { pathname, query, hash }, match, history: appHistory };
+      const commonProps: AppRouteComponentProps = {
+        location: { pathname, query, hash },
+        match,
+        history: appHistory,
+      };
 
       if (component) {
-        return this.renderElement(component, commonProps);
+        return renderComponent(component, commonProps);
       }
 
       if (render && typeof render === 'function') {
-        return this.renderElement(render(), commonProps);
+        return render(commonProps);
       }
 
       // render AppRoute
@@ -261,12 +265,12 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
       return (
         <div>
-          {showLoading ? this.renderElement(LoadingComponent, {}) : null}
+          {showLoading ? renderComponent(LoadingComponent, {}) : null}
           {React.cloneElement(element, extraProps)}
         </div>
       );
     }
 
-    return this.renderElement(NotFoundComponent, {});
+    return renderComponent(NotFoundComponent, {});
   }
 }
