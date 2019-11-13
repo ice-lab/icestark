@@ -111,7 +111,7 @@ describe('AppRouter', () => {
     expect(dynamicScript.getAttribute('src')).toBe('//icestark.com/js/index.js');
 
     dynamicScript.dispatchEvent(new ErrorEvent('error'));
-    expect(container.innerHTML).toContain('JS asset loaded error: //icestark.com/js/index.js');
+    expect(container.innerHTML).toContain('js asset loaded error: //icestark.com/js/index.js');
 
     /**
      * Load assets success
