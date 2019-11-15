@@ -91,6 +91,8 @@ describe('getOrigin', () => {
 
 describe('processHtml', () => {
   test('processHtml', () => {
+    expect(processHtml(undefined)).toBe('');
+
     expect(processHtml(tempHTML)).not.toContain('<meta ');
 
     expect(processHtml(tempHTML)).not.toContain('src="./');
