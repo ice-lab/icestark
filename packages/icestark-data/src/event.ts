@@ -58,6 +58,7 @@ class Event implements Hooks {
 
     if (!isArray(this.eventEmitter[key])) {
       warn(`event.off: ${key} has no callback`);
+      return;
     }
 
     if (callback === undefined) {
