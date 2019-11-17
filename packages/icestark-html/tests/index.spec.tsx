@@ -17,8 +17,8 @@ const tempHTML =
   '    <link rel="dns-prefetch" href="//g.alicdn.com" />' +
   '    <link rel="dns-prefetch" href="//at.alicdn.com" />' +
   '    <link rel="dns-prefetch" href="//img.alicdn.com" />' +
-  '    <link rel="dns-prefetch" href="./test.css" />' +
-  '    <link rel="dns-prefetch" href="/index.css" />' +
+  '    <link rel="stylesheet" href="./test.css" />' +
+  '    <link rel="stylesheet" href="/index.css" />' +
   '    <title>This is for test</title>' +
   '    <!--[if lte IE 9]>' +
   '      <script src="//g.alicdn.com/platform/c/??es5-shim/4.1.12/es5-shim.min.js,es5-shim/4.1.12/es5-sham.min.js,console-polyfill/0.2.1/index.min.js"></script>' +
@@ -101,12 +101,15 @@ describe('processHtml', () => {
     expect(html).not.toContain('src="/test.js"');
     expect(html).not.toContain('src="index.js"');
 
-    expect(html).not.toContain('link rel="dns-prefetch" href="//g.alicdn.com" /');
+    expect(html).toContain('<link rel="dns-prefetch" href="//g.alicdn.com" />');
+    expect(html).toContain('<link rel="dns-prefetch" href="//at.alicdn.com" />');
+    expect(html).toContain('<link rel="dns-prefetch" href="//img.alicdn.com" />');
+
     expect(html).not.toContain('href="./');
     expect(html).not.toContain('href="/index.css"');
     expect(html).not.toContain('href="index.css"');
 
-    expect(url.length).toBe(14);
+    expect(url.length).toBe(11);
   });
 });
 
@@ -137,9 +140,9 @@ describe('fetchHTML', () => {
         '  <head>' +
         '    <meta charset="utf-8" />' +
         '    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />' +
-        '    <link rel="dns-prefetch" href="./test.css" />' +
-        '    <link rel="dns-prefetch" href="/index.css" />' +
-        '    <link rel="dns-prefetch" href="index.css" />' +
+        '    <link rel="dns-prefetch" href="//g.alicdn.com" />' +
+        '    <link rel="stylesheet" href="/index.css" />' +
+        '    <link rel="stylesheet" href="index.css" />' +
         '    <title>This is for test</title>' +
         '  </head>' +
         '  <body>' +
@@ -175,11 +178,14 @@ describe('fetchHTML', () => {
       expect(html).not.toContain('src="/test.js"');
       expect(html).not.toContain('src="index.js"');
 
+      expect(html).toContain('<link rel="dns-prefetch" href="//g.alicdn.com" />');
+      expect(html).not.toContain('<link rel="stylesheet" href=');
+
       expect(html).not.toContain('href="./');
       expect(html).not.toContain('href="index.css"');
       expect(html).not.toContain('href="/index.css"');
 
-      expect(url.length).toBe(7);
+      expect(url.length).toBe(6);
     });
 
     const err = new Error('err');

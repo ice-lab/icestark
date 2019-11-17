@@ -4,6 +4,7 @@ const winFetch = window.fetch;
 const META_REGEX = /<meta.*?>/gi;
 const SCRIPT_SRC_REGEX = /<script\b[^>]*src=[\'|\"]?([^\'|\"]*)[\'|\"]?\b[^>]*>/gi;
 const LINK_HREF_REGEX = /<link\b[^>]*href=[\'|\"]?([^\'|\"]*)[\'|\"]?\b[^>]*>/gi;
+const STYLE_SHEET_REGEX = /rel=[\'|\"]stylesheet[\'|\"]/gi;
 
 export interface ProcessedContent {
   html: string;
@@ -52,6 +53,11 @@ export function processHtml(html: string, htmlUrl?: string): ProcessedContent {
       return '';
     })
     .replace(LINK_HREF_REGEX, (arg1, arg2) => {
+      // not stylesheet, return as it is
+      if (!arg1.match(STYLE_SHEET_REGEX)) {
+        return arg1;
+      }
+
       if (arg2.indexOf('//') >= 0) {
         processedUrl.push(arg2);
       } else {
