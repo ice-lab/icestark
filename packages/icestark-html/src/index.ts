@@ -5,6 +5,11 @@ const META_REGEX = /<meta.*?>/gi;
 const SCRIPT_SRC_REGEX = /<script\b[^>]*src=[\'|\"]?([^\'|\"]*)[\'|\"]?\b[^>]*>/gi;
 const LINK_HREF_REGEX = /<link\b[^>]*href=[\'|\"]?([^\'|\"]*)[\'|\"]?\b[^>]*>/gi;
 
+export interface ProcessedContent {
+  html: string;
+  url: string[];
+}
+
 export function getOrigin(htmlUrl: string): string {
   const a = document.createElement('a');
   a.href = htmlUrl;
@@ -30,29 +35,41 @@ export function getUrl(origin: string, relativePath: string): string {
   }
 }
 
-export function processHtml(html: string, htmlUrl?: string): string {
-  if (!html) return '';
+export function processHtml(html: string, htmlUrl?: string): ProcessedContent {
+  if (!html) return { html: '', url: [] };
 
   const origin = getOrigin(htmlUrl);
+  const processedUrl = [];
 
-  return html
+  const processedHtml = html
     .replace(META_REGEX, '')
     .replace(SCRIPT_SRC_REGEX, (arg1, arg2) => {
       if (arg2.indexOf('//') >= 0) {
-        return arg1;
-      } else return arg1.replace(arg2, getUrl(origin, arg2));
+        processedUrl.push(arg2);
+      } else {
+        processedUrl.push(getUrl(origin, arg2));
+      }
+      return '';
     })
     .replace(LINK_HREF_REGEX, (arg1, arg2) => {
       if (arg2.indexOf('//') >= 0) {
-        return arg1;
-      } else return arg1.replace(arg2, getUrl(origin, arg2));
+        processedUrl.push(arg2);
+      } else {
+        processedUrl.push(getUrl(origin, arg2));
+      }
+      return '';
     });
+
+  return {
+    html: processedHtml,
+    url: processedUrl,
+  };
 }
 
 export default async function fetchHTML(
   htmlUrl: string,
   fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response> = winFetch,
-): Promise<String> {
+): Promise<ProcessedContent | String> {
   if (!fetch) {
     warn('Current environment does not support window.fetch, please use custom fetch');
     return;

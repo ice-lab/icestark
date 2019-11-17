@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/extend-expect';
 import { FetchMock } from 'jest-fetch-mock';
 
-import fetchHTML, { getOrigin, processHtml } from '../src/index';
+import fetchHTML, { getOrigin, ProcessedContent, processHtml } from '../src/index';
 
 const tempHTML =
   '<!DOCTYPE html>' +
@@ -91,17 +91,22 @@ describe('getOrigin', () => {
 
 describe('processHtml', () => {
   test('processHtml', () => {
-    expect(processHtml(undefined)).toBe('');
+    expect(processHtml(undefined).html).toBe('');
 
-    expect(processHtml(tempHTML)).not.toContain('<meta ');
+    const { html, url } = processHtml(tempHTML);
+    expect(html).not.toContain('<meta ');
 
-    expect(processHtml(tempHTML)).not.toContain('src="./');
-    expect(processHtml(tempHTML)).not.toContain('src="/test.js"');
-    expect(processHtml(tempHTML)).not.toContain('src="index.js"');
+    expect(html).not.toContain('<script src="//g.alicdn.com/p');
+    expect(html).not.toContain('src="./');
+    expect(html).not.toContain('src="/test.js"');
+    expect(html).not.toContain('src="index.js"');
 
-    expect(processHtml(tempHTML)).not.toContain('href="./');
-    expect(processHtml(tempHTML)).not.toContain('href="/index.css"');
-    expect(processHtml(tempHTML)).not.toContain('href="index.css"');
+    expect(html).not.toContain('link rel="dns-prefetch" href="//g.alicdn.com" /');
+    expect(html).not.toContain('href="./');
+    expect(html).not.toContain('href="/index.css"');
+    expect(html).not.toContain('href="index.css"');
+
+    expect(url.length).toBe(14);
   });
 });
 
@@ -159,20 +164,27 @@ describe('fetchHTML', () => {
         '</html>',
     );
 
-    fetchHTML('//icestark.com').then(html => {
+    fetchHTML('//icestark.com').then(processed => {
+      expect(typeof processed).not.toBe('string');
+
+      const { html, url } = processed as ProcessedContent;
+
       expect(html).not.toContain('<meta ');
 
+      expect(html).not.toContain('src="//g.alicdn.com/1.1/test/index.js"');
       expect(html).not.toContain('src="/test.js"');
       expect(html).not.toContain('src="index.js"');
 
       expect(html).not.toContain('href="./');
       expect(html).not.toContain('href="index.css"');
       expect(html).not.toContain('href="/index.css"');
+
+      expect(url.length).toBe(7);
     });
 
     const err = new Error('err');
     fetchMock.mockRejectOnce(err);
-    const testErr = fetchHTML('//icestark.error.com').then(err => {
+    fetchHTML('//icestark.error.com').then(err => {
       expect(warnMockFn).toBeCalledWith('fetch //icestark.error.com error: err');
       expect(err).toBe(`fetch //icestark.error.com error: ${err}`);
     });
