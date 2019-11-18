@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/extend-expect';
 import { FetchMock } from 'jest-fetch-mock';
 
-import fetchHTML, { getOrigin, ProcessedContent, processHtml } from '../src/index';
+import fetchHTML, { parseUrl, getUrl, ProcessedContent, processHtml } from '../src/index';
 
 const tempHTML =
   '<!DOCTYPE html>' +
@@ -79,13 +79,43 @@ const tempHTML =
   '  </body>' +
   '</html>';
 
-describe('getOrigin', () => {
-  test('getOrigin', () => {
-    expect(getOrigin('http://localhost:4444/seller/detail')).toBe('http://localhost:4444');
+describe('parseUrl', () => {
+  test('parseUrl', () => {
+    let parsedUrl = parseUrl('http://localhost:4444/seller/detail');
+    expect(parsedUrl.origin).toBe('http://localhost:4444');
+    expect(parsedUrl.pathname).toBe('/seller/detail');
 
-    expect(getOrigin('//localhost:4444/seller/detail')).toBe('http://localhost:4444');
+    parsedUrl = parseUrl('//localhost:4444/seller/detail');
+    expect(parsedUrl.origin).toBe('http://localhost:4444');
+    expect(parsedUrl.pathname).toBe('/seller/detail');
 
-    expect(getOrigin('https://github.com/ice-lab/icestark')).toBe('https://github.com');
+    parsedUrl = parseUrl('https://github.com/ice-lab/icestark');
+    expect(parsedUrl.origin).toBe('https://github.com');
+    expect(parsedUrl.pathname).toBe('/ice-lab/icestark');
+  });
+});
+
+describe('getUrl', () => {
+  test('getUrl', () => {
+    // for ./*
+    expect(getUrl('https://icestark.com/ice/index.html', './js/index.js')).toBe(
+      'https://icestark.com/ice/js/index.js',
+    );
+    expect(getUrl('https://icestark.com/', './js/index.js')).toBe(
+      'https://icestark.com/js/index.js',
+    );
+    expect(getUrl('https://icestark.com', './js/index.js')).toBe(
+      'https://icestark.com/js/index.js',
+    );
+
+    // for /*
+    expect(getUrl('https://icestark.com/', '/js/index.js')).toBe(
+      'https://icestark.com/js/index.js',
+    );
+    expect(getUrl('https://icestark.com', '/js/index.js')).toBe('https://icestark.com/js/index.js');
+
+    // for *
+    expect(getUrl('https://icestark.com', 'js/index.js')).toBe('https://icestark.com/js/index.js');
   });
 });
 
@@ -115,27 +145,35 @@ describe('processHtml', () => {
 
 describe('fetchHTML', () => {
   beforeEach(() => {
-    fetchMock.resetMocks();
+    (fetch as FetchMock).resetMocks();
   });
-  test('processHtml', () => {
-    const warnMockFn = jest.fn();
-    (global as any).console = {
-      warn: warnMockFn,
-    };
 
+  const warnMockFn = jest.fn();
+  (global as any).console = {
+    warn: warnMockFn,
+  };
+
+  test('processHtml', () => {
     const fetchMockFn = jest.fn();
 
-    const testHtml = '//icestark.com';
-    fetchHTML(testHtml, fetchMockFn);
-    expect(fetchMockFn).toBeCalledWith(testHtml);
+    const htmlUrl = '//icestark.com';
+    fetchHTML(htmlUrl, fetchMockFn)
+      .then(() => {
+        expect(fetchMockFn).toBeCalledWith(htmlUrl);
+      })
+      .catch(() => {});
 
-    (window as any).fetch = fetchMockFn;
-    fetchHTML(testHtml, null);
-    expect(warnMockFn).toBeCalledWith(
-      'Current environment does not support window.fetch, please use custom fetch',
-    );
+    fetchHTML(htmlUrl, null)
+      .then(() => {
+        expect(warnMockFn).toBeCalledWith(
+          'Current environment does not support window.fetch, please use custom fetch',
+        );
+      })
+      .catch(() => {});
+  });
 
-    fetchMock.mockResponseOnce(
+  test('processHtml -> success', () => {
+    (fetch as FetchMock).mockResponseOnce(
       '<html>' +
         '  <head>' +
         '    <meta charset="utf-8" />' +
@@ -187,12 +225,15 @@ describe('fetchHTML', () => {
 
       expect(url.length).toBe(6);
     });
+  });
 
+  test('processHtml -> error', () => {
     const err = new Error('err');
-    fetchMock.mockRejectOnce(err);
+    (fetch as FetchMock).mockRejectOnce(err);
+
     fetchHTML('//icestark.error.com').then(err => {
-      expect(warnMockFn).toBeCalledWith('fetch //icestark.error.com error: err');
-      expect(err).toBe(`fetch //icestark.error.com error: ${err}`);
+      expect(warnMockFn).toBeCalledWith(err);
+      expect(err).toBe(`fetch //icestark.error.com error: Error: err`);
     });
   });
 });

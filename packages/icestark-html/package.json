@@ -1,6 +1,6 @@
 {
   "name": "@ice/stark-html",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "icestark-html is a JavaScript library for icestark, used for processing html.",
   "scripts": {
     "build": "rm -rf lib && tsc",

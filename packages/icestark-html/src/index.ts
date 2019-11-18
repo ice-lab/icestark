@@ -11,24 +11,41 @@ export interface ProcessedContent {
   url: string[];
 }
 
-export function getOrigin(htmlUrl: string): string {
+export interface ParsedConfig {
+  origin: string;
+  pathname: string;
+}
+
+export function parseUrl(htmlUrl: string): ParsedConfig {
   const a = document.createElement('a');
   a.href = htmlUrl;
 
-  return a.origin;
+  return {
+    origin: a.origin,
+    pathname: a.pathname,
+  };
 }
 
 export function startWith(url: string, prefix: string): boolean {
   return url.slice(0, prefix.length) === prefix;
 }
 
-export function getUrl(origin: string, relativePath: string): string {
-  // https://icestark.com + ./js/index.js -> https://icestark.com/js/index.js
+export function getUrl(htmlUrl: string, relativePath: string): string {
+  const { origin, pathname } = parseUrl(htmlUrl);
+
+  // https://icestark.com/ice/index.html + ./js/index.js -> https://icestark.com/ice/js/index.js
   if (startWith(relativePath, './')) {
-    relativePath.slice(0, 2);
-    return `${origin}/${relativePath}`;
+    const rPath = relativePath.slice(1);
+
+    if (!pathname || pathname === '/') {
+      return `${origin}${rPath}`;
+    }
+
+    const pathArr = pathname.split('/');
+    pathArr.splice(-1);
+    return `${origin}${pathArr.join('/')}${rPath}`;
   } else if (startWith(relativePath, '/')) {
-    // https://icestark.com + /js/index.js -> https://icestark.com/js/index.js
+    // https://icestark.com/ice/index.html + /js/index.js -> https://icestark.com/js/index.js
     return `${origin}${relativePath}`;
   } else {
     // https://icestark.com + js/index.js -> https://icestark.com/js/index.js
@@ -39,7 +56,6 @@ export function getUrl(origin: string, relativePath: string): string {
 export function processHtml(html: string, htmlUrl?: string): ProcessedContent {
   if (!html) return { html: '', url: [] };
 
-  const origin = getOrigin(htmlUrl);
   const processedUrl = [];
 
   const processedHtml = html
@@ -48,7 +64,7 @@ export function processHtml(html: string, htmlUrl?: string): ProcessedContent {
       if (arg2.indexOf('//') >= 0) {
         processedUrl.push(arg2);
       } else {
-        processedUrl.push(getUrl(origin, arg2));
+        processedUrl.push(getUrl(htmlUrl, arg2));
       }
       return '';
     })
@@ -61,7 +77,7 @@ export function processHtml(html: string, htmlUrl?: string): ProcessedContent {
       if (arg2.indexOf('//') >= 0) {
         processedUrl.push(arg2);
       } else {
-        processedUrl.push(getUrl(origin, arg2));
+        processedUrl.push(getUrl(htmlUrl, arg2));
       }
       return '';
     });
@@ -75,10 +91,12 @@ export function processHtml(html: string, htmlUrl?: string): ProcessedContent {
 export default async function fetchHTML(
   htmlUrl: string,
   fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response> = winFetch,
-): Promise<ProcessedContent | String> {
+): Promise<ProcessedContent | String | void> {
   if (!fetch) {
-    warn('Current environment does not support window.fetch, please use custom fetch');
-    return;
+    return new Promise((_, reject) => {
+      warn('Current environment does not support window.fetch, please use custom fetch');
+      reject('Current environment does not support window.fetch, please use custom fetch');
+    });
   }
 
   return fetch(htmlUrl)
