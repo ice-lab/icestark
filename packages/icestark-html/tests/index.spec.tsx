@@ -1,7 +1,13 @@
 import '@testing-library/jest-dom/extend-expect';
 import { FetchMock } from 'jest-fetch-mock';
 
-import fetchHTML, { parseUrl, getUrl, ProcessedContent, processHtml } from '../src/index';
+import fetchHTML, {
+  ProcessedContent,
+  parseUrl,
+  getUrl,
+  getReplacementComments,
+  processHtml,
+} from '../src/index';
 
 const tempHTML =
   '<!DOCTYPE html>' +
@@ -119,11 +125,23 @@ describe('getUrl', () => {
   });
 });
 
+describe('getReplacementComments', () => {
+  test('getReplacementComments', () => {
+    expect(getReplacementComments('script', 'inline')).toBe(
+      '<!--script inline replaced by @ice/stark-html-->',
+    );
+
+    expect(getReplacementComments('link', 'https://g.alicdn.com/platform/common/global.css')).toBe(
+      '<!--link https://g.alicdn.com/platform/common/global.css replaced by @ice/stark-html-->',
+    );
+  });
+});
+
 describe('processHtml', () => {
   test('processHtml', () => {
     expect(processHtml(undefined).html).toBe('');
 
-    const { html, url } = processHtml(tempHTML);
+    const { html, url, code } = processHtml(tempHTML);
     expect(html).not.toContain('<meta ');
 
     expect(html).not.toContain('<script src="//g.alicdn.com/p');
@@ -140,6 +158,12 @@ describe('processHtml', () => {
     expect(html).not.toContain('href="index.css"');
 
     expect(url.length).toBe(11);
+
+    expect(code.length).toBe(2);
+    expect(code[0]).not.toContain('<script');
+    expect(code[0]).not.toContain('</script');
+    expect(code[0]).toContain('console.log');
+    expect(code[1]).toContain('window.g_config');
   });
 });
 
@@ -153,7 +177,7 @@ describe('fetchHTML', () => {
     warn: warnMockFn,
   };
 
-  test('processHtml', () => {
+  test('fetchHTML', () => {
     const fetchMockFn = jest.fn();
 
     const htmlUrl = '//icestark.com';
@@ -172,7 +196,7 @@ describe('fetchHTML', () => {
       .catch(() => {});
   });
 
-  test('processHtml -> success', () => {
+  test('fetchHTML -> success', () => {
     (fetch as FetchMock).mockResponseOnce(
       '<html>' +
         '  <head>' +
@@ -208,7 +232,7 @@ describe('fetchHTML', () => {
     fetchHTML('//icestark.com').then(processed => {
       expect(typeof processed).not.toBe('string');
 
-      const { html, url } = processed as ProcessedContent;
+      const { html, url, code } = processed as ProcessedContent;
 
       expect(html).not.toContain('<meta ');
 
@@ -224,16 +248,18 @@ describe('fetchHTML', () => {
       expect(html).not.toContain('href="/index.css"');
 
       expect(url.length).toBe(6);
+
+      expect(code.length).toBe(1);
     });
   });
 
-  test('processHtml -> error', () => {
+  test('fetchHTML -> error', () => {
     const err = new Error('err');
     (fetch as FetchMock).mockRejectOnce(err);
 
-    fetchHTML('//icestark.error.com').then(err => {
-      expect(warnMockFn).toBeCalledWith(err);
-      expect(err).toBe(`fetch //icestark.error.com error: Error: err`);
+    fetchHTML('//icestark.error.com').then(errMessage => {
+      expect(warnMockFn).toBeCalledWith(errMessage);
+      expect(errMessage).toBe(`fetch //icestark.error.com error: Error: err`);
     });
   });
 });

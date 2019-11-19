@@ -1,14 +1,18 @@
+/* eslint prefer-promise-reject-errors: ["error", {"allowEmptyReject": true}] */
+
 import { warn } from './utils';
 
 const winFetch = window.fetch;
 const META_REGEX = /<meta.*?>/gi;
-const SCRIPT_SRC_REGEX = /<script\b[^>]*src=[\'|\"]?([^\'|\"]*)[\'|\"]?\b[^>]*>/gi;
-const LINK_HREF_REGEX = /<link\b[^>]*href=[\'|\"]?([^\'|\"]*)[\'|\"]?\b[^>]*>/gi;
-const STYLE_SHEET_REGEX = /rel=[\'|\"]stylesheet[\'|\"]/gi;
+const SCRIPT_REGEX = /<script\b[^>]*>([^<]*)<\/script>/gi;
+const SCRIPT_SRC_REGEX = /<script\b[^>]*src=['"]?([^'"]*)['"]?\b[^>]*>/gi;
+const LINK_HREF_REGEX = /<link\b[^>]*href=['"]?([^'"]*)['"]?\b[^>]*>/gi;
+const STYLE_SHEET_REGEX = /rel=['"]stylesheet['"]/gi;
 
 export interface ProcessedContent {
   html: string;
   url: string[];
+  code: string[];
 }
 
 export interface ParsedConfig {
@@ -53,20 +57,29 @@ export function getUrl(htmlUrl: string, relativePath: string): string {
   }
 }
 
+export function getReplacementComments(tag: string, from: string): string {
+  return `<!--${tag} ${from} replaced by @ice/stark-html-->`;
+}
+
 export function processHtml(html: string, htmlUrl?: string): ProcessedContent {
-  if (!html) return { html: '', url: [] };
+  if (!html) return { html: '', url: [], code: [] };
 
   const processedUrl = [];
+  const processedCode = [];
 
   const processedHtml = html
     .replace(META_REGEX, '')
-    .replace(SCRIPT_SRC_REGEX, (arg1, arg2) => {
-      if (arg2.indexOf('//') >= 0) {
-        processedUrl.push(arg2);
+    .replace(SCRIPT_REGEX, (arg1, arg2) => {
+      if (!arg1.match(SCRIPT_SRC_REGEX)) {
+        processedCode.push(arg2);
+        return getReplacementComments('script', 'inline');
       } else {
-        processedUrl.push(getUrl(htmlUrl, arg2));
+        return arg1.replace(SCRIPT_SRC_REGEX, (argSrc1, argSrc2) => {
+          const url = argSrc2.indexOf('//') >= 0 ? argSrc2 : getUrl(htmlUrl, argSrc2);
+          processedUrl.push(url);
+          return getReplacementComments('script', url);
+        });
       }
-      return '';
     })
     .replace(LINK_HREF_REGEX, (arg1, arg2) => {
       // not stylesheet, return as it is
@@ -74,28 +87,26 @@ export function processHtml(html: string, htmlUrl?: string): ProcessedContent {
         return arg1;
       }
 
-      if (arg2.indexOf('//') >= 0) {
-        processedUrl.push(arg2);
-      } else {
-        processedUrl.push(getUrl(htmlUrl, arg2));
-      }
-      return '';
+      const url = arg2.indexOf('//') >= 0 ? arg2 : getUrl(htmlUrl, arg2);
+      processedUrl.push(url);
+      return getReplacementComments('link', url);
     });
 
   return {
     html: processedHtml,
     url: processedUrl,
+    code: processedCode,
   };
 }
 
 export default async function fetchHTML(
   htmlUrl: string,
   fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response> = winFetch,
-): Promise<ProcessedContent | String | void> {
+): Promise<ProcessedContent | string | void> {
   if (!fetch) {
     return new Promise((_, reject) => {
       warn('Current environment does not support window.fetch, please use custom fetch');
-      reject('Current environment does not support window.fetch, please use custom fetch');
+      reject();
     });
   }
 
