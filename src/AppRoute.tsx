@@ -1,15 +1,8 @@
 import * as React from 'react';
+import fetchHTML from '@ice/stark-html';
 import { AppHistory } from './appHistory';
-import { loadAssets, emptyAssets } from './handleAssets';
+import { loadAssets, emptyAssets, appendInlineCode } from './handleAssets';
 import { setCache, getCache } from './cache';
-
-const converArray2String = (list: string | string[]) => {
-  if (Array.isArray(list)) {
-    return list.join(',');
-  }
-
-  return String(list);
-};
 
 interface AppRouteState {
   cssLoading: boolean;
@@ -41,6 +34,7 @@ export interface AppRouteComponentProps<Params extends { [K in keyof Params]?: s
 
 export interface AppConfig {
   title?: string;
+  useShadow?: boolean;
   hashType?: boolean | hashType;
   basename?: string;
   exact?: boolean;
@@ -52,7 +46,7 @@ export interface AppConfig {
 export interface AppRouteProps extends AppConfig {
   path: string | string[];
   url?: string | string[];
-  useShadow?: boolean;
+  htmlUrl?: string;
   ErrorComponent?: any;
   LoadingComponent?: any;
   component?: React.ReactElement;
@@ -64,8 +58,12 @@ export interface AppRouteProps extends AppConfig {
   triggerError?: (err: string) => void;
 }
 
-interface StatusComponentProps {
-  err?: any;
+export function converArray2String(list: string | string[]) {
+  if (Array.isArray(list)) {
+    return list.join(',');
+  }
+
+  return String(list);
 }
 
 /**
@@ -76,7 +74,6 @@ function getAppConfig(appRouteProps: AppRouteProps): AppConfig {
   const uselessList = [
     'forceRenderCount',
     'url',
-    'useShadow',
     'onAppEnter',
     'onAppLeave',
     'triggerLoading',
@@ -115,14 +112,15 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   }
 
   componentDidUpdate(prevProps) {
-    const { path, url, title, rootId, forceRenderCount } = this.props;
+    const { path, url, title, rootId, forceRenderCount, useShadow } = this.props;
 
     if (
       converArray2String(path) !== converArray2String(prevProps.path) ||
       converArray2String(url) !== converArray2String(prevProps.url) ||
       title !== prevProps.title ||
       rootId !== prevProps.rootId ||
-      forceRenderCount !== prevProps.forceRenderCount
+      forceRenderCount !== prevProps.forceRenderCount ||
+      useShadow !== prevProps.useShadow
     ) {
       // record config for prev App
       const prevAppConfig = getAppConfig(prevProps);
@@ -135,24 +133,15 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     // Empty useless assets before unmount
     const { useShadow } = this.props;
     emptyAssets(useShadow);
-    this.unmounted = true;
     setCache('root', null);
+    this.unmounted = true;
   }
 
   /**
    * Load assets and render child app
    */
   renderChild = (prevAppConfig?: AppConfig): void => {
-    const {
-      url,
-      title,
-      rootId,
-      useShadow,
-      onAppEnter,
-      onAppLeave,
-      triggerLoading,
-      triggerError,
-    } = this.props;
+    const { rootId, useShadow, onAppLeave } = this.props;
 
     const myBase: HTMLElement = this.myRefBase;
     if (!myBase) return;
@@ -168,6 +157,12 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
       // trigger onAppLeave
       if (typeof onAppLeave === 'function') onAppLeave(prevAppConfig);
+
+      // empty useless assets before loading
+      emptyAssets(prevAppConfig.useShadow);
+
+      // remove rootElement for previous app
+      this.removeElementFromBase(prevAppConfig.rootId);
     }
 
     // ReCreate rootElement to remove React Component instance,
@@ -184,38 +179,61 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     setCache('root', rootElement);
 
-    // empty useless assets before loading
-    emptyAssets(useShadow);
+    this.loadNextApp(rootElement, useShadow);
+  };
+
+  loadNextApp = (rootElement: any, useShadow?: boolean) => {
+    const { url, htmlUrl, title, triggerLoading, triggerError, onAppEnter } = this.props;
 
     if (title) document.title = title;
 
-    // generate bundleList
-    const bundleList: string[] = Array.isArray(url) ? url : [url];
+    // common load assets function
+    const loadAppAssets = assetsList => {
+      if (typeof onAppEnter === 'function') onAppEnter(getAppConfig(this.props));
 
-    // handle loading
+      loadAssets(
+        assetsList,
+        useShadow,
+        (err: any): boolean => {
+          if (err) {
+            // Handle error
+            typeof triggerError === 'function' && triggerError(err);
+            return true;
+          }
+
+          typeof triggerLoading === 'function' && triggerLoading(false);
+
+          return this.unmounted;
+        },
+        (): void => {
+          this.setState({ cssLoading: false });
+        },
+      );
+    };
+
+    // trigger loading before loadAssets
     this.setState({ cssLoading: true });
     typeof triggerLoading === 'function' && triggerLoading(true);
 
-    if (typeof onAppEnter === 'function') onAppEnter(getAppConfig(this.props));
+    if (htmlUrl) {
+      fetchHTML(htmlUrl).then(processed => {
+        if (this.unmounted) return;
 
-    loadAssets(
-      bundleList,
-      useShadow,
-      (err: any): boolean => {
-        if (err) {
-          // Handle error
-          typeof triggerError === 'function' && triggerError(err);
-          return true;
+        // when fetchHTML error, trigger render ErrorComponent
+        if (typeof processed === 'string') {
+          typeof triggerError === 'function' && triggerError(processed);
+          return;
         }
 
-        typeof triggerLoading === 'function' && triggerLoading(false);
+        const { html, url: assetsList, code } = processed as any;
 
-        return this.unmounted;
-      },
-      (): void => {
-        this.setState({ cssLoading: false });
-      },
-    );
+        rootElement.innerHTML = html;
+        appendInlineCode(rootElement, code);
+        loadAppAssets(assetsList);
+      });
+    } else {
+      loadAppAssets(Array.isArray(url) ? url : [url]);
+    }
   };
 
   appendElementToBase = (elementId: string): HTMLElement => {

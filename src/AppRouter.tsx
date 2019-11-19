@@ -3,7 +3,7 @@ import * as urlParse from 'url-parse';
 import { AppConfig, AppRouteProps, AppRouteComponentProps } from './AppRoute';
 import appHistory from './appHistory';
 import matchPath from './matchPath';
-import { recordAssets } from './handleAssets';
+import { recordAssets, emptyAssets } from './handleAssets';
 import { ICESTSRK_NOT_FOUND, ICESTSRK_ERROR } from './constant';
 import { setCache } from './cache';
 
@@ -99,6 +99,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   componentWillUnmount() {
     this.unHijackHistory();
     window.removeEventListener('icestark:not-found', this.triggerNotFound);
+    emptyAssets(false);
   }
 
   /**

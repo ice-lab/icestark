@@ -1,13 +1,18 @@
 import '@testing-library/jest-dom/extend-expect';
+import { FetchMock } from 'jest-fetch-mock';
 
 import * as React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import { AppRouter, AppRoute, AppLink, appHistory } from '../src/index';
 import matchPath from '../src/matchPath';
-import { loadAssets, recordAssets } from '../src/handleAssets';
+import { emptyAssets, loadAssets, recordAssets, appendInlineCode } from '../src/handleAssets';
 import { setCache, getCache } from '../src/cache';
 
 describe('AppRouter', () => {
+  beforeEach(() => {
+    (fetch as FetchMock).resetMocks();
+  });
+
   test('render the AppRouter', () => {
     const props = {
       onRouteChange: jest.fn(),
@@ -36,6 +41,9 @@ describe('AppRouter', () => {
       LoadingComponent: <div>Loading</div>,
     };
 
+    /**
+     * Test for render
+     */
     const { container, rerender, unmount, getByText } = render(
       <AppRouter {...props}>
         <AppRoute path="/" component={<div data-testid="icestarkTest">test</div>} />
@@ -84,7 +92,7 @@ describe('AppRouter', () => {
     expect(container.innerHTML).toContain('NotFound');
 
     /**
-     * test for HashType
+     * Test for HashType
      */
     window.history.pushState({}, 'test', '/');
     rerender(
@@ -150,6 +158,78 @@ describe('AppRouter', () => {
 
     unmount();
   });
+
+  test('test for AppRoute htmlUrl -> success', done => {
+    window.history.pushState({}, 'test', '/');
+
+    const props = {
+      onRouteChange: jest.fn(),
+      LoadingComponent: <div>Loading</div>,
+    };
+
+    (fetch as FetchMock).mockResponseOnce(
+      '<html>' +
+        '  <head>' +
+        '    <meta charset="utf-8" />' +
+        '    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />' +
+        '    <link rel="dns-prefetch" href="//g.alicdn.com" />' +
+        '    <link rel="stylesheet" href="/index.css" />' +
+        '    <title>This is for test</title>' +
+        '  </head>' +
+        '  <body>' +
+        '    <div id="App">' +
+        '    </div>' +
+        '    <script src="index.js"></script>' +
+        '    <div id="page_bottom"></div>' +
+        '  </body>' +
+        '</html>',
+    );
+
+    const { container, unmount } = render(
+      <AppRouter {...props}>
+        <AppRoute path="/" htmlUrl="//icestark.com" />
+      </AppRouter>,
+    );
+
+    setTimeout(function() {
+      expect(container.innerHTML).not.toContain('<meta');
+      expect(container.innerHTML).toContain(
+        '<!--link http://icestark.com/index.css replaced by @ice/stark-html-->',
+      );
+      expect(container.innerHTML).toContain(
+        '<!--script http://icestark.com/index.js replaced by @ice/stark-html-->',
+      );
+      unmount();
+    }, done());
+  });
+
+  test('test for AppRoute htmlUrl -> error', done => {
+    const warnMockFn = jest.fn();
+    (global as any).console = {
+      warn: warnMockFn,
+    };
+
+    window.history.pushState({}, 'test', '/');
+
+    const props = {
+      onRouteChange: jest.fn(),
+      LoadingComponent: <div>Loading</div>,
+    };
+
+    const err = new Error('err');
+    (fetch as FetchMock).mockRejectOnce(err);
+
+    const { container, unmount } = render(
+      <AppRouter {...props}>
+        <AppRoute path="/" htmlUrl="//icestark.com" />
+      </AppRouter>,
+    );
+
+    setTimeout(function() {
+      expect(container.innerHTML).toContain('fetch //icestark.com error: ');
+      unmount();
+    }, done());
+  });
 });
 
 describe('AppLink', () => {
@@ -213,6 +293,8 @@ describe('matchPath', () => {
 
 describe('handleAssets', () => {
   test('loadAssets', () => {
+    emptyAssets(false);
+
     loadAssets(
       [
         'http://icestark.com/js/index.js',
@@ -230,11 +312,13 @@ describe('handleAssets', () => {
     expect((jsElement0 as HTMLScriptElement).async).toEqual(false);
     expect((jsElement1 as HTMLScriptElement).src).toEqual('http://icestark.com/js/test1.js');
     expect((jsElement1 as HTMLScriptElement).async).toEqual(false);
+    expect(jsElement0.getAttribute('icestark')).toEqual('dynamic');
+    expect(jsElement1.getAttribute('icestark')).toEqual('dynamic');
 
     recordAssets();
 
-    expect(jsElement0.getAttribute('icestark')).toEqual('static');
-    expect(jsElement1.getAttribute('icestark')).toEqual('static');
+    expect(jsElement0.getAttribute('icestark')).toEqual('dynamic');
+    expect(jsElement1.getAttribute('icestark')).toEqual('dynamic');
   });
 
   test('recordAssets', () => {
@@ -256,6 +340,23 @@ describe('handleAssets', () => {
     expect(jsElement.getAttribute('icestark')).toEqual('static');
     expect(linkElement.getAttribute('icestark')).toEqual('static');
     expect(styleElement.getAttribute('icestark')).toEqual('static');
+  });
+
+  test('appendInlineCode', () => {
+    const rootElement = document.createElement('div');
+
+    appendInlineCode(rootElement, {} as any);
+    expect(rootElement.childElementCount).toBe(0);
+
+    appendInlineCode(rootElement, []);
+    expect(rootElement.childElementCount).toBe(0);
+
+    const code1 = 'console.log()';
+    const code2 = 'window.test={}';
+    appendInlineCode(rootElement, [code1, code2]);
+    expect(rootElement.childElementCount).toBe(2);
+    expect(rootElement).toContainHTML('<script icestark="dynamic">console.log()</script>');
+    expect(rootElement).toContainHTML('<script icestark="dynamic">window.test={}</script>');
   });
 });
 

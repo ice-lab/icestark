@@ -49,7 +49,7 @@ function loadAsset(
 }
 
 export function loadAssets(
-  bundleList: string[],
+  assetsList: string[],
   useShadow: boolean,
   jsCallback: (err: any) => boolean,
   cssCallBack: () => void,
@@ -62,7 +62,7 @@ export function loadAssets(
   const jsList: string[] = [];
   const cssList: string[] = [];
 
-  bundleList.forEach(url => {
+  assetsList.forEach(url => {
     const isCss: boolean = /\.css$/.test(url);
     if (isCss) {
       cssList.push(url);
@@ -121,19 +121,23 @@ export function recordAssets(): void {
   const jsList: HTMLCollectionOf<HTMLScriptElement> = document.getElementsByTagName('script');
 
   for (let i = 0; i < styleList.length; i++) {
-    const style = styleList[i];
-    style.setAttribute(PREFIX, STATIC);
+    setStaticAttribute(styleList[i]);
   }
 
   for (let i = 0; i < linkList.length; i++) {
-    const link = linkList[i];
-    link.setAttribute(PREFIX, STATIC);
+    setStaticAttribute(linkList[i]);
   }
 
   for (let i = 0; i < jsList.length; i++) {
-    const js = jsList[i];
-    js.setAttribute(PREFIX, STATIC);
+    setStaticAttribute(jsList[i]);
   }
+}
+
+export function setStaticAttribute(tag: HTMLStyleElement | HTMLScriptElement): void {
+  if (tag.getAttribute(PREFIX) !== DYNAMIC) {
+    tag.setAttribute(PREFIX, STATIC);
+  }
+  tag = null;
 }
 
 /**
@@ -171,4 +175,16 @@ export function emptyAssets(useShadow: boolean): void {
     `script:not([${PREFIX}=${STATIC}])`,
   );
   jsExtraList.forEach(js => js.parentNode.removeChild(js));
+}
+
+export function appendInlineCode(root: HTMLElement | ShadowRoot, code: string[]) {
+  if (!Array.isArray(code) || code.length === 0) return;
+
+  code.forEach(c => {
+    const element: HTMLScriptElement | HTMLElement = document.createElement('script');
+    element.setAttribute(PREFIX, DYNAMIC);
+    element.innerHTML = c;
+
+    root.appendChild(element);
+  });
 }
