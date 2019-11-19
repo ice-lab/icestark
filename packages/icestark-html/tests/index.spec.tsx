@@ -2,6 +2,7 @@ import '@testing-library/jest-dom/extend-expect';
 import { FetchMock } from 'jest-fetch-mock';
 
 import fetchHTML, {
+  AssetsTypeEnum,
   ProcessedContent,
   parseUrl,
   getUrl,
@@ -141,7 +142,7 @@ describe('processHtml', () => {
   test('processHtml', () => {
     expect(processHtml(undefined).html).toBe('');
 
-    const { html, url, code } = processHtml(tempHTML);
+    const { html, assets } = processHtml(tempHTML);
     expect(html).not.toContain('<meta ');
 
     expect(html).not.toContain('<script src="//g.alicdn.com/p');
@@ -157,13 +158,22 @@ describe('processHtml', () => {
     expect(html).not.toContain('href="/index.css"');
     expect(html).not.toContain('href="index.css"');
 
-    expect(url.length).toBe(11);
+    expect(assets.length).toBe(13);
 
-    expect(code.length).toBe(2);
-    expect(code[0]).not.toContain('<script');
-    expect(code[0]).not.toContain('</script');
-    expect(code[0]).toContain('console.log');
-    expect(code[1]).toContain('window.g_config');
+    // script src assets
+    expect(assets[0].type).toBe(AssetsTypeEnum.SRC);
+    expect(assets[0].content).toBe(
+      '//g.alicdn.com/platform/c/??es5-shim/4.1.12/es5-shim.min.js,es5-shim/4.1.12/es5-sham.min.js,console-polyfill/0.2.1/index.min.js',
+    );
+    expect(assets[2].type).toBe(AssetsTypeEnum.SRC);
+
+    // script inline assets
+    expect(assets[1].type).toBe(AssetsTypeEnum.INLINE);
+    expect(assets[1].content).not.toContain('<script');
+    expect(assets[1].content).not.toContain('</script');
+    expect(assets[1].content).toContain('console.log');
+    expect(assets[5].type).toBe(AssetsTypeEnum.INLINE);
+    expect(assets[5].content).toContain('window.g_config');
   });
 });
 
@@ -232,7 +242,7 @@ describe('fetchHTML', () => {
     fetchHTML('//icestark.com').then(processed => {
       expect(typeof processed).not.toBe('string');
 
-      const { html, url, code } = processed as ProcessedContent;
+      const { html, assets } = processed as ProcessedContent;
 
       expect(html).not.toContain('<meta ');
 
@@ -247,9 +257,7 @@ describe('fetchHTML', () => {
       expect(html).not.toContain('href="index.css"');
       expect(html).not.toContain('href="/index.css"');
 
-      expect(url.length).toBe(6);
-
-      expect(code.length).toBe(1);
+      expect(assets.length).toBe(7);
     });
   });
 

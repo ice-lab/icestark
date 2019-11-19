@@ -9,10 +9,20 @@ const SCRIPT_SRC_REGEX = /<script\b[^>]*src=['"]?([^'"]*)['"]?\b[^>]*>/gi;
 const LINK_HREF_REGEX = /<link\b[^>]*href=['"]?([^'"]*)['"]?\b[^>]*>/gi;
 const STYLE_SHEET_REGEX = /rel=['"]stylesheet['"]/gi;
 
+export enum AssetsTypeEnum {
+  SRC = 'src',
+  HREF = 'href',
+  INLINE = 'inline',
+}
+
+export interface Assets {
+  type: AssetsTypeEnum;
+  content: string;
+}
+
 export interface ProcessedContent {
   html: string;
-  url: string[];
-  code: string[];
+  assets: Assets[];
 }
 
 export interface ParsedConfig {
@@ -62,21 +72,28 @@ export function getReplacementComments(tag: string, from: string): string {
 }
 
 export function processHtml(html: string, htmlUrl?: string): ProcessedContent {
-  if (!html) return { html: '', url: [], code: [] };
+  if (!html) return { html: '', assets: [] };
 
-  const processedUrl = [];
-  const processedCode = [];
+  const processedAssets = [];
 
   const processedHtml = html
     .replace(META_REGEX, '')
     .replace(SCRIPT_REGEX, (arg1, arg2) => {
       if (!arg1.match(SCRIPT_SRC_REGEX)) {
-        processedCode.push(arg2);
+        processedAssets.push({
+          type: AssetsTypeEnum.INLINE,
+          content: arg2,
+        });
+
         return getReplacementComments('script', 'inline');
       } else {
         return arg1.replace(SCRIPT_SRC_REGEX, (argSrc1, argSrc2) => {
           const url = argSrc2.indexOf('//') >= 0 ? argSrc2 : getUrl(htmlUrl, argSrc2);
-          processedUrl.push(url);
+          processedAssets.push({
+            type: AssetsTypeEnum.SRC,
+            content: url,
+          });
+
           return getReplacementComments('script', url);
         });
       }
@@ -88,14 +105,17 @@ export function processHtml(html: string, htmlUrl?: string): ProcessedContent {
       }
 
       const url = arg2.indexOf('//') >= 0 ? arg2 : getUrl(htmlUrl, arg2);
-      processedUrl.push(url);
+      processedAssets.push({
+        type: AssetsTypeEnum.HREF,
+        content: url,
+      });
+
       return getReplacementComments('link', url);
     });
 
   return {
     html: processedHtml,
-    url: processedUrl,
-    code: processedCode,
+    assets: processedAssets,
   };
 }
 
