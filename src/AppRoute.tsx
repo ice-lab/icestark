@@ -195,6 +195,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         assetsList,
         useShadow,
         (err: any): boolean => {
+          // add safe code for unmounted
+          if (this.unmounted) return true;
+
           if (err) {
             // Handle error
             typeof triggerError === 'function' && triggerError(err);
@@ -203,7 +206,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
           typeof triggerLoading === 'function' && triggerLoading(false);
 
-          return this.unmounted;
+          return false;
         },
         (): void => {
           this.setState({ cssLoading: false });
