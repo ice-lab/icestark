@@ -257,11 +257,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   render() {
-    const { path, title } = this.props;
-
     return (
       <div
-        key={`${converArray2String(path)}-${title}`}
         ref={element => {
           this.myRefBase = element;
         }}
