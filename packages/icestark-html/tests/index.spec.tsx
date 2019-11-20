@@ -1,13 +1,14 @@
 import '@testing-library/jest-dom/extend-expect';
 import { FetchMock } from 'jest-fetch-mock';
 
-import fetchHTML, {
-  AssetsTypeEnum,
-  ProcessedContent,
+import loadHtml, {
+  AssetTypeEnum,
   parseUrl,
   getUrl,
   getReplacementComments,
+  getProcessedComments,
   processHtml,
+  appendScript,
 } from '../src/index';
 
 const tempHTML =
@@ -138,6 +139,14 @@ describe('getReplacementComments', () => {
   });
 });
 
+describe('getProcessedComments', () => {
+  test('getProcessedComments', () => {
+    expect(getProcessedComments('link', '/test.css')).toBe(
+      '<!--link /test.css processed by @ice/stark-html-->',
+    );
+  });
+});
+
 describe('processHtml', () => {
   test('processHtml', () => {
     expect(processHtml(undefined).html).toBe('');
@@ -154,30 +163,31 @@ describe('processHtml', () => {
     expect(html).toContain('<link rel="dns-prefetch" href="//at.alicdn.com" />');
     expect(html).toContain('<link rel="dns-prefetch" href="//img.alicdn.com" />');
 
-    expect(html).not.toContain('href="./');
+    expect(html).toContain('<!--link ./test.css processed by @ice/stark-html-->');
+    expect(html).toContain('<!--link /index.css processed by @ice/stark-html-->');
     expect(html).not.toContain('href="/index.css"');
     expect(html).not.toContain('href="index.css"');
 
-    expect(assets.length).toBe(13);
+    expect(assets.length).toBe(9);
 
-    // script src assets
-    expect(assets[0].type).toBe(AssetsTypeEnum.SRC);
+    // script external assets
+    expect(assets[0].type).toBe(AssetTypeEnum.EXTERNAL);
     expect(assets[0].content).toBe(
       '//g.alicdn.com/platform/c/??es5-shim/4.1.12/es5-shim.min.js,es5-shim/4.1.12/es5-sham.min.js,console-polyfill/0.2.1/index.min.js',
     );
-    expect(assets[2].type).toBe(AssetsTypeEnum.SRC);
+    expect(assets[2].type).toBe(AssetTypeEnum.EXTERNAL);
 
     // script inline assets
-    expect(assets[1].type).toBe(AssetsTypeEnum.INLINE);
+    expect(assets[1].type).toBe(AssetTypeEnum.INLINE);
     expect(assets[1].content).not.toContain('<script');
     expect(assets[1].content).not.toContain('</script');
     expect(assets[1].content).toContain('console.log');
-    expect(assets[5].type).toBe(AssetsTypeEnum.INLINE);
+    expect(assets[5].type).toBe(AssetTypeEnum.INLINE);
     expect(assets[5].content).toContain('window.g_config');
   });
 });
 
-describe('fetchHTML', () => {
+describe('loadHtml', () => {
   beforeEach(() => {
     (fetch as FetchMock).resetMocks();
   });
@@ -187,17 +197,25 @@ describe('fetchHTML', () => {
     warn: warnMockFn,
   };
 
-  test('fetchHTML', () => {
+  test('loadHtml', () => {
     const fetchMockFn = jest.fn();
 
+    const div = document.createElement('div');
     const htmlUrl = '//icestark.com';
-    fetchHTML(htmlUrl, fetchMockFn)
+    loadHtml(
+      div,
+      htmlUrl,
+      url =>
+        new Promise(resolve => {
+          resolve(fetchMockFn(url));
+        }),
+    )
       .then(() => {
         expect(fetchMockFn).toBeCalledWith(htmlUrl);
       })
       .catch(() => {});
 
-    fetchHTML(htmlUrl, null)
+    loadHtml(div, htmlUrl, null)
       .then(() => {
         expect(warnMockFn).toBeCalledWith(
           'Current environment does not support window.fetch, please use custom fetch',
@@ -206,43 +224,45 @@ describe('fetchHTML', () => {
       .catch(() => {});
   });
 
-  test('fetchHTML -> success', () => {
-    (fetch as FetchMock).mockResponseOnce(
+  test('loadHtml -> success', () => {
+    const htmlContent =
       '<html>' +
-        '  <head>' +
-        '    <meta charset="utf-8" />' +
-        '    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />' +
-        '    <link rel="dns-prefetch" href="//g.alicdn.com" />' +
-        '    <link rel="stylesheet" href="/index.css" />' +
-        '    <link rel="stylesheet" href="index.css" />' +
-        '    <title>This is for test</title>' +
-        '  </head>' +
-        '  <body>' +
-        '    <script>' +
-        '      console.log()' +
-        '    </script>' +
-        '    <script' +
-        '      async' +
-        '      src="//g.alicdn.com/1.1/test/index.js"' +
-        '      id="ice-test"' +
-        '    ></script>' +
-        '    <div id="App">' +
-        '    </div>' +
-        '    <script crossorigin="anonymous" src="/test.js"></script>' +
-        '    <script' +
-        '      crossorigin="anonymous"' +
-        '      src="/test.min.js"' +
-        '    ></script>' +
-        '    <script src="index.js"></script>' +
-        '    <div id="page_bottom"></div>' +
-        '  </body>' +
-        '</html>',
-    );
+      '  <head>' +
+      '    <meta charset="utf-8" />' +
+      '    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />' +
+      '    <link rel="dns-prefetch" href="//g.alicdn.com" />' +
+      '    <link rel="stylesheet" href="/index.css" />' +
+      '    <link rel="stylesheet" href="test.css" />' +
+      '    <title>This is for test</title>' +
+      '  </head>' +
+      '  <body>' +
+      '    <script>' +
+      '      console.log()' +
+      '    </script>' +
+      '    <script' +
+      '      async' +
+      '      src="//g.alicdn.com/1.1/test/index.js"' +
+      '      id="ice-test"' +
+      '    ></script>' +
+      '    <div id="App">' +
+      '    </div>' +
+      '    <script crossorigin="anonymous" src="/test.js"></script>' +
+      '    <script' +
+      '      crossorigin="anonymous"' +
+      '      src="/test.min.js"' +
+      '    ></script>' +
+      '    <script src="index.js"></script>' +
+      '    <div id="page_bottom"></div>' +
+      '  </body>' +
+      '</html>';
 
-    fetchHTML('//icestark.com').then(processed => {
-      expect(typeof processed).not.toBe('string');
+    (fetch as FetchMock).mockResponseOnce(htmlContent);
 
-      const { html, assets } = processed as ProcessedContent;
+    const div = document.createElement('div');
+
+    loadHtml(div, '//icestark.com').then(() => {
+      const html = div.innerHTML;
+      expect(html).toContain(processHtml(htmlContent).html);
 
       expect(html).not.toContain('<meta ');
 
@@ -250,24 +270,67 @@ describe('fetchHTML', () => {
       expect(html).not.toContain('src="/test.js"');
       expect(html).not.toContain('src="index.js"');
 
+      expect(html).toContain('<!--script /test.js replaced by @ice/stark-html-->');
+      expect(html).toContain('<!--script index.js replaced by @ice/stark-html-->');
+
       expect(html).toContain('<link rel="dns-prefetch" href="//g.alicdn.com" />');
-      expect(html).not.toContain('<link rel="stylesheet" href=');
+      expect(html).not.toContain('<link rel="stylesheet" href="/index.css');
+      expect(html).not.toContain('<link rel="stylesheet" href="test.css');
 
-      expect(html).not.toContain('href="./');
-      expect(html).not.toContain('href="index.css"');
-      expect(html).not.toContain('href="/index.css"');
-
-      expect(assets.length).toBe(7);
+      expect(html).toContain('<!--link /index.css processed by @ice/stark-html-->');
+      expect(html).toContain('<!--link test.css processed by @ice/stark-html-->');
     });
+
+    const scripts = div.getElementsByTagName('script');
+    for (let i = 0; i < scripts.length; i++) {
+      scripts[i].dispatchEvent(new Event('load'));
+    }
   });
 
-  test('fetchHTML -> error', () => {
+  test('loadHtml -> error', () => {
     const err = new Error('err');
     (fetch as FetchMock).mockRejectOnce(err);
 
-    fetchHTML('//icestark.error.com').then(errMessage => {
+    const div = document.createElement('div');
+
+    loadHtml(div, '//icestark.error.com').then(errMessage => {
       expect(warnMockFn).toBeCalledWith(errMessage);
       expect(errMessage).toBe(`fetch //icestark.error.com error: Error: err`);
     });
+  });
+});
+
+describe('appendScript', () => {
+  test('appendScript -> inline', () => {
+    const div = document.createElement('div');
+
+    expect.assertions(1);
+    return expect(
+      appendScript(div, { type: AssetTypeEnum.INLINE, content: 'console.log()' }),
+    ).resolves.toBeUndefined();
+  });
+
+  test('appendScript -> EXTERNAL success', () => {
+    const div = document.createElement('div');
+
+    appendScript(div, { type: AssetTypeEnum.EXTERNAL, content: '/test.js' }).then(() =>
+      expect(div.innerHTML).toContain('/test.js'),
+    );
+
+    const scripts = div.getElementsByTagName('script');
+    for (let i = 0; i < scripts.length; i++) {
+      scripts[i].dispatchEvent(new Event('load'));
+    }
+  });
+
+  test('appendScript -> EXTERNAL error', () => {
+    const div = document.createElement('div');
+
+    appendScript(div, { type: AssetTypeEnum.EXTERNAL, content: '/test.js' }).catch(err =>
+      expect(err).toContain('js asset loaded error: '),
+    );
+
+    const scripts = div.getElementsByTagName('script');
+    scripts[0].dispatchEvent(new ErrorEvent('error'));
   });
 });

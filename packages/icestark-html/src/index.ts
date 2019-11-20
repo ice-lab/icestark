@@ -9,20 +9,19 @@ const SCRIPT_SRC_REGEX = /<script\b[^>]*src=['"]?([^'"]*)['"]?\b[^>]*>/gi;
 const LINK_HREF_REGEX = /<link\b[^>]*href=['"]?([^'"]*)['"]?\b[^>]*>/gi;
 const STYLE_SHEET_REGEX = /rel=['"]stylesheet['"]/gi;
 
-export enum AssetsTypeEnum {
-  SRC = 'src',
-  HREF = 'href',
+export enum AssetTypeEnum {
   INLINE = 'inline',
+  EXTERNAL = 'external',
 }
 
-export interface Assets {
-  type: AssetsTypeEnum;
+export interface Asset {
+  type: AssetTypeEnum;
   content: string;
 }
 
 export interface ProcessedContent {
   html: string;
-  assets: Assets[];
+  assets: Asset[];
 }
 
 export interface ParsedConfig {
@@ -71,6 +70,10 @@ export function getReplacementComments(tag: string, from: string): string {
   return `<!--${tag} ${from} replaced by @ice/stark-html-->`;
 }
 
+export function getProcessedComments(tag: string, from: string): string {
+  return `<!--${tag} ${from} processed by @ice/stark-html-->`;
+}
+
 export function processHtml(html: string, htmlUrl?: string): ProcessedContent {
   if (!html) return { html: '', assets: [] };
 
@@ -81,7 +84,7 @@ export function processHtml(html: string, htmlUrl?: string): ProcessedContent {
     .replace(SCRIPT_REGEX, (arg1, arg2) => {
       if (!arg1.match(SCRIPT_SRC_REGEX)) {
         processedAssets.push({
-          type: AssetsTypeEnum.INLINE,
+          type: AssetTypeEnum.INLINE,
           content: arg2,
         });
 
@@ -90,11 +93,11 @@ export function processHtml(html: string, htmlUrl?: string): ProcessedContent {
         return arg1.replace(SCRIPT_SRC_REGEX, (argSrc1, argSrc2) => {
           const url = argSrc2.indexOf('//') >= 0 ? argSrc2 : getUrl(htmlUrl, argSrc2);
           processedAssets.push({
-            type: AssetsTypeEnum.SRC,
+            type: AssetTypeEnum.EXTERNAL,
             content: url,
           });
 
-          return getReplacementComments('script', url);
+          return getReplacementComments('script', argSrc2);
         });
       }
     })
@@ -105,12 +108,7 @@ export function processHtml(html: string, htmlUrl?: string): ProcessedContent {
       }
 
       const url = arg2.indexOf('//') >= 0 ? arg2 : getUrl(htmlUrl, arg2);
-      processedAssets.push({
-        type: AssetsTypeEnum.HREF,
-        content: url,
-      });
-
-      return getReplacementComments('link', url);
+      return `${getProcessedComments('link', arg2)}   ${arg1.replace(arg2, url)}`;
     });
 
   return {
@@ -119,22 +117,56 @@ export function processHtml(html: string, htmlUrl?: string): ProcessedContent {
   };
 }
 
-export default async function fetchHTML(
+export default function loadHtml(
+  root: HTMLElement | ShadowRoot,
   htmlUrl: string,
   fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response> = winFetch,
-): Promise<ProcessedContent | string | void> {
+): Promise<string | Error> {
   if (!fetch) {
     return new Promise((_, reject) => {
       warn('Current environment does not support window.fetch, please use custom fetch');
-      reject();
+      reject(
+        `fetch ${htmlUrl} error: Current environment does not support window.fetch, please use custom fetch`,
+      );
     });
   }
 
   return fetch(htmlUrl)
     .then(res => res.text())
-    .then(html => processHtml(html, htmlUrl))
+    .then(html => {
+      const { html: processedHtml, assets } = processHtml(html, htmlUrl);
+
+      root.innerHTML = processedHtml;
+
+      // make sure assets loaded in order
+      return Array.prototype.slice.apply(assets).reduce((chain, asset) => {
+        return chain.then(() => appendScript(root, asset));
+      }, Promise.resolve());
+    })
     .catch(err => {
       warn(`fetch ${htmlUrl} error: ${err}`);
       return `fetch ${htmlUrl} error: ${err}`;
     });
+}
+
+export function appendScript(root: HTMLElement | ShadowRoot, asset: Asset) {
+  const { type, content } = asset;
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+
+    // inline script
+    if (type === AssetTypeEnum.INLINE) {
+      script.innerHTML = content;
+      root.appendChild(script);
+      resolve();
+      return;
+    }
+
+    // external script
+    script.setAttribute('src', content);
+    script.addEventListener('load', () => resolve(), false);
+    script.addEventListener('error', () => reject(`js asset loaded error: ${content}`));
+    root.appendChild(script);
+  });
 }
