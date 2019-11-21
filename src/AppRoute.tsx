@@ -1,18 +1,8 @@
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import loadHtml from '@ice/stark-html';
 import { AppHistory } from './appHistory';
 import { loadAssets, emptyAssets } from './handleAssets';
 import { setCache, getCache } from './cache';
-
-const statusElementId = 'icestarkStatusContainer';
-
-const converArray2String = (list: string | string[]) => {
-  if (Array.isArray(list)) {
-    return list.join(',');
-  }
-
-  return String(list);
-};
 
 interface AppRouteState {
   cssLoading: boolean;
@@ -44,6 +34,7 @@ export interface AppRouteComponentProps<Params extends { [K in keyof Params]?: s
 
 export interface AppConfig {
   title?: string;
+  useShadow?: boolean;
   hashType?: boolean | hashType;
   basename?: string;
   exact?: boolean;
@@ -55,18 +46,22 @@ export interface AppConfig {
 export interface AppRouteProps extends AppConfig {
   path: string | string[];
   url?: string | string[];
-  useShadow?: boolean;
-  ErrorComponent?: any;
-  LoadingComponent?: any;
+  htmlUrl?: string;
   component?: React.ReactElement;
   render?: (props?: AppRouteComponentProps) => React.ReactElement;
   forceRenderCount?: number;
   onAppEnter?: (appConfig: AppConfig) => void;
   onAppLeave?: (appConfig: AppConfig) => void;
+  triggerLoading?: (loading: boolean) => void;
+  triggerError?: (err: string) => void;
 }
 
-interface StatusComponentProps {
-  err?: any;
+export function converArray2String(list: string | string[]) {
+  if (Array.isArray(list)) {
+    return list.join(',');
+  }
+
+  return String(list);
 }
 
 /**
@@ -77,11 +72,10 @@ function getAppConfig(appRouteProps: AppRouteProps): AppConfig {
   const uselessList = [
     'forceRenderCount',
     'url',
-    'useShadow',
-    'ErrorComponent',
-    'LoadingComponent',
     'onAppEnter',
     'onAppLeave',
+    'triggerLoading',
+    'triggerError',
   ];
 
   Object.keys(appRouteProps).forEach(key => {
@@ -116,14 +110,15 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   }
 
   componentDidUpdate(prevProps) {
-    const { path, url, title, rootId, forceRenderCount } = this.props;
+    const { path, url, title, rootId, forceRenderCount, useShadow } = this.props;
 
     if (
       converArray2String(path) !== converArray2String(prevProps.path) ||
       converArray2String(url) !== converArray2String(prevProps.url) ||
       title !== prevProps.title ||
       rootId !== prevProps.rootId ||
-      forceRenderCount !== prevProps.forceRenderCount
+      forceRenderCount !== prevProps.forceRenderCount ||
+      useShadow !== prevProps.useShadow
     ) {
       // record config for prev App
       const prevAppConfig = getAppConfig(prevProps);
@@ -136,24 +131,15 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     // Empty useless assets before unmount
     const { useShadow } = this.props;
     emptyAssets(useShadow);
-    this.unmounted = true;
     setCache('root', null);
+    this.unmounted = true;
   }
 
   /**
    * Load assets and render child app
    */
   renderChild = (prevAppConfig?: AppConfig): void => {
-    const {
-      url,
-      title,
-      rootId,
-      ErrorComponent,
-      LoadingComponent,
-      useShadow,
-      onAppEnter,
-      onAppLeave,
-    } = this.props;
+    const { rootId, useShadow, onAppLeave } = this.props;
 
     const myBase: HTMLElement = this.myRefBase;
     if (!myBase) return;
@@ -169,6 +155,12 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
       // trigger onAppLeave
       if (typeof onAppLeave === 'function') onAppLeave(prevAppConfig);
+
+      // empty useless assets before loading
+      emptyAssets(prevAppConfig.useShadow);
+
+      // remove rootElement for previous app
+      this.removeElementFromBase(prevAppConfig.rootId);
     }
 
     // ReCreate rootElement to remove React Component instance,
@@ -185,58 +177,64 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     setCache('root', rootElement);
 
-    // empty useless assets before loading
-    emptyAssets(useShadow);
+    this.loadNextApp(rootElement, useShadow);
+  };
+
+  loadNextApp = (rootElement: any, useShadow?: boolean) => {
+    const { url, htmlUrl, title, triggerLoading, triggerError, onAppEnter } = this.props;
 
     if (title) document.title = title;
 
-    // generate bundleList
-    const bundleList: string[] = Array.isArray(url) ? url : [url];
+    // common load assets function
+    const loadAppAssets = assetsList => {
+      if (typeof onAppEnter === 'function') onAppEnter(getAppConfig(this.props));
 
-    // handle loading
-    this.setState({ cssLoading: true });
-    this.renderStatusElement(LoadingComponent);
+      loadAssets(
+        assetsList,
+        useShadow,
+        (err: any): boolean => {
+          // add safe code for unmounted
+          if (this.unmounted) return true;
 
-    if (typeof onAppEnter === 'function') onAppEnter(getAppConfig(this.props));
+          if (err) {
+            // Handle error
+            typeof triggerError === 'function' && triggerError(err);
+            return true;
+          }
 
-    loadAssets(
-      bundleList,
-      useShadow,
-      (err: any): boolean => {
-        if (err) {
-          // Handle error
-          this.renderStatusElement(ErrorComponent, { err });
-          this.removeElementFromBase(rootId);
+          typeof triggerLoading === 'function' && triggerLoading(false);
+
+          return false;
+        },
+        (): void => {
           this.setState({ cssLoading: false });
-          return true;
-        }
+        },
+      );
+    };
 
-        this.removeElementFromBase(statusElementId);
+    // trigger loading before loadAssets
+    this.setState({ cssLoading: true });
+    typeof triggerLoading === 'function' && triggerLoading(true);
 
-        return this.unmounted;
-      },
-      (): void => {
-        this.setState({ cssLoading: false });
-      },
-    );
-  };
+    if (htmlUrl) {
+      loadHtml(rootElement, htmlUrl)
+        .then(() => {
+          if (this.unmounted) return;
 
-  /**
-   * Render statusElement
-   */
-  renderStatusElement = (Component: any, props: StatusComponentProps = {}): void => {
-    const myBase = this.myRefBase;
-    if (!myBase || !Component) return;
+          // cancel loading
+          this.setState({ cssLoading: false });
+          typeof triggerLoading === 'function' && triggerLoading(false);
+        })
+        .catch(err => {
+          if (this.unmounted) return;
 
-    let statusElement = myBase.querySelector(`#${statusElementId}`);
-    if (!statusElement) {
-      statusElement = this.appendElementToBase(statusElementId);
+          // when loadHtml error, trigger render ErrorComponent
+          this.setState({ cssLoading: false });
+          typeof triggerError === 'function' && triggerError(`fetch ${htmlUrl} error: ${err}`);
+        });
+    } else {
+      loadAppAssets(Array.isArray(url) ? url : [url]);
     }
-
-    ReactDOM.unmountComponentAtNode(statusElement);
-    React.isValidElement(Component)
-      ? ReactDOM.render(Component, statusElement)
-      : ReactDOM.render(<Component {...props} />, statusElement);
   };
 
   appendElementToBase = (elementId: string): HTMLElement => {
@@ -260,11 +258,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   render() {
-    const { path, title } = this.props;
-
     return (
       <div
-        key={`${converArray2String(path)}-${title}`}
         ref={element => {
           this.myRefBase = element;
         }}
