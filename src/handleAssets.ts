@@ -176,15 +176,3 @@ export function emptyAssets(useShadow: boolean): void {
   );
   jsExtraList.forEach(js => js.parentNode.removeChild(js));
 }
-
-export function appendInlineCode(root: HTMLElement | ShadowRoot, code: string[]) {
-  if (!Array.isArray(code) || code.length === 0) return;
-
-  code.forEach(c => {
-    const element: HTMLScriptElement | HTMLElement = document.createElement('script');
-    element.setAttribute(PREFIX, DYNAMIC);
-    element.innerHTML = c;
-
-    root.appendChild(element);
-  });
-}

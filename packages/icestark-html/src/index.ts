@@ -142,10 +142,6 @@ export default function loadHtml(
       return Array.prototype.slice.apply(assets).reduce((chain, asset) => {
         return chain.then(() => appendScript(root, asset));
       }, Promise.resolve());
-    })
-    .catch(err => {
-      warn(`fetch ${htmlUrl} error: ${err}`);
-      return err;
     });
 }
 

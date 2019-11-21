@@ -1,7 +1,7 @@
 import * as React from 'react';
-import fetchHTML from '@ice/stark-html';
+import loadHtml from '@ice/stark-html';
 import { AppHistory } from './appHistory';
-import { loadAssets, emptyAssets, appendInlineCode } from './handleAssets';
+import { loadAssets, emptyAssets } from './handleAssets';
 import { setCache, getCache } from './cache';
 
 interface AppRouteState {
@@ -219,21 +219,21 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     typeof triggerLoading === 'function' && triggerLoading(true);
 
     if (htmlUrl) {
-      fetchHTML(htmlUrl).then(processed => {
-        if (this.unmounted) return;
+      loadHtml(rootElement, htmlUrl)
+        .then(() => {
+          if (this.unmounted) return;
 
-        // when fetchHTML error, trigger render ErrorComponent
-        if (typeof processed === 'string') {
-          typeof triggerError === 'function' && triggerError(processed);
-          return;
-        }
+          // cancel loading
+          this.setState({ cssLoading: false });
+          typeof triggerLoading === 'function' && triggerLoading(false);
+        })
+        .catch(err => {
+          if (this.unmounted) return;
 
-        const { html, url: assetsList, code } = processed as any;
-
-        rootElement.innerHTML = html;
-        appendInlineCode(rootElement, code);
-        loadAppAssets(assetsList);
-      });
+          // when loadHtml error, trigger render ErrorComponent
+          this.setState({ cssLoading: false });
+          typeof triggerError === 'function' && triggerError(`fetch ${htmlUrl} error: ${err}`);
+        });
     } else {
       loadAppAssets(Array.isArray(url) ? url : [url]);
     }

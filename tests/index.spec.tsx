@@ -5,7 +5,7 @@ import * as React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import { AppRouter, AppRoute, AppLink, appHistory } from '../src/index';
 import matchPath from '../src/matchPath';
-import { emptyAssets, loadAssets, recordAssets, appendInlineCode } from '../src/handleAssets';
+import { emptyAssets, loadAssets, recordAssets } from '../src/handleAssets';
 import { setCache, getCache } from '../src/cache';
 
 describe('AppRouter', () => {
@@ -192,14 +192,15 @@ describe('AppRouter', () => {
     );
 
     setTimeout(function() {
+      expect(container.innerHTML).toContain('Loading');
       expect(container.innerHTML).not.toContain('<meta');
-      expect(container.innerHTML).toContain(
-        '<!--link http://icestark.com/index.css replaced by @ice/stark-html-->',
-      );
-      expect(container.innerHTML).toContain(
-        '<!--script http://icestark.com/index.js replaced by @ice/stark-html-->',
-      );
-      unmount();
+      expect(container.innerHTML).toContain('<!--link /index.css processed by @ice/stark-html-->');
+      expect(container.innerHTML).toContain('<!--script index.js replaced by @ice/stark-html-->');
+
+      const scripts = container.getElementsByTagName('script');
+      for (let i = 0; i < scripts.length; i++) {
+        scripts[i].dispatchEvent(new Event('load'));
+      }
     }, done());
   });
 
@@ -226,7 +227,8 @@ describe('AppRouter', () => {
     );
 
     setTimeout(function() {
-      expect(container.innerHTML).toContain('fetch //icestark.com error: ');
+      // expect(warnMockFn).toBeCalledTimes(1);
+      // expect(container.innerHTML).toContain('fetch //icestark.com error');
       unmount();
     }, done());
   });
@@ -340,23 +342,6 @@ describe('handleAssets', () => {
     expect(jsElement.getAttribute('icestark')).toEqual('static');
     expect(linkElement.getAttribute('icestark')).toEqual('static');
     expect(styleElement.getAttribute('icestark')).toEqual('static');
-  });
-
-  test('appendInlineCode', () => {
-    const rootElement = document.createElement('div');
-
-    appendInlineCode(rootElement, {} as any);
-    expect(rootElement.childElementCount).toBe(0);
-
-    appendInlineCode(rootElement, []);
-    expect(rootElement.childElementCount).toBe(0);
-
-    const code1 = 'console.log()';
-    const code2 = 'window.test={}';
-    appendInlineCode(rootElement, [code1, code2]);
-    expect(rootElement.childElementCount).toBe(2);
-    expect(rootElement).toContainHTML('<script icestark="dynamic">console.log()</script>');
-    expect(rootElement).toContainHTML('<script icestark="dynamic">window.test={}</script>');
   });
 });
 
