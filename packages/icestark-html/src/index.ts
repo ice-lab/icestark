@@ -1,5 +1,3 @@
-/* eslint prefer-promise-reject-errors: ["error", {"allowEmptyReject": true}] */
-
 import { warn } from './utils';
 
 const winFetch = window.fetch;
@@ -121,12 +119,14 @@ export default function loadHtml(
   root: HTMLElement | ShadowRoot,
   htmlUrl: string,
   fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response> = winFetch,
-): Promise<string | Error> {
+): Promise<string> {
   if (!fetch) {
     return new Promise((_, reject) => {
       warn('Current environment does not support window.fetch, please use custom fetch');
       reject(
-        `fetch ${htmlUrl} error: Current environment does not support window.fetch, please use custom fetch`,
+        new Error(
+          `fetch ${htmlUrl} error: Current environment does not support window.fetch, please use custom fetch`,
+        ),
       );
     });
   }
@@ -145,7 +145,7 @@ export default function loadHtml(
     })
     .catch(err => {
       warn(`fetch ${htmlUrl} error: ${err}`);
-      return `fetch ${htmlUrl} error: ${err}`;
+      return new Error(`fetch ${htmlUrl} error: ${err}`);
     });
 }
 
@@ -166,7 +166,7 @@ export function appendScript(root: HTMLElement | ShadowRoot, asset: Asset) {
     // external script
     script.setAttribute('src', content);
     script.addEventListener('load', () => resolve(), false);
-    script.addEventListener('error', () => reject(`js asset loaded error: ${content}`));
+    script.addEventListener('error', () => reject(new Error(`js asset loaded error: ${content}`)));
     root.appendChild(script);
   });
 }

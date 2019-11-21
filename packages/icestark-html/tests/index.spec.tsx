@@ -293,7 +293,7 @@ describe('loadHtml', () => {
 
     const div = document.createElement('div');
 
-    loadHtml(div, '//icestark.error.com').then(errMessage => {
+    loadHtml(div, '//icestark.error.com').catch(errMessage => {
       expect(warnMockFn).toBeCalledWith(errMessage);
       expect(errMessage).toBe(`fetch //icestark.error.com error: Error: err`);
     });
