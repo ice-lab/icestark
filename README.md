@@ -63,9 +63,7 @@ class App extends React.Component {
             basename="/"
             exact
             title="通用页面"
-            url={[
-              '//unpkg.com/icestark-child-common/build/js/index.js',
-            ]}
+            url={['//unpkg.com/icestark-child-common/build/js/index.js']}
           />
           <AppRoute
             path="/seller"
@@ -83,10 +81,7 @@ class App extends React.Component {
   }
 }
 
-ReactDOM.render(
-  <App />,
-  document.getElementById('ice-container')
-);
+ReactDOM.render(<App />, document.getElementById('ice-container'));
 ```
 
 - `AppRouter` locates the sub-application rendering node
@@ -156,7 +151,7 @@ export default class App extends React.Component {
 
 ## Contributors
 
-Feel free to report any questions as an [issue](https://github.com/alibaba/ice/issues/new), we'd love to have your helping hand on `icestark`.
+Feel free to report any questions as an [issue](https://github.com/ice-lab/icestark/issues/new), we'd love to have your helping hand on `icestark`.
 
 If you're interested in `icestark`, see [CONTRIBUTING.md](https://github.com/alibaba/ice/blob/master/.github/CONTRIBUTING.md) for more information to learn how to get started.
 
