@@ -155,7 +155,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       LoadingComponent,
       useShadow,
       onAppEnter,
-      onAppLeave,
     } = this.props;
 
     const myBase: HTMLElement = this.myRefBase;
