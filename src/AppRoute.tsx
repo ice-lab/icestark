@@ -102,6 +102,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
   private unmounted: boolean = false;
 
+  private prevAppConfig: AppConfig = null;
+
   static defaultProps = {
     useShadow: false,
     exact: false,
@@ -126,9 +128,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       forceRenderCount !== prevProps.forceRenderCount
     ) {
       // record config for prev App
-      const prevAppConfig = getAppConfig(prevProps);
+      this.prevAppConfig = getAppConfig(prevProps);
 
-      this.renderChild(prevAppConfig);
+      this.renderChild();
     }
   }
 
@@ -136,6 +138,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     // Empty useless assets before unmount
     const { useShadow } = this.props;
     emptyAssets(useShadow);
+    this.triggerPrevAppLeave();
     this.unmounted = true;
     setCache('root', null);
   }
@@ -143,7 +146,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   /**
    * Load assets and render child app
    */
-  renderChild = (prevAppConfig?: AppConfig): void => {
+  renderChild = (): void => {
     const {
       url,
       title,
@@ -158,18 +161,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     const myBase: HTMLElement = this.myRefBase;
     if (!myBase) return;
 
-    if (prevAppConfig) {
-      // trigger registerAppLeaveCallback
-      const registerAppLeaveCallback = getCache('appLeave');
-
-      if (registerAppLeaveCallback) {
-        registerAppLeaveCallback();
-        setCache('appLeave', null);
-      }
-
-      // trigger onAppLeave
-      if (typeof onAppLeave === 'function') onAppLeave(prevAppConfig);
-    }
+    this.triggerPrevAppLeave();
 
     // ReCreate rootElement to remove React Component instance,
     // rootElement is created for render Child App
@@ -256,6 +248,26 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     const element = myBase.querySelector(`#${elementId}`);
     if (element) {
       myBase.removeChild(element);
+    }
+  };
+
+  triggerPrevAppLeave = (): void => {
+    const { onAppLeave } = this.props;
+
+    const prevAppConfig = this.prevAppConfig;
+    if (prevAppConfig) {
+      // trigger registerAppLeaveCallback
+      const registerAppLeaveCallback = getCache('appLeave');
+
+      if (registerAppLeaveCallback) {
+        registerAppLeaveCallback();
+        setCache('appLeave', null);
+      }
+
+      // trigger onAppLeave
+      if (typeof onAppLeave === 'function') onAppLeave(prevAppConfig);
+
+      this.prevAppConfig = null;
     }
   };
 
