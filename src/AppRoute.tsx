@@ -253,19 +253,19 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   triggerPrevAppLeave = (): void => {
     const { onAppLeave } = this.props;
 
+    // trigger registerAppLeaveCallback
+    const registerAppLeaveCallback = getCache('appLeave');
+
+    if (registerAppLeaveCallback) {
+      registerAppLeaveCallback();
+      setCache('appLeave', null);
+    }
+
+    // trigger onAppLeave
     const prevAppConfig = this.prevAppConfig;
+
     if (prevAppConfig) {
-      // trigger registerAppLeaveCallback
-      const registerAppLeaveCallback = getCache('appLeave');
-
-      if (registerAppLeaveCallback) {
-        registerAppLeaveCallback();
-        setCache('appLeave', null);
-      }
-
-      // trigger onAppLeave
       if (typeof onAppLeave === 'function') onAppLeave(prevAppConfig);
-
       this.prevAppConfig = null;
     }
   };
