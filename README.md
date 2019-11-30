@@ -95,7 +95,7 @@ ReactDOM.render(
 
 ### Sub-application
 
-- Get the render `DOM` via `getMountNode`
+- Get the render `DOM Node` via `getMountNode`
 - Trigger app unmount manually via `registerAppLeave`
 
 ```javascript
