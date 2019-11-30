@@ -104,12 +104,14 @@ import ReactDOM from 'react-dom';
 import { getMountNode, registerAppLeave } from '@ice/stark-app';
 import router from './router';
 
+const mountNode = getMountNode();
+
 // make sure the unmount event is triggered
 registerAppLeave(() => {
-  ReactDOM.unmountComponentAtNode(getMountNode());
+  ReactDOM.unmountComponentAtNode(mountNode);
 });
 
-ReactDOM.render(router(), getMountNode());
+ReactDOM.render(router(), mountNode);
 ```
 
 - Get the `basename` configuration in the framework application via `getBasename`
