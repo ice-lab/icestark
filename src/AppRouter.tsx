@@ -22,6 +22,7 @@ export interface AppRouterProps {
   useShadow?: boolean;
   onAppEnter?: (appConfig: AppConfig) => void;
   onAppLeave?: (appConfig: AppConfig) => void;
+  shouldAssetsRemove?: (assetUrl) => boolean;
 }
 
 interface AppRouterState {
@@ -171,6 +172,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       useShadow,
       onAppEnter,
       onAppLeave,
+      shouldAssetsRemove,
       children,
     } = this.props;
     const { url, forceRenderCount } = this.state;
@@ -204,6 +206,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       forceRenderCount,
       onAppEnter,
       onAppLeave,
+      shouldAssetsRemove,
     };
 
     if (match) {
