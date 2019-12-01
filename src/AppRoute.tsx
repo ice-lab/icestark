@@ -63,6 +63,7 @@ export interface AppRouteProps extends AppConfig {
   forceRenderCount?: number;
   onAppEnter?: (appConfig: AppConfig) => void;
   onAppLeave?: (appConfig: AppConfig) => void;
+  shouldAssetsRemove?: (assetUrl) => boolean;
 }
 
 interface StatusComponentProps {
