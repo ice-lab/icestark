@@ -24,7 +24,7 @@
   "bugs": {
     "url": "https://github.com/ice-lab/icestark/issues"
   },
-  "homepage": "https://github.com/ice-lab/icestark-app",
+  "homepage": "https://github.com/ice-lab/icestark",
   "husky": {
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
@@ -32,7 +32,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ice-lab/icestark-app.git"
+    "url": "git+https://github.com/ice-lab/icestark.git"
   },
   "devDependencies": {
     "@commitlint/cli": "^7.5.2",
