@@ -153,21 +153,6 @@ export function emptyAssets(useShadow: boolean, isRemove: (assetUrl: string) => 
     isRemove = () => true;
   }
 
-  // remove dynamic assets
-  const jsList: NodeListOf<HTMLElement> = jsRoot.querySelectorAll(`script[${PREFIX}=${DYNAMIC}]`);
-  jsList.forEach(js => {
-    if (isRemove(js.getAttribute('src'))) {
-      jsRoot.removeChild(js);
-    }
-  });
-
-  const cssList: NodeListOf<HTMLElement> = cssRoot.querySelectorAll(`link[${PREFIX}=${DYNAMIC}]`);
-  cssList.forEach(css => {
-    if (isRemove(css.getAttribute('href'))) {
-      cssRoot.removeChild(css);
-    }
-  });
-
   // remove extra assets
   const styleList: NodeListOf<HTMLElement> = document.querySelectorAll(
     `style:not([${PREFIX}=${STATIC}])`,
