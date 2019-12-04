@@ -177,10 +177,18 @@ export function emptyAssets(useShadow: boolean, isRemove: (assetUrl: string) => 
   const linkList: NodeListOf<HTMLElement> = document.querySelectorAll(
     `link:not([${PREFIX}=${STATIC}])`,
   );
-  linkList.forEach(link => link.parentNode.removeChild(link));
+  linkList.forEach(link => {
+    if (isRemove(link.getAttribute('href'))) {
+      link.parentNode.removeChild(link);
+    }
+  });
 
   const jsExtraList: NodeListOf<HTMLElement> = document.querySelectorAll(
     `script:not([${PREFIX}=${STATIC}])`,
   );
-  jsExtraList.forEach(js => js.parentNode.removeChild(js));
+  jsExtraList.forEach(js => {
+    if (isRemove(js.getAttribute('src'))) {
+      js.parentNode.removeChild(js);
+    }
+  });
 }
