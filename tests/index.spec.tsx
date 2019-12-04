@@ -282,7 +282,7 @@ describe('appHistory', () => {
 });
 
 describe('IS_CSS_REGEX', () => {
-  test('appHistory', () => {
+  test('IS_CSS_REGEX', () => {
     expect(IS_CSS_REGEX.test('//icestark.com/index.css')).toBe(true);
     expect(IS_CSS_REGEX.test('//icestark.com/index.css?timeSamp=1575443657834')).toBe(true);
     expect(IS_CSS_REGEX.test('//icestark.com/index.css?query=test.js')).toBe(false);
