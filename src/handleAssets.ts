@@ -63,7 +63,7 @@ export function loadAssets(
   const cssList: string[] = [];
 
   bundleList.forEach(url => {
-    const isCss: boolean = /\.css$/.test(url);
+    const isCss: boolean = /\.css(\?((?!\.js$).)+)?$/.test(url);
     if (isCss) {
       cssList.push(url);
     } else {
