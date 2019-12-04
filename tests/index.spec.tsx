@@ -6,6 +6,7 @@ import { AppRouter, AppRoute, AppLink, appHistory } from '../src/index';
 import matchPath from '../src/matchPath';
 import { loadAssets, recordAssets } from '../src/handleAssets';
 import { setCache, getCache } from '../src/cache';
+import { IS_CSS_REGEX } from '../src/constant';
 
 describe('AppRouter', () => {
   test('render the AppRouter', () => {
@@ -120,7 +121,7 @@ describe('AppRouter', () => {
     // HTMLElement.attachShadow = jest.fn();
 
     rerender(
-      <AppRouter {...props} shouldAssetsRemove={null}>
+      <AppRouter {...props}>
         <AppRoute path="/" url={['//icestark.com/js/index.js', '//icestark.com/css/index.css']} />
       </AppRouter>,
     );
@@ -277,5 +278,13 @@ describe('appHistory', () => {
 
     appHistory.replace('/test');
     expect(mockReplaceState.mock.calls.length).toBe(1);
+  });
+});
+
+describe('IS_CSS_REGEX', () => {
+  test('appHistory', () => {
+    expect(IS_CSS_REGEX.test('//icestark.com/index.css')).toBe(true);
+    expect(IS_CSS_REGEX.test('//icestark.com/index.css?timeSamp=1575443657834')).toBe(true);
+    expect(IS_CSS_REGEX.test('//icestark.com/index.css?query=test.js')).toBe(false);
   });
 });
