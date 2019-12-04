@@ -1,4 +1,4 @@
-import { PREFIX, DYNAMIC, STATIC } from './constant';
+import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { getCache } from './cache';
 
 const getCacheRoot = () => getCache('root');
@@ -66,7 +66,7 @@ export function loadAssets(
     // //icestark.com/index.css -> true
     // //icestark.com/index.css?timeSamp=1575443657834 -> true
     // //icestark.com/index.css?query=test.js -> false
-    const isCss: boolean = /\.css(\?((?!\.js$).)+)?$/.test(url);
+    const isCss: boolean = IS_CSS_REGEX.test(url);
     if (isCss) {
       cssList.push(url);
     } else {
@@ -142,16 +142,11 @@ export function recordAssets(): void {
 /**
  * empty useless assets
  */
-export function emptyAssets(useShadow: boolean, isRemove: (assetUrl: string) => boolean): void {
+export function emptyAssets(useShadow: boolean, shouldRemove: (assetUrl: string) => boolean): void {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
   const cssRoot: HTMLElement | ShadowRoot = useShadow
     ? getCacheRoot()
     : document.getElementsByTagName('head')[0];
-
-  // make sure isRemove is funcion
-  if (typeof isRemove !== 'function') {
-    isRemove = () => true;
-  }
 
   // remove extra assets
   const styleList: NodeListOf<HTMLElement> = document.querySelectorAll(
@@ -163,7 +158,7 @@ export function emptyAssets(useShadow: boolean, isRemove: (assetUrl: string) => 
     `link:not([${PREFIX}=${STATIC}])`,
   );
   linkList.forEach(link => {
-    if (isRemove(link.getAttribute('href'))) {
+    if (shouldRemove(link.getAttribute('href'))) {
       link.parentNode.removeChild(link);
     }
   });
@@ -172,7 +167,7 @@ export function emptyAssets(useShadow: boolean, isRemove: (assetUrl: string) => 
     `script:not([${PREFIX}=${STATIC}])`,
   );
   jsExtraList.forEach(js => {
-    if (isRemove(js.getAttribute('src'))) {
+    if (shouldRemove(js.getAttribute('src'))) {
       js.parentNode.removeChild(js);
     }
   });
