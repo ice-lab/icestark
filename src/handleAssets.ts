@@ -142,21 +142,30 @@ export function recordAssets(): void {
 /**
  * empty useless assets
  */
-export function emptyAssets(useShadow: boolean): void {
+export function emptyAssets(useShadow: boolean, isRemove: (assetUrl: string) => boolean): void {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
   const cssRoot: HTMLElement | ShadowRoot = useShadow
     ? getCacheRoot()
     : document.getElementsByTagName('head')[0];
 
+  // make sure isRemove is funcion
+  if (typeof isRemove !== 'function') {
+    isRemove = () => true;
+  }
+
   // remove dynamic assets
   const jsList: NodeListOf<HTMLElement> = jsRoot.querySelectorAll(`script[${PREFIX}=${DYNAMIC}]`);
   jsList.forEach(js => {
-    jsRoot.removeChild(js);
+    if (isRemove(js.getAttribute('src'))) {
+      jsRoot.removeChild(js);
+    }
   });
 
   const cssList: NodeListOf<HTMLElement> = cssRoot.querySelectorAll(`link[${PREFIX}=${DYNAMIC}]`);
   cssList.forEach(css => {
-    cssRoot.removeChild(css);
+    if (isRemove(css.getAttribute('href'))) {
+      cssRoot.removeChild(css);
+    }
   });
 
   // remove extra assets

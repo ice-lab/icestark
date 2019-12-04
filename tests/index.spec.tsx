@@ -120,7 +120,7 @@ describe('AppRouter', () => {
     // HTMLElement.attachShadow = jest.fn();
 
     rerender(
-      <AppRouter {...props}>
+      <AppRouter {...props} shouldAssetsRemove={null}>
         <AppRoute path="/" url={['//icestark.com/js/index.js', '//icestark.com/css/index.css']} />
       </AppRouter>,
     );
@@ -144,6 +144,15 @@ describe('AppRouter', () => {
     dynamicLinkLoaded.dispatchEvent(new Event('load'));
     expect(container.querySelector('.ice-stark-loaded').childNodes.length).toBe(1);
 
+    unmount();
+  });
+
+  test('test for Only AppRoute Component', () => {
+    window.history.pushState({}, 'test', '/');
+    const { container, unmount } = render(
+      <AppRoute path="/" component={<div data-testid="icestarkTest">test</div>} />,
+    );
+    expect(container.innerHTML).toContain('ice-stark-loading');
     unmount();
   });
 });
