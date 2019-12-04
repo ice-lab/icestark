@@ -63,6 +63,9 @@ export function loadAssets(
   const cssList: string[] = [];
 
   bundleList.forEach(url => {
+    // //icestark.com/index.css -> true
+    // //icestark.com/index.css?timeSamp=1575443657834 -> true
+    // //icestark.com/index.css?query=test.js -> false
     const isCss: boolean = /\.css(\?((?!\.js$).)+)?$/.test(url);
     if (isCss) {
       cssList.push(url);
