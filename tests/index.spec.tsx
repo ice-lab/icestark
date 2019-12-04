@@ -28,7 +28,7 @@ describe('AppRouter', () => {
     expect(props.onRouteChange).toHaveBeenCalledTimes(3);
   });
 
-  test('test for AppRoute Component', () => {
+  test('test for AppRoute', () => {
     window.history.pushState({}, 'test', '/');
 
     const props = {

@@ -74,7 +74,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     ErrorComponent: ({ err }) => <div>{err}</div>,
     NotFoundComponent: <div>NotFound</div>,
     useShadow: false,
-    shouldAssetsRemove: () => true,
   };
 
   constructor(props: AppRouterProps) {
