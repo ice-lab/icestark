@@ -63,6 +63,7 @@ export interface AppRouteProps extends AppConfig {
   forceRenderCount?: number;
   onAppEnter?: (appConfig: AppConfig) => void;
   onAppLeave?: (appConfig: AppConfig) => void;
+  shouldAssetsRemove?: (assetUrl?: string) => boolean;
 }
 
 interface StatusComponentProps {
@@ -110,6 +111,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     strict: false,
     sensitive: false,
     rootId: 'icestarkNode',
+    shouldAssetsRemove: () => true,
   };
 
   componentDidMount() {
@@ -136,8 +138,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
   componentWillUnmount() {
     // Empty useless assets before unmount
-    const { useShadow } = this.props;
-    emptyAssets(useShadow);
+    const { useShadow, shouldAssetsRemove } = this.props;
+    emptyAssets(useShadow, shouldAssetsRemove);
     this.triggerPrevAppLeave();
     this.unmounted = true;
     setCache('root', null);
@@ -155,6 +157,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       LoadingComponent,
       useShadow,
       onAppEnter,
+      shouldAssetsRemove,
     } = this.props;
 
     const myBase: HTMLElement = this.myRefBase;
@@ -177,7 +180,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     setCache('root', rootElement);
 
     // empty useless assets before loading
-    emptyAssets(useShadow);
+    emptyAssets(useShadow, shouldAssetsRemove);
 
     if (title) document.title = title;
 
