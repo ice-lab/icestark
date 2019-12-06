@@ -4,9 +4,7 @@ import { FetchMock } from 'jest-fetch-mock';
 import * as React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import { AppRouter, AppRoute, AppLink, appHistory } from '../src/index';
-import matchPath from '../src/matchPath';
-import { emptyAssets, loadAssets, recordAssets } from '../src/handleAssets';
-import { setCache, getCache } from '../src/cache';
+import { setCache, getCache } from '../src/util/cache';
 
 describe('AppRouter', () => {
   beforeEach(() => {
@@ -265,83 +263,6 @@ describe('AppLink', () => {
 
     fireEvent.click(getByText(/This is a test/i));
     expect(mockReplaceState.mock.calls.length).toBe(1);
-  });
-});
-
-describe('matchPath', () => {
-  test('matchPath', () => {
-    let match = matchPath('/test/123');
-    expect(match).toBeNull();
-
-    match = matchPath('/test/123', '/test');
-    expect(match.url).toBe('/test');
-
-    match = matchPath('/test/123', { path: '/test' });
-    expect(match.url).toBe('/test');
-
-    match = matchPath('/test/123', { path: '/test/:id' });
-    expect(match.url).toBe('/test/123');
-    expect(match.params.id).toBe('123');
-
-    match = matchPath('/test/123', { path: ['/test/:id', '/test/:id/detail'] });
-    expect(match.url).toBe('/test/123');
-    expect(match.path).toBe('/test/:id');
-    expect(match.params.id).toBe('123');
-
-    match = matchPath('/test/123', { path: '/test', exact: true });
-    expect(match).toBeNull();
-  });
-});
-
-describe('handleAssets', () => {
-  test('loadAssets', () => {
-    emptyAssets(false);
-
-    loadAssets(
-      [
-        'http://icestark.com/js/index.js',
-        'http://icestark.com/css/index.css',
-        'http://icestark.com/js/test1.js',
-      ],
-      false,
-      jest.fn(),
-      jest.fn(),
-    );
-    const jsElement0 = document.getElementById('icestark-js-0');
-    const jsElement1 = document.getElementById('icestark-js-1');
-
-    expect((jsElement0 as HTMLScriptElement).src).toEqual('http://icestark.com/js/index.js');
-    expect((jsElement0 as HTMLScriptElement).async).toEqual(false);
-    expect((jsElement1 as HTMLScriptElement).src).toEqual('http://icestark.com/js/test1.js');
-    expect((jsElement1 as HTMLScriptElement).async).toEqual(false);
-    expect(jsElement0.getAttribute('icestark')).toEqual('dynamic');
-    expect(jsElement1.getAttribute('icestark')).toEqual('dynamic');
-
-    recordAssets();
-
-    expect(jsElement0.getAttribute('icestark')).toEqual('dynamic');
-    expect(jsElement1.getAttribute('icestark')).toEqual('dynamic');
-  });
-
-  test('recordAssets', () => {
-    const jsElement = document.createElement('script');
-    jsElement.id = 'icestark-script';
-
-    const linkElement = document.createElement('link');
-    linkElement.id = 'icestark-link';
-
-    const styleElement = document.createElement('style');
-    styleElement.id = 'icestark-style';
-
-    document.body.appendChild(jsElement);
-    document.body.appendChild(linkElement);
-    document.body.appendChild(styleElement);
-
-    recordAssets();
-
-    expect(jsElement.getAttribute('icestark')).toEqual('static');
-    expect(linkElement.getAttribute('icestark')).toEqual('static');
-    expect(styleElement.getAttribute('icestark')).toEqual('static');
   });
 });
 

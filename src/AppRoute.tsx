@@ -1,8 +1,8 @@
 import * as React from 'react';
 import loadHtml from '@ice/stark-html';
 import { AppHistory } from './appHistory';
-import { loadAssets, emptyAssets } from './handleAssets';
-import { setCache, getCache } from './cache';
+import { loadAssets, emptyAssets } from './util/handleAssets';
+import { setCache, getCache } from './util/cache';
 
 interface AppRouteState {
   cssLoading: boolean;

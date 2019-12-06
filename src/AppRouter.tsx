@@ -2,10 +2,10 @@ import * as React from 'react';
 import * as urlParse from 'url-parse';
 import { AppConfig, AppRouteProps, AppRouteComponentProps } from './AppRoute';
 import appHistory from './appHistory';
-import matchPath from './matchPath';
-import { recordAssets, emptyAssets } from './handleAssets';
-import { ICESTSRK_NOT_FOUND, ICESTSRK_ERROR } from './constant';
-import { setCache } from './cache';
+import matchPath from './util/matchPath';
+import { recordAssets, emptyAssets } from './util/handleAssets';
+import { ICESTSRK_NOT_FOUND, ICESTSRK_ERROR } from './util/constant';
+import { setCache } from './util/cache';
 
 type RouteType = 'pushState' | 'replaceState';
 

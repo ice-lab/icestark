@@ -1,15 +1,17 @@
 import '@testing-library/jest-dom/extend-expect';
 import { FetchMock } from 'jest-fetch-mock';
-
 import loadHtml, {
+  emptyAssets,
+  loadAssets,
+  recordAssets,
   AssetTypeEnum,
+  AssetCommentEnum,
   parseUrl,
   getUrl,
-  getReplacementComments,
-  getProcessedComments,
+  getComments,
   processHtml,
   appendScript,
-} from '../src/index';
+} from '../src/util/handleAssets';
 
 const tempHTML =
   '<!DOCTYPE html>' +
@@ -87,61 +89,23 @@ const tempHTML =
   '  </body>' +
   '</html>';
 
-describe('parseUrl', () => {
-  test('parseUrl', () => {
-    let parsedUrl = parseUrl('http://localhost:4444/seller/detail');
-    expect(parsedUrl.origin).toBe('http://localhost:4444');
-    expect(parsedUrl.pathname).toBe('/seller/detail');
-
-    parsedUrl = parseUrl('//localhost:4444/seller/detail');
-    expect(parsedUrl.origin).toBe('http://localhost:4444');
-    expect(parsedUrl.pathname).toBe('/seller/detail');
-
-    parsedUrl = parseUrl('https://github.com/ice-lab/icestark');
-    expect(parsedUrl.origin).toBe('https://github.com');
-    expect(parsedUrl.pathname).toBe('/ice-lab/icestark');
-  });
-});
-
-describe('getUrl', () => {
-  test('getUrl', () => {
-    // for ./*
-    expect(getUrl('https://icestark.com/ice/index.html', './js/index.js')).toBe(
-      'https://icestark.com/ice/js/index.js',
-    );
-    expect(getUrl('https://icestark.com/', './js/index.js')).toBe(
-      'https://icestark.com/js/index.js',
-    );
-    expect(getUrl('https://icestark.com', './js/index.js')).toBe(
-      'https://icestark.com/js/index.js',
-    );
-
-    // for /*
-    expect(getUrl('https://icestark.com/', '/js/index.js')).toBe(
-      'https://icestark.com/js/index.js',
-    );
-    expect(getUrl('https://icestark.com', '/js/index.js')).toBe('https://icestark.com/js/index.js');
-
-    // for *
-    expect(getUrl('https://icestark.com', 'js/index.js')).toBe('https://icestark.com/js/index.js');
-  });
-});
-
-describe('getReplacementComments', () => {
-  test('getReplacementComments', () => {
-    expect(getReplacementComments('script', 'inline')).toBe(
+describe('getComments', () => {
+  test('getComments', () => {
+    expect(getComments('script', 'inline', AssetCommentEnum.REPLACED)).toBe(
       '<!--script inline replaced by @ice/stark-html-->',
     );
 
-    expect(getReplacementComments('link', 'https://g.alicdn.com/platform/common/global.css')).toBe(
+    expect(
+      getComments(
+        'link',
+        'https://g.alicdn.com/platform/common/global.css',
+        AssetCommentEnum.REPLACED,
+      ),
+    ).toBe(
       '<!--link https://g.alicdn.com/platform/common/global.css replaced by @ice/stark-html-->',
     );
-  });
-});
 
-describe('getProcessedComments', () => {
-  test('getProcessedComments', () => {
-    expect(getProcessedComments('link', '/test.css')).toBe(
+    expect(getComments('link', '/test.css', AssetCommentEnum.PROCESSED)).toBe(
       '<!--link /test.css processed by @ice/stark-html-->',
     );
   });
@@ -329,5 +293,93 @@ describe('loadHtml', () => {
     const div = document.createElement('div');
 
     loadHtml(div, '//icestark.error.com').catch(() => {});
+  });
+});
+
+describe('handleAssets', () => {
+  test('loadAssets', () => {
+    emptyAssets(false);
+
+    loadAssets(
+      [
+        'http://icestark.com/js/index.js',
+        'http://icestark.com/css/index.css',
+        'http://icestark.com/js/test1.js',
+      ],
+      false,
+      jest.fn(),
+      jest.fn(),
+    );
+    const jsElement0 = document.getElementById('icestark-js-0');
+    const jsElement1 = document.getElementById('icestark-js-1');
+
+    expect((jsElement0 as HTMLScriptElement).src).toEqual('http://icestark.com/js/index.js');
+    expect((jsElement0 as HTMLScriptElement).async).toEqual(false);
+    expect((jsElement1 as HTMLScriptElement).src).toEqual('http://icestark.com/js/test1.js');
+    expect((jsElement1 as HTMLScriptElement).async).toEqual(false);
+    expect(jsElement0.getAttribute('icestark')).toEqual('dynamic');
+    expect(jsElement1.getAttribute('icestark')).toEqual('dynamic');
+
+    recordAssets();
+
+    expect(jsElement0.getAttribute('icestark')).toEqual('dynamic');
+    expect(jsElement1.getAttribute('icestark')).toEqual('dynamic');
+  });
+
+  test('recordAssets', () => {
+    const jsElement = document.createElement('script');
+    jsElement.id = 'icestark-script';
+
+    const linkElement = document.createElement('link');
+    linkElement.id = 'icestark-link';
+
+    const styleElement = document.createElement('style');
+    styleElement.id = 'icestark-style';
+
+    document.body.appendChild(jsElement);
+    document.body.appendChild(linkElement);
+    document.body.appendChild(styleElement);
+
+    recordAssets();
+
+    expect(jsElement.getAttribute('icestark')).toEqual('static');
+    expect(linkElement.getAttribute('icestark')).toEqual('static');
+    expect(styleElement.getAttribute('icestark')).toEqual('static');
+  });
+
+  test('parseUrl', () => {
+    let parsedUrl = parseUrl('http://localhost:4444/seller/detail');
+    expect(parsedUrl.origin).toBe('http://localhost:4444');
+    expect(parsedUrl.pathname).toBe('/seller/detail');
+
+    parsedUrl = parseUrl('//localhost:4444/seller/detail');
+    expect(parsedUrl.origin).toBe('http://localhost:4444');
+    expect(parsedUrl.pathname).toBe('/seller/detail');
+
+    parsedUrl = parseUrl('https://github.com/ice-lab/icestark');
+    expect(parsedUrl.origin).toBe('https://github.com');
+    expect(parsedUrl.pathname).toBe('/ice-lab/icestark');
+  });
+
+  test('getUrl', () => {
+    // for ./*
+    expect(getUrl('https://icestark.com/ice/index.html', './js/index.js')).toBe(
+      'https://icestark.com/ice/js/index.js',
+    );
+    expect(getUrl('https://icestark.com/', './js/index.js')).toBe(
+      'https://icestark.com/js/index.js',
+    );
+    expect(getUrl('https://icestark.com', './js/index.js')).toBe(
+      'https://icestark.com/js/index.js',
+    );
+
+    // for /*
+    expect(getUrl('https://icestark.com/', '/js/index.js')).toBe(
+      'https://icestark.com/js/index.js',
+    );
+    expect(getUrl('https://icestark.com', '/js/index.js')).toBe('https://icestark.com/js/index.js');
+
+    // for *
+    expect(getUrl('https://icestark.com', 'js/index.js')).toBe('https://icestark.com/js/index.js');
   });
 });
