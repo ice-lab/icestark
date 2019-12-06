@@ -6,7 +6,7 @@ import {
   renderNotFound,
   registerAppLeave,
   appHistory,
-  getInIcestark,
+  isInIcestark,
 } from '../src/index';
 import { setCache, getCache } from '../src/cache';
 
@@ -102,18 +102,18 @@ describe('appHistory', () => {
   });
 });
 
-describe('getInIcestark', () => {
-  test('getInIcestark', () => {
+describe('isInIcestark', () => {
+  test('isInIcestark', () => {
     window[namespace] = null;
 
-    expect(getInIcestark()).toBe(false);
+    expect(isInIcestark()).toBe(false);
 
     window[namespace] = { root: null };
-    expect(getInIcestark()).toBe(false);
+    expect(isInIcestark()).toBe(false);
 
     const div = document.createElement('div');
     div.setAttribute('id', 'ice-container');
     window[namespace] = { root: div };
-    expect(getInIcestark()).toBe(true);
+    expect(isInIcestark()).toBe(true);
   });
 });
