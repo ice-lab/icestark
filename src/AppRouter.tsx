@@ -69,6 +69,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
   private originalReplace: OriginalStateFunction = window.history.replaceState;
 
+  private unmounted: boolean = false;
+
   private err: string = ''; // js assets load err
 
   static defaultProps = {
@@ -100,12 +102,16 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     this.unHijackHistory();
     window.removeEventListener('icestark:not-found', this.triggerNotFound);
     emptyAssets(false);
+    this.unmounted = true;
   }
 
   /**
    * Trigger NotFound
    */
   triggerNotFound = (): void => {
+    // if AppRouter is unmountd, cancel all operations
+    if (this.unmounted) return;
+
     this.setState({ url: ICESTSRK_NOT_FOUND });
   };
 
@@ -113,6 +119,9 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    * Trigger Loading
    */
   triggerLoading = (newShowLoading: boolean): void => {
+    // if AppRouter is unmountd, cancel all operations
+    if (this.unmounted) return;
+
     const { showLoading } = this.state;
     if (showLoading !== newShowLoading) {
       this.setState({ showLoading: newShowLoading });
@@ -123,6 +132,9 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    * Trigger Error
    */
   triggerError = (err: string): void => {
+    // if AppRouter is unmountd, cancel all operations
+    if (this.unmounted) return;
+
     this.err = err;
     this.setState({ url: ICESTSRK_ERROR });
   };
@@ -198,6 +210,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     } = this.props;
     const { url, forceRenderCount, showLoading } = this.state;
 
+    // directly render NotFoundComponent / ErrorComponent
     if (url === ICESTSRK_NOT_FOUND) {
       return renderComponent(NotFoundComponent, {});
     } else if (url === ICESTSRK_ERROR) {

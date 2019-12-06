@@ -1,7 +1,6 @@
 import * as React from 'react';
-import loadHtml from '@ice/stark-html';
 import { AppHistory } from './appHistory';
-import { loadAssets, emptyAssets } from './util/handleAssets';
+import { loadHtml, appendAssets, emptyAssets } from './util/handleAssets';
 import { setCache, getCache } from './util/cache';
 
 interface AppRouteState {
@@ -163,7 +162,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       this.removeElementFromBase(prevAppConfig.rootId);
     }
 
-    // ReCreate rootElement to remove React Component instance,
+    // reCreate rootElement to remove React Component instance,
     // rootElement is created for render Child App
     this.removeElementFromBase(rootId);
     let rootElement: any = this.appendElementToBase(rootId);
@@ -185,56 +184,42 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     if (title) document.title = title;
 
-    // common load assets function
-    const loadAppAssets = assetsList => {
-      if (typeof onAppEnter === 'function') onAppEnter(getAppConfig(this.props));
+    const handleLoading = (loading: boolean): void => {
+      // if AppRoute is unmountd, cancel all operations
+      if (this.unmounted) return;
 
-      loadAssets(
-        assetsList,
-        useShadow,
-        (err: any): boolean => {
-          // add safe code for unmounted
-          if (this.unmounted) return true;
-
-          if (err) {
-            // Handle error
-            typeof triggerError === 'function' && triggerError(err);
-            return true;
-          }
-
-          typeof triggerLoading === 'function' && triggerLoading(false);
-
-          return false;
-        },
-        (): void => {
-          this.setState({ cssLoading: false });
-        },
-      );
+      const { cssLoading } = this.state;
+      if (loading !== cssLoading) {
+        this.setState({ cssLoading: loading });
+        typeof triggerLoading === 'function' && triggerLoading(loading);
+      }
     };
 
-    // trigger loading before loadAssets
-    this.setState({ cssLoading: true });
-    typeof triggerLoading === 'function' && triggerLoading(true);
+    const handleError = (errMessage: string): void => {
+      handleLoading(false);
+      typeof triggerError === 'function' && triggerError(errMessage);
+    };
 
-    if (htmlUrl) {
-      loadHtml(rootElement, htmlUrl)
-        .then(() => {
-          if (this.unmounted) return;
+    // trigger loading before handleAssets
+    handleLoading(true);
 
-          // cancel loading
-          this.setState({ cssLoading: false });
-          typeof triggerLoading === 'function' && triggerLoading(false);
-        })
-        .catch(err => {
-          if (this.unmounted) return;
+    if (typeof onAppEnter === 'function') onAppEnter(getAppConfig(this.props));
 
-          // when loadHtml error, trigger render ErrorComponent
-          this.setState({ cssLoading: false });
-          typeof triggerError === 'function' && triggerError(`fetch ${htmlUrl} error: ${err}`);
-        });
-    } else {
-      loadAppAssets(Array.isArray(url) ? url : [url]);
-    }
+    (async () => {
+      try {
+        if (htmlUrl) {
+          await loadHtml(rootElement, htmlUrl);
+        } else {
+          const assetsList = Array.isArray(url) ? url : [url];
+          await appendAssets(assetsList, useShadow);
+        }
+
+        // cancel loading after handleAssets
+        handleLoading(false);
+      } catch (error) {
+        handleError(error.message);
+      }
+    })();
   };
 
   appendElementToBase = (elementId: string): HTMLElement => {
