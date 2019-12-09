@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { AppHistory } from './appHistory';
-import { loadEntry, appendAssets, emptyAssets } from './util/handleAssets';
+import { loadEntry, loadEntryContent, appendAssets, emptyAssets } from './util/handleAssets';
 import { setCache, getCache } from './util/cache';
 
 interface AppRouteState {
@@ -46,6 +46,7 @@ export interface AppRouteProps extends AppConfig {
   path: string | string[];
   url?: string | string[];
   entry?: string;
+  entryContent?: string;
   component?: React.ReactElement;
   render?: (props?: AppRouteComponentProps) => React.ReactElement;
   forceRenderCount?: number;
@@ -180,7 +181,16 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   loadNextApp = (useShadow?: boolean) => {
-    const { url, entry, title, triggerLoading, triggerError, onAppEnter } = this.props;
+    const {
+      path,
+      url,
+      entry,
+      entryContent,
+      title,
+      triggerLoading,
+      triggerError,
+      onAppEnter,
+    } = this.props;
 
     if (title) document.title = title;
 
@@ -208,8 +218,14 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     (async () => {
       try {
         if (entry) {
+          // entry for fetch -> process -> append
           const rootElement = getCache('root');
           await loadEntry(rootElement, entry);
+        } else if (entryContent) {
+          // entryContent for process -> append
+          const rootElement = getCache('root');
+          const cachedKey = title || converArray2String(path);
+          await loadEntryContent(rootElement, entryContent, location.href, cachedKey);
         } else {
           const assetsList = Array.isArray(url) ? url : [url];
           await appendAssets(assetsList, useShadow);

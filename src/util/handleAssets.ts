@@ -297,6 +297,18 @@ export async function loadEntry(
   await appendProcessedContent(root, cachedProcessedContent[entry]);
 }
 
+export async function loadEntryContent(
+  root: HTMLElement | ShadowRoot,
+  entryContent: string,
+  href: string,
+  cachedKey: string,
+) {
+  if (!cachedProcessedContent[cachedKey]) {
+    cachedProcessedContent[cachedKey] = processHtml(entryContent, href);
+  }
+  await appendProcessedContent(root, cachedProcessedContent[cachedKey]);
+}
+
 /**
  * Record static assets
  */
