@@ -4,7 +4,7 @@ import { FetchMock } from 'jest-fetch-mock';
 import * as React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import { AppRouter, AppRoute, AppLink, appHistory } from '../src/index';
-import { setCache, getCache } from '../src/util/cache';
+import { setCache } from '../src/util/cache';
 
 describe('AppRouter', () => {
   beforeEach(() => {
@@ -101,7 +101,6 @@ describe('AppRouter', () => {
       </AppRouter>,
     );
 
-    // expect(getCache('appLeave')).toBeNull();
     const appRouteNode = container.querySelector('.ice-stark-loading');
     expect(container.innerHTML).toContain('Loading');
     expect(appRouteNode.childNodes.length).toBe(1);
@@ -135,7 +134,7 @@ describe('AppRouter', () => {
     }, done());
   });
 
-  test('test for AppRoute url -> success', () => {
+  test('test for AppRoute url -> success', done => {
     window.history.pushState({}, 'test', '/');
 
     const props = {
@@ -143,7 +142,7 @@ describe('AppRouter', () => {
       LoadingComponent: <div>Loading</div>,
     };
 
-    const { container, unmount } = render(
+    const { unmount } = render(
       <AppRouter {...props} useShadow>
         <AppRoute
           path="/"
@@ -153,106 +152,96 @@ describe('AppRouter', () => {
       </AppRouter>,
     );
 
-    // setTimeout(function() {
-    //   // js load success
-    //   const dynamicScriptLoaded = document.querySelector('script[icestark=dynamic]');
-    //   expect(dynamicScriptLoaded.getAttribute('id')).toBe('icestark-js-0');
-    //   expect(dynamicScriptLoaded.getAttribute('type')).toBe('text/javascript');
-    //   expect(dynamicScriptLoaded.getAttribute('src')).toBe('//icestark.com/js/index.js');
+    setTimeout(function() {
+      // js load success
+      // const dynamicScriptLoaded = document.querySelector('script[icestark=dynamic]');
+      // expect(dynamicScriptLoaded.getAttribute('id')).toBe('icestark-js-0');
+      // expect(dynamicScriptLoaded.getAttribute('type')).toBe('text/javascript');
+      // expect(dynamicScriptLoaded.getAttribute('src')).toBe('//icestark.com/js/index.js');
 
-    //   dynamicScriptLoaded.dispatchEvent(new Event('load'));
+      // dynamicScriptLoaded.dispatchEvent(new Event('load'));
 
-    //   expect(container.querySelector('.ice-stark-loading').childNodes.length).toBe(1);
+      // expect(container.querySelector('.ice-stark-loading').childNodes.length).toBe(1);
 
-    //   // css load success
-    //   const dynamicLinkLoaded = document.querySelector('link[icestark=dynamic]');
-    //   expect(dynamicLinkLoaded.getAttribute('id')).toBe('icestark-css-0');
-    //   expect(dynamicLinkLoaded.getAttribute('rel')).toBe('stylesheet');
-    //   expect(dynamicLinkLoaded.getAttribute('href')).toBe('//icestark.com/css/index.css');
+      // // css load success
+      // const dynamicLinkLoaded = document.querySelector('link[icestark=dynamic]');
+      // expect(dynamicLinkLoaded.getAttribute('id')).toBe('icestark-css-0');
+      // expect(dynamicLinkLoaded.getAttribute('rel')).toBe('stylesheet');
+      // expect(dynamicLinkLoaded.getAttribute('href')).toBe('//icestark.com/css/index.css');
 
-    //   dynamicLinkLoaded.dispatchEvent(new Event('load'));
+      // dynamicLinkLoaded.dispatchEvent(new Event('load'));
 
-    //   // expect(container.querySelector('.ice-stark-loaded').childNodes.length).toBe(1);
+      // expect(container.querySelector('.ice-stark-loaded').childNodes.length).toBe(1);
 
-    //   unmount();
-    // }, done());
+      unmount();
+    }, done());
   });
 
-  // test('test for AppRoute htmlUrl -> success', done => {
-  //   window.history.pushState({}, 'test', '/');
+  test('test for AppRoute entry -> success', done => {
+    window.history.pushState({}, 'test', '/');
 
-  //   const props = {
-  //     onRouteChange: jest.fn(),
-  //     LoadingComponent: <div>Loading</div>,
-  //   };
+    const props = {
+      onRouteChange: jest.fn(),
+      LoadingComponent: <div>Loading</div>,
+    };
 
-  //   (fetch as FetchMock).mockResponseOnce(
-  //     '<html>' +
-  //       '  <head>' +
-  //       '    <meta charset="utf-8" />' +
-  //       '    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />' +
-  //       '    <link rel="dns-prefetch" href="//g.alicdn.com" />' +
-  //       '    <link rel="stylesheet" href="/index.css" />' +
-  //       '    <title>This is for test</title>' +
-  //       '  </head>' +
-  //       '  <body>' +
-  //       '    <div id="App">' +
-  //       '    </div>' +
-  //       '    <script src="index.js"></script>' +
-  //       '    <div id="page_bottom"></div>' +
-  //       '  </body>' +
-  //       '</html>',
-  //   );
+    (fetch as FetchMock).mockResponseOnce(
+      '<html>' +
+        '  <head>' +
+        '    <meta charset="utf-8" />' +
+        '    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />' +
+        '    <link rel="dns-prefetch" href="//g.alicdn.com" />' +
+        '    <link rel="stylesheet" href="/index.css" />' +
+        '    <title>This is for test</title>' +
+        '  </head>' +
+        '  <body>' +
+        '    <div id="App">' +
+        '    </div>' +
+        '    <script src="index.js"></script>' +
+        '    <div id="page_bottom"></div>' +
+        '  </body>' +
+        '</html>',
+    );
 
-  //   const { container, unmount } = render(
-  //     <AppRouter {...props}>
-  //       <AppRoute path="/" htmlUrl="//icestark.com" />
-  //     </AppRouter>,
-  //   );
+    const { container, unmount } = render(
+      <AppRouter {...props}>
+        <AppRoute path="/" entry="//icestark.com" />
+      </AppRouter>,
+    );
 
-  //   setTimeout(function() {
-  //     expect(container.innerHTML).toContain('Loading');
-  //     expect(container.innerHTML).not.toContain('<meta');
-  //     expect(container.innerHTML).toContain('<!--link /index.css processed by @ice/stark-->');
-  //     expect(container.innerHTML).toContain('<!--script index.js replaced by @ice/stark-->');
+    setTimeout(function() {
+      expect(container.innerHTML).toContain('Loading');
+      expect(container.innerHTML).toContain('<!--link /index.css processed by @ice/stark-->');
+      expect(container.innerHTML).toContain('<!--script index.js replaced by @ice/stark-->');
 
-  //     const scripts = container.getElementsByTagName('script');
-  //     for (let i = 0; i < scripts.length; i++) {
-  //       scripts[i].dispatchEvent(new Event('load'));
-  //     }
+      const scripts = container.getElementsByTagName('script');
+      for (let i = 0; i < scripts.length; i++) {
+        scripts[i].dispatchEvent(new Event('load'));
+      }
 
-  //     unmount();
-  //   }, done());
-  // });
+      unmount();
+    }, done());
+  });
 
-  // test('test for AppRoute htmlUrl -> error', done => {
-  //   const warnMockFn = jest.fn();
-  //   (global as any).console = {
-  //     warn: warnMockFn,
-  //   };
+  test('test for AppRoute entry -> error', () => {
+    window.history.pushState({}, 'test', '/');
 
-  //   window.history.pushState({}, 'test', '/');
+    const props = {
+      onRouteChange: jest.fn(),
+      LoadingComponent: <div>Loading</div>,
+    };
 
-  //   const props = {
-  //     onRouteChange: jest.fn(),
-  //     LoadingComponent: <div>Loading</div>,
-  //   };
+    const err = new Error('err');
+    (fetch as FetchMock).mockRejectOnce(err);
 
-  //   const err = new Error('err');
-  //   (fetch as FetchMock).mockRejectOnce(err);
+    const { unmount } = render(
+      <AppRouter {...props}>
+        <AppRoute path="/" entry="//icestark.com" />
+      </AppRouter>,
+    );
 
-  //   const { container, unmount } = render(
-  //     <AppRouter {...props}>
-  //       <AppRoute path="/" htmlUrl="//icestark.com" />
-  //     </AppRouter>,
-  //   );
-
-  //   setTimeout(function() {
-  //     // expect(warnMockFn).toBeCalledTimes(1);
-  //     // expect(container.innerHTML).toContain('fetch //icestark.com error');
-  //     unmount();
-  //   }, done());
-  // });
+    unmount();
+  });
 });
 
 describe('AppLink', () => {

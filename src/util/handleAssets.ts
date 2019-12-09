@@ -5,7 +5,6 @@ import { warn, error } from './message';
 const getCacheRoot = () => getCache('root');
 
 const winFetch = window.fetch;
-const META_REGEX = /<meta.*?>/gi;
 const SCRIPT_REGEX = /<script\b[^>]*>([^<]*)<\/script>/gi;
 const SCRIPT_SRC_REGEX = /<script\b[^>]*src=['"]?([^'"]*)['"]?\b[^>]*>/gi;
 const LINK_HREF_REGEX = /<link\b[^>]*href=['"]?([^'"]*)['"]?\b[^>]*>/gi;
@@ -134,23 +133,19 @@ export async function appendAssets(assetsList: string[], useShadow: boolean) {
     }
   });
 
-  try {
-    if (useShadow) {
-      // make sure css loads after all js have been loaded under shadowRoot
-      await appendAllScriptWithOutInline(jsRoot, jsList);
-      await appendAllLink(cssRoot, cssList);
-    } else {
-      await appendAllLink(cssRoot, cssList);
-      await appendAllScriptWithOutInline(jsRoot, jsList);
-    }
-  } catch (error) {
-    throw error;
+  if (useShadow) {
+    // make sure css loads after all js have been loaded under shadowRoot
+    await appendAllScriptWithOutInline(jsRoot, jsList);
+    await appendAllLink(cssRoot, cssList);
+  } else {
+    await appendAllLink(cssRoot, cssList);
+    await appendAllScriptWithOutInline(jsRoot, jsList);
   }
 }
 
-export function parseUrl(htmlUrl: string): ParsedConfig {
+export function parseUrl(entry: string): ParsedConfig {
   const a = document.createElement('a');
-  a.href = htmlUrl;
+  a.href = entry;
 
   return {
     origin: a.origin,
@@ -162,8 +157,8 @@ export function startWith(url: string, prefix: string): boolean {
   return url.slice(0, prefix.length) === prefix;
 }
 
-export function getUrl(htmlUrl: string, relativePath: string): string {
-  const { origin, pathname } = parseUrl(htmlUrl);
+export function getUrl(entry: string, relativePath: string): string {
+  const { origin, pathname } = parseUrl(entry);
 
   // https://icestark.com/ice/index.html + ./js/index.js -> https://icestark.com/ice/js/index.js
   if (startWith(relativePath, './')) {
@@ -195,13 +190,12 @@ export function getComment(tag: string, from: string, type: AssetCommentEnum): s
 /**
  * html -> { html: processedHtml, assets: processedAssets }
  */
-export function processHtml(html: string, htmlUrl?: string): ProcessedContent {
+export function processHtml(html: string, entry?: string): ProcessedContent {
   if (!html) return { html: '', assets: [] };
 
   const processedAssets = [];
 
   const processedHtml = html
-    .replace(META_REGEX, '')
     .replace(SCRIPT_REGEX, (arg1, arg2) => {
       if (!arg1.match(SCRIPT_SRC_REGEX)) {
         processedAssets.push({
@@ -212,7 +206,7 @@ export function processHtml(html: string, htmlUrl?: string): ProcessedContent {
         return getComment('script', 'inline', AssetCommentEnum.REPLACED);
       } else {
         return arg1.replace(SCRIPT_SRC_REGEX, (_, argSrc2) => {
-          const url = argSrc2.indexOf('//') >= 0 ? argSrc2 : getUrl(htmlUrl, argSrc2);
+          const url = argSrc2.indexOf('//') >= 0 ? argSrc2 : getUrl(entry, argSrc2);
           processedAssets.push({
             type: AssetTypeEnum.EXTERNAL,
             content: url,
@@ -228,7 +222,7 @@ export function processHtml(html: string, htmlUrl?: string): ProcessedContent {
         return arg1;
       }
 
-      const url = arg2.indexOf('//') >= 0 ? arg2 : getUrl(htmlUrl, arg2);
+      const url = arg2.indexOf('//') >= 0 ? arg2 : getUrl(entry, arg2);
       return `${getComment('link', arg2, AssetCommentEnum.PROCESSED)}   ${arg1.replace(arg2, url)}`;
     });
 
@@ -263,33 +257,44 @@ export function appendScript(root: HTMLElement | ShadowRoot, asset: Asset): Prom
   });
 }
 
-export async function loadHtml(
+export async function appendProcessedContent(
   root: HTMLElement | ShadowRoot,
-  htmlUrl: string,
+  processedContent: ProcessedContent,
+) {
+  const { html: processedHtml, assets } = processedContent;
+
+  root.innerHTML = processedHtml;
+
+  // make sure assets loaded in order
+  await Array.prototype.slice.apply(assets).reduce((chain, asset) => {
+    return chain.then(() => appendScript(root, asset));
+  }, Promise.resolve());
+}
+
+const cachedProcessedContent: object = {};
+
+export async function loadEntry(
+  root: HTMLElement | ShadowRoot,
+  entry: string,
   fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response> = winFetch,
 ) {
+  if (cachedProcessedContent[entry]) {
+    await appendProcessedContent(root, cachedProcessedContent[entry]);
+    return;
+  }
+
   if (!fetch) {
     warn('Current environment does not support window.fetch, please use custom fetch');
     throw new Error(
-      `fetch ${htmlUrl} error: Current environment does not support window.fetch, please use custom fetch`,
+      `fetch ${entry} error: Current environment does not support window.fetch, please use custom fetch`,
     );
   }
 
-  try {
-    const res = await fetch(htmlUrl);
-    const html = await res.text();
+  const res = await fetch(entry);
+  const html = await res.text();
 
-    const { html: processedHtml, assets } = processHtml(html, htmlUrl);
-
-    root.innerHTML = processedHtml;
-
-    // make sure assets loaded in order
-    await Array.prototype.slice.apply(assets).reduce((chain, asset) => {
-      return chain.then(() => appendScript(root, asset));
-    }, Promise.resolve());
-  } catch (error) {
-    throw error;
-  }
+  cachedProcessedContent[entry] = processHtml(html, entry);
+  await appendProcessedContent(root, cachedProcessedContent[entry]);
 }
 
 /**

@@ -1,8 +1,9 @@
 import '@testing-library/jest-dom/extend-expect';
 import { FetchMock } from 'jest-fetch-mock';
 import {
-  loadHtml,
+  loadEntry,
   appendAssets,
+  appendLink,
   emptyAssets,
   recordAssets,
   AssetTypeEnum,
@@ -13,6 +14,7 @@ import {
   processHtml,
   appendScript,
 } from '../src/util/handleAssets';
+import { setCache } from '../src/util/cache';
 
 const tempHTML =
   '<!DOCTYPE html>' +
@@ -115,7 +117,6 @@ describe('processHtml', () => {
     expect(processHtml(undefined).html).toBe('');
 
     const { html, assets } = processHtml(tempHTML);
-    expect(html).not.toContain('<meta ');
 
     expect(html).not.toContain('<script src="//g.alicdn.com/p');
     expect(html).not.toContain('src="./');
@@ -185,7 +186,7 @@ describe('appendScript', () => {
   });
 });
 
-describe('loadHtml', () => {
+describe('loadEntry', () => {
   beforeEach(() => {
     (fetch as FetchMock).resetMocks();
   });
@@ -195,12 +196,12 @@ describe('loadHtml', () => {
     warn: warnMockFn,
   };
 
-  test('loadHtml', () => {
+  test('loadEntry', () => {
     const fetchMockFn = jest.fn();
 
     const div = document.createElement('div');
     const htmlUrl = '//icestark.com';
-    loadHtml(
+    loadEntry(
       div,
       htmlUrl,
       url =>
@@ -213,7 +214,7 @@ describe('loadHtml', () => {
       })
       .catch(() => {});
 
-    loadHtml(div, htmlUrl, null)
+    loadEntry(div, htmlUrl, null)
       .then(() => {
         expect(warnMockFn).toBeCalledWith(
           'Current environment does not support window.fetch, please use custom fetch',
@@ -222,7 +223,7 @@ describe('loadHtml', () => {
       .catch(() => {});
   });
 
-  test('loadHtml -> success', () => {
+  test('loadEntry -> success', () => {
     const htmlContent =
       '<html>' +
       '  <head>' +
@@ -258,12 +259,10 @@ describe('loadHtml', () => {
 
     const div = document.createElement('div');
 
-    loadHtml(div, '//icestark.com')
+    loadEntry(div, '//icestark.com')
       .then(() => {
         const html = div.innerHTML;
         expect(html).toContain(processHtml(htmlContent).html);
-
-        expect(html).not.toContain('<meta ');
 
         expect(html).not.toContain('src="//g.alicdn.com/1.1/test/index.js"');
         expect(html).not.toContain('src="/test.js"');
@@ -287,18 +286,19 @@ describe('loadHtml', () => {
     }
   });
 
-  test('loadHtml -> error', () => {
+  test('loadEntry -> error', () => {
     const err = new Error('err');
     (fetch as FetchMock).mockRejectOnce(err);
 
     const div = document.createElement('div');
 
-    loadHtml(div, '//icestark.error.com').catch(() => {});
+    loadEntry(div, '//icestark.error.com').catch(() => {});
   });
 });
 
+// tests for url
 describe('appendAssets', () => {
-  test('appendAssets', () => {
+  test('appendAssets useShadow=false', () => {
     emptyAssets(false);
 
     appendAssets(
@@ -323,7 +323,21 @@ describe('appendAssets', () => {
 
       expect(jsElement0.getAttribute('icestark')).toEqual('dynamic');
       expect(jsElement1.getAttribute('icestark')).toEqual('dynamic');
+
+      emptyAssets(false);
     });
+  });
+
+  test('appendAssets useShadow=true', () => {
+    setCache('root', document.getElementsByTagName('head')[0]);
+    appendAssets(
+      [
+        'http://icestark.com/js/index.js',
+        'http://icestark.com/css/index.css',
+        'http://icestark.com/js/test1.js',
+      ],
+      true,
+    );
   });
 
   test('recordAssets', () => {
@@ -381,5 +395,46 @@ describe('appendAssets', () => {
 
     // for *
     expect(getUrl('https://icestark.com', 'js/index.js')).toBe('https://icestark.com/js/index.js');
+  });
+});
+
+describe('appendLink', () => {
+  test('appendLink -> success', () => {
+    const div = document.createElement('div');
+
+    appendLink(div, '/test.css', 'icestark-css-0')
+      .then(() => {
+        expect(div.innerHTML).toContain('id="icestark-css-0"');
+        expect(div.innerHTML).toContain('/test.css');
+      })
+      .catch(() => {});
+
+    const links = div.getElementsByTagName('link');
+    for (let i = 0; i < links.length; i++) {
+      links[i].dispatchEvent(new Event('load'));
+    }
+  });
+
+  test('appendLink -> error', () => {
+    const errorMockFn = jest.fn();
+    (global as any).console = {
+      error: errorMockFn,
+    };
+
+    const div = document.createElement('div');
+
+    appendLink(div, '/test.css', 'icestark-css-0')
+      .then(() => {
+        expect(div.innerHTML).toContain('id="icestark-css-0"');
+        expect(div.innerHTML).toContain('/test.css');
+        expect(errorMockFn).toBeCalledTimes(1);
+        expect(errorMockFn).toBeCalledWith('css asset loaded error: /test.css');
+      })
+      .catch(() => {});
+
+    const links = div.getElementsByTagName('link');
+    for (let i = 0; i < links.length; i++) {
+      links[i].dispatchEvent(new ErrorEvent('error'));
+    }
   });
 });
