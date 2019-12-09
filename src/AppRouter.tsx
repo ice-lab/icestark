@@ -19,7 +19,6 @@ export interface AppRouterProps {
   ErrorComponent?: any;
   LoadingComponent?: any;
   NotFoundComponent?: any;
-  useShadow?: boolean;
   onAppEnter?: (appConfig: AppConfig) => void;
   onAppLeave?: (appConfig: AppConfig) => void;
 }
@@ -77,7 +76,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     onRouteChange: () => {},
     ErrorComponent: ({ err }) => <div>{err}</div>,
     NotFoundComponent: <div>NotFound</div>,
-    useShadow: false,
   };
 
   constructor(props: AppRouterProps) {
@@ -203,7 +201,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       NotFoundComponent,
       ErrorComponent,
       LoadingComponent,
-      useShadow,
       onAppEnter,
       onAppLeave,
       children,
@@ -240,13 +237,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     });
 
     if (match) {
-      const {
-        path,
-        basename,
-        render,
-        component,
-        useShadow: useAppRouteShadow,
-      } = element.props as AppRouteProps;
+      const { path, basename, render, component } = element.props as AppRouteProps;
 
       const commonProps: AppRouteComponentProps = {
         location: { pathname, query, hash },
@@ -266,10 +257,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       setCache('basename', basename || (Array.isArray(path) ? path[0] : path));
 
       const extraProps: any = {
-        useShadow:
-          useAppRouteShadow !== undefined && useAppRouteShadow !== useShadow
-            ? useAppRouteShadow
-            : useShadow, // useShadow configured in AppRoute has a higher priority
         forceRenderCount,
         onAppEnter,
         onAppLeave,

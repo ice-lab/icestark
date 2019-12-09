@@ -31,6 +31,7 @@ export interface AppRouteComponentProps<Params extends { [K in keyof Params]?: s
   history: AppHistory;
 }
 
+// from user config
 export interface AppConfig {
   title?: string;
   useShadow?: boolean;
@@ -40,15 +41,16 @@ export interface AppConfig {
   strict?: boolean;
   sensitive?: boolean;
   rootId?: string;
-}
-
-export interface AppRouteProps extends AppConfig {
   path: string | string[];
   url?: string | string[];
   entry?: string;
   entryContent?: string;
   component?: React.ReactElement;
   render?: (props?: AppRouteComponentProps) => React.ReactElement;
+}
+
+// from AppRouter
+export interface AppRouteProps extends AppConfig {
   forceRenderCount?: number;
   onAppEnter?: (appConfig: AppConfig) => void;
   onAppLeave?: (appConfig: AppConfig) => void;
@@ -68,10 +70,9 @@ export function converArray2String(list: string | string[]) {
  * Get app config from AppRoute props
  */
 function getAppConfig(appRouteProps: AppRouteProps): AppConfig {
-  const appConfig: AppConfig = {};
+  const appConfig: AppConfig = { path: '' };
   const uselessList = [
     'forceRenderCount',
-    'url',
     'onAppEnter',
     'onAppLeave',
     'triggerLoading',
@@ -180,7 +181,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     this.loadNextApp(useShadow);
   };
 
-  loadNextApp = (useShadow?: boolean) => {
+  loadNextApp = async (useShadow?: boolean) => {
     const {
       path,
       url,
@@ -215,28 +216,26 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     if (typeof onAppEnter === 'function') onAppEnter(getAppConfig(this.props));
 
-    (async () => {
-      try {
-        if (entry) {
-          // entry for fetch -> process -> append
-          const rootElement = getCache('root');
-          await loadEntry(rootElement, entry);
-        } else if (entryContent) {
-          // entryContent for process -> append
-          const rootElement = getCache('root');
-          const cachedKey = title || converArray2String(path);
-          await loadEntryContent(rootElement, entryContent, location.href, cachedKey);
-        } else {
-          const assetsList = Array.isArray(url) ? url : [url];
-          await appendAssets(assetsList, useShadow);
-        }
-
-        // cancel loading after handleAssets
-        handleLoading(false);
-      } catch (error) {
-        handleError(error.message);
+    try {
+      if (entry) {
+        // entry for fetch -> process -> append
+        const rootElement = getCache('root');
+        await loadEntry(rootElement, entry);
+      } else if (entryContent) {
+        // entryContent for process -> append
+        const rootElement = getCache('root');
+        const cachedKey = title || converArray2String(path);
+        await loadEntryContent(rootElement, entryContent, location.href, cachedKey);
+      } else {
+        const assetsList = Array.isArray(url) ? url : [url];
+        await appendAssets(assetsList, useShadow);
       }
-    })();
+
+      // cancel loading after handleAssets
+      handleLoading(false);
+    } catch (error) {
+      handleError(error.message);
+    }
   };
 
   appendElementToBase = (elementId: string): HTMLElement => {
