@@ -2,6 +2,7 @@ import * as React from 'react';
 import { AppHistory } from './appHistory';
 import { loadEntry, loadEntryContent, appendAssets, emptyAssets } from './util/handleAssets';
 import { setCache, getCache } from './util/cache';
+import { triggerAppLeave } from './util/appLifeCycle';
 
 interface AppRouteState {
   cssLoading: boolean;
@@ -147,7 +148,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
    */
 
   renderChild = (): void => {
-    const { rootId, useShadow, onAppLeave } = this.props;
+    const { rootId, useShadow } = this.props;
 
     const myBase: HTMLElement = this.myRefBase;
     if (!myBase) return;
@@ -254,13 +255,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   triggerPrevAppLeave = (): void => {
     const { onAppLeave } = this.props;
 
-    // trigger registerAppLeaveCallback
-    const registerAppLeaveCallback = getCache('appLeave');
-
-    if (registerAppLeaveCallback) {
-      registerAppLeaveCallback();
-      setCache('appLeave', null);
-    }
+    triggerAppLeave();
 
     // trigger onAppLeave
     const prevAppConfig = this.prevAppConfig;

@@ -6,6 +6,7 @@ import matchPath from './util/matchPath';
 import { recordAssets, emptyAssets } from './util/handleAssets';
 import { ICESTSRK_NOT_FOUND, ICESTSRK_ERROR } from './util/constant';
 import { setCache } from './util/cache';
+import { triggerAppLeave } from './util/appLifeCycle';
 
 type RouteType = 'pushState' | 'replaceState';
 
@@ -114,6 +115,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     // if AppRouter is unmountd, cancel all operations
     if (this.unmounted) return;
 
+    triggerAppLeave();
     this.setState({ url: ICESTSRK_NOT_FOUND });
   };
 
@@ -137,6 +139,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     // if AppRouter is unmountd, cancel all operations
     if (this.unmounted) return;
 
+    triggerAppLeave();
     this.err = err;
     this.setState({ url: ICESTSRK_ERROR });
   };
@@ -251,10 +254,12 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       };
 
       if (component) {
+        triggerAppLeave();
         return renderComponent(component, commonProps);
       }
 
       if (render && typeof render === 'function') {
+        triggerAppLeave();
         return render(commonProps);
       }
 
