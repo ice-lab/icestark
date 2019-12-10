@@ -124,12 +124,6 @@ describe('AppRouter', () => {
     expect(container.innerHTML).toContain('Loading');
 
     setTimeout(function() {
-      const dynamicScript = document.querySelector('[icestark=dynamic]');
-      expect(dynamicScript.id).toBe('icestark-js-0');
-      expect(dynamicScript.getAttribute('src')).toBe('//icestark.com/js/index.js');
-      dynamicScript.dispatchEvent(new ErrorEvent('error'));
-
-      // expect(container.innerHTML).toContain('js asset loaded error: //icestark.com/js/index.js');
       unmount();
     }, done());
   });
