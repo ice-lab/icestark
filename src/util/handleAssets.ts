@@ -1,4 +1,4 @@
-import { PREFIX, DYNAMIC, STATIC } from './constant';
+import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { getCache } from './cache';
 import { warn, error } from './message';
 
@@ -125,7 +125,10 @@ export async function appendAssets(assetsList: string[], useShadow: boolean) {
   const cssList: string[] = [];
 
   assetsList.forEach(url => {
-    const isCss: boolean = /\.css$/.test(url);
+    // //icestark.com/index.css -> true
+    // //icestark.com/index.css?timeSamp=1575443657834 -> true
+    // //icestark.com/index.css?query=test.js -> false
+    const isCss: boolean = IS_CSS_REGEX.test(url);
     if (isCss) {
       cssList.push(url);
     } else {
@@ -344,23 +347,7 @@ export function setStaticAttribute(tag: HTMLStyleElement | HTMLScriptElement): v
 /**
  * Empty useless assets
  */
-export function emptyAssets(useShadow: boolean): void {
-  const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
-  const cssRoot: HTMLElement | ShadowRoot = useShadow
-    ? getCacheRoot()
-    : document.getElementsByTagName('head')[0];
-
-  // remove dynamic assets
-  const jsList: NodeListOf<HTMLElement> = jsRoot.querySelectorAll(`script[${PREFIX}=${DYNAMIC}]`);
-  jsList.forEach(js => {
-    jsRoot.removeChild(js);
-  });
-
-  const cssList: NodeListOf<HTMLElement> = cssRoot.querySelectorAll(`link[${PREFIX}=${DYNAMIC}]`);
-  cssList.forEach(css => {
-    cssRoot.removeChild(css);
-  });
-
+export function emptyAssets(shouldRemove: (assetUrl: string) => boolean): void {
   // remove extra assets
   const styleList: NodeListOf<HTMLElement> = document.querySelectorAll(
     `style:not([${PREFIX}=${STATIC}])`,
@@ -370,10 +357,18 @@ export function emptyAssets(useShadow: boolean): void {
   const linkList: NodeListOf<HTMLElement> = document.querySelectorAll(
     `link:not([${PREFIX}=${STATIC}])`,
   );
-  linkList.forEach(link => link.parentNode.removeChild(link));
+  linkList.forEach(link => {
+    if (shouldRemove(link.getAttribute('href'))) {
+      link.parentNode.removeChild(link);
+    }
+  });
 
   const jsExtraList: NodeListOf<HTMLElement> = document.querySelectorAll(
     `script:not([${PREFIX}=${STATIC}])`,
   );
-  jsExtraList.forEach(js => js.parentNode.removeChild(js));
+  jsExtraList.forEach(js => {
+    if (shouldRemove(js.getAttribute('src'))) {
+      js.parentNode.removeChild(js);
+    }
+  });
 }

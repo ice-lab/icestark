@@ -21,6 +21,7 @@ export interface AppRouterProps {
   NotFoundComponent?: any;
   onAppEnter?: (appConfig: AppConfig) => void;
   onAppLeave?: (appConfig: AppConfig) => void;
+  shouldAssetsRemove?: (assetUrl?: string) => boolean;
 }
 
 interface AppRouterState {
@@ -97,9 +98,10 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   }
 
   componentWillUnmount() {
+    const { shouldAssetsRemove } = this.props;
     this.unHijackHistory();
+    emptyAssets(shouldAssetsRemove);
     window.removeEventListener('icestark:not-found', this.triggerNotFound);
-    emptyAssets(false);
     this.unmounted = true;
   }
 
@@ -203,6 +205,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       LoadingComponent,
       onAppEnter,
       onAppLeave,
+      shouldAssetsRemove,
       children,
     } = this.props;
     const { url, forceRenderCount, showLoading } = this.state;
@@ -262,6 +265,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
         onAppLeave,
         triggerLoading: this.triggerLoading,
         triggerError: this.triggerError,
+        shouldAssetsRemove,
       };
 
       return (

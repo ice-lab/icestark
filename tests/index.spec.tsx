@@ -5,6 +5,7 @@ import * as React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import { AppRouter, AppRoute, AppLink, appHistory } from '../src/index';
 import { setCache } from '../src/util/cache';
+import { IS_CSS_REGEX } from '../src/util/constant';
 
 describe('AppRouter', () => {
   beforeEach(() => {
@@ -241,6 +242,15 @@ describe('AppRouter', () => {
 
     unmount();
   });
+
+  test('test for Only AppRoute Component', () => {
+    window.history.pushState({}, 'test', '/');
+    const { container, unmount } = render(
+      <AppRoute path="/" component={<div data-testid="icestarkTest">test</div>} />,
+    );
+    expect(container.innerHTML).toContain('ice-stark-loading');
+    unmount();
+  });
 });
 
 describe('AppLink', () => {
@@ -290,5 +300,13 @@ describe('appHistory', () => {
 
     appHistory.replace('/test');
     expect(mockReplaceState.mock.calls.length).toBe(1);
+  });
+});
+
+describe('IS_CSS_REGEX', () => {
+  test('IS_CSS_REGEX', () => {
+    expect(IS_CSS_REGEX.test('//icestark.com/index.css')).toBe(true);
+    expect(IS_CSS_REGEX.test('//icestark.com/index.css?timeSamp=1575443657834')).toBe(true);
+    expect(IS_CSS_REGEX.test('//icestark.com/index.css?query=test.js')).toBe(false);
   });
 });

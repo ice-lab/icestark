@@ -56,6 +56,7 @@ export interface AppRouteProps extends AppConfig {
   onAppLeave?: (appConfig: AppConfig) => void;
   triggerLoading?: (loading: boolean) => void;
   triggerError?: (err: string) => void;
+  shouldAssetsRemove?: (assetUrl?: string) => boolean;
 }
 
 export function converArray2String(list: string | string[]) {
@@ -97,12 +98,15 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
   private unmounted: boolean = false;
 
+  private prevAppConfig: AppConfig = null;
+
   static defaultProps = {
     useShadow: false,
     exact: false,
     strict: false,
     sensitive: false,
     rootId: 'icestarkNode',
+    shouldAssetsRemove: () => true,
   };
 
   componentDidMount() {
@@ -122,47 +126,33 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       useShadow !== prevProps.useShadow
     ) {
       // record config for prev App
-      const prevAppConfig = getAppConfig(prevProps);
+      this.prevAppConfig = getAppConfig(prevProps);
 
-      this.renderChild(prevAppConfig);
+      this.renderChild();
     }
   }
 
   componentWillUnmount() {
     // Empty useless assets before unmount
-    const { useShadow } = this.props;
-    emptyAssets(useShadow);
-    setCache('root', null);
+    const { shouldAssetsRemove } = this.props;
+
+    emptyAssets(shouldAssetsRemove);
+    this.triggerPrevAppLeave();
     this.unmounted = true;
+    setCache('root', null);
   }
 
   /**
    * Load assets and render child app
    */
-  renderChild = (prevAppConfig?: AppConfig): void => {
+
+  renderChild = (): void => {
     const { rootId, useShadow, onAppLeave } = this.props;
 
     const myBase: HTMLElement = this.myRefBase;
     if (!myBase) return;
 
-    if (prevAppConfig) {
-      // trigger registerAppLeaveCallback
-      const registerAppLeaveCallback = getCache('appLeave');
-
-      if (registerAppLeaveCallback) {
-        registerAppLeaveCallback();
-        setCache('appLeave', null);
-      }
-
-      // trigger onAppLeave
-      if (typeof onAppLeave === 'function') onAppLeave(prevAppConfig);
-
-      // empty useless assets before loading
-      emptyAssets(prevAppConfig.useShadow);
-
-      // remove rootElement for previous app
-      this.removeElementFromBase(prevAppConfig.rootId);
-    }
+    this.triggerPrevAppLeave();
 
     // reCreate rootElement to remove React Component instance,
     // rootElement is created for render Child App
@@ -191,7 +181,10 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       triggerLoading,
       triggerError,
       onAppEnter,
+      shouldAssetsRemove,
     } = this.props;
+    // empty useless assets before loading
+    emptyAssets(shouldAssetsRemove);
 
     if (title) document.title = title;
 
@@ -255,6 +248,26 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     const element = myBase.querySelector(`#${elementId}`);
     if (element) {
       myBase.removeChild(element);
+    }
+  };
+
+  triggerPrevAppLeave = (): void => {
+    const { onAppLeave } = this.props;
+
+    // trigger registerAppLeaveCallback
+    const registerAppLeaveCallback = getCache('appLeave');
+
+    if (registerAppLeaveCallback) {
+      registerAppLeaveCallback();
+      setCache('appLeave', null);
+    }
+
+    // trigger onAppLeave
+    const prevAppConfig = this.prevAppConfig;
+
+    if (prevAppConfig) {
+      if (typeof onAppLeave === 'function') onAppLeave(prevAppConfig);
+      this.prevAppConfig = null;
     }
   };
 
