@@ -1,6 +1,6 @@
 {
   "name": "@ice/stark-app",
-  "version": "1.0.1",
+  "version": "1.2.0",
   "description": "icestark-app is a JavaScript library for icestark, used by sub-application.",
   "scripts": {
     "build": "rm -rf lib && tsc",
