@@ -77,6 +77,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     onRouteChange: () => {},
     ErrorComponent: ({ err }) => <div>{err}</div>,
     NotFoundComponent: <div>NotFound</div>,
+    shouldAssetsRemove: () => true,
   };
 
   constructor(props: AppRouterProps) {
@@ -99,6 +100,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
   componentWillUnmount() {
     const { shouldAssetsRemove } = this.props;
+
     this.unHijackHistory();
     emptyAssets(shouldAssetsRemove);
     window.removeEventListener('icestark:not-found', this.triggerNotFound);
