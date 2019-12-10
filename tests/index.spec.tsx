@@ -14,7 +14,6 @@ describe('AppRouter', () => {
   test('render the AppRouter', () => {
     const props = {
       onRouteChange: jest.fn(),
-      useShadow: false,
       NotFoundComponent: <div data-testid="icestarkDefalut">NotFound</div>,
     };
     const { getByTestId } = render(<AppRouter {...props} />);
@@ -143,7 +142,7 @@ describe('AppRouter', () => {
     };
 
     const { unmount } = render(
-      <AppRouter {...props} useShadow>
+      <AppRouter {...props}>
         <AppRoute
           path="/"
           url={['//icestark.com/js/index.js', '//icestark.com/css/index.css']}
