@@ -31,7 +31,7 @@ describe('AppRouter', () => {
     expect(props.onRouteChange).toHaveBeenCalledTimes(3);
   });
 
-  test('test for AppRoute Component/render', () => {
+  test('test for AppRoute', () => {
     window.history.pushState({}, 'test', '/');
 
     const props = {
@@ -211,6 +211,15 @@ describe('AppRouter', () => {
       </AppRouter>,
     );
 
+    unmount();
+  });
+
+  test('test for Only AppRoute Component', () => {
+    window.history.pushState({}, 'test', '/');
+    const { container, unmount } = render(
+      <AppRoute path="/" component={<div data-testid="icestarkTest">test</div>} />,
+    );
+    expect(container.innerHTML).toContain('ice-stark-loading');
     unmount();
   });
 
