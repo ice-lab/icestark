@@ -1,17 +1,20 @@
 import '@testing-library/jest-dom/extend-expect';
+import { FetchMock } from 'jest-fetch-mock';
 
 import * as React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import { AppRouter, AppRoute, AppLink, appHistory } from '../src/index';
-import matchPath from '../src/matchPath';
-import { loadAssets, recordAssets } from '../src/handleAssets';
-import { setCache, getCache } from '../src/cache';
+import { setCache } from '../src/util/cache';
+import { IS_CSS_REGEX } from '../src/util/constant';
 
 describe('AppRouter', () => {
+  beforeEach(() => {
+    (fetch as FetchMock).resetMocks();
+  });
+
   test('render the AppRouter', () => {
     const props = {
       onRouteChange: jest.fn(),
-      useShadow: false,
       NotFoundComponent: <div data-testid="icestarkDefalut">NotFound</div>,
     };
     const { getByTestId } = render(<AppRouter {...props} />);
@@ -28,7 +31,7 @@ describe('AppRouter', () => {
     expect(props.onRouteChange).toHaveBeenCalledTimes(3);
   });
 
-  test('test for AppRoute Component', () => {
+  test('test for AppRoute Component/render', () => {
     window.history.pushState({}, 'test', '/');
 
     const props = {
@@ -36,6 +39,9 @@ describe('AppRouter', () => {
       LoadingComponent: <div>Loading</div>,
     };
 
+    /**
+     * Test for render
+     */
     const { container, rerender, unmount, getByText } = render(
       <AppRouter {...props}>
         <AppRoute path="/" component={<div data-testid="icestarkTest">test</div>} />
@@ -77,73 +83,143 @@ describe('AppRouter', () => {
     expect(container.innerHTML).toContain('test');
     expect(props.onRouteChange).toHaveBeenCalledTimes(1);
 
-    fireEvent.click(getByText(/Jump NotFound/i));
-    expect(container.innerHTML).toContain('NotFound');
-
     fireEvent.click(getByText(/Jump Hash/i));
     expect(props.onRouteChange).toHaveBeenCalledTimes(2);
 
+    fireEvent.click(getByText(/Jump NotFound/i));
+    expect(container.innerHTML).toContain('NotFound');
+
     /**
-     * test for HashType
+     * Test for HashType
      */
+    window.history.pushState({}, 'test', '/');
+
+    setCache('appLeave', () => {});
     rerender(
       <AppRouter {...props}>
         <AppRoute path="/" url={[]} hashType />
       </AppRouter>,
     );
+
     const appRouteNode = container.querySelector('.ice-stark-loading');
     expect(container.innerHTML).toContain('Loading');
-    expect(appRouteNode.childNodes.length).toBe(2);
+    expect(appRouteNode.childNodes.length).toBe(1);
+    unmount();
+  });
 
-    /**
-     * Load assets error
-     */
-    rerender(
+  test('test for AppRoute url -> error', done => {
+    window.history.pushState({}, 'test', '/');
+
+    const props = {
+      onRouteChange: jest.fn(),
+      LoadingComponent: <div>Loading</div>,
+    };
+
+    const { container, unmount } = render(
       <AppRouter {...props}>
         <AppRoute path="/" url={['//icestark.com/js/index.js']} hashType="hashbang" />
       </AppRouter>,
     );
+
     expect(container.innerHTML).toContain('Loading');
 
-    const dynamicScript = document.querySelector('[icestark=dynamic]');
-    expect(dynamicScript.id).toBe('icestark-js-0');
-    expect(dynamicScript.getAttribute('src')).toBe('//icestark.com/js/index.js');
+    setTimeout(function() {
+      unmount();
+    }, done());
+  });
 
-    dynamicScript.dispatchEvent(new ErrorEvent('error'));
-    expect(container.innerHTML).toContain('js asset loaded error: //icestark.com/js/index.js');
+  test('test for AppRoute url -> success', () => {
+    window.history.pushState({}, 'test', '/');
 
-    /**
-     * Load assets success
-     */
-    setCache('appLeave', () => {});
+    const props = {
+      onRouteChange: jest.fn(),
+      LoadingComponent: <div>Loading</div>,
+    };
 
-    // HTMLElement.attachShadow = jest.fn();
-
-    rerender(
+    const { unmount } = render(
       <AppRouter {...props}>
-        <AppRoute path="/" url={['//icestark.com/js/index.js', '//icestark.com/css/index.css']} />
+        <AppRoute
+          path="/"
+          url={['//icestark.com/js/index.js', '//icestark.com/css/index.css']}
+          useShadow={false}
+        />
       </AppRouter>,
     );
-    expect(getCache('appLeave')).toBeNull();
+    unmount();
+  });
 
-    // js load success
-    const dynamicScriptLoaded = document.querySelector('script[icestark=dynamic]');
-    expect(dynamicScriptLoaded.getAttribute('id')).toBe('icestark-js-0');
-    expect(dynamicScriptLoaded.getAttribute('type')).toBe('text/javascript');
-    expect(dynamicScriptLoaded.getAttribute('src')).toBe('//icestark.com/js/index.js');
+  test('test for AppRoute entry -> success', done => {
+    window.history.pushState({}, 'test', '/');
 
-    dynamicScriptLoaded.dispatchEvent(new Event('load'));
-    expect(container.querySelector('.ice-stark-loading').childNodes.length).toBe(1);
+    const props = {
+      onRouteChange: jest.fn(),
+      LoadingComponent: <div>Loading</div>,
+    };
 
-    // css load success
-    const dynamicLinkLoaded = document.querySelector('link[icestark=dynamic]');
-    expect(dynamicLinkLoaded.getAttribute('id')).toBe('icestark-css-0');
-    expect(dynamicLinkLoaded.getAttribute('rel')).toBe('stylesheet');
-    expect(dynamicLinkLoaded.getAttribute('href')).toBe('//icestark.com/css/index.css');
+    (fetch as FetchMock).mockResponseOnce(
+      '<html>' +
+        '  <head>' +
+        '    <meta charset="utf-8" />' +
+        '    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />' +
+        '    <link rel="dns-prefetch" href="//g.alicdn.com" />' +
+        '    <link rel="stylesheet" href="/index.css" />' +
+        '    <title>This is for test</title>' +
+        '  </head>' +
+        '  <body>' +
+        '    <div id="App">' +
+        '    </div>' +
+        '    <script src="index.js"></script>' +
+        '    <div id="page_bottom"></div>' +
+        '  </body>' +
+        '</html>',
+    );
 
-    dynamicLinkLoaded.dispatchEvent(new Event('load'));
-    expect(container.querySelector('.ice-stark-loaded').childNodes.length).toBe(1);
+    const { container, unmount } = render(
+      <AppRouter {...props}>
+        <AppRoute path="/" entry="//icestark.com" />
+      </AppRouter>,
+    );
 
+    setTimeout(function() {
+      expect(container.innerHTML).toContain('Loading');
+      expect(container.innerHTML).toContain('<!--link /index.css processed by @ice/stark-->');
+      expect(container.innerHTML).toContain('<!--script index.js replaced by @ice/stark-->');
+
+      const scripts = container.getElementsByTagName('script');
+      for (let i = 0; i < scripts.length; i++) {
+        scripts[i].dispatchEvent(new Event('load'));
+      }
+
+      unmount();
+    }, done());
+  });
+
+  test('test for AppRoute entry -> error', () => {
+    window.history.pushState({}, 'test', '/');
+
+    const props = {
+      onRouteChange: jest.fn(),
+      LoadingComponent: <div>Loading</div>,
+    };
+
+    const err = new Error('err');
+    (fetch as FetchMock).mockRejectOnce(err);
+
+    const { unmount } = render(
+      <AppRouter {...props}>
+        <AppRoute path="/" entry="//icestark.com" />
+      </AppRouter>,
+    );
+
+    unmount();
+  });
+
+  test('test for Only AppRoute Component', () => {
+    window.history.pushState({}, 'test', '/');
+    const { container, unmount } = render(
+      <AppRoute path="/" component={<div data-testid="icestarkTest">test</div>} />,
+    );
+    expect(container.innerHTML).toContain('ice-stark-loading');
     unmount();
   });
 });
@@ -182,79 +258,6 @@ describe('AppLink', () => {
   });
 });
 
-describe('matchPath', () => {
-  test('matchPath', () => {
-    let match = matchPath('/test/123');
-    expect(match).toBeNull();
-
-    match = matchPath('/test/123', '/test');
-    expect(match.url).toBe('/test');
-
-    match = matchPath('/test/123', { path: '/test' });
-    expect(match.url).toBe('/test');
-
-    match = matchPath('/test/123', { path: '/test/:id' });
-    expect(match.url).toBe('/test/123');
-    expect(match.params.id).toBe('123');
-
-    match = matchPath('/test/123', { path: ['/test/:id', '/test/:id/detail'] });
-    expect(match.url).toBe('/test/123');
-    expect(match.path).toBe('/test/:id');
-    expect(match.params.id).toBe('123');
-
-    match = matchPath('/test/123', { path: '/test', exact: true });
-    expect(match).toBeNull();
-  });
-});
-
-describe('handleAssets', () => {
-  test('loadAssets', () => {
-    loadAssets(
-      [
-        'http://icestark.com/js/index.js',
-        'http://icestark.com/css/index.css',
-        'http://icestark.com/js/test1.js',
-      ],
-      false,
-      jest.fn(),
-      jest.fn(),
-    );
-    const jsElement0 = document.getElementById('icestark-js-0');
-    const jsElement1 = document.getElementById('icestark-js-1');
-
-    expect((jsElement0 as HTMLScriptElement).src).toEqual('http://icestark.com/js/index.js');
-    expect((jsElement0 as HTMLScriptElement).async).toEqual(false);
-    expect((jsElement1 as HTMLScriptElement).src).toEqual('http://icestark.com/js/test1.js');
-    expect((jsElement1 as HTMLScriptElement).async).toEqual(false);
-
-    recordAssets();
-
-    expect(jsElement0.getAttribute('icestark')).toEqual('static');
-    expect(jsElement1.getAttribute('icestark')).toEqual('static');
-  });
-
-  test('recordAssets', () => {
-    const jsElement = document.createElement('script');
-    jsElement.id = 'icestark-script';
-
-    const linkElement = document.createElement('link');
-    linkElement.id = 'icestark-link';
-
-    const styleElement = document.createElement('style');
-    styleElement.id = 'icestark-style';
-
-    document.body.appendChild(jsElement);
-    document.body.appendChild(linkElement);
-    document.body.appendChild(styleElement);
-
-    recordAssets();
-
-    expect(jsElement.getAttribute('icestark')).toEqual('static');
-    expect(linkElement.getAttribute('icestark')).toEqual('static');
-    expect(styleElement.getAttribute('icestark')).toEqual('static');
-  });
-});
-
 describe('appHistory', () => {
   test('appHistory', () => {
     const mockPushState = jest.fn();
@@ -268,5 +271,13 @@ describe('appHistory', () => {
 
     appHistory.replace('/test');
     expect(mockReplaceState.mock.calls.length).toBe(1);
+  });
+});
+
+describe('IS_CSS_REGEX', () => {
+  test('IS_CSS_REGEX', () => {
+    expect(IS_CSS_REGEX.test('//icestark.com/index.css')).toBe(true);
+    expect(IS_CSS_REGEX.test('//icestark.com/index.css?timeSamp=1575443657834')).toBe(true);
+    expect(IS_CSS_REGEX.test('//icestark.com/index.css?query=test.js')).toBe(false);
   });
 });
