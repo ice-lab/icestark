@@ -134,7 +134,7 @@ describe('AppRouter', () => {
     }, done());
   });
 
-  test('test for AppRoute url -> success', done => {
+  test('test for AppRoute url -> success', () => {
     window.history.pushState({}, 'test', '/');
 
     const props = {
@@ -151,30 +151,7 @@ describe('AppRouter', () => {
         />
       </AppRouter>,
     );
-
-    setTimeout(function() {
-      // js load success
-      // const dynamicScriptLoaded = document.querySelector('script[icestark=dynamic]');
-      // expect(dynamicScriptLoaded.getAttribute('id')).toBe('icestark-js-0');
-      // expect(dynamicScriptLoaded.getAttribute('type')).toBe('text/javascript');
-      // expect(dynamicScriptLoaded.getAttribute('src')).toBe('//icestark.com/js/index.js');
-
-      // dynamicScriptLoaded.dispatchEvent(new Event('load'));
-
-      // expect(container.querySelector('.ice-stark-loading').childNodes.length).toBe(1);
-
-      // // css load success
-      // const dynamicLinkLoaded = document.querySelector('link[icestark=dynamic]');
-      // expect(dynamicLinkLoaded.getAttribute('id')).toBe('icestark-css-0');
-      // expect(dynamicLinkLoaded.getAttribute('rel')).toBe('stylesheet');
-      // expect(dynamicLinkLoaded.getAttribute('href')).toBe('//icestark.com/css/index.css');
-
-      // dynamicLinkLoaded.dispatchEvent(new Event('load'));
-
-      // expect(container.querySelector('.ice-stark-loaded').childNodes.length).toBe(1);
-
-      unmount();
-    }, done());
+    unmount();
   });
 
   test('test for AppRoute entry -> success', done => {
