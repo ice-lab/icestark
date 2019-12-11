@@ -6,15 +6,18 @@ import {
   renderNotFound,
   registerAppLeave,
   appHistory,
+  isInIcestark,
 } from '../src/index';
 import { setCache, getCache } from '../src/cache';
 
-describe('setCache', () => {
-  test('setCache', () => {
-    expect(setCache('testKey', 123)).toBeUndefined;
+const namespace = 'ICESTARK';
 
-    setCache('testKey', 123);
-    expect(getCache('testKey')).toBe(123);
+describe('cache', () => {
+  test('cache', () => {
+    expect(getCache('testCache')).toBeNull();
+
+    setCache('testCache', 'this is a test');
+    expect(getCache('testCache')).toBe('this is a test');
   });
 });
 
@@ -96,5 +99,21 @@ describe('appHistory', () => {
 
     appHistory.replace('/test');
     expect(mockReplaceState.mock.calls.length).toBe(1);
+  });
+});
+
+describe('isInIcestark', () => {
+  test('isInIcestark', () => {
+    window[namespace] = null;
+
+    expect(isInIcestark()).toBe(false);
+
+    window[namespace] = { root: null };
+    expect(isInIcestark()).toBe(false);
+
+    const div = document.createElement('div');
+    div.setAttribute('id', 'ice-container');
+    window[namespace] = { root: div };
+    expect(isInIcestark()).toBe(true);
   });
 });
