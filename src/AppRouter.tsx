@@ -2,10 +2,11 @@ import * as React from 'react';
 import * as urlParse from 'url-parse';
 import { AppConfig, AppRouteProps, AppRouteComponentProps } from './AppRoute';
 import appHistory from './appHistory';
-import matchPath from './matchPath';
-import { recordAssets } from './handleAssets';
-import { ICESTSRK_NOT_FOUND } from './constant';
-import { setCache } from './cache';
+import matchPath from './util/matchPath';
+import { recordAssets, emptyAssets } from './util/handleAssets';
+import { ICESTSRK_NOT_FOUND, ICESTSRK_ERROR } from './util/constant';
+import { setCache } from './util/cache';
+import { triggerAppLeave } from './util/appLifeCycle';
 
 type RouteType = 'pushState' | 'replaceState';
 
@@ -19,7 +20,6 @@ export interface AppRouterProps {
   ErrorComponent?: any;
   LoadingComponent?: any;
   NotFoundComponent?: any;
-  useShadow?: boolean;
   onAppEnter?: (appConfig: AppConfig) => void;
   onAppLeave?: (appConfig: AppConfig) => void;
   shouldAssetsRemove?: (assetUrl?: string) => boolean;
@@ -28,6 +28,7 @@ export interface AppRouterProps {
 interface AppRouterState {
   url: string;
   forceRenderCount: number;
+  showLoading: boolean;
 }
 
 interface OriginalStateFunction {
@@ -69,11 +70,15 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
   private originalReplace: OriginalStateFunction = window.history.replaceState;
 
+  private unmounted: boolean = false;
+
+  private err: string = ''; // js assets load err
+
   static defaultProps = {
     onRouteChange: () => {},
     ErrorComponent: ({ err }) => <div>{err}</div>,
     NotFoundComponent: <div>NotFound</div>,
-    useShadow: false,
+    shouldAssetsRemove: () => true,
   };
 
   constructor(props: AppRouterProps) {
@@ -81,6 +86,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     this.state = {
       url: location.href,
       forceRenderCount: 0,
+      showLoading: false,
     };
     recordAssets();
   }
@@ -94,15 +100,48 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   }
 
   componentWillUnmount() {
+    const { shouldAssetsRemove } = this.props;
+
     this.unHijackHistory();
+    emptyAssets(shouldAssetsRemove);
     window.removeEventListener('icestark:not-found', this.triggerNotFound);
+    this.unmounted = true;
   }
 
   /**
    * Trigger NotFound
    */
-  triggerNotFound = () => {
+  triggerNotFound = (): void => {
+    // if AppRouter is unmountd, cancel all operations
+    if (this.unmounted) return;
+
+    triggerAppLeave();
     this.setState({ url: ICESTSRK_NOT_FOUND });
+  };
+
+  /**
+   * Trigger Loading
+   */
+  triggerLoading = (newShowLoading: boolean): void => {
+    // if AppRouter is unmountd, cancel all operations
+    if (this.unmounted) return;
+
+    const { showLoading } = this.state;
+    if (showLoading !== newShowLoading) {
+      this.setState({ showLoading: newShowLoading });
+    }
+  };
+
+  /**
+   * Trigger Error
+   */
+  triggerError = (err: string): void => {
+    // if AppRouter is unmountd, cancel all operations
+    if (this.unmounted) return;
+
+    triggerAppLeave();
+    this.err = err;
+    this.setState({ url: ICESTSRK_ERROR });
   };
 
   /**
@@ -139,9 +178,9 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     // deal with forceRender
     if (state && (state.forceRender || (state.state && state.state.forceRender))) {
       const { forceRenderCount } = this.state;
-      this.setState({ url, forceRenderCount: forceRenderCount + 1 });
+      this.setState({ url, forceRenderCount: forceRenderCount + 1, showLoading: false });
     } else {
-      this.setState({ url });
+      this.setState({ url, showLoading: false });
     }
     this.handleRouteChange(url, routeType);
   };
@@ -152,7 +191,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   handlePopState = (): void => {
     const url = location.href;
 
-    this.setState({ url });
+    this.setState({ url, showLoading: false });
     this.handleRouteChange(url, 'popstate');
   };
 
@@ -169,13 +208,19 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       NotFoundComponent,
       ErrorComponent,
       LoadingComponent,
-      useShadow,
       onAppEnter,
       onAppLeave,
       shouldAssetsRemove,
       children,
     } = this.props;
-    const { url, forceRenderCount } = this.state;
+    const { url, forceRenderCount, showLoading } = this.state;
+
+    // directly render NotFoundComponent / ErrorComponent
+    if (url === ICESTSRK_NOT_FOUND) {
+      return renderComponent(NotFoundComponent, {});
+    } else if (url === ICESTSRK_ERROR) {
+      return renderComponent(ErrorComponent, { err: this.err });
+    }
 
     const { pathname, query, hash } = urlParse(url, true);
 
@@ -199,16 +244,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       }
     });
 
-    const extraProps: any = {
-      ErrorComponent,
-      LoadingComponent,
-      useShadow,
-      forceRenderCount,
-      onAppEnter,
-      onAppLeave,
-      shouldAssetsRemove,
-    };
-
     if (match) {
       const { path, basename, render, component } = element.props as AppRouteProps;
 
@@ -219,17 +254,33 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       };
 
       if (component) {
+        triggerAppLeave();
         return renderComponent(component, commonProps);
       }
 
       if (render && typeof render === 'function') {
+        triggerAppLeave();
         return render(commonProps);
       }
 
       // render AppRoute
       setCache('basename', basename || (Array.isArray(path) ? path[0] : path));
 
-      return React.cloneElement(element, extraProps);
+      const extraProps: any = {
+        forceRenderCount,
+        onAppEnter,
+        onAppLeave,
+        triggerLoading: this.triggerLoading,
+        triggerError: this.triggerError,
+        shouldAssetsRemove,
+      };
+
+      return (
+        <div>
+          {showLoading ? renderComponent(LoadingComponent, {}) : null}
+          {React.cloneElement(element, extraProps)}
+        </div>
+      );
     }
 
     return renderComponent(NotFoundComponent, {});

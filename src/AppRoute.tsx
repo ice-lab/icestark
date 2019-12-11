@@ -1,18 +1,8 @@
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
 import { AppHistory } from './appHistory';
-import { loadAssets, emptyAssets } from './handleAssets';
-import { setCache, getCache } from './cache';
-
-const statusElementId = 'icestarkStatusContainer';
-
-const converArray2String = (list: string | string[]) => {
-  if (Array.isArray(list)) {
-    return list.join(',');
-  }
-
-  return String(list);
-};
+import { loadEntry, loadEntryContent, appendAssets, emptyAssets } from './util/handleAssets';
+import { setCache, getCache } from './util/cache';
+import { triggerAppLeave } from './util/appLifeCycle';
 
 interface AppRouteState {
   cssLoading: boolean;
@@ -42,47 +32,53 @@ export interface AppRouteComponentProps<Params extends { [K in keyof Params]?: s
   history: AppHistory;
 }
 
+// from user config
 export interface AppConfig {
   title?: string;
+  useShadow?: boolean;
   hashType?: boolean | hashType;
   basename?: string;
   exact?: boolean;
   strict?: boolean;
   sensitive?: boolean;
   rootId?: string;
-}
-
-export interface AppRouteProps extends AppConfig {
   path: string | string[];
   url?: string | string[];
-  useShadow?: boolean;
-  ErrorComponent?: any;
-  LoadingComponent?: any;
+  entry?: string;
+  entryContent?: string;
   component?: React.ReactElement;
   render?: (props?: AppRouteComponentProps) => React.ReactElement;
+}
+
+// from AppRouter
+export interface AppRouteProps extends AppConfig {
   forceRenderCount?: number;
   onAppEnter?: (appConfig: AppConfig) => void;
   onAppLeave?: (appConfig: AppConfig) => void;
+  triggerLoading?: (loading: boolean) => void;
+  triggerError?: (err: string) => void;
   shouldAssetsRemove?: (assetUrl?: string) => boolean;
 }
 
-interface StatusComponentProps {
-  err?: any;
+export function converArray2String(list: string | string[]) {
+  if (Array.isArray(list)) {
+    return list.join(',');
+  }
+
+  return String(list);
 }
 
 /**
  * Get app config from AppRoute props
  */
 function getAppConfig(appRouteProps: AppRouteProps): AppConfig {
-  const appConfig: AppConfig = {};
+  const appConfig: AppConfig = { path: '' };
   const uselessList = [
     'forceRenderCount',
-    'url',
-    'useShadow',
-    'ErrorComponent',
-    'LoadingComponent',
     'onAppEnter',
     'onAppLeave',
+    'triggerLoading',
+    'triggerError',
   ];
 
   Object.keys(appRouteProps).forEach(key => {
@@ -120,14 +116,15 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   }
 
   componentDidUpdate(prevProps) {
-    const { path, url, title, rootId, forceRenderCount } = this.props;
+    const { path, url, title, rootId, forceRenderCount, useShadow } = this.props;
 
     if (
       converArray2String(path) !== converArray2String(prevProps.path) ||
       converArray2String(url) !== converArray2String(prevProps.url) ||
       title !== prevProps.title ||
       rootId !== prevProps.rootId ||
-      forceRenderCount !== prevProps.forceRenderCount
+      forceRenderCount !== prevProps.forceRenderCount ||
+      useShadow !== prevProps.useShadow
     ) {
       // record config for prev App
       this.prevAppConfig = getAppConfig(prevProps);
@@ -138,8 +135,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
   componentWillUnmount() {
     // Empty useless assets before unmount
-    const { useShadow, shouldAssetsRemove } = this.props;
-    emptyAssets(useShadow, shouldAssetsRemove);
+    const { shouldAssetsRemove } = this.props;
+
+    emptyAssets(shouldAssetsRemove);
     this.triggerPrevAppLeave();
     this.unmounted = true;
     setCache('root', null);
@@ -148,24 +146,16 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   /**
    * Load assets and render child app
    */
+
   renderChild = (): void => {
-    const {
-      url,
-      title,
-      rootId,
-      ErrorComponent,
-      LoadingComponent,
-      useShadow,
-      onAppEnter,
-      shouldAssetsRemove,
-    } = this.props;
+    const { rootId, useShadow } = this.props;
 
     const myBase: HTMLElement = this.myRefBase;
     if (!myBase) return;
 
     this.triggerPrevAppLeave();
 
-    // ReCreate rootElement to remove React Component instance,
+    // reCreate rootElement to remove React Component instance,
     // rootElement is created for render Child App
     this.removeElementFromBase(rootId);
     let rootElement: any = this.appendElementToBase(rootId);
@@ -179,58 +169,67 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     setCache('root', rootElement);
 
+    this.loadNextApp(useShadow);
+  };
+
+  loadNextApp = async (useShadow?: boolean) => {
+    const {
+      path,
+      url,
+      entry,
+      entryContent,
+      title,
+      triggerLoading,
+      triggerError,
+      onAppEnter,
+      shouldAssetsRemove,
+    } = this.props;
     // empty useless assets before loading
-    emptyAssets(useShadow, shouldAssetsRemove);
+    emptyAssets(shouldAssetsRemove);
 
     if (title) document.title = title;
 
-    // generate bundleList
-    const bundleList: string[] = Array.isArray(url) ? url : [url];
+    const handleLoading = (loading: boolean): void => {
+      // if AppRoute is unmountd, cancel all operations
+      if (this.unmounted) return;
 
-    // handle loading
-    this.setState({ cssLoading: true });
-    this.renderStatusElement(LoadingComponent);
+      const { cssLoading } = this.state;
+      if (loading !== cssLoading) {
+        this.setState({ cssLoading: loading });
+        typeof triggerLoading === 'function' && triggerLoading(loading);
+      }
+    };
+
+    const handleError = (errMessage: string): void => {
+      handleLoading(false);
+      typeof triggerError === 'function' && triggerError(errMessage);
+    };
+
+    // trigger loading before handleAssets
+    handleLoading(true);
 
     if (typeof onAppEnter === 'function') onAppEnter(getAppConfig(this.props));
 
-    loadAssets(
-      bundleList,
-      useShadow,
-      (err: any): boolean => {
-        if (err) {
-          // Handle error
-          this.renderStatusElement(ErrorComponent, { err });
-          this.removeElementFromBase(rootId);
-          this.setState({ cssLoading: false });
-          return true;
-        }
+    try {
+      if (entry) {
+        // entry for fetch -> process -> append
+        const rootElement = getCache('root');
+        await loadEntry(rootElement, entry);
+      } else if (entryContent) {
+        // entryContent for process -> append
+        const rootElement = getCache('root');
+        const cachedKey = title || converArray2String(path);
+        await loadEntryContent(rootElement, entryContent, location.href, cachedKey);
+      } else {
+        const assetsList = Array.isArray(url) ? url : [url];
+        await appendAssets(assetsList, useShadow);
+      }
 
-        this.removeElementFromBase(statusElementId);
-
-        return this.unmounted;
-      },
-      (): void => {
-        this.setState({ cssLoading: false });
-      },
-    );
-  };
-
-  /**
-   * Render statusElement
-   */
-  renderStatusElement = (Component: any, props: StatusComponentProps = {}): void => {
-    const myBase = this.myRefBase;
-    if (!myBase || !Component) return;
-
-    let statusElement = myBase.querySelector(`#${statusElementId}`);
-    if (!statusElement) {
-      statusElement = this.appendElementToBase(statusElementId);
+      // cancel loading after handleAssets
+      handleLoading(false);
+    } catch (error) {
+      handleError(error.message);
     }
-
-    ReactDOM.unmountComponentAtNode(statusElement);
-    React.isValidElement(Component)
-      ? ReactDOM.render(Component, statusElement)
-      : ReactDOM.render(<Component {...props} />, statusElement);
   };
 
   appendElementToBase = (elementId: string): HTMLElement => {
@@ -256,13 +255,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   triggerPrevAppLeave = (): void => {
     const { onAppLeave } = this.props;
 
-    // trigger registerAppLeaveCallback
-    const registerAppLeaveCallback = getCache('appLeave');
-
-    if (registerAppLeaveCallback) {
-      registerAppLeaveCallback();
-      setCache('appLeave', null);
-    }
+    triggerAppLeave();
 
     // trigger onAppLeave
     const prevAppConfig = this.prevAppConfig;
@@ -274,11 +267,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   render() {
-    const { path, title } = this.props;
-
     return (
       <div
-        key={`${converArray2String(path)}-${title}`}
         ref={element => {
           this.myRefBase = element;
         }}
