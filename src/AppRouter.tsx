@@ -277,7 +277,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
       return (
         <div>
-          {showLoading ? renderComponent(LoadingComponent, {}) : null}
+          {showLoading && LoadingComponent ? renderComponent(LoadingComponent, {}) : null}
           {React.cloneElement(element, extraProps)}
         </div>
       );
