@@ -22,7 +22,10 @@ export interface AppRouterProps {
   NotFoundComponent?: any;
   onAppEnter?: (appConfig: AppConfig) => void;
   onAppLeave?: (appConfig: AppConfig) => void;
-  shouldAssetsRemove?: (assetUrl?: string) => boolean;
+  shouldAssetsRemove?: (
+    assetUrl?: string,
+    element?: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement,
+  ) => boolean;
 }
 
 interface AppRouterState {
