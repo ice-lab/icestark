@@ -57,7 +57,10 @@ export interface AppRouteProps extends AppConfig {
   onAppLeave?: (appConfig: AppConfig) => void;
   triggerLoading?: (loading: boolean) => void;
   triggerError?: (err: string) => void;
-  shouldAssetsRemove?: (assetUrl?: string) => boolean;
+  shouldAssetsRemove?: (
+    assetUrl?: string,
+    element?: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement,
+  ) => boolean;
 }
 
 export function converArray2String(list: string | string[]) {
