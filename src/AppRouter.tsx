@@ -22,7 +22,10 @@ export interface AppRouterProps {
   NotFoundComponent?: any;
   onAppEnter?: (appConfig: AppConfig) => void;
   onAppLeave?: (appConfig: AppConfig) => void;
-  shouldAssetsRemove?: (assetUrl?: string) => boolean;
+  shouldAssetsRemove?: (
+    assetUrl?: string,
+    element?: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement,
+  ) => boolean;
 }
 
 interface AppRouterState {
@@ -125,6 +128,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   triggerLoading = (newShowLoading: boolean): void => {
     // if AppRouter is unmountd, cancel all operations
     if (this.unmounted) return;
+    // if no LoadingComponent, showLoading will never be true
+    if (newShowLoading && !this.props.LoadingComponent) return;
 
     const { showLoading } = this.state;
     if (showLoading !== newShowLoading) {
