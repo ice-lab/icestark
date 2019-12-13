@@ -57,7 +57,10 @@ export interface AppRouteProps extends AppConfig {
   onAppLeave?: (appConfig: AppConfig) => void;
   triggerLoading?: (loading: boolean) => void;
   triggerError?: (err: string) => void;
-  shouldAssetsRemove?: (assetUrl?: string) => boolean;
+  shouldAssetsRemove?: (
+    assetUrl?: string,
+    element?: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement,
+  ) => boolean;
 }
 
 export function converArray2String(list: string | string[]) {
@@ -155,10 +158,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     this.triggerPrevAppLeave();
 
-    // reCreate rootElement to remove React Component instance,
+    // reCreate rootElement to remove Child App instance,
     // rootElement is created for render Child App
-    this.removeElementFromBase(rootId);
-    let rootElement: any = this.appendElementToBase(rootId);
+    let rootElement: any = this.reCreateElementInBase(rootId);
 
     // prevent duplicate creation of shadowRoot
     if (useShadow && !rootElement.shadowRoot) {
@@ -201,6 +203,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     };
 
     const handleError = (errMessage: string): void => {
+      // if AppRoute is unmountd, cancel all operations
+      if (this.unmounted) return;
+
       handleLoading(false);
       typeof triggerError === 'function' && triggerError(errMessage);
     };
@@ -232,24 +237,18 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     }
   };
 
-  appendElementToBase = (elementId: string): HTMLElement => {
+  reCreateElementInBase = (elementId: string): HTMLElement => {
     const myBase = this.myRefBase;
     if (!myBase) return;
 
+    // remove all elements in base
+    myBase.innerHTML = '';
+
+    // create new rootElement
     const element = document.createElement('div');
     element.id = elementId;
     myBase.appendChild(element);
     return element;
-  };
-
-  removeElementFromBase = (elementId: string): void => {
-    const myBase = this.myRefBase;
-    if (!myBase) return;
-
-    const element = myBase.querySelector(`#${elementId}`);
-    if (element) {
-      myBase.removeChild(element);
-    }
   };
 
   triggerPrevAppLeave = (): void => {

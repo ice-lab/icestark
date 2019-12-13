@@ -347,18 +347,27 @@ export function setStaticAttribute(tag: HTMLStyleElement | HTMLScriptElement): v
 /**
  * Empty useless assets
  */
-export function emptyAssets(shouldRemove: (assetUrl: string) => boolean): void {
+export function emptyAssets(
+  shouldRemove: (
+    assetUrl: string,
+    element?: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement,
+  ) => boolean,
+): void {
   // remove extra assets
   const styleList: NodeListOf<HTMLElement> = document.querySelectorAll(
     `style:not([${PREFIX}=${STATIC}])`,
   );
-  styleList.forEach(style => style.parentNode.removeChild(style));
+  styleList.forEach(style => {
+    if (shouldRemove(null, style)) {
+      style.parentNode.removeChild(style);
+    }
+  });
 
   const linkList: NodeListOf<HTMLElement> = document.querySelectorAll(
     `link:not([${PREFIX}=${STATIC}])`,
   );
   linkList.forEach(link => {
-    if (shouldRemove(link.getAttribute('href'))) {
+    if (shouldRemove(link.getAttribute('href'), link)) {
       link.parentNode.removeChild(link);
     }
   });
@@ -367,7 +376,7 @@ export function emptyAssets(shouldRemove: (assetUrl: string) => boolean): void {
     `script:not([${PREFIX}=${STATIC}])`,
   );
   jsExtraList.forEach(js => {
-    if (shouldRemove(js.getAttribute('src'))) {
+    if (shouldRemove(js.getAttribute('src'), js)) {
       js.parentNode.removeChild(js);
     }
   });
