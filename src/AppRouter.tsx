@@ -128,6 +128,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   triggerLoading = (newShowLoading: boolean): void => {
     // if AppRouter is unmountd, cancel all operations
     if (this.unmounted) return;
+    // if no LoadingComponent, showLoading will never be true
+    if (newShowLoading && !this.props.LoadingComponent) return;
 
     const { showLoading } = this.state;
     if (showLoading !== newShowLoading) {
@@ -280,7 +282,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
       return (
         <div>
-          {showLoading && LoadingComponent ? renderComponent(LoadingComponent, {}) : null}
+          {showLoading ? renderComponent(LoadingComponent, {}) : null}
           {React.cloneElement(element, extraProps)}
         </div>
       );

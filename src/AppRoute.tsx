@@ -204,6 +204,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     };
 
     const handleError = (errMessage: string): void => {
+      // if AppRoute is unmountd, cancel all operations
+      if (this.unmounted) return;
+
       handleLoading(false);
       typeof triggerError === 'function' && triggerError(errMessage);
     };
