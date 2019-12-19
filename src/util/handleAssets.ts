@@ -5,6 +5,7 @@ import { warn, error } from './message';
 const getCacheRoot = () => getCache('root');
 
 const winFetch = window.fetch;
+const COMMENT_REGEX = /<!--.*?-->/g;
 const SCRIPT_REGEX = /<script\b[^>]*>([^<]*)<\/script>/gi;
 const SCRIPT_SRC_REGEX = /<script\b[^>]*src=['"]?([^'"]*)['"]?\b[^>]*>/gi;
 const LINK_HREF_REGEX = /<link\b[^>]*href=['"]?([^'"]*)['"]?\b[^>]*>/gi;
@@ -199,6 +200,7 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
   const processedAssets = [];
 
   const processedHtml = html
+    .replace(COMMENT_REGEX, '')
     .replace(SCRIPT_REGEX, (arg1, arg2) => {
       if (!arg1.match(SCRIPT_SRC_REGEX)) {
         processedAssets.push({
