@@ -281,10 +281,9 @@ const cachedProcessedContent: object = {};
 export async function loadEntry(
   root: HTMLElement | ShadowRoot,
   entry: string,
-  useCache: boolean,
   fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response> = winFetch,
 ) {
-  if (cachedProcessedContent[entry] && useCache) {
+  if (cachedProcessedContent[entry]) {
     await appendProcessedContent(root, cachedProcessedContent[entry]);
     return;
   }
@@ -308,13 +307,7 @@ export async function loadEntryContent(
   entryContent: string,
   href: string,
   cachedKey: string,
-  useCache: boolean,
 ) {
-  if (!useCache) {
-    await appendProcessedContent(root, processHtml(entryContent, href));
-    return;
-  }
-
   if (!cachedProcessedContent[cachedKey]) {
     cachedProcessedContent[cachedKey] = processHtml(entryContent, href);
   }
