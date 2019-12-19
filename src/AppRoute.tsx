@@ -46,6 +46,7 @@ export interface AppConfig {
   url?: string | string[];
   entry?: string;
   entryContent?: string;
+  useEntryCache?: boolean;
   component?: React.ReactElement;
   render?: (props?: AppRouteComponentProps) => React.ReactElement;
 }
@@ -111,6 +112,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     sensitive: false,
     rootId: 'icestarkNode',
     shouldAssetsRemove: () => true,
+    useEntryCache: true,
   };
 
   componentDidMount() {
@@ -185,6 +187,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       triggerError,
       onAppEnter,
       shouldAssetsRemove,
+      useEntryCache,
     } = this.props;
     // empty useless assets before loading
     emptyAssets(shouldAssetsRemove);
@@ -219,12 +222,12 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       if (entry) {
         // entry for fetch -> process -> append
         const rootElement = getCache('root');
-        await loadEntry(rootElement, entry);
+        await loadEntry(rootElement, entry, useEntryCache);
       } else if (entryContent) {
         // entryContent for process -> append
         const rootElement = getCache('root');
         const cachedKey = title || converArray2String(path);
-        await loadEntryContent(rootElement, entryContent, location.href, cachedKey);
+        await loadEntryContent(rootElement, entryContent, location.href, cachedKey, useEntryCache);
       } else {
         const assetsList = Array.isArray(url) ? url : [url];
         await appendAssets(assetsList, useShadow);
