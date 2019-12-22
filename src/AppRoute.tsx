@@ -2,7 +2,7 @@ import * as React from 'react';
 import { AppHistory } from './appHistory';
 import { loadEntry, loadEntryContent, appendAssets, emptyAssets } from './util/handleAssets';
 import { setCache, getCache } from './util/cache';
-import { triggerAppLeave } from './util/appLifeCycle';
+import { callAppEnter, callAppLeave } from './util/appLifeCycle';
 
 interface AppRouteState {
   cssLoading: boolean;
@@ -52,7 +52,6 @@ export interface AppConfig {
 
 // from AppRouter
 export interface AppRouteProps extends AppConfig {
-  forceRenderCount?: number;
   onAppEnter?: (appConfig: AppConfig) => void;
   onAppLeave?: (appConfig: AppConfig) => void;
   triggerLoading?: (loading: boolean) => void;
@@ -76,13 +75,7 @@ export function converArray2String(list: string | string[]) {
  */
 function getAppConfig(appRouteProps: AppRouteProps): AppConfig {
   const appConfig: AppConfig = { path: '' };
-  const uselessList = [
-    'forceRenderCount',
-    'onAppEnter',
-    'onAppLeave',
-    'triggerLoading',
-    'triggerError',
-  ];
+  const uselessList = ['onAppEnter', 'onAppLeave', 'triggerLoading', 'triggerError'];
 
   Object.keys(appRouteProps).forEach(key => {
     if (uselessList.indexOf(key) === -1) {
@@ -118,15 +111,31 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     this.renderChild();
   }
 
+  shouldComponentUpdate(nextProps, nextState) {
+    const { path, url, title, rootId, useShadow } = this.props;
+    const { cssLoading } = this.state;
+
+    if (
+      converArray2String(path) === converArray2String(nextProps.path) &&
+      converArray2String(url) === converArray2String(nextProps.url) &&
+      title === nextProps.title &&
+      rootId === nextProps.rootId &&
+      useShadow === nextProps.useShadow &&
+      cssLoading === nextState.cssLoading
+    ) {
+      return false;
+    }
+    return true;
+  }
+
   componentDidUpdate(prevProps) {
-    const { path, url, title, rootId, forceRenderCount, useShadow } = this.props;
+    const { path, url, title, rootId, useShadow } = this.props;
 
     if (
       converArray2String(path) !== converArray2String(prevProps.path) ||
       converArray2String(url) !== converArray2String(prevProps.url) ||
       title !== prevProps.title ||
       rootId !== prevProps.rootId ||
-      forceRenderCount !== prevProps.forceRenderCount ||
       useShadow !== prevProps.useShadow
     ) {
       // record config for prev App
@@ -215,6 +224,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     if (typeof onAppEnter === 'function') onAppEnter(getAppConfig(this.props));
 
+    const prevAppConfig = this.prevAppConfig;
+
     try {
       if (entry) {
         // entry for fetch -> process -> append
@@ -229,6 +240,12 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         const assetsList = Array.isArray(url) ? url : [url];
         await appendAssets(assetsList, useShadow);
       }
+
+      // if AppRoute is unmountd, or current app is not the latest app, cancel all operations
+      if (this.unmounted || this.prevAppConfig !== prevAppConfig) return;
+
+      // trigger child application render
+      callAppEnter();
 
       // cancel loading after handleAssets
       handleLoading(false);
@@ -254,7 +271,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   triggerPrevAppLeave = (): void => {
     const { onAppLeave } = this.props;
 
-    triggerAppLeave();
+    callAppLeave();
 
     // trigger onAppLeave
     const prevAppConfig = this.prevAppConfig;

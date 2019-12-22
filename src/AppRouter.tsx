@@ -6,7 +6,13 @@ import matchPath from './util/matchPath';
 import { recordAssets, emptyAssets } from './util/handleAssets';
 import { ICESTSRK_NOT_FOUND, ICESTSRK_ERROR } from './util/constant';
 import { setCache } from './util/cache';
-import { triggerAppLeave } from './util/appLifeCycle';
+import { callAppLeave } from './util/appLifeCycle';
+import {
+  isInPopStateListeners,
+  addPopStateListeners,
+  removePopStateListeners,
+  callCapturedPopStateListeners,
+} from './util/capturedListeners';
 
 type RouteType = 'pushState' | 'replaceState';
 
@@ -30,7 +36,6 @@ export interface AppRouterProps {
 
 interface AppRouterState {
   url: string;
-  forceRenderCount: number;
   showLoading: boolean;
 }
 
@@ -73,6 +78,10 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
   private originalReplace: OriginalStateFunction = window.history.replaceState;
 
+  private originalAddEventListener = window.addEventListener;
+
+  private originalRemoveEventListener = window.removeEventListener;
+
   private unmounted: boolean = false;
 
   private err: string = ''; // js assets load err
@@ -88,7 +97,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     super(props);
     this.state = {
       url: location.href,
-      forceRenderCount: 0,
       showLoading: false,
     };
     recordAssets();
@@ -96,6 +104,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
   componentDidMount() {
     this.hijackHistory();
+    this.hijackEventListener();
     this.handleRouteChange(location.href, 'init');
 
     // render NotFoundComponent eventListener
@@ -106,6 +115,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     const { shouldAssetsRemove } = this.props;
 
     this.unHijackHistory();
+    this.unHijackEventListener();
     emptyAssets(shouldAssetsRemove);
     window.removeEventListener('icestark:not-found', this.triggerNotFound);
     this.unmounted = true;
@@ -118,7 +128,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     // if AppRouter is unmountd, cancel all operations
     if (this.unmounted) return;
 
-    triggerAppLeave();
+    callAppLeave();
     this.setState({ url: ICESTSRK_NOT_FOUND });
   };
 
@@ -144,7 +154,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     // if AppRouter is unmountd, cancel all operations
     if (this.unmounted) return;
 
-    triggerAppLeave();
+    callAppLeave();
     this.err = err;
     this.setState({ url: ICESTSRK_ERROR });
   };
@@ -177,16 +187,45 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   };
 
   /**
+   * Hijack eventListener
+   */
+  hijackEventListener = (): void => {
+    window.addEventListener = (eventName, fn, ...rest) => {
+      if (typeof fn === 'function' && eventName === 'popstate' && !isInPopStateListeners(fn)) {
+        addPopStateListeners(fn);
+        return;
+      }
+
+      return this.originalAddEventListener.apply(window, [eventName, fn, ...rest]);
+    };
+
+    window.removeEventListener = (eventName, listenerFn, ...rest) => {
+      if (typeof listenerFn === 'function' && eventName === 'popstate') {
+        removePopStateListeners(listenerFn);
+        return;
+      }
+
+      return this.originalRemoveEventListener.apply(window, [eventName, listenerFn, ...rest]);
+    };
+  };
+
+  /**
+   * Unhijack eventListener
+   */
+  unHijackEventListener = (): void => {
+    window.addEventListener = this.originalAddEventListener;
+    window.removeEventListener = this.originalRemoveEventListener;
+  };
+
+  /**
    * Trigger statechange: pushState | replaceState
    */
   handleStateChange = (state: any, url: string, routeType?: RouteType): void => {
     // deal with forceRender
-    if (state && (state.forceRender || (state.state && state.state.forceRender))) {
-      const { forceRenderCount } = this.state;
-      this.setState({ url, forceRenderCount: forceRenderCount + 1, showLoading: false });
-    } else {
-      this.setState({ url, showLoading: false });
-    }
+    this.setState({ url, showLoading: false });
+
+    callCapturedPopStateListeners(state);
+
     this.handleRouteChange(url, routeType);
   };
 
@@ -218,7 +257,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       shouldAssetsRemove,
       children,
     } = this.props;
-    const { url, forceRenderCount, showLoading } = this.state;
+    const { url, showLoading } = this.state;
 
     // directly render NotFoundComponent / ErrorComponent
     if (url === ICESTSRK_NOT_FOUND) {
@@ -259,12 +298,12 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       };
 
       if (component) {
-        triggerAppLeave();
+        callAppLeave();
         return renderComponent(component, commonProps);
       }
 
       if (render && typeof render === 'function') {
-        triggerAppLeave();
+        callAppLeave();
         return render(commonProps);
       }
 
@@ -272,7 +311,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       setCache('basename', basename || (Array.isArray(path) ? path[0] : path));
 
       const extraProps: any = {
-        forceRenderCount,
         onAppEnter,
         onAppLeave,
         triggerLoading: this.triggerLoading,
