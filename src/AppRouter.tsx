@@ -221,7 +221,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    * Trigger statechange: pushState | replaceState
    */
   handleStateChange = (state: any, url: string, routeType?: RouteType): void => {
-    // deal with forceRender
     this.setState({ url, showLoading: false });
 
     callCapturedPopStateListeners(state);

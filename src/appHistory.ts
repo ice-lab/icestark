@@ -5,22 +5,10 @@ export interface AppHistory {
 
 const appHistory: AppHistory = {
   push: (path: string) => {
-    window.history.pushState(
-      {
-        forceRender: true,
-      },
-      null,
-      path,
-    );
+    window.history.pushState({}, null, path);
   },
   replace: (path: string) => {
-    window.history.replaceState(
-      {
-        forceRender: true,
-      },
-      null,
-      path,
-    );
+    window.history.replaceState({}, null, path);
   },
 };
 
