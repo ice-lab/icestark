@@ -1,4 +1,5 @@
 let capturedPopStateListeners = [];
+let historyState = null;
 
 export function find(list, element) {
   if (!Array.isArray(list)) {
@@ -22,12 +23,17 @@ export function createPopStateEvent(state) {
   }
 }
 
-export function callCapturedPopStateListeners(state) {
-  if (capturedPopStateListeners.length) {
+export function callCapturedPopStateListeners() {
+  if (capturedPopStateListeners.length && historyState) {
     capturedPopStateListeners.forEach(listener => {
-      listener.apply(this, [createPopStateEvent(state)]);
+      listener.call(this, createPopStateEvent(historyState));
     });
+    historyState = null;
   }
+}
+
+export function setHistoryState(state) {
+  historyState = state;
 }
 
 export function isInPopStateListeners(fn) {

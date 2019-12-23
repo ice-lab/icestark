@@ -11,7 +11,7 @@ import {
   isInPopStateListeners,
   addPopStateListeners,
   removePopStateListeners,
-  callCapturedPopStateListeners,
+  setHistoryState,
 } from './util/capturedListeners';
 
 type RouteType = 'pushState' | 'replaceState';
@@ -223,7 +223,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   handleStateChange = (state: any, url: string, routeType?: RouteType): void => {
     this.setState({ url, showLoading: false });
 
-    callCapturedPopStateListeners(state);
+    setHistoryState(state);
 
     this.handleRouteChange(url, routeType);
   };
@@ -231,8 +231,10 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   /**
    * Trigger popstate
    */
-  handlePopState = (): void => {
+  handlePopState = (state): void => {
     const url = location.href;
+
+    setHistoryState(state);
 
     this.setState({ url, showLoading: false });
     this.handleRouteChange(url, 'popstate');

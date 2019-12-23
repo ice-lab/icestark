@@ -3,6 +3,7 @@ import { AppHistory } from './appHistory';
 import { loadEntry, loadEntryContent, appendAssets, emptyAssets } from './util/handleAssets';
 import { setCache, getCache } from './util/cache';
 import { callAppEnter, callAppLeave } from './util/appLifeCycle';
+import { callCapturedPopStateListeners } from './util/capturedListeners';
 
 interface AppRouteState {
   cssLoading: boolean;
@@ -123,6 +124,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       useShadow === nextProps.useShadow &&
       cssLoading === nextState.cssLoading
     ) {
+      // reRendered is triggered by sub-applications router, or browser, call listeners
+      callCapturedPopStateListeners();
       return false;
     }
     return true;
