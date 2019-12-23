@@ -161,7 +161,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   /**
    * Load assets and render sub-application
    */
-
   renderChild = (): void => {
     const { rootId, useShadow } = this.props;
 
