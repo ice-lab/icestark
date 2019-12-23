@@ -159,7 +159,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   }
 
   /**
-   * Load assets and render child app
+   * Load assets and render sub-application
    */
 
   renderChild = (): void => {
@@ -170,8 +170,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     this.triggerPrevAppLeave();
 
-    // reCreate rootElement to remove Child App instance,
-    // rootElement is created for render Child App
+    // reCreate rootElement to remove sub-application instance,
+    // rootElement is created for render sub-application
     let rootElement: any = this.reCreateElementInBase(rootId);
 
     // prevent duplicate creation of shadowRoot
@@ -247,7 +247,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       // if AppRoute is unmountd, or current app is not the latest app, cancel all operations
       if (this.unmounted || this.prevAppConfig !== prevAppConfig) return;
 
-      // trigger child application render
+      // trigger sub-application render
       callAppEnter();
 
       // cancel loading after handleAssets
