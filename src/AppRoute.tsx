@@ -124,7 +124,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       useShadow === nextProps.useShadow &&
       cssLoading === nextState.cssLoading
     ) {
-      // reRendered is triggered by sub-applications router, or browser, call listeners
+      // reRender is triggered by sub-application router / browser, call popStateListeners
       callCapturedPopStateListeners();
       return false;
     }
