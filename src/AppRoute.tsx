@@ -204,7 +204,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     if (title) document.title = title;
 
     const handleLoading = (loading: boolean): void => {
-      // if AppRoute is unmountd, cancel all operations
+      // if AppRoute is unmounted, cancel all operations
       if (this.unmounted) return;
 
       const { cssLoading } = this.state;
@@ -215,7 +215,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     };
 
     const handleError = (errMessage: string): void => {
-      // if AppRoute is unmountd, cancel all operations
+      // if AppRoute is unmounted, cancel all operations
       if (this.unmounted) return;
 
       handleLoading(false);
@@ -244,7 +244,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         await appendAssets(assetsList, useShadow);
       }
 
-      // if AppRoute is unmountd, or current app is not the latest app, cancel all operations
+      // if AppRoute is unmounted, or current app is not the latest app, cancel all operations
       if (this.unmounted || this.prevAppConfig !== prevAppConfig) return;
 
       // trigger sub-application render

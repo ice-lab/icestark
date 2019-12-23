@@ -125,10 +125,11 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    * Trigger NotFound
    */
   triggerNotFound = (): void => {
-    // if AppRouter is unmountd, cancel all operations
+    callAppLeave();
+
+    // if AppRouter is unmounted, cancel all operations
     if (this.unmounted) return;
 
-    callAppLeave();
     this.setState({ url: ICESTSRK_NOT_FOUND });
   };
 
@@ -136,7 +137,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    * Trigger Loading
    */
   triggerLoading = (newShowLoading: boolean): void => {
-    // if AppRouter is unmountd, cancel all operations
+    // if AppRouter is unmounted, cancel all operations
     if (this.unmounted) return;
     // if no LoadingComponent, showLoading will never be true
     if (newShowLoading && !this.props.LoadingComponent) return;
@@ -151,10 +152,11 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    * Trigger Error
    */
   triggerError = (err: string): void => {
-    // if AppRouter is unmountd, cancel all operations
+    callAppLeave();
+
+    // if AppRouter is unmounted, cancel all operations
     if (this.unmounted) return;
 
-    callAppLeave();
     this.err = err;
     this.setState({ url: ICESTSRK_ERROR });
   };
