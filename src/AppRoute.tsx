@@ -247,7 +247,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       if (this.unmounted || this.prevAppConfig !== prevAppConfig) return;
 
       // trigger sub-application render
-      callAppEnter();
+      await callAppEnter();
 
       // cancel loading after handleAssets
       handleLoading(false);
