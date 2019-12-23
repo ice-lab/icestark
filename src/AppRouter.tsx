@@ -221,7 +221,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    * Trigger statechange: pushState | replaceState
    */
   handleStateChange = (state: any, url: string, routeType?: RouteType): void => {
-    this.setState({ url, showLoading: false });
+    this.setState({ url });
 
     setHistoryState(state);
 
@@ -236,7 +236,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
     setHistoryState(state);
 
-    this.setState({ url, showLoading: false });
+    this.setState({ url });
     this.handleRouteChange(url, 'popstate');
   };
 
