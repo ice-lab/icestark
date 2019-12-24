@@ -132,22 +132,25 @@ describe('processHtml', () => {
     expect(html).not.toContain('href="/index.css"');
     expect(html).not.toContain('href="index.css"');
 
-    expect(assets.length).toBe(9);
+    expect(assets.length).toBe(7);
 
     // script external assets
-    expect(assets[0].type).toBe(AssetTypeEnum.EXTERNAL);
-    expect(assets[0].content).toBe(
-      '//g.alicdn.com/platform/c/??es5-shim/4.1.12/es5-shim.min.js,es5-shim/4.1.12/es5-sham.min.js,console-polyfill/0.2.1/index.min.js',
-    );
-    expect(assets[2].type).toBe(AssetTypeEnum.EXTERNAL);
-
-    // script inline assets
-    expect(assets[1].type).toBe(AssetTypeEnum.INLINE);
+    expect(assets[1].type).toBe(AssetTypeEnum.EXTERNAL);
     expect(assets[1].content).not.toContain('<script');
     expect(assets[1].content).not.toContain('</script');
-    expect(assets[1].content).toContain('console.log');
-    expect(assets[5].type).toBe(AssetTypeEnum.INLINE);
-    expect(assets[5].content).toContain('window.g_config');
+    expect(assets[1].content).toContain('//g.alicdn.com/1.1/test/index.js');
+    expect(assets[2].type).toBe(AssetTypeEnum.EXTERNAL);
+    expect(assets[2].content).toContain('/test.js');
+    expect(assets[5].type).toBe(AssetTypeEnum.EXTERNAL);
+    expect(assets[5].content).toContain('//g.alicdn.com/test.min.js');
+
+
+    // script inline assets
+    expect(assets[0].type).toBe(AssetTypeEnum.INLINE);
+    expect(assets[0].content).toContain('console.log()');
+    expect(assets[4].type).toBe(AssetTypeEnum.INLINE);
+    expect(assets[4].content).toContain('window.g_config');
+
   });
 });
 

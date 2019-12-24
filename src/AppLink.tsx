@@ -21,13 +21,7 @@ const AppLink: React.SFC<AppLinkProps> = (props: AppLinkProps) => {
 
         const changeState = window.history[replace ? 'replaceState' : 'pushState'];
 
-        changeState(
-          {
-            forceRender: true,
-          },
-          null,
-          to,
-        );
+        changeState({}, null, to);
       }}
     >
       {children}

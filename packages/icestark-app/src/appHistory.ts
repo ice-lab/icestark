@@ -1,21 +1,9 @@
 const appHistory = {
   push: (url: string) => {
-    window.history.pushState(
-      {
-        forceRender: true,
-      },
-      null,
-      url,
-    );
+    window.history.pushState({}, null, url);
   },
   replace: (url: string) => {
-    window.history.replaceState(
-      {
-        forceRender: true,
-      },
-      null,
-      url,
-    );
+    window.history.replaceState({}, null, url);
   },
 };
 
