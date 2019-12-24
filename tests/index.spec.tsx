@@ -27,7 +27,7 @@ describe('AppRouter', () => {
     window.history.pushState({}, 'test', '/#/test');
     expect(props.onRouteChange).toHaveBeenCalledTimes(2);
 
-    window.history.replaceState({ forceRender: true }, 'test2', '/#/test2');
+    window.history.replaceState({}, 'test2', '/#/test2');
     expect(props.onRouteChange).toHaveBeenCalledTimes(3);
   });
 

@@ -2,7 +2,8 @@ import * as React from 'react';
 import { AppHistory } from './appHistory';
 import { loadEntry, loadEntryContent, appendAssets, emptyAssets } from './util/handleAssets';
 import { setCache, getCache } from './util/cache';
-import { triggerAppLeave } from './util/appLifeCycle';
+import { callAppEnter, callAppLeave } from './util/appLifeCycle';
+import { callCapturedPopStateListeners } from './util/capturedListeners';
 
 interface AppRouteState {
   cssLoading: boolean;
@@ -52,7 +53,6 @@ export interface AppConfig {
 
 // from AppRouter
 export interface AppRouteProps extends AppConfig {
-  forceRenderCount?: number;
   onAppEnter?: (appConfig: AppConfig) => void;
   onAppLeave?: (appConfig: AppConfig) => void;
   triggerLoading?: (loading: boolean) => void;
@@ -76,13 +76,7 @@ export function converArray2String(list: string | string[]) {
  */
 function getAppConfig(appRouteProps: AppRouteProps): AppConfig {
   const appConfig: AppConfig = { path: '' };
-  const uselessList = [
-    'forceRenderCount',
-    'onAppEnter',
-    'onAppLeave',
-    'triggerLoading',
-    'triggerError',
-  ];
+  const uselessList = ['onAppEnter', 'onAppLeave', 'triggerLoading', 'triggerError'];
 
   Object.keys(appRouteProps).forEach(key => {
     if (uselessList.indexOf(key) === -1) {
@@ -118,15 +112,33 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     this.renderChild();
   }
 
+  shouldComponentUpdate(nextProps, nextState) {
+    const { path, url, title, rootId, useShadow } = this.props;
+    const { cssLoading } = this.state;
+
+    if (
+      converArray2String(path) === converArray2String(nextProps.path) &&
+      converArray2String(url) === converArray2String(nextProps.url) &&
+      title === nextProps.title &&
+      rootId === nextProps.rootId &&
+      useShadow === nextProps.useShadow &&
+      cssLoading === nextState.cssLoading
+    ) {
+      // reRender is triggered by sub-application router / browser, call popStateListeners
+      callCapturedPopStateListeners();
+      return false;
+    }
+    return true;
+  }
+
   componentDidUpdate(prevProps) {
-    const { path, url, title, rootId, forceRenderCount, useShadow } = this.props;
+    const { path, url, title, rootId, useShadow } = this.props;
 
     if (
       converArray2String(path) !== converArray2String(prevProps.path) ||
       converArray2String(url) !== converArray2String(prevProps.url) ||
       title !== prevProps.title ||
       rootId !== prevProps.rootId ||
-      forceRenderCount !== prevProps.forceRenderCount ||
       useShadow !== prevProps.useShadow
     ) {
       // record config for prev App
@@ -147,9 +159,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   }
 
   /**
-   * Load assets and render child app
+   * Load assets and render sub-application
    */
-
   renderChild = (): void => {
     const { rootId, useShadow } = this.props;
 
@@ -158,8 +169,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     this.triggerPrevAppLeave();
 
-    // reCreate rootElement to remove Child App instance,
-    // rootElement is created for render Child App
+    // reCreate rootElement to remove sub-application instance,
+    // rootElement is created for render sub-application
     let rootElement: any = this.reCreateElementInBase(rootId);
 
     // prevent duplicate creation of shadowRoot
@@ -192,7 +203,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     if (title) document.title = title;
 
     const handleLoading = (loading: boolean): void => {
-      // if AppRoute is unmountd, cancel all operations
+      // if AppRoute is unmounted, cancel all operations
       if (this.unmounted) return;
 
       const { cssLoading } = this.state;
@@ -203,7 +214,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     };
 
     const handleError = (errMessage: string): void => {
-      // if AppRoute is unmountd, cancel all operations
+      // if AppRoute is unmounted, cancel all operations
       if (this.unmounted) return;
 
       handleLoading(false);
@@ -214,6 +225,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     handleLoading(true);
 
     if (typeof onAppEnter === 'function') onAppEnter(getAppConfig(this.props));
+
+    const prevAppConfig = this.prevAppConfig;
 
     try {
       if (entry) {
@@ -229,6 +242,12 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         const assetsList = Array.isArray(url) ? url : [url];
         await appendAssets(assetsList, useShadow);
       }
+
+      // if AppRoute is unmounted, or current app is not the latest app, cancel all operations
+      if (this.unmounted || this.prevAppConfig !== prevAppConfig) return;
+
+      // trigger sub-application render
+      callAppEnter();
 
       // cancel loading after handleAssets
       handleLoading(false);
@@ -254,7 +273,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   triggerPrevAppLeave = (): void => {
     const { onAppLeave } = this.props;
 
-    triggerAppLeave();
+    callAppLeave();
 
     // trigger onAppLeave
     const prevAppConfig = this.prevAppConfig;
