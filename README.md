@@ -91,22 +91,30 @@ ReactDOM.render(<App />, document.getElementById('ice-container'));
 ### Sub-application
 
 - Get the render `DOM Node` via `getMountNode`
+- Trigger app mount manually via `registerAppEnter`
 - Trigger app unmount manually via `registerAppLeave`
 
 ```javascript
 // src/index.js
 import ReactDOM from 'react-dom';
-import { getMountNode, registerAppLeave } from '@ice/stark-app';
+import { isInIcestark, getMountNode, registerAppEnter, registerAppLeave } from '@ice/stark-app';
 import router from './router';
 
-const mountNode = getMountNode();
+if (isInIcestark()) {
+  const mountNode = getMountNode();
 
-// make sure the unmount event is triggered
-registerAppLeave(() => {
-  ReactDOM.unmountComponentAtNode(mountNode);
-});
+  registerAppEnter(() => {
+    ReactDOM.render(router(), mountNode);
+  });
 
-ReactDOM.render(router(), mountNode);
+  // make sure the unmount event is triggered
+  registerAppLeave(() => {
+    ReactDOM.unmountComponentAtNode(mountNode);
+  });
+} else {
+  ReactDOM.render(router(), document.getElementById('ice-container'));
+}
+
 ```
 
 - Get the `basename` configuration in the framework application via `getBasename`
