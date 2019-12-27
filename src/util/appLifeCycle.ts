@@ -1,23 +1,30 @@
 import { setCache, getCache } from './cache';
-import { resetPopStateListeners } from './capturedListeners';
+import { resetCapturedEventListeners } from './capturedListeners';
+
+enum AppLifeCycleEnum {
+  AppEnter = 'appEnter',
+  AppLeave = 'appLeave',
+}
 
 export function callAppEnter() {
-  const registerAppEnterCallback = getCache('appEnter');
+  const appEnterKey = AppLifeCycleEnum.AppEnter;
+  const registerAppEnterCallback = getCache(appEnterKey);
 
   if (registerAppEnterCallback) {
     registerAppEnterCallback();
-    setCache('appLeave', null);
+    setCache(appEnterKey, null);
   }
 }
 
 export function callAppLeave() {
-  // resetPopStateListeners when app change, remove react-router/vue-router listeners
-  resetPopStateListeners();
+  // resetCapturedEventListeners when app change, remove react-router/vue-router listeners
+  resetCapturedEventListeners();
 
-  const registerAppLeaveCallback = getCache('appLeave');
+  const appLeaveKey = AppLifeCycleEnum.AppLeave;
+  const registerAppLeaveCallback = getCache(appLeaveKey);
 
   if (registerAppLeaveCallback) {
     registerAppLeaveCallback();
-    setCache('appLeave', null);
+    setCache(appLeaveKey, null);
   }
 }
