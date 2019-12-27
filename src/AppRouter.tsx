@@ -8,9 +8,10 @@ import { ICESTSRK_NOT_FOUND, ICESTSRK_ERROR } from './util/constant';
 import { setCache } from './util/cache';
 import { callAppLeave } from './util/appLifeCycle';
 import {
-  isInPopStateListeners,
-  addPopStateListeners,
-  removePopStateListeners,
+  routingEventsListeningTo,
+  isInCapturedEventListeners,
+  addCapturedEventListeners,
+  removeCapturedEventListeners,
   setHistoryState,
 } from './util/capturedListeners';
 
@@ -193,8 +194,12 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    */
   hijackEventListener = (): void => {
     window.addEventListener = (eventName, fn, ...rest) => {
-      if (typeof fn === 'function' && eventName === 'popstate' && !isInPopStateListeners(fn)) {
-        addPopStateListeners(fn);
+      if (
+        typeof fn === 'function' &&
+        routingEventsListeningTo.indexOf(eventName) >= 0 &&
+        !isInCapturedEventListeners(eventName, fn)
+      ) {
+        addCapturedEventListeners(eventName, fn);
         return;
       }
 
@@ -202,8 +207,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     };
 
     window.removeEventListener = (eventName, listenerFn, ...rest) => {
-      if (typeof listenerFn === 'function' && eventName === 'popstate') {
-        removePopStateListeners(listenerFn);
+      if (typeof listenerFn === 'function' && routingEventsListeningTo.indexOf(eventName) >= 0) {
+        removeCapturedEventListeners(eventName, listenerFn);
         return;
       }
 

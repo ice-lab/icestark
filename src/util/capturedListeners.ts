@@ -1,4 +1,19 @@
-let capturedPopStateListeners = [];
+//  Reference https://github.com/CanopyTax/single-spa/blob/master/src/navigation/navigation-events.js
+export enum CapturedEventNameEnum {
+  POPSTATE = 'popstate',
+  HASHCHANGE = 'hashchange',
+}
+
+export const routingEventsListeningTo = [
+  CapturedEventNameEnum.HASHCHANGE,
+  CapturedEventNameEnum.POPSTATE,
+];
+
+const capturedEventListeners = {
+  [CapturedEventNameEnum.POPSTATE]: [],
+  [CapturedEventNameEnum.HASHCHANGE]: [],
+};
+
 let historyState = null;
 
 export function find(list, element) {
@@ -23,10 +38,15 @@ export function createPopStateEvent(state) {
   }
 }
 
-export function callCapturedPopStateListeners() {
-  if (capturedPopStateListeners.length && historyState) {
-    capturedPopStateListeners.forEach(listener => {
-      listener.call(this, createPopStateEvent(historyState));
+export function callCapturedEventListeners() {
+  if (historyState) {
+    Object.keys(capturedEventListeners).forEach(eventName => {
+      const capturedListeners = capturedEventListeners[eventName];
+      if (capturedListeners.length) {
+        capturedListeners.forEach(listener => {
+          listener.call(this, createPopStateEvent(historyState));
+        });
+      }
     });
     historyState = null;
   }
@@ -36,18 +56,21 @@ export function setHistoryState(state) {
   historyState = state;
 }
 
-export function isInPopStateListeners(fn) {
-  return find(capturedPopStateListeners, fn);
+export function isInCapturedEventListeners(eventName, fn) {
+  return find(capturedEventListeners[eventName], fn);
 }
 
-export function addPopStateListeners(fn) {
-  capturedPopStateListeners.push(fn);
+export function addCapturedEventListeners(eventName, fn) {
+  capturedEventListeners[eventName].push(fn);
 }
 
-export function removePopStateListeners(listenerFn) {
-  capturedPopStateListeners = capturedPopStateListeners.filter(fn => fn !== listenerFn);
+export function removeCapturedEventListeners(eventName, listenerFn) {
+  capturedEventListeners[eventName] = capturedEventListeners[eventName].filter(
+    fn => fn !== listenerFn,
+  );
 }
 
-export function resetPopStateListeners() {
-  capturedPopStateListeners = [];
+export function resetCapturedEventListeners() {
+  capturedEventListeners[CapturedEventNameEnum.POPSTATE] = [];
+  capturedEventListeners[CapturedEventNameEnum.HASHCHANGE] = [];
 }
