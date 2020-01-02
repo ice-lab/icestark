@@ -6,7 +6,6 @@ import matchPath from './util/matchPath';
 import { recordAssets, emptyAssets } from './util/handleAssets';
 import { ICESTSRK_NOT_FOUND, ICESTSRK_ERROR } from './util/constant';
 import { setCache } from './util/cache';
-import { callAppLeave } from './util/appLifeCycle';
 import {
   routingEventsListeningTo,
   isInCapturedEventListeners,
@@ -126,8 +125,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    * Trigger NotFound
    */
   triggerNotFound = (): void => {
-    callAppLeave();
-
     // if AppRouter is unmounted, cancel all operations
     if (this.unmounted) return;
 
@@ -153,8 +150,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    * Trigger Error
    */
   triggerError = (err: string): void => {
-    callAppLeave();
-
     // if AppRouter is unmounted, cancel all operations
     if (this.unmounted) return;
 
@@ -306,12 +301,10 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       };
 
       if (component) {
-        callAppLeave();
         return renderComponent(component, commonProps);
       }
 
       if (render && typeof render === 'function') {
-        callAppLeave();
         return render(commonProps);
       }
 

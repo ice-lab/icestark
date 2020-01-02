@@ -141,9 +141,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       rootId !== prevProps.rootId ||
       useShadow !== prevProps.useShadow
     ) {
-      // record config for prev App
-      this.prevAppConfig = getAppConfig(prevProps);
-
       this.renderChild();
     }
   }
@@ -224,9 +221,11 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     // trigger loading before handleAssets
     handleLoading(true);
 
-    if (typeof onAppEnter === 'function') onAppEnter(getAppConfig(this.props));
+    // record config for current App
+    const currentAppConfig = getAppConfig(this.props);
+    this.prevAppConfig = currentAppConfig;
 
-    const prevAppConfig = this.prevAppConfig;
+    if (typeof onAppEnter === 'function') onAppEnter(currentAppConfig);
 
     try {
       if (entry) {
@@ -244,7 +243,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       }
 
       // if AppRoute is unmounted, or current app is not the latest app, cancel all operations
-      if (this.unmounted || this.prevAppConfig !== prevAppConfig) return;
+      if (this.unmounted || this.prevAppConfig !== currentAppConfig) return;
 
       // trigger sub-application render
       callAppEnter();
