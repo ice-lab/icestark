@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as urlParse from 'url-parse';
 import { AppConfig, AppRouteProps, AppRouteComponentProps } from './AppRoute';
 import appHistory from './appHistory';
+import renderComponent from './util/renderComponent';
 import matchPath from './util/matchPath';
 import { recordAssets, emptyAssets } from './util/handleAssets';
 import { ICESTSRK_NOT_FOUND, ICESTSRK_ERROR } from './util/constant';
@@ -62,17 +63,6 @@ function getHashPath(hash: string = '/'): string {
   return searchIndex === -1 ? hashPath : hashPath.substr(0, searchIndex);
 }
 
-/**
- * Render Component, compatible with Component and <Component>
- */
-function renderComponent(Component: any, props = {}): React.ReactElement {
-  return React.isValidElement(Component) ? (
-    React.cloneElement(Component, props)
-  ) : (
-    <Component {...props} />
-  );
-}
-
 export default class AppRouter extends React.Component<AppRouterProps, AppRouterState> {
   private originalPush: OriginalStateFunction = window.history.pushState;
 
@@ -100,15 +90,15 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       showLoading: false,
     };
     recordAssets();
+    // render NotFoundComponent eventListener
+    window.addEventListener('icestark:not-found', this.triggerNotFound);
+
+    this.hijackHistory();
+    this.hijackEventListener();
   }
 
   componentDidMount() {
-    this.hijackHistory();
-    this.hijackEventListener();
     this.handleRouteChange(location.href, 'init');
-
-    // render NotFoundComponent eventListener
-    window.addEventListener('icestark:not-found', this.triggerNotFound);
   }
 
   componentWillUnmount() {
@@ -116,8 +106,9 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
     this.unHijackHistory();
     this.unHijackEventListener();
-    emptyAssets(shouldAssetsRemove);
+
     window.removeEventListener('icestark:not-found', this.triggerNotFound);
+    emptyAssets(shouldAssetsRemove);
     this.unmounted = true;
   }
 
@@ -292,21 +283,13 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     });
 
     if (match) {
-      const { path, basename, render, component } = element.props as AppRouteProps;
+      const { path, basename } = element.props as AppRouteProps;
 
-      const commonProps: AppRouteComponentProps = {
+      const componentProps: AppRouteComponentProps = {
         location: { pathname, query, hash },
         match,
         history: appHistory,
       };
-
-      if (component) {
-        return renderComponent(component, commonProps);
-      }
-
-      if (render && typeof render === 'function') {
-        return render(commonProps);
-      }
 
       // render AppRoute
       setCache('basename', basename || (Array.isArray(path) ? path[0] : path));
@@ -317,6 +300,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
         triggerLoading: this.triggerLoading,
         triggerError: this.triggerError,
         shouldAssetsRemove,
+        componentProps,
       };
 
       return (
