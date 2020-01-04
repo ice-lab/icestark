@@ -170,6 +170,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     // set showComponent to confirm capturedEventListeners triggered at the right time
     if (component || (render && typeof render === 'function')) {
       this.triggerPrevAppLeave();
+
+      this.triggerOnAppEnter();
+
       this.setState({ showComponent: true });
       return;
     }
@@ -234,11 +237,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     // trigger loading before handleAssets
     handleLoading(true);
 
-    // record config for current App
-    const currentAppConfig = getAppConfig(this.props);
-    this.prevAppConfig = currentAppConfig;
-
-    if (typeof onAppEnter === 'function') onAppEnter(currentAppConfig);
+    const currentAppConfig: AppConfig = this.triggerOnAppEnter();
 
     try {
       if (entry) {
@@ -282,10 +281,12 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     return element;
   };
 
+  /**
+   * Trigger onAppLeave in AppRouter and callAppLeave(registerAppLeave callback)
+   * reset this.prevAppConfig
+   */
   triggerPrevAppLeave = (): void => {
     const { onAppLeave } = this.props;
-
-    callAppLeave();
 
     // trigger onAppLeave
     const prevAppConfig = this.prevAppConfig;
@@ -294,6 +295,25 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       if (typeof onAppLeave === 'function') onAppLeave(prevAppConfig);
       this.prevAppConfig = null;
     }
+
+    callAppLeave();
+  };
+
+  /**
+   * Trigger onAppEnter in AppRouter
+   * callAppEnter(registerAppEnter callback) will be triggered later
+   * record current appConfig as this.prevAppConfig
+   */
+  triggerOnAppEnter = (): AppConfig => {
+    const { onAppEnter } = this.props;
+
+    const currentAppConfig = getAppConfig(this.props);
+    this.prevAppConfig = currentAppConfig;
+
+    // trigger onAppEnter
+    if (typeof onAppEnter === 'function') onAppEnter(currentAppConfig);
+
+    return currentAppConfig;
   };
 
   render() {
