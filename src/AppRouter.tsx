@@ -216,6 +216,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   handleStateChange = (state: any, url: string, routeType?: RouteType): void => {
     this.setState({ url });
 
+    // setHistoryState after setState
+    // history in sub-application will not triggered callCapturedEventListeners for historyState is null
     setHistoryState(state);
 
     this.handleRouteChange(url, routeType);
@@ -226,10 +228,12 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    */
   handlePopState = (state): void => {
     const url = location.href;
+    this.setState({ url });
 
+    // setHistoryState after setState
+    // history in sub-application will not triggered callCapturedEventListeners for historyState is null
     setHistoryState(state);
 
-    this.setState({ url });
     this.handleRouteChange(url, 'popstate');
   };
 
