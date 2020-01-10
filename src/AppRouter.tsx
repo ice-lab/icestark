@@ -102,6 +102,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   }
 
   componentWillUnmount() {
+    this.unmounted = true;
     const { shouldAssetsRemove } = this.props;
 
     this.unHijackHistory();
@@ -109,7 +110,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
     window.removeEventListener('icestark:not-found', this.triggerNotFound);
     emptyAssets(shouldAssetsRemove);
-    this.unmounted = true;
   }
 
   /**
@@ -214,6 +214,9 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    * Trigger statechange: pushState | replaceState
    */
   handleStateChange = (state: any, url: string, routeType?: RouteType): void => {
+    // if AppRouter is unmounted, cancel all operations
+    if (this.unmounted) return;
+
     this.setState({ url });
 
     // setHistoryState after setState
@@ -227,6 +230,9 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    * Trigger popstate
    */
   handlePopState = (state): void => {
+    // if AppRouter is unmounted, cancel all operations
+    if (this.unmounted) return;
+
     const url = location.href;
 
     setHistoryState(state);
