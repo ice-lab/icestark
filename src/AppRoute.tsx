@@ -207,7 +207,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       title,
       triggerLoading,
       triggerError,
-      onAppEnter,
       shouldAssetsRemove,
     } = this.props;
     // empty useless assets before loading
