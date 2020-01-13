@@ -27,7 +27,9 @@ export function getRoot(rootElement: rootType): HTMLElement {
 
 export class IcestarkModule {
   root: HTMLElement;
+
   entry: string | string[];
+
   wrapperId: string;
 
   constructor(
