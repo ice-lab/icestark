@@ -18,8 +18,8 @@ mount(rootElement, entry, rootId: string = 'icestark-module')
 
 - rootElement: string | function | HTMLElement
 - entry: string | string[]
-  - string with '<head>' is treated as htmlContent
-  - string without '<head>' is treated as htmlUrl
+  - string with &lt;head&gt; is treated as htmlContent
+  - string without &lt;head&gt; is treated as htmlUrl
   - string[] is treated as urls for js/css asserts
 - rootId: string (defalut 'icestark-module')
 
@@ -41,16 +41,18 @@ mount(rootElement, entry, rootId: string = 'icestark-module')
 ```
 
 ```javascript
-import { mount, unmount } from '@ice/stark-module';
+import IcestarkModule from '@ice/stark-module';
 
-// trigger mount
-mount(
+const icestarkModule = new IcestarkModule(
   'ice-module',
   'https://unpkg.com/@icedesign/ability-introduction-block@3.0.1/build/index.html',
 );
 
+// trigger mount
+icestarkModule.mount();
+
 // trigger unmount
-unmount();
+icestarkModule.unmount();
 ```
 
 ## Contributors

@@ -45,7 +45,7 @@ export class IcestarkModule {
     // create wapper element
     const wrapper = document.createElement('div');
     wrapper.setAttribute('id', wrapperId);
-    this.root.appendChild(wrapper);
+    root.appendChild(wrapper);
 
     if (typeof entry === 'string') {
       // string treated as html entry
