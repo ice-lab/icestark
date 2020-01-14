@@ -12,9 +12,9 @@ npm install @ice/stark-module --save
 
 ## API
 
-### mount: function
+### IcestarkModule: class
 
-mount(rootElement, entry, rootId: string = 'icestark-module')
+const icestarkModule = new IcestarkModule(rootElement, entry, rootId: string = 'icestark-module')
 
 - rootElement: string | function | HTMLElement
 - entry: string | string[]
@@ -23,7 +23,9 @@ mount(rootElement, entry, rootId: string = 'icestark-module')
   - string[] is treated as urls for js/css asserts
 - rootId: string (defalut 'icestark-module')
 
-### unmount: function
+#### mount: function
+
+#### unmount: function
 
 #### example
 

@@ -25,7 +25,7 @@ export function getRoot(rootElement: rootType): HTMLElement {
   return rootElement;
 }
 
-export class IcestarkModule {
+export default class IcestarkModule {
   root: HTMLElement;
 
   entry: string | string[];
