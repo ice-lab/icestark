@@ -29,6 +29,8 @@ const icestarkModule = new IcestarkModule(rootElement, entry, rootId: string = '
 
 #### example
 
+- import/require
+
 ```html
 <html lang="zh-CN">
   <head>
@@ -46,6 +48,35 @@ const icestarkModule = new IcestarkModule(rootElement, entry, rootId: string = '
 import IcestarkModule from '@ice/stark-module';
 
 const icestarkModule = new IcestarkModule(
+  'ice-module',
+  'https://unpkg.com/@icedesign/ability-introduction-block@3.0.1/build/index.html',
+);
+
+// trigger mount
+icestarkModule.mount();
+
+// trigger unmount
+icestarkModule.unmount();
+```
+
+- CDN
+
+```html
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>ICE BLOCK</title>
+  </head>
+  <body>
+    <div id="ice-module">
+    <script src="https://unpkg.com/@ice/stark-module@0.1.1/umd/index.js"></script>
+  </body>
+</html>
+```
+
+```javascript
+const icestarkModule = new window.IcestarkModule(
   'ice-module',
   'https://unpkg.com/@icedesign/ability-introduction-block@3.0.1/build/index.html',
 );

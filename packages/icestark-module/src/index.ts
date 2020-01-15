@@ -1,29 +1,5 @@
+import { rootType, getRoot } from './getRoot';
 import { loadEntry, loadEntryContent, appendAssets } from './handleAssets';
-
-interface GetRootElement {
-  (): HTMLElement;
-}
-
-type rootType = string | GetRootElement | HTMLElement;
-
-/**
- * Get rootElement, deal with string | function | HTMLElement
- */
-export function getRoot(rootElement: rootType): HTMLElement {
-  if (!rootElement) {
-    throw new Error('icestark-module: rootElement is required!');
-  }
-
-  if (typeof rootElement === 'string') {
-    return document.getElementById(rootElement);
-  }
-
-  if (typeof rootElement === 'function') {
-    return rootElement();
-  }
-
-  return rootElement;
-}
 
 export default class IcestarkModule {
   root: HTMLElement;

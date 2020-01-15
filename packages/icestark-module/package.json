@@ -1,10 +1,13 @@
 {
   "name": "@ice/stark-module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "icestark-module is a JavaScript library for loading module.",
   "scripts": {
-    "build": "rm -rf lib && tsc",
+    "build": "npm run lib && npm run umd",
+    "lib": "rm -rf lib && tsc",
+    "umd": "rm -rf umd && webpack --config webpack.config.js",
     "watch": "tsc -w",
+    "watch:umd": "webpack --config webpack.dev.js",
     "prepublishOnly": "npm run build",
     "lint": "eslint --cache --ext .ts ./",
     "coverage": "codecov"
@@ -12,7 +15,8 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
-    "lib"
+    "lib",
+    "umd"
   ],
   "license": "MIT",
   "keywords": [
@@ -47,7 +51,10 @@
     "jest-fetch-mock": "^2.1.2",
     "stylelint": "^10.1.0",
     "ts-jest": "^24.0.2",
-    "typescript": "^3.4.4"
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.4.4",
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.10"
   },
   "jest": {
     "coverageDirectory": "./coverage/",
