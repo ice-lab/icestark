@@ -2,7 +2,7 @@ import * as React from 'react';
 import { AppHistory } from './appHistory';
 import { loadEntry, loadEntryContent, appendAssets, emptyAssets } from './util/handleAssets';
 import { setCache, getCache } from './util/cache';
-import { callAppEnter, callAppLeave } from './util/appLifeCycle';
+import { callAppEnter, callAppLeave, cacheApp, isCached } from './util/appLifeCycle';
 import { callCapturedEventListeners } from './util/capturedListeners';
 
 interface AppRouteState {
@@ -49,6 +49,7 @@ export interface AppConfig {
   entryContent?: string;
   component?: React.ReactElement;
   render?: (props?: AppRouteComponentProps) => React.ReactElement;
+  cache?: boolean;
 }
 
 // from AppRouter
@@ -108,7 +109,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   componentDidMount() {
-    setCache('root', null);
     this.renderChild();
   }
 
@@ -152,10 +152,19 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     // Empty useless assets before unmount
     const { shouldAssetsRemove } = this.props;
 
-    emptyAssets(shouldAssetsRemove);
+    // empty uncached assets
+    emptyAssets(shouldAssetsRemove, false);
     this.triggerPrevAppLeave();
     this.unmounted = true;
-    setCache('root', null);
+  }
+
+  /**
+   * get cache key
+   */
+  getCacheKey = () => {
+    const { path } = this.props;
+    // use path as cache key
+    return converArray2String(path);
   }
 
   /**
@@ -196,9 +205,19 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       triggerError,
       onAppEnter,
       shouldAssetsRemove,
+      cache,
     } = this.props;
+    const assetsCacheKey = this.getCacheKey();
+    let cached = false;
+    let assetsList = [];
+    let cacheContent = null;
+    if (!entry && !entryContent && url) {
+      assetsList = Array.isArray(url) ? url : [url];
+      cacheContent = converArray2String(assetsList);
+      cached = cache && isCached(assetsCacheKey, cacheContent);
+    }
     // empty useless assets before loading
-    emptyAssets(shouldAssetsRemove);
+    emptyAssets(shouldAssetsRemove, cache && !cached && assetsCacheKey);
 
     if (title) document.title = title;
 
@@ -222,7 +241,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     };
 
     // trigger loading before handleAssets
-    handleLoading(true);
+    !cached && handleLoading(true);
 
     if (typeof onAppEnter === 'function') onAppEnter(getAppConfig(this.props));
 
@@ -239,12 +258,16 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         const cachedKey = title || converArray2String(path);
         await loadEntryContent(rootElement, entryContent, location.href, cachedKey);
       } else {
-        const assetsList = Array.isArray(url) ? url : [url];
-        await appendAssets(assetsList, useShadow);
+        if (!cached) {
+          await appendAssets(assetsList, useShadow, assetsCacheKey);
+        }
       }
-
       // if AppRoute is unmounted, or current app is not the latest app, cancel all operations
       if (this.unmounted || this.prevAppConfig !== prevAppConfig) return;
+      if (cache) {
+        // cache app lifecycle after load assets
+        cacheApp(assetsCacheKey, cacheContent);
+      }
 
       // trigger sub-application render
       callAppEnter();

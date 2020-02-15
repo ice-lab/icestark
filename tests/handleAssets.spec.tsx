@@ -302,7 +302,7 @@ describe('loadEntry', () => {
 // tests for url
 describe('appendAssets', () => {
   test('appendAssets useShadow=false', () => {
-    emptyAssets(() => true);
+    emptyAssets(() => true, true);
 
     appendAssets(
       [
@@ -327,7 +327,7 @@ describe('appendAssets', () => {
       expect(jsElement0.getAttribute('icestark')).toEqual('dynamic');
       expect(jsElement1.getAttribute('icestark')).toEqual('dynamic');
 
-      emptyAssets(() => true);
+      emptyAssets(() => true, true);
     });
   });
 

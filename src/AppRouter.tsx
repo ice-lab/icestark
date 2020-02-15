@@ -117,9 +117,11 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
     this.unHijackHistory();
     this.unHijackEventListener();
-    emptyAssets(shouldAssetsRemove);
+    // empty all assets
+    emptyAssets(shouldAssetsRemove, true);
     window.removeEventListener('icestark:not-found', this.triggerNotFound);
     this.unmounted = true;
+    setCache('root', null);
   }
 
   /**

@@ -43,6 +43,7 @@ export function appendLink(
   root: HTMLElement | ShadowRoot,
   asset: string,
   id: string,
+  cacheKey?: string,
 ): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     if (!root) reject(new Error(`no root element for css assert: ${asset}`));
@@ -53,6 +54,9 @@ export function appendLink(
     element.id = id;
     element.rel = 'stylesheet';
     element.href = asset;
+    if (cacheKey) {
+      element.setAttribute('cache', cacheKey);
+    }
 
     element.addEventListener(
       'error',
@@ -75,6 +79,7 @@ export function appendExternalScript(
   root: HTMLElement | ShadowRoot,
   asset: string,
   id: string,
+  cacheKey?: string,
 ): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     if (!root) reject(new Error(`no root element for js assert: ${asset}`));
@@ -86,6 +91,9 @@ export function appendExternalScript(
     element.type = 'text/javascript';
     element.src = asset;
     element.async = false;
+    if (cacheKey) {
+      element.setAttribute('cache', cacheKey);
+    }
 
     element.addEventListener(
       'error',
@@ -101,22 +109,24 @@ export function appendExternalScript(
 export function appendAllLink(
   root: HTMLElement | ShadowRoot,
   urlList: string[],
+  cacheKey?: string,
 ): Promise<string[]> {
   return Promise.all(
-    urlList.map((cssUrl, index) => appendLink(root, cssUrl, `${PREFIX}-css-${index}`)),
+    urlList.map((cssUrl, index) => appendLink(root, cssUrl, `${PREFIX}-css-${index}`, cacheKey)),
   );
 }
 
 export function appendAllScriptWithOutInline(
   root: HTMLElement | ShadowRoot,
   urlList: string[],
+  cacheKey?: string,
 ): Promise<string[]> {
   return Promise.all(
-    urlList.map((jsUrl, index) => appendExternalScript(root, jsUrl, `${PREFIX}-js-${index}`)),
+    urlList.map((jsUrl, index) => appendExternalScript(root, jsUrl, `${PREFIX}-js-${index}`, cacheKey)),
   );
 }
 
-export async function appendAssets(assetsList: string[], useShadow: boolean) {
+export async function appendAssets(assetsList: string[], useShadow: boolean, cacheKey?: string) {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
   const cssRoot: HTMLElement | ShadowRoot = useShadow
     ? getCacheRoot()
@@ -139,11 +149,11 @@ export async function appendAssets(assetsList: string[], useShadow: boolean) {
 
   if (useShadow) {
     // make sure css loads after all js have been loaded under shadowRoot
-    await appendAllScriptWithOutInline(jsRoot, jsList);
-    await appendAllLink(cssRoot, cssList);
+    await appendAllScriptWithOutInline(jsRoot, jsList, cacheKey);
+    await appendAllLink(cssRoot, cssList, cacheKey);
   } else {
-    await appendAllLink(cssRoot, cssList);
-    await appendAllScriptWithOutInline(jsRoot, jsList);
+    await appendAllLink(cssRoot, cssList, cacheKey);
+    await appendAllScriptWithOutInline(jsRoot, jsList, cacheKey);
   }
 }
 
@@ -354,13 +364,14 @@ export function emptyAssets(
     assetUrl: string,
     element?: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement,
   ) => boolean,
+  cacheKey: string|boolean,
 ): void {
   // remove extra assets
   const styleList: NodeListOf<HTMLElement> = document.querySelectorAll(
     `style:not([${PREFIX}=${STATIC}])`,
   );
   styleList.forEach(style => {
-    if (shouldRemove(null, style)) {
+    if (shouldRemove(null, style) && checkCacheKey(style, cacheKey)) {
       style.parentNode.removeChild(style);
     }
   });
@@ -369,7 +380,7 @@ export function emptyAssets(
     `link:not([${PREFIX}=${STATIC}])`,
   );
   linkList.forEach(link => {
-    if (shouldRemove(link.getAttribute('href'), link)) {
+    if (shouldRemove(link.getAttribute('href'), link) && checkCacheKey(link, cacheKey)) {
       link.parentNode.removeChild(link);
     }
   });
@@ -378,8 +389,14 @@ export function emptyAssets(
     `script:not([${PREFIX}=${STATIC}])`,
   );
   jsExtraList.forEach(js => {
-    if (shouldRemove(js.getAttribute('src'), js)) {
+    if (shouldRemove(js.getAttribute('src'), js) && checkCacheKey(js, cacheKey)) {
       js.parentNode.removeChild(js);
     }
   });
+}
+
+export function checkCacheKey(node: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement, cacheKey: string|boolean) {
+  return (typeof cacheKey === 'boolean' &&  cacheKey)
+    || !node.getAttribute('cache')
+    || node.getAttribute('cache') === cacheKey;
 }
