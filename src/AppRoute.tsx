@@ -150,10 +150,10 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
   componentWillUnmount() {
     // Empty useless assets before unmount
-    const { shouldAssetsRemove } = this.props;
+    const { shouldAssetsRemove, cache } = this.props;
 
-    // empty uncached assets
-    emptyAssets(shouldAssetsRemove, false);
+    // empty cached assets if cache is false
+    emptyAssets(shouldAssetsRemove, !cache && this.getCacheKey());
     this.triggerPrevAppLeave();
     this.unmounted = true;
   }
@@ -217,7 +217,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       cached = cache && isCached(assetsCacheKey, cacheContent);
     }
     // empty useless assets before loading
-    emptyAssets(shouldAssetsRemove, cache && !cached && assetsCacheKey);
+    emptyAssets(shouldAssetsRemove, !cached && assetsCacheKey);
 
     if (title) document.title = title;
 
@@ -257,10 +257,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         const rootElement = getCache('root');
         const cachedKey = title || converArray2String(path);
         await loadEntryContent(rootElement, entryContent, location.href, cachedKey);
-      } else {
-        if (!cached) {
-          await appendAssets(assetsList, useShadow, assetsCacheKey);
-        }
+      } else if (!cached){
+        await appendAssets(assetsList, useShadow, cache && assetsCacheKey);
       }
       // if AppRoute is unmounted, or current app is not the latest app, cancel all operations
       if (this.unmounted || this.prevAppConfig !== prevAppConfig) return;
