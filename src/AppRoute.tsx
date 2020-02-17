@@ -228,12 +228,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     } = this.props;
     const assetsCacheKey = this.getCacheKey();
     let cached = false;
-    let assetsList = [];
-    let cacheContent = null;
+    // cache is effective when setup urls
     if (!entry && !entryContent && url) {
-      assetsList = Array.isArray(url) ? url : [url];
-      cacheContent = converArray2String(assetsList);
-      cached = cache && isCached(assetsCacheKey, cacheContent);
+      cached = cache && isCached(assetsCacheKey);
     }
     // empty useless assets before loading
     emptyAssets(shouldAssetsRemove, !cached && assetsCacheKey);
@@ -275,15 +272,16 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         const cachedKey = title || converArray2String(path);
         await loadEntryContent(rootElement, entryContent, location.href, cachedKey);
       } else if (!cached){
+        const assetsList = Array.isArray(url) ? url : [url];
         await appendAssets(assetsList, useShadow);
       }
       // if AppRoute is unmounted, or current app is not the latest app, cancel all operations
       if (this.unmounted || this.prevAppConfig !== currentAppConfig) return;
       if (cache) {
         // cache app lifecycle after load assets
-        cacheApp(assetsCacheKey, cacheContent);
+        cacheApp(assetsCacheKey);
       }
-      
+
       // trigger sub-application render
       callAppEnter();
 
