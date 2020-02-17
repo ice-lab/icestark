@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { AppHistory } from './appHistory';
 import renderComponent from './util/renderComponent';
-import { loadEntry, loadEntryContent, appendAssets, emptyAssets } from './util/handleAssets';
+import { loadEntry, loadEntryContent, appendAssets, emptyAssets, cacheAssets } from './util/handleAssets';
 import { setCache, getCache } from './util/cache';
 import { callAppEnter, callAppLeave, cacheApp, isCached } from './util/appLifeCycle';
 import { callCapturedEventListeners } from './util/capturedListeners';
@@ -153,7 +153,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   componentWillUnmount() {
     // Empty useless assets before unmount
     const { shouldAssetsRemove, cache } = this.props;
-
+    if (cache) {
+      cacheAssets(this.getCacheKey());
+    }
     // empty cached assets if cache is false
     emptyAssets(shouldAssetsRemove, !cache && this.getCacheKey());
     this.triggerPrevAppLeave();
@@ -163,8 +165,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   /**
    * get cache key
    */
-  getCacheKey = () => {
-    const { path } = this.props;
+  getCacheKey = (appConfig?: AppConfig) => {
+    const { path } = appConfig || this.props;
     // use path as cache key
     return converArray2String(path);
   }
@@ -174,6 +176,11 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
    */
   renderChild = (): void => {
     const { rootId, useShadow, component, render } = this.props;
+
+    // cache prev app asset before load next app
+    if (this.prevAppConfig && this.prevAppConfig.cache) {
+      cacheAssets(this.getCacheKey(this.prevAppConfig));
+    }
 
     // if component / render exists,
     // set showComponent to confirm capturedEventListeners triggered at the right time
@@ -268,7 +275,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         const cachedKey = title || converArray2String(path);
         await loadEntryContent(rootElement, entryContent, location.href, cachedKey);
       } else if (!cached){
-        await appendAssets(assetsList, useShadow, cache && assetsCacheKey);
+        await appendAssets(assetsList, useShadow);
       }
       // if AppRoute is unmounted, or current app is not the latest app, cancel all operations
       if (this.unmounted || this.prevAppConfig !== currentAppConfig) return;

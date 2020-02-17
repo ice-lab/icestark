@@ -43,7 +43,6 @@ export function appendLink(
   root: HTMLElement | ShadowRoot,
   asset: string,
   id: string,
-  cacheKey?: string,
 ): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     if (!root) reject(new Error(`no root element for css assert: ${asset}`));
@@ -54,9 +53,6 @@ export function appendLink(
     element.id = id;
     element.rel = 'stylesheet';
     element.href = asset;
-    if (cacheKey) {
-      element.setAttribute('cache', cacheKey);
-    }
 
     element.addEventListener(
       'error',
@@ -79,7 +75,6 @@ export function appendExternalScript(
   root: HTMLElement | ShadowRoot,
   asset: string,
   id: string,
-  cacheKey?: string,
 ): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     if (!root) reject(new Error(`no root element for js assert: ${asset}`));
@@ -91,9 +86,6 @@ export function appendExternalScript(
     element.type = 'text/javascript';
     element.src = asset;
     element.async = false;
-    if (cacheKey) {
-      element.setAttribute('cache', cacheKey);
-    }
 
     element.addEventListener(
       'error',
@@ -109,24 +101,22 @@ export function appendExternalScript(
 export function appendAllLink(
   root: HTMLElement | ShadowRoot,
   urlList: string[],
-  cacheKey?: string,
 ): Promise<string[]> {
   return Promise.all(
-    urlList.map((cssUrl, index) => appendLink(root, cssUrl, `${PREFIX}-css-${index}`, cacheKey)),
+    urlList.map((cssUrl, index) => appendLink(root, cssUrl, `${PREFIX}-css-${index}`)),
   );
 }
 
 export function appendAllScriptWithOutInline(
   root: HTMLElement | ShadowRoot,
   urlList: string[],
-  cacheKey?: string,
 ): Promise<string[]> {
   return Promise.all(
-    urlList.map((jsUrl, index) => appendExternalScript(root, jsUrl, `${PREFIX}-js-${index}`, cacheKey)),
+    urlList.map((jsUrl, index) => appendExternalScript(root, jsUrl, `${PREFIX}-js-${index}`)),
   );
 }
 
-export async function appendAssets(assetsList: string[], useShadow: boolean, cacheKey?: string) {
+export async function appendAssets(assetsList: string[], useShadow: boolean) {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
   const cssRoot: HTMLElement | ShadowRoot = useShadow
     ? getCacheRoot()
@@ -149,11 +139,11 @@ export async function appendAssets(assetsList: string[], useShadow: boolean, cac
 
   if (useShadow) {
     // make sure css loads after all js have been loaded under shadowRoot
-    await appendAllScriptWithOutInline(jsRoot, jsList, cacheKey);
-    await appendAllLink(cssRoot, cssList, cacheKey);
+    await appendAllScriptWithOutInline(jsRoot, jsList);
+    await appendAllLink(cssRoot, cssList);
   } else {
-    await appendAllLink(cssRoot, cssList, cacheKey);
-    await appendAllScriptWithOutInline(jsRoot, jsList, cacheKey);
+    await appendAllLink(cssRoot, cssList);
+    await appendAllScriptWithOutInline(jsRoot, jsList);
   }
 }
 
@@ -324,26 +314,23 @@ export async function loadEntryContent(
   await appendProcessedContent(root, cachedProcessedContent[cachedKey]);
 }
 
+export function getAssetsNode(): (HTMLStyleElement|HTMLScriptElement)[] {
+  let nodeList = [];
+  ['style', 'link', 'script'].forEach((tagName) => {
+    nodeList = [...nodeList, ...Array.from(document.getElementsByTagName(tagName))];
+  });
+  return nodeList;
+}
+
 /**
  * Record static assets
  */
 export function recordAssets(): void {
   // getElementsByTagName is faster than querySelectorAll
-  const styleList: HTMLCollectionOf<HTMLStyleElement> = document.getElementsByTagName('style');
-  const linkList: HTMLCollectionOf<HTMLStyleElement> = document.getElementsByTagName('link');
-  const jsList: HTMLCollectionOf<HTMLScriptElement> = document.getElementsByTagName('script');
-
-  for (let i = 0; i < styleList.length; i++) {
-    setStaticAttribute(styleList[i]);
-  }
-
-  for (let i = 0; i < linkList.length; i++) {
-    setStaticAttribute(linkList[i]);
-  }
-
-  for (let i = 0; i < jsList.length; i++) {
-    setStaticAttribute(jsList[i]);
-  }
+  const assetsList = getAssetsNode();
+  assetsList.forEach((assetsNode) => {
+    setStaticAttribute(assetsNode);
+  });
 }
 
 /**
@@ -399,4 +386,17 @@ export function checkCacheKey(node: HTMLElement | HTMLLinkElement | HTMLStyleEle
   return (typeof cacheKey === 'boolean' &&  cacheKey)
     || !node.getAttribute('cache')
     || node.getAttribute('cache') === cacheKey;
+}
+
+/**
+ * cache all assets loaded by current sub-application
+ */
+export function cacheAssets(cacheKey: string): void {
+  const assetsList = getAssetsNode();
+  assetsList.forEach((assetsNode) => {
+    // set cache key if asset attributes without prefix=static and cache
+    if (assetsNode.getAttribute(PREFIX) !== STATIC && !assetsNode.getAttribute('cache')) {
+      assetsNode.setAttribute('cache', cacheKey);
+    }
+  });
 }
