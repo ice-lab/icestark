@@ -1,7 +1,7 @@
 import { setCache, getCache } from './cache';
 import { resetCapturedEventListeners } from './capturedListeners';
 
-enum AppLifeCycleEnum {
+export enum AppLifeCycleEnum {
   AppEnter = 'appEnter',
   AppLeave = 'appLeave',
 }

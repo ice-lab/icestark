@@ -44,7 +44,11 @@ describe('AppRouter', () => {
      */
     const { container, rerender, unmount, getByText } = render(
       <AppRouter {...props}>
-        <AppRoute path="/" component={<div data-testid="icestarkTest">test</div>} />
+        <AppRoute
+          path="/"
+          title="component"
+          component={<div data-testid="icestarkTest">test</div>}
+        />
       </AppRouter>,
     );
 
@@ -55,9 +59,10 @@ describe('AppRouter', () => {
       <AppRouter {...props}>
         <AppRoute
           path="/"
+          title="render"
           render={() => (
             <div data-testid="icestarkTest">
-              test
+              testRender
               <button
                 type="submit"
                 onClick={() => {
@@ -80,7 +85,7 @@ describe('AppRouter', () => {
       </AppRouter>,
     );
 
-    expect(container.innerHTML).toContain('test');
+    expect(container.innerHTML).toContain('testRender');
     expect(props.onRouteChange).toHaveBeenCalledTimes(1);
 
     fireEvent.click(getByText(/Jump Hash/i));
@@ -97,7 +102,7 @@ describe('AppRouter', () => {
     setCache('appLeave', () => {});
     rerender(
       <AppRouter {...props}>
-        <AppRoute path="/" url={[]} hashType />
+        <AppRoute path="/" title="empty" url={[]} hashType />
       </AppRouter>,
     );
 
@@ -217,18 +222,18 @@ describe('AppRouter', () => {
   test('test for Only AppRoute Component', () => {
     window.history.pushState({}, 'test', '/');
     const { container, unmount } = render(
-      <AppRoute path="/" component={<div data-testid="icestarkTest">test</div>} />,
+      <AppRoute path="/" component={<div data-testid="icestarkTest">test component</div>} />,
     );
-    expect(container.innerHTML).toContain('ice-stark-loading');
+    expect(container.innerHTML).toContain('test component');
     unmount();
   });
 
-  test('test for Only AppRoute Component', () => {
+  test('test for Only AppRoute Render', () => {
     window.history.pushState({}, 'test', '/');
     const { container, unmount } = render(
-      <AppRoute path="/" component={<div data-testid="icestarkTest">test</div>} />,
+      <AppRoute path="/" render={() => <div data-testid="icestarkTest">test render</div>} />,
     );
-    expect(container.innerHTML).toContain('ice-stark-loading');
+    expect(container.innerHTML).toContain('test render');
     unmount();
   });
 });
