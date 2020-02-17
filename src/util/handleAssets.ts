@@ -314,26 +314,23 @@ export async function loadEntryContent(
   await appendProcessedContent(root, cachedProcessedContent[cachedKey]);
 }
 
+export function getAssetsNode(): (HTMLStyleElement|HTMLScriptElement)[] {
+  let nodeList = [];
+  ['style', 'link', 'script'].forEach((tagName) => {
+    nodeList = [...nodeList, ...Array.from(document.getElementsByTagName(tagName))];
+  });
+  return nodeList;
+}
+
 /**
  * Record static assets
  */
 export function recordAssets(): void {
   // getElementsByTagName is faster than querySelectorAll
-  const styleList: HTMLCollectionOf<HTMLStyleElement> = document.getElementsByTagName('style');
-  const linkList: HTMLCollectionOf<HTMLStyleElement> = document.getElementsByTagName('link');
-  const jsList: HTMLCollectionOf<HTMLScriptElement> = document.getElementsByTagName('script');
-
-  for (let i = 0; i < styleList.length; i++) {
-    setStaticAttribute(styleList[i]);
-  }
-
-  for (let i = 0; i < linkList.length; i++) {
-    setStaticAttribute(linkList[i]);
-  }
-
-  for (let i = 0; i < jsList.length; i++) {
-    setStaticAttribute(jsList[i]);
-  }
+  const assetsList = getAssetsNode();
+  assetsList.forEach((assetsNode) => {
+    setStaticAttribute(assetsNode);
+  });
 }
 
 /**
@@ -354,13 +351,14 @@ export function emptyAssets(
     assetUrl: string,
     element?: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement,
   ) => boolean,
+  cacheKey: string|boolean,
 ): void {
   // remove extra assets
   const styleList: NodeListOf<HTMLElement> = document.querySelectorAll(
     `style:not([${PREFIX}=${STATIC}])`,
   );
   styleList.forEach(style => {
-    if (shouldRemove(null, style)) {
+    if (shouldRemove(null, style) && checkCacheKey(style, cacheKey)) {
       style.parentNode.removeChild(style);
     }
   });
@@ -369,7 +367,7 @@ export function emptyAssets(
     `link:not([${PREFIX}=${STATIC}])`,
   );
   linkList.forEach(link => {
-    if (shouldRemove(link.getAttribute('href'), link)) {
+    if (shouldRemove(link.getAttribute('href'), link) && checkCacheKey(link, cacheKey)) {
       link.parentNode.removeChild(link);
     }
   });
@@ -378,8 +376,27 @@ export function emptyAssets(
     `script:not([${PREFIX}=${STATIC}])`,
   );
   jsExtraList.forEach(js => {
-    if (shouldRemove(js.getAttribute('src'), js)) {
+    if (shouldRemove(js.getAttribute('src'), js) && checkCacheKey(js, cacheKey)) {
       js.parentNode.removeChild(js);
+    }
+  });
+}
+
+export function checkCacheKey(node: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement, cacheKey: string|boolean) {
+  return (typeof cacheKey === 'boolean' &&  cacheKey)
+    || !node.getAttribute('cache')
+    || node.getAttribute('cache') === cacheKey;
+}
+
+/**
+ * cache all assets loaded by current sub-application
+ */
+export function cacheAssets(cacheKey: string): void {
+  const assetsList = getAssetsNode();
+  assetsList.forEach((assetsNode) => {
+    // set cache key if asset attributes without prefix=static and cache
+    if (assetsNode.getAttribute(PREFIX) !== STATIC && !assetsNode.getAttribute('cache')) {
+      assetsNode.setAttribute('cache', cacheKey);
     }
   });
 }

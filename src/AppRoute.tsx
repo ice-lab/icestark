@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { AppHistory } from './appHistory';
 import renderComponent from './util/renderComponent';
-import { loadEntry, loadEntryContent, appendAssets, emptyAssets } from './util/handleAssets';
+import { loadEntry, loadEntryContent, appendAssets, emptyAssets, cacheAssets } from './util/handleAssets';
 import { setCache, getCache } from './util/cache';
-import { callAppEnter, callAppLeave } from './util/appLifeCycle';
+import { callAppEnter, callAppLeave, cacheApp, isCached } from './util/appLifeCycle';
 import { callCapturedEventListeners } from './util/capturedListeners';
 
 interface AppRouteState {
@@ -51,6 +51,7 @@ export interface AppConfig {
   entryContent?: string;
   component?: React.ReactElement;
   render?: (props?: AppRouteComponentProps) => React.ReactElement;
+  cache?: boolean;
 }
 
 // from AppRouter
@@ -112,7 +113,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   componentDidMount() {
-    setCache('root', null);
     this.renderChild();
   }
 
@@ -152,12 +152,23 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
   componentWillUnmount() {
     // Empty useless assets before unmount
-    const { shouldAssetsRemove } = this.props;
-
-    emptyAssets(shouldAssetsRemove);
+    const { shouldAssetsRemove, cache } = this.props;
+    if (cache) {
+      cacheAssets(this.getCacheKey());
+    }
+    // empty cached assets if cache is false
+    emptyAssets(shouldAssetsRemove, !cache && this.getCacheKey());
     this.triggerPrevAppLeave();
     this.unmounted = true;
-    setCache('root', null);
+  }
+
+  /**
+   * get cache key
+   */
+  getCacheKey = (appConfig?: AppConfig) => {
+    const { path } = appConfig || this.props;
+    // use path as cache key
+    return converArray2String(path);
   }
 
   /**
@@ -165,6 +176,11 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
    */
   renderChild = (): void => {
     const { rootId, useShadow, component, render } = this.props;
+
+    // cache prev app asset before load next app
+    if (this.prevAppConfig && this.prevAppConfig.cache) {
+      cacheAssets(this.getCacheKey(this.prevAppConfig));
+    }
 
     // if component / render exists,
     // set showComponent to confirm capturedEventListeners triggered at the right time
@@ -208,9 +224,16 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       triggerLoading,
       triggerError,
       shouldAssetsRemove,
+      cache,
     } = this.props;
+    const assetsCacheKey = this.getCacheKey();
+    let cached = false;
+    // cache is effective when setup urls
+    if (!entry && !entryContent && url) {
+      cached = cache && isCached(assetsCacheKey);
+    }
     // empty useless assets before loading
-    emptyAssets(shouldAssetsRemove);
+    emptyAssets(shouldAssetsRemove, !cached && assetsCacheKey);
 
     if (title) document.title = title;
 
@@ -234,7 +257,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     };
 
     // trigger loading before handleAssets
-    handleLoading(true);
+    !cached && handleLoading(true);
 
     const currentAppConfig: AppConfig = this.triggerOnAppEnter();
 
@@ -248,13 +271,16 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         const rootElement = getCache('root');
         const cachedKey = title || converArray2String(path);
         await loadEntryContent(rootElement, entryContent, location.href, cachedKey);
-      } else {
+      } else if (!cached){
         const assetsList = Array.isArray(url) ? url : [url];
         await appendAssets(assetsList, useShadow);
       }
-
       // if AppRoute is unmounted, or current app is not the latest app, cancel all operations
       if (this.unmounted || this.prevAppConfig !== currentAppConfig) return;
+      if (cache) {
+        // cache app lifecycle after load assets
+        cacheApp(assetsCacheKey);
+      }
 
       // trigger sub-application render
       callAppEnter();
