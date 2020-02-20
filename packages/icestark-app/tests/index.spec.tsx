@@ -4,6 +4,7 @@ import {
   getBasename,
   getMountNode,
   renderNotFound,
+  registerAppEnter,
   registerAppLeave,
   appHistory,
   isInIcestark,
@@ -69,6 +70,20 @@ describe('renderNotFound', () => {
     expect(renderNotFound()).toBeNull;
 
     expect(mockCallback.mock.calls.length).toBe(1);
+  });
+});
+
+describe('registerAppEnter', () => {
+  test('registerAppEnter', () => {
+    expect(registerAppEnter()).toBeUndefined;
+
+    const mockCallback = jest.fn();
+    registerAppEnter(mockCallback);
+    expect(getCache('appEnter')).toEqual(mockCallback);
+
+    expect(function() {
+      registerAppEnter('test' as any);
+    }).toThrowError('registerAppEnter must be function.');
   });
 });
 

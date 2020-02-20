@@ -1,12 +1,14 @@
 import * as React from 'react';
 import { AppHistory } from './appHistory';
-import { loadEntry, loadEntryContent, appendAssets, emptyAssets } from './util/handleAssets';
+import renderComponent from './util/renderComponent';
+import { loadEntry, loadEntryContent, appendAssets, emptyAssets, cacheAssets } from './util/handleAssets';
 import { setCache, getCache } from './util/cache';
-import { callAppEnter, callAppLeave } from './util/appLifeCycle';
+import { callAppEnter, callAppLeave, cacheApp, isCached } from './util/appLifeCycle';
 import { callCapturedEventListeners } from './util/capturedListeners';
 
 interface AppRouteState {
   cssLoading: boolean;
+  showComponent: boolean;
 }
 
 // "slash" - hashes like #/ and #/sunshine/lollipops
@@ -49,6 +51,7 @@ export interface AppConfig {
   entryContent?: string;
   component?: React.ReactElement;
   render?: (props?: AppRouteComponentProps) => React.ReactElement;
+  cache?: boolean;
 }
 
 // from AppRouter
@@ -61,6 +64,7 @@ export interface AppRouteProps extends AppConfig {
     assetUrl?: string,
     element?: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement,
   ) => boolean;
+  componentProps?: AppRouteComponentProps;
 }
 
 export function converArray2String(list: string | string[]) {
@@ -90,6 +94,7 @@ function getAppConfig(appRouteProps: AppRouteProps): AppConfig {
 export default class AppRoute extends React.Component<AppRouteProps, AppRouteState> {
   state = {
     cssLoading: false,
+    showComponent: false,
   };
 
   private myRefBase: HTMLDivElement = null;
@@ -108,13 +113,12 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   componentDidMount() {
-    setCache('root', null);
     this.renderChild();
   }
 
   shouldComponentUpdate(nextProps, nextState) {
     const { path, url, title, rootId, useShadow } = this.props;
-    const { cssLoading } = this.state;
+    const { cssLoading, showComponent } = this.state;
 
     if (
       converArray2String(path) === converArray2String(nextProps.path) &&
@@ -122,7 +126,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       title === nextProps.title &&
       rootId === nextProps.rootId &&
       useShadow === nextProps.useShadow &&
-      cssLoading === nextState.cssLoading
+      cssLoading === nextState.cssLoading &&
+      showComponent === nextState.showComponent
     ) {
       // reRender is triggered by sub-application router / browser, call popStateListeners
       callCapturedEventListeners();
@@ -141,28 +146,52 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       rootId !== prevProps.rootId ||
       useShadow !== prevProps.useShadow
     ) {
-      // record config for prev App
-      this.prevAppConfig = getAppConfig(prevProps);
-
       this.renderChild();
     }
   }
 
   componentWillUnmount() {
     // Empty useless assets before unmount
-    const { shouldAssetsRemove } = this.props;
-
-    emptyAssets(shouldAssetsRemove);
+    const { shouldAssetsRemove, cache } = this.props;
+    if (cache) {
+      cacheAssets(this.getCacheKey());
+    }
+    // empty cached assets if cache is false
+    emptyAssets(shouldAssetsRemove, !cache && this.getCacheKey());
     this.triggerPrevAppLeave();
     this.unmounted = true;
-    setCache('root', null);
+  }
+
+  /**
+   * get cache key
+   */
+  getCacheKey = (appConfig?: AppConfig) => {
+    const { path } = appConfig || this.props;
+    // use path as cache key
+    return converArray2String(path);
   }
 
   /**
    * Load assets and render sub-application
    */
   renderChild = (): void => {
-    const { rootId, useShadow } = this.props;
+    const { rootId, useShadow, component, render } = this.props;
+
+    // cache prev app asset before load next app
+    if (this.prevAppConfig && this.prevAppConfig.cache) {
+      cacheAssets(this.getCacheKey(this.prevAppConfig));
+    }
+
+    // if component / render exists,
+    // set showComponent to confirm capturedEventListeners triggered at the right time
+    if (component || (render && typeof render === 'function')) {
+      this.triggerPrevAppLeave();
+
+      this.triggerOnAppEnter();
+
+      this.setState({ showComponent: true });
+      return;
+    }
 
     const myBase: HTMLElement = this.myRefBase;
     if (!myBase) return;
@@ -194,11 +223,17 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       title,
       triggerLoading,
       triggerError,
-      onAppEnter,
       shouldAssetsRemove,
+      cache,
     } = this.props;
+    const assetsCacheKey = this.getCacheKey();
+    let cached = false;
+    // cache is effective when setup urls
+    if (!entry && !entryContent && url) {
+      cached = cache && isCached(assetsCacheKey);
+    }
     // empty useless assets before loading
-    emptyAssets(shouldAssetsRemove);
+    emptyAssets(shouldAssetsRemove, !cached && assetsCacheKey);
 
     if (title) document.title = title;
 
@@ -208,7 +243,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
       const { cssLoading } = this.state;
       if (loading !== cssLoading) {
-        this.setState({ cssLoading: loading });
+        this.setState({ cssLoading: loading, showComponent: false });
         typeof triggerLoading === 'function' && triggerLoading(loading);
       }
     };
@@ -222,11 +257,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     };
 
     // trigger loading before handleAssets
-    handleLoading(true);
+    !cached && handleLoading(true);
 
-    if (typeof onAppEnter === 'function') onAppEnter(getAppConfig(this.props));
-
-    const prevAppConfig = this.prevAppConfig;
+    const currentAppConfig: AppConfig = this.triggerOnAppEnter();
 
     try {
       if (entry) {
@@ -238,13 +271,16 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         const rootElement = getCache('root');
         const cachedKey = title || converArray2String(path);
         await loadEntryContent(rootElement, entryContent, location.href, cachedKey);
-      } else {
+      } else if (!cached){
         const assetsList = Array.isArray(url) ? url : [url];
         await appendAssets(assetsList, useShadow);
       }
-
       // if AppRoute is unmounted, or current app is not the latest app, cancel all operations
-      if (this.unmounted || this.prevAppConfig !== prevAppConfig) return;
+      if (this.unmounted || this.prevAppConfig !== currentAppConfig) return;
+      if (cache) {
+        // cache app lifecycle after load assets
+        cacheApp(assetsCacheKey);
+      }
 
       // trigger sub-application render
       callAppEnter();
@@ -270,10 +306,12 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     return element;
   };
 
+  /**
+   * Trigger onAppLeave in AppRouter and callAppLeave(registerAppLeave callback)
+   * reset this.prevAppConfig
+   */
   triggerPrevAppLeave = (): void => {
     const { onAppLeave } = this.props;
-
-    callAppLeave();
 
     // trigger onAppLeave
     const prevAppConfig = this.prevAppConfig;
@@ -282,15 +320,45 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       if (typeof onAppLeave === 'function') onAppLeave(prevAppConfig);
       this.prevAppConfig = null;
     }
+
+    callAppLeave();
+  };
+
+  /**
+   * Trigger onAppEnter in AppRouter
+   * callAppEnter(registerAppEnter callback) will be triggered later
+   * record current appConfig as this.prevAppConfig
+   */
+  triggerOnAppEnter = (): AppConfig => {
+    const { onAppEnter } = this.props;
+
+    const currentAppConfig = getAppConfig(this.props);
+    this.prevAppConfig = currentAppConfig;
+
+    // trigger onAppEnter
+    if (typeof onAppEnter === 'function') onAppEnter(currentAppConfig);
+
+    return currentAppConfig;
   };
 
   render() {
+    const { component, render, componentProps } = this.props;
+    const { cssLoading, showComponent } = this.state;
+
+    if (component) {
+      return showComponent ? renderComponent(component, componentProps) : null;
+    }
+
+    if (render && typeof render === 'function') {
+      return showComponent ? render(componentProps) : null;
+    }
+
     return (
       <div
         ref={element => {
           this.myRefBase = element;
         }}
-        className={this.state.cssLoading ? 'ice-stark-loading' : 'ice-stark-loaded'}
+        className={cssLoading ? 'ice-stark-loading' : 'ice-stark-loaded'}
       />
     );
   }
