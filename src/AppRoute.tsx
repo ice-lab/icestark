@@ -122,7 +122,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     const { path, url, title, rootId, useShadow, componentProps } = this.props;
     const { cssLoading, showComponent } = this.state;
     // re-render and callCapturedEventListeners if componentProps is changed
-    if (nextProps.render && typeof nextProps.render === 'function') {
+    if (nextProps.component || nextProps.render && typeof nextProps.render === 'function') {
       if (!isEqual(componentProps, nextProps.componentProps)) {
         callCapturedEventListeners();
         return true;
