@@ -33,6 +33,7 @@ export interface AppRouterProps {
     assetUrl?: string,
     element?: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement,
   ) => boolean;
+  basename: string;
 }
 
 interface AppRouterState {
@@ -81,6 +82,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     ErrorComponent: ({ err }) => <div>{err}</div>,
     NotFoundComponent: <div>NotFound</div>,
     shouldAssetsRemove: () => true,
+    basename: '',
   };
 
   constructor(props: AppRouterProps) {
@@ -260,6 +262,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       onAppLeave,
       shouldAssetsRemove,
       children,
+      basename: appBasename,
     } = this.props;
     const { url, showLoading } = this.state;
 
@@ -280,14 +283,14 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
         element = child;
 
         const { path, hashType } = child.props as AppRouteProps;
-
+        const routerPath = `${addLeadingSlash(appBasename)}${path}`;
         if (hashType) {
           const decodePath = HashPathDecoders[hashType === true ? 'slash' : hashType];
           const hashPath = decodePath(getHashPath(hash));
 
-          match = path ? matchPath(hashPath, { ...child.props }) : null;
+          match = path ? matchPath(hashPath, { ...child.props, path: routerPath }) : null;
         } else {
-          match = path ? matchPath(pathname, { ...child.props }) : null;
+          match = path ? matchPath(pathname, { ...child.props, path: routerPath }) : null;
         }
       }
     });
@@ -302,7 +305,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       };
 
       // render AppRoute
-      setCache('basename', basename || (Array.isArray(path) ? path[0] : path));
+      setCache('basename', `${appBasename}${basename || (Array.isArray(path) ? path[0] : path)}`);
 
       const extraProps: any = {
         onAppEnter,
