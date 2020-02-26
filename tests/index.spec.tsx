@@ -270,6 +270,12 @@ describe('AppLink', () => {
     fireEvent.click(getByText(/This is a test/i));
     expect(mockReplaceState.mock.calls.length).toBe(1);
   });
+  test('hashType of AppLink', () => {
+    const className = 'link-node';
+    const { container } = render(<AppLink className={className} to="/test" hashType>link</AppLink>);
+    const appLinkNode = container.querySelector(`.${className}`);
+    expect(appLinkNode.getAttribute('href')).toBe('/#/test');
+  });
 });
 
 describe('appHistory', () => {
