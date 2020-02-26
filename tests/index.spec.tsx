@@ -246,7 +246,7 @@ describe('AppRouter', () => {
     );
     expect(container.innerHTML).toContain('test render');
     unmount();
-  })
+  });
 });
 
 describe('AppLink', () => {
