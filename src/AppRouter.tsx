@@ -283,7 +283,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
         element = child;
 
         const { path, hashType } = child.props as AppRouteProps;
-        const routerPath = `${addLeadingSlash(appBasename)}${path}`;
+        const routerPath = `${appBasename ? addLeadingSlash(appBasename) : ''}${path}`;
         if (hashType) {
           const decodePath = HashPathDecoders[hashType === true ? 'slash' : hashType];
           const hashPath = decodePath(getHashPath(hash));
