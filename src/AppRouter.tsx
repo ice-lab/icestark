@@ -33,7 +33,7 @@ export interface AppRouterProps {
     assetUrl?: string,
     element?: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement,
   ) => boolean;
-  basename: string;
+  basename?: string;
 }
 
 interface AppRouterState {
