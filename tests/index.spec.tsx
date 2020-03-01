@@ -245,6 +245,55 @@ describe('AppRouter', () => {
       </AppRouter>,
     );
     expect(container.innerHTML).toContain('test render');
+  });
+
+  test('test for component update', () => {
+    window.history.pushState({}, 'test', '/');
+    const RenerComponent = (props) => {
+      return (
+        <div data-testid="icestarkTest">
+          {props.location.pathname === '/' ? 'test render a' : 'test render b'}
+        </div>
+      );
+    };
+    
+    const { container, unmount } = render(
+      <AppRouter>
+        <AppRoute
+          path="/"
+          title="component"
+          component={<RenerComponent />}
+        />
+      </AppRouter>
+    );
+    expect(container.innerHTML).toContain('test render a');
+    window.history.pushState({}, 'test', '/b');
+    expect(container.innerHTML).toContain('test render b');
+    unmount();
+  });
+
+  test('test for render update', () => {
+    window.history.pushState({}, 'test', '/');
+    const RenerComponent = (props) => {
+      return (
+        <div data-testid="icestarkTest">
+          {props.location.pathname === '/' ? 'test render a' : 'test render b'}
+        </div>
+      );
+    };
+    
+    const { container, unmount } = render(
+      <AppRouter>
+        <AppRoute
+          path="/"
+          title="component"
+          render={(props) => <RenerComponent {...props} />}
+        />
+      </AppRouter>
+    );
+    expect(container.innerHTML).toContain('test render a');
+    window.history.pushState({}, 'test', '/b');
+    expect(container.innerHTML).toContain('test render b');
     unmount();
   });
 });
@@ -280,6 +329,12 @@ describe('AppLink', () => {
 
     fireEvent.click(getByText(/This is a test/i));
     expect(mockReplaceState.mock.calls.length).toBe(1);
+  });
+  test('hashType of AppLink', () => {
+    const className = 'link-node';
+    const { container } = render(<AppLink className={className} to="/test" hashType>link</AppLink>);
+    const appLinkNode = container.querySelector(`.${className}`);
+    expect(appLinkNode.getAttribute('href')).toBe('/#/test');
   });
 });
 
