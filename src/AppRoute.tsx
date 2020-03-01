@@ -6,6 +6,8 @@ import { setCache, getCache } from './util/cache';
 import { callAppEnter, callAppLeave, cacheApp, isCached } from './util/appLifeCycle';
 import { callCapturedEventListeners } from './util/capturedListeners';
 
+import isEqual = require('lodash.isequal');
+
 interface AppRouteState {
   cssLoading: boolean;
   showComponent: boolean;
@@ -117,10 +119,14 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    const { path, url, title, rootId, useShadow } = this.props;
+    const { path, url, title, rootId, useShadow, componentProps } = this.props;
     const { cssLoading, showComponent } = this.state;
-
-    if (
+    // re-render and callCapturedEventListeners if componentProps is changed
+    if ((nextProps.component || nextProps.render && typeof nextProps.render === 'function') &&
+      !isEqual(componentProps, nextProps.componentProps)) {
+      callCapturedEventListeners();
+      return true;
+    } else if (
       converArray2String(path) === converArray2String(nextProps.path) &&
       converArray2String(url) === converArray2String(nextProps.url) &&
       title === nextProps.title &&

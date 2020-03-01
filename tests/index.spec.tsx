@@ -236,6 +236,56 @@ describe('AppRouter', () => {
     expect(container.innerHTML).toContain('test render');
     unmount();
   });
+
+  test('test for component update', () => {
+    window.history.pushState({}, 'test', '/');
+    const RenerComponent = (props) => {
+      return (
+        <div data-testid="icestarkTest">
+          {props.location.pathname === '/' ? 'test render a' : 'test render b'}
+        </div>
+      );
+    };
+    
+    const { container, unmount } = render(
+      <AppRouter>
+        <AppRoute
+          path="/"
+          title="component"
+          component={<RenerComponent />}
+        />
+      </AppRouter>
+    );
+    expect(container.innerHTML).toContain('test render a');
+    window.history.pushState({}, 'test', '/b');
+    expect(container.innerHTML).toContain('test render b');
+    unmount();
+  });
+
+  test('test for render update', () => {
+    window.history.pushState({}, 'test', '/');
+    const RenerComponent = (props) => {
+      return (
+        <div data-testid="icestarkTest">
+          {props.location.pathname === '/' ? 'test render a' : 'test render b'}
+        </div>
+      );
+    };
+    
+    const { container, unmount } = render(
+      <AppRouter>
+        <AppRoute
+          path="/"
+          title="component"
+          render={(props) => <RenerComponent {...props} />}
+        />
+      </AppRouter>
+    );
+    expect(container.innerHTML).toContain('test render a');
+    window.history.pushState({}, 'test', '/b');
+    expect(container.innerHTML).toContain('test render b');
+    unmount();
+  });
 });
 
 describe('AppLink', () => {
