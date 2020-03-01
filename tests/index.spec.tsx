@@ -237,6 +237,16 @@ describe('AppRouter', () => {
     unmount();
   });
 
+  test('test for app basename', () => {
+    window.history.pushState({}, 'test', '/icestark');
+    const { container, unmount } = render(
+      <AppRouter basename="icestark">
+        <AppRoute path="/" render={() => <div data-testid="icestarkTest">test render</div>} />
+      </AppRouter>,
+    );
+    expect(container.innerHTML).toContain('test render');
+  });
+
   test('test for component update', () => {
     window.history.pushState({}, 'test', '/');
     const RenerComponent = (props) => {
