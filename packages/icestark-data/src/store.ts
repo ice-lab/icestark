@@ -109,6 +109,7 @@ class Store implements IO, Hooks {
 
     if (!isArray(this.storeEmitter[key])) {
       warn(`store.off: ${key} has no callback`);
+      return;
     }
 
     if (callback === undefined) {
