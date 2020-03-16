@@ -146,7 +146,6 @@ describe('AppRouter', () => {
         <AppRoute
           path="/"
           url={['//icestark.com/js/index.js', '//icestark.com/css/index.css']}
-          useShadow={false}
         />
       </AppRouter>,
     );
