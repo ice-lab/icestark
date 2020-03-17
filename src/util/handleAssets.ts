@@ -273,59 +273,65 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
 export async function appendProcessedContent(
   root: HTMLElement | ShadowRoot,
   processedContent: ProcessedContent,
+  assertsCached: boolean,
 ) {
   const { html: processedHtml, assets: { jsList, cssList} } = processedContent;
   root.innerHTML = processedHtml;
   
-  const assetsRoot: HTMLElement = document.getElementsByTagName('head')[0];
-  await Promise.all([
-    // load css source
-    ...(cssList.map((cssAssets, index) => {
-      return appendCSS(assetsRoot, cssAssets, `${PREFIX}-css-${index}`);
-    })),
-  ]);
-  // make sure js assets loaded in order
-  await jsList.reduce((chain, asset, index) => {
-    return chain.then(() => appendExternalScript(assetsRoot, asset, `${PREFIX}-js-${index}`));
-  }, Promise.resolve());
+  if (!assertsCached) {
+    const assetsRoot: HTMLElement = document.getElementsByTagName('head')[0];
+    await Promise.all([
+      // load css source
+      ...(cssList.map((cssAssets, index) => {
+        return appendCSS(assetsRoot, cssAssets, `${PREFIX}-css-${index}`);
+      })),
+    ]);
+    // make sure js assets loaded in order
+    await jsList.reduce((chain, asset, index) => {
+      return chain.then(() => appendExternalScript(assetsRoot, asset, `${PREFIX}-js-${index}`));
+    }, Promise.resolve());
+  }
 }
 
 const cachedProcessedContent: object = {};
 
-export async function loadEntry(
-  root: HTMLElement | ShadowRoot,
-  entry: string,
-  fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response> = winFetch,
-) {
-  if (cachedProcessedContent[entry]) {
-    await appendProcessedContent(root, cachedProcessedContent[entry]);
+export async function loadEntry({
+  root,
+  entry,
+  entryContent,
+  assetsCacheKey,
+  href,
+  fetch = winFetch,
+  assertsCached,
+}: {
+  root: HTMLElement | ShadowRoot;
+  entry?: string;
+  entryContent?: string;
+  assetsCacheKey: string;
+  href?: string;
+  fetch?: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
+  assertsCached?: boolean;
+}) {
+  if (cachedProcessedContent[assetsCacheKey]) {
+    await appendProcessedContent(root, cachedProcessedContent[assetsCacheKey], assertsCached);
     return;
   }
 
-  if (!fetch) {
-    warn('Current environment does not support window.fetch, please use custom fetch');
-    throw new Error(
-      `fetch ${entry} error: Current environment does not support window.fetch, please use custom fetch`,
-    );
+  let htmlContent = entryContent;
+  if (entry) {
+    if (!fetch) {
+      warn('Current environment does not support window.fetch, please use custom fetch');
+      throw new Error(
+        `fetch ${entry} error: Current environment does not support window.fetch, please use custom fetch`,
+      );
+    }
+
+    const res = await fetch(entry);
+    htmlContent = await res.text();
   }
 
-  const res = await fetch(entry);
-  const html = await res.text();
-
-  cachedProcessedContent[entry] = processHtml(html, entry);
-  await appendProcessedContent(root, cachedProcessedContent[entry]);
-}
-
-export async function loadEntryContent(
-  root: HTMLElement | ShadowRoot,
-  entryContent: string,
-  href: string,
-  cachedKey: string,
-) {
-  if (!cachedProcessedContent[cachedKey]) {
-    cachedProcessedContent[cachedKey] = processHtml(entryContent, href);
-  }
-  await appendProcessedContent(root, cachedProcessedContent[cachedKey]);
+  cachedProcessedContent[assetsCacheKey] = processHtml(htmlContent, entry || href);
+  await appendProcessedContent(root, cachedProcessedContent[assetsCacheKey], assertsCached);
 }
 
 export function getAssetsNode(): (HTMLStyleElement|HTMLScriptElement)[] {

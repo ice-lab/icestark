@@ -217,20 +217,26 @@ describe('loadEntry', () => {
 
     const div = document.createElement('div');
     const htmlUrl = '//icestark.com';
-    loadEntry(
-      div,
-      htmlUrl,
-      url =>
+    loadEntry({
+      root: div,
+      entry: htmlUrl,
+      assetsCacheKey: '/test',
+      fetch: (url) => (
         new Promise(resolve => {
           resolve(fetchMockFn(url));
-        }),
-    )
+        })
+      ),
+    })
       .then(() => {
         expect(fetchMockFn).toBeCalledWith(htmlUrl);
       })
       .catch(() => {});
 
-    loadEntry(div, htmlUrl, null)
+    loadEntry({
+      root: div,
+      entry: htmlUrl,
+      assetsCacheKey: '/test',
+    })
       .then(() => {
         expect(warnMockFn).toBeCalledWith(
           'Current environment does not support window.fetch, please use custom fetch',
@@ -275,7 +281,11 @@ describe('loadEntry', () => {
 
     const div = document.createElement('div');
 
-    loadEntry(div, '//icestark.com')
+    loadEntry({
+      root: div,
+      entry: '//icestark.com',
+      assetsCacheKey: '/test',
+    })
       .then(() => {
         const html = div.innerHTML;
         expect(html).toContain(processHtml(htmlContent).html);
@@ -308,7 +318,11 @@ describe('loadEntry', () => {
 
     const div = document.createElement('div');
 
-    loadEntry(div, '//icestark.error.com').catch(() => {});
+    loadEntry({
+      root: div,
+      entry: '//icestark.error.com',
+      assetsCacheKey: '/test',
+    }).catch(() => {});
   });
 });
 

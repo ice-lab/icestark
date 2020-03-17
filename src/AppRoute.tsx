@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { AppHistory } from './appHistory';
 import renderComponent from './util/renderComponent';
-import { loadEntry, loadEntryContent, appendAssets, emptyAssets, cacheAssets } from './util/handleAssets';
+import { loadEntry, appendAssets, emptyAssets, cacheAssets } from './util/handleAssets';
 import { setCache, getCache } from './util/cache';
 import { callAppEnter, callAppLeave, cacheApp, isCached } from './util/appLifeCycle';
 import { callCapturedEventListeners } from './util/capturedListeners';
@@ -222,7 +222,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
   loadNextApp = async (useShadow?: boolean) => {
     const {
-      path,
       url,
       entry,
       entryContent,
@@ -233,11 +232,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       cache,
     } = this.props;
     const assetsCacheKey = this.getCacheKey();
-    let cached = false;
-    // cache is effective when setup urls
-    if (!entry && !entryContent && url) {
-      cached = cache && isCached(assetsCacheKey);
-    }
+    const cached = cache && isCached(assetsCacheKey);;
     // empty useless assets before loading
     emptyAssets(shouldAssetsRemove, !cached && assetsCacheKey);
 
@@ -268,15 +263,17 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     const currentAppConfig: AppConfig = this.triggerOnAppEnter();
 
     try {
-      if (entry) {
+      if (entry || entryContent) {
         // entry for fetch -> process -> append
         const rootElement = getCache('root');
-        await loadEntry(rootElement, entry);
-      } else if (entryContent) {
-        // entryContent for process -> append
-        const rootElement = getCache('root');
-        const cachedKey = title || converArray2String(path);
-        await loadEntryContent(rootElement, entryContent, location.href, cachedKey);
+        await loadEntry({
+          root: rootElement,
+          entry,
+          href: location.href,
+          entryContent,
+          assetsCacheKey,
+          assertsCached: cached,
+        });
       } else if (!cached){
         const assetsList = Array.isArray(url) ? url : [url];
         await appendAssets(assetsList, useShadow);
