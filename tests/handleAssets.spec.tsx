@@ -301,7 +301,7 @@ describe('loadEntry', () => {
 
 // tests for url
 describe('appendAssets', () => {
-  test('appendAssets useShadow=false', () => {
+  test('appendAssets basic', () => {
     emptyAssets(() => true, true);
 
     appendAssets(
@@ -310,7 +310,6 @@ describe('appendAssets', () => {
         'http://icestark.com/css/index.css',
         'http://icestark.com/js/test1.js',
       ],
-      false,
     ).then(() => {
       const jsElement0 = document.getElementById('icestark-js-0');
       const jsElement1 = document.getElementById('icestark-js-1');
@@ -329,18 +328,6 @@ describe('appendAssets', () => {
 
       emptyAssets(() => true, true);
     });
-  });
-
-  test('appendAssets useShadow=true', () => {
-    setCache('root', document.getElementsByTagName('head')[0]);
-    appendAssets(
-      [
-        'http://icestark.com/js/index.js',
-        'http://icestark.com/css/index.css',
-        'http://icestark.com/js/test1.js',
-      ],
-      true,
-    );
   });
 
   test('recordAssets', () => {
