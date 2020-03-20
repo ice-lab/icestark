@@ -108,7 +108,7 @@ export function appendAllLink(
 }
 
 export function appendAllScriptWithOutInline(
-  root: HTMLElement | ShadowRoot,
+  root: HTMLElement,
   urlList: string[],
 ): Promise<string[]> {
   return Promise.all(
@@ -116,11 +116,9 @@ export function appendAllScriptWithOutInline(
   );
 }
 
-export async function appendAssets(assetsList: string[], useShadow: boolean) {
+export async function appendAssets(assetsList: string[]) {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
-  const cssRoot: HTMLElement | ShadowRoot = useShadow
-    ? getCacheRoot()
-    : document.getElementsByTagName('head')[0];
+  const cssRoot: HTMLElement = document.getElementsByTagName('head')[0];
 
   const jsList: string[] = [];
   const cssList: string[] = [];
@@ -137,14 +135,8 @@ export async function appendAssets(assetsList: string[], useShadow: boolean) {
     }
   });
 
-  if (useShadow) {
-    // make sure css loads after all js have been loaded under shadowRoot
-    await appendAllScriptWithOutInline(jsRoot, jsList);
-    await appendAllLink(cssRoot, cssList);
-  } else {
-    await appendAllLink(cssRoot, cssList);
-    await appendAllScriptWithOutInline(jsRoot, jsList);
-  }
+  await appendAllLink(cssRoot, cssList);
+  await appendAllScriptWithOutInline(jsRoot, jsList);
 }
 
 export function parseUrl(entry: string): ParsedConfig {
