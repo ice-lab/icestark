@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/extend-expect';
 import { FetchMock } from 'jest-fetch-mock';
 import {
-  loadEntry,
+  getEntryAssets,
   appendAssets,
   appendCSS,
   emptyAssets,
@@ -13,6 +13,7 @@ import {
   getComment,
   processHtml,
   appendExternalScript,
+  getUrlAssets,
 } from '../src/util/handleAssets';
 import { setCache } from '../src/util/cache';
 
@@ -202,7 +203,7 @@ describe('appendExternalScript', () => {
   });
 });
 
-describe('loadEntry', () => {
+describe('getEntryAssets', () => {
   beforeEach(() => {
     (fetch as FetchMock).resetMocks();
   });
@@ -212,12 +213,12 @@ describe('loadEntry', () => {
     warn: warnMockFn,
   };
 
-  test('loadEntry', () => {
+  test('getEntryAssets innerHTML', () => {
     const fetchMockFn = jest.fn();
 
     const div = document.createElement('div');
     const htmlUrl = '//icestark.com';
-    loadEntry({
+    getEntryAssets({
       root: div,
       entry: htmlUrl,
       assetsCacheKey: '/test',
@@ -232,7 +233,7 @@ describe('loadEntry', () => {
       })
       .catch(() => {});
 
-    loadEntry({
+    getEntryAssets({
       root: div,
       entry: htmlUrl,
       assetsCacheKey: '/test',
@@ -245,7 +246,7 @@ describe('loadEntry', () => {
       .catch(() => {});
   });
 
-  test('loadEntry -> success', () => {
+  test('getEntryAssets -> success', async () => {
     const htmlContent =
       '<html>' +
       '  <head>' +
@@ -281,30 +282,61 @@ describe('loadEntry', () => {
 
     const div = document.createElement('div');
 
-    loadEntry({
+    const assets = await getEntryAssets({
       root: div,
       entry: '//icestark.com',
       assetsCacheKey: '/test',
-    })
-      .then(() => {
-        const html = div.innerHTML;
-        expect(html).toContain(processHtml(htmlContent).html);
+    });
+    
+    expect(assets).toStrictEqual({
+      cssList: [
+        {
+          content: 'http://icestark.com/index.css',
+          type: AssetTypeEnum.EXTERNAL,
+        },
+        {
+          content: 'http://icestark.com/test.css',
+          type: AssetTypeEnum.EXTERNAL,
+        },
+      ],
+      jsList: [
+        {
+          content: '      console.log()    ',
+          type: AssetTypeEnum.INLINE,
+        },
+        {
+          content: '//g.alicdn.com/1.1/test/index.js',
+          type: AssetTypeEnum.EXTERNAL,
+        },
+        {
+          content: 'http://icestark.com/test.js',
+          type: AssetTypeEnum.EXTERNAL,
+        },
+        {
+          content: 'http://icestark.com/test.min.js',
+          type: AssetTypeEnum.EXTERNAL,
+        },
+        {
+          content: 'http://icestark.com/index.js',
+          type: AssetTypeEnum.EXTERNAL,
+        },
+      ],
+    });
+    const html = div.innerHTML;
 
-        expect(html).not.toContain('src="//g.alicdn.com/1.1/test/index.js"');
-        expect(html).not.toContain('src="/test.js"');
-        expect(html).not.toContain('src="index.js"');
+    expect(html).not.toContain('src="//g.alicdn.com/1.1/test/index.js"');
+    expect(html).not.toContain('src="/test.js"');
+    expect(html).not.toContain('src="index.js"');
 
-        expect(html).toContain('<!--script /test.js replaced by @ice/stark-->');
-        expect(html).toContain('<!--script index.js replaced by @ice/stark-->');
+    expect(html).toContain('<!--script /test.js replaced by @ice/stark-->');
+    expect(html).toContain('<!--script index.js replaced by @ice/stark-->');
 
-        expect(html).toContain('<link rel="dns-prefetch" href="//g.alicdn.com" />');
-        expect(html).not.toContain('<link rel="stylesheet" href="/index.css');
-        expect(html).not.toContain('<link rel="stylesheet" href="test.css');
+    expect(html).toContain('href="//g.alicdn.com"');
+    expect(html).not.toContain('<link rel="stylesheet" href="/index.css');
+    expect(html).not.toContain('<link rel="stylesheet" href="test.css');
 
-        expect(html).toContain('<!--link /index.css processed by @ice/stark-->');
-        expect(html).toContain('<!--link test.css processed by @ice/stark-->');
-      })
-      .catch(() => {});
+    expect(html).toContain('<!--link /index.css processed by @ice/stark-->');
+    expect(html).toContain('<!--link test.css processed by @ice/stark-->');
 
     const scripts = div.getElementsByTagName('script');
     for (let i = 0; i < scripts.length; i++) {
@@ -312,13 +344,13 @@ describe('loadEntry', () => {
     }
   });
 
-  test('loadEntry -> error', () => {
+  test('getEntryAssets -> error', () => {
     const err = new Error('err');
     (fetch as FetchMock).mockRejectOnce(err);
 
     const div = document.createElement('div');
 
-    loadEntry({
+    getEntryAssets({
       root: div,
       entry: '//icestark.error.com',
       assetsCacheKey: '/test',
@@ -330,13 +362,13 @@ describe('loadEntry', () => {
 describe('appendAssets', () => {
   test('appendAssets useShadow=false', () => {
     emptyAssets(() => true, true);
-
+    const assets = getUrlAssets([
+      'http://icestark.com/js/index.js',
+      'http://icestark.com/css/index.css',
+      'http://icestark.com/js/test1.js',
+    ]);
     appendAssets(
-      [
-        'http://icestark.com/js/index.js',
-        'http://icestark.com/css/index.css',
-        'http://icestark.com/js/test1.js',
-      ],
+      assets,
       false,
     ).then(() => {
       const jsElement0 = document.getElementById('icestark-js-0');
@@ -360,12 +392,13 @@ describe('appendAssets', () => {
 
   test('appendAssets useShadow=true', () => {
     setCache('root', document.getElementsByTagName('head')[0]);
+    const assets = getUrlAssets([
+      'http://icestark.com/js/index.js',
+      'http://icestark.com/css/index.css',
+      'http://icestark.com/js/test1.js',
+    ]);
     appendAssets(
-      [
-        'http://icestark.com/js/index.js',
-        'http://icestark.com/css/index.css',
-        'http://icestark.com/js/test1.js',
-      ],
+      assets,
       true,
     );
   });

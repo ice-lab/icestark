@@ -30,10 +30,12 @@ export interface Asset {
 
 export interface ProcessedContent {
   html: string;
-  assets: {
-    jsList: Asset[];
-    cssList: Asset[];
-  };
+  assets: Assets;
+}
+
+export interface Assets {
+  jsList: Asset[];
+  cssList: Asset[];
 }
 
 export interface ParsedConfig {
@@ -118,52 +120,51 @@ export function appendExternalScript(
   });
 }
 
-export function appendAllLink(
-  root: HTMLElement | ShadowRoot,
-  urlList: string[],
-): Promise<string[]> {
-  return Promise.all(
-    urlList.map((cssUrl, index) => appendCSS(root, cssUrl, `${PREFIX}-css-${index}`)),
-  );
+export function getUrlAssets(urls: string[]) {
+  const jsList = [];
+  const cssList = [];
+
+  urls.forEach(url => {
+    // //icestark.com/index.css -> true
+    // //icestark.com/index.css?timeSamp=1575443657834 -> true
+    // //icestark.com/index.css?query=test.js -> false
+    const isCss: boolean = IS_CSS_REGEX.test(url);
+    const assest: Asset = {
+      type: AssetTypeEnum.EXTERNAL,
+      content: url,
+    };
+    if (isCss) {
+      cssList.push(assest);
+    } else {
+      jsList.push(assest);
+    }
+  });
+
+  return { jsList, cssList };
 }
 
-export function appendAllScriptWithOutInline(
-  root: HTMLElement | ShadowRoot,
-  urlList: string[],
-): Promise<string[]> {
-  return Promise.all(
-    urlList.map((jsUrl, index) => appendExternalScript(root, jsUrl, `${PREFIX}-js-${index}`)),
-  );
-}
-
-export async function appendAssets(assetsList: string[], useShadow: boolean) {
+export async function appendAssets(assets: Assets, useShadow: boolean) {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
   const cssRoot: HTMLElement | ShadowRoot = useShadow
     ? getCacheRoot()
     : document.getElementsByTagName('head')[0];
 
-  const jsList: string[] = [];
-  const cssList: string[] = [];
+  const { jsList, cssList } = assets;
 
-  assetsList.forEach(url => {
-    // //icestark.com/index.css -> true
-    // //icestark.com/index.css?timeSamp=1575443657834 -> true
-    // //icestark.com/index.css?query=test.js -> false
-    const isCss: boolean = IS_CSS_REGEX.test(url);
-    if (isCss) {
-      cssList.push(url);
-    } else {
-      jsList.push(url);
-    }
-  });
-
-  if (useShadow) {
-    // make sure css loads after all js have been loaded under shadowRoot
-    await appendAllScriptWithOutInline(jsRoot, jsList);
-    await appendAllLink(cssRoot, cssList);
+  // load css content
+  await Promise.all(
+    cssList.map((asset, index) => appendCSS(cssRoot, asset, `${PREFIX}-css-${index}`)),
+  );
+  const hasInlineScript = jsList.find((asset) => asset.type === AssetTypeEnum.INLINE);
+  if (hasInlineScript) {
+    // make sure js assets loaded in order if has inline scripts
+    await jsList.reduce((chain, asset, index) => {
+      return chain.then(() => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`));
+    }, Promise.resolve());
   } else {
-    await appendAllLink(cssRoot, cssList);
-    await appendAllScriptWithOutInline(jsRoot, jsList);
+    await Promise.all(
+      jsList.map((asset, index) => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`)),
+    );
   }
 }
 
@@ -270,39 +271,15 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
   };
 }
 
-export async function appendProcessedContent(
-  root: HTMLElement | ShadowRoot,
-  processedContent: ProcessedContent,
-  assertsCached: boolean,
-) {
-  const { html: processedHtml, assets: { jsList, cssList} } = processedContent;
-  root.innerHTML = processedHtml;
-  
-  if (!assertsCached) {
-    const assetsRoot: HTMLElement = document.getElementsByTagName('head')[0];
-    await Promise.all([
-      // load css source
-      ...(cssList.map((cssAssets, index) => {
-        return appendCSS(assetsRoot, cssAssets, `${PREFIX}-css-${index}`);
-      })),
-    ]);
-    // make sure js assets loaded in order
-    await jsList.reduce((chain, asset, index) => {
-      return chain.then(() => appendExternalScript(assetsRoot, asset, `${PREFIX}-js-${index}`));
-    }, Promise.resolve());
-  }
-}
-
 const cachedProcessedContent: object = {};
 
-export async function loadEntry({
+export async function getEntryAssets({
   root,
   entry,
   entryContent,
   assetsCacheKey,
   href,
   fetch = winFetch,
-  assertsCached,
 }: {
   root: HTMLElement | ShadowRoot;
   entry?: string;
@@ -312,26 +289,26 @@ export async function loadEntry({
   fetch?: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
   assertsCached?: boolean;
 }) {
-  if (cachedProcessedContent[assetsCacheKey]) {
-    await appendProcessedContent(root, cachedProcessedContent[assetsCacheKey], assertsCached);
-    return;
-  }
+  let cachedContent = cachedProcessedContent[assetsCacheKey];
+  if (!cachedContent) {
+    let htmlContent = entryContent;
+    if (!htmlContent && entry) {
+      if (!fetch) {
+        warn('Current environment does not support window.fetch, please use custom fetch');
+        throw new Error(
+          `fetch ${entry} error: Current environment does not support window.fetch, please use custom fetch`,
+        );
+      }
 
-  let htmlContent = entryContent;
-  if (entry) {
-    if (!fetch) {
-      warn('Current environment does not support window.fetch, please use custom fetch');
-      throw new Error(
-        `fetch ${entry} error: Current environment does not support window.fetch, please use custom fetch`,
-      );
+      const res = await fetch(entry);
+      htmlContent = await res.text();
     }
-
-    const res = await fetch(entry);
-    htmlContent = await res.text();
+    cachedContent = processHtml(htmlContent, entry || href);
+    cachedProcessedContent[assetsCacheKey] = cachedContent;
   }
 
-  cachedProcessedContent[assetsCacheKey] = processHtml(htmlContent, entry || href);
-  await appendProcessedContent(root, cachedProcessedContent[assetsCacheKey], assertsCached);
+  root.innerHTML = cachedContent.html;
+  return cachedContent.assets;
 }
 
 export function getAssetsNode(): (HTMLStyleElement|HTMLScriptElement)[] {

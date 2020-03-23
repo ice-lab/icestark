@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { AppHistory } from './appHistory';
 import renderComponent from './util/renderComponent';
-import { loadEntry, appendAssets, emptyAssets, cacheAssets } from './util/handleAssets';
+import { appendAssets, emptyAssets, cacheAssets, getEntryAssets, getUrlAssets } from './util/handleAssets';
 import { setCache, getCache } from './util/cache';
 import { callAppEnter, callAppLeave, cacheApp, isCached } from './util/appLifeCycle';
 import { callCapturedEventListeners } from './util/capturedListeners';
@@ -263,20 +263,23 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     const currentAppConfig: AppConfig = this.triggerOnAppEnter();
 
     try {
+      let appAssets = null;
       if (entry || entryContent) {
         // entry for fetch -> process -> append
         const rootElement = getCache('root');
-        await loadEntry({
+        appAssets = await getEntryAssets({
           root: rootElement,
           entry,
           href: location.href,
           entryContent,
           assetsCacheKey,
-          assertsCached: cached,
         });
-      } else if (!cached){
-        const assetsList = Array.isArray(url) ? url : [url];
-        await appendAssets(assetsList, useShadow);
+      } else if (url){
+        const urls = Array.isArray(url) ? url : [url];
+        appAssets = getUrlAssets(urls);
+      }
+      if (appAssets && !cached) {
+        await appendAssets(appAssets, useShadow);
       }
       // if AppRoute is unmounted, or current app is not the latest app, cancel all operations
       if (this.unmounted || this.prevAppConfig !== currentAppConfig) return;
