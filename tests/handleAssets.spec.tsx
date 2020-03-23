@@ -360,7 +360,7 @@ describe('getEntryAssets', () => {
 
 // tests for url
 describe('appendAssets', () => {
-  test('appendAssets useShadow=false', () => {
+  test('appendAssets basic', () => {
     emptyAssets(() => true, true);
     const assets = getUrlAssets([
       'http://icestark.com/js/index.js',
@@ -369,7 +369,6 @@ describe('appendAssets', () => {
     ]);
     appendAssets(
       assets,
-      false,
     ).then(() => {
       const jsElement0 = document.getElementById('icestark-js-0');
       const jsElement1 = document.getElementById('icestark-js-1');
@@ -399,7 +398,6 @@ describe('appendAssets', () => {
     ]);
     appendAssets(
       assets,
-      true,
     );
   });
 

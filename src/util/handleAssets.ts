@@ -143,11 +143,9 @@ export function getUrlAssets(urls: string[]) {
   return { jsList, cssList };
 }
 
-export async function appendAssets(assets: Assets, useShadow: boolean) {
+export async function appendAssets(assets: Assets) {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
-  const cssRoot: HTMLElement | ShadowRoot = useShadow
-    ? getCacheRoot()
-    : document.getElementsByTagName('head')[0];
+  const cssRoot: HTMLElement = document.getElementsByTagName('head')[0];
 
   const { jsList, cssList } = assets;
 

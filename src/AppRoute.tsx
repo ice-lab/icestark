@@ -40,7 +40,6 @@ export interface AppRouteComponentProps<Params extends { [K in keyof Params]?: s
 // from user config
 export interface AppConfig {
   title?: string;
-  useShadow?: boolean;
   hashType?: boolean | hashType;
   basename?: string;
   exact?: boolean;
@@ -106,7 +105,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   private prevAppConfig: AppConfig = null;
 
   static defaultProps = {
-    useShadow: false,
     exact: false,
     strict: false,
     sensitive: false,
@@ -119,7 +117,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    const { path, url, title, rootId, useShadow, componentProps } = this.props;
+    const { path, url, title, rootId, componentProps } = this.props;
     const { cssLoading, showComponent } = this.state;
     // re-render and callCapturedEventListeners if componentProps is changed
     if ((nextProps.component || nextProps.render && typeof nextProps.render === 'function') &&
@@ -131,7 +129,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       converArray2String(url) === converArray2String(nextProps.url) &&
       title === nextProps.title &&
       rootId === nextProps.rootId &&
-      useShadow === nextProps.useShadow &&
       cssLoading === nextState.cssLoading &&
       showComponent === nextState.showComponent
     ) {
@@ -143,14 +140,13 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   }
 
   componentDidUpdate(prevProps) {
-    const { path, url, title, rootId, useShadow } = this.props;
+    const { path, url, title, rootId } = this.props;
 
     if (
       converArray2String(path) !== converArray2String(prevProps.path) ||
       converArray2String(url) !== converArray2String(prevProps.url) ||
       title !== prevProps.title ||
-      rootId !== prevProps.rootId ||
-      useShadow !== prevProps.useShadow
+      rootId !== prevProps.rootId
     ) {
       this.renderChild();
     }
@@ -181,7 +177,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
    * Load assets and render sub-application
    */
   renderChild = (): void => {
-    const { rootId, useShadow, component, render } = this.props;
+    const { rootId, component, render } = this.props;
 
     // cache prev app asset before load next app
     if (this.prevAppConfig && this.prevAppConfig.cache) {
@@ -206,21 +202,14 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     // reCreate rootElement to remove sub-application instance,
     // rootElement is created for render sub-application
-    let rootElement: any = this.reCreateElementInBase(rootId);
-
-    // prevent duplicate creation of shadowRoot
-    if (useShadow && !rootElement.shadowRoot) {
-      rootElement = rootElement.attachShadow
-        ? rootElement.attachShadow({ mode: 'open', delegatesFocus: false })
-        : (rootElement as any).createShadowRoot();
-    }
+    const rootElement: HTMLElement = this.reCreateElementInBase(rootId);
 
     setCache('root', rootElement);
 
-    this.loadNextApp(useShadow);
+    this.loadNextApp();
   };
 
-  loadNextApp = async (useShadow?: boolean) => {
+  loadNextApp = async () => {
     const {
       url,
       entry,
@@ -279,7 +268,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         appAssets = getUrlAssets(urls);
       }
       if (appAssets && !cached) {
-        await appendAssets(appAssets, useShadow);
+        await appendAssets(appAssets);
       }
       // if AppRoute is unmounted, or current app is not the latest app, cancel all operations
       if (this.unmounted || this.prevAppConfig !== currentAppConfig) return;
