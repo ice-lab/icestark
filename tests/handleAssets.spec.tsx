@@ -1,9 +1,9 @@
 import '@testing-library/jest-dom/extend-expect';
 import { FetchMock } from 'jest-fetch-mock';
 import {
-  loadEntry,
+  getEntryAssets,
   appendAssets,
-  appendLink,
+  appendCSS,
   emptyAssets,
   recordAssets,
   AssetTypeEnum,
@@ -12,7 +12,8 @@ import {
   getUrl,
   getComment,
   processHtml,
-  appendScript,
+  appendExternalScript,
+  getUrlAssets,
 } from '../src/util/handleAssets';
 import { setCache } from '../src/util/cache';
 
@@ -116,7 +117,7 @@ describe('processHtml', () => {
   test('processHtml', () => {
     expect(processHtml(undefined).html).toBe('');
 
-    const { html, assets } = processHtml(tempHTML);
+    const { html, assets: {jsList, cssList} } = processHtml(tempHTML);
 
     expect(html).not.toContain('<script src="//g.alicdn.com/p');
     expect(html).not.toContain('src="./');
@@ -132,42 +133,55 @@ describe('processHtml', () => {
     expect(html).not.toContain('href="/index.css"');
     expect(html).not.toContain('href="index.css"');
 
-    expect(assets.length).toBe(7);
+    expect(jsList.length).toBe(7);
+    expect(cssList.length).toBe(4);
 
     // script external assets
-    expect(assets[1].type).toBe(AssetTypeEnum.EXTERNAL);
-    expect(assets[1].content).not.toContain('<script');
-    expect(assets[1].content).not.toContain('</script');
-    expect(assets[1].content).toContain('//g.alicdn.com/1.1/test/index.js');
-    expect(assets[2].type).toBe(AssetTypeEnum.EXTERNAL);
-    expect(assets[2].content).toContain('/test.js');
-    expect(assets[5].type).toBe(AssetTypeEnum.EXTERNAL);
-    expect(assets[5].content).toContain('//g.alicdn.com/test.min.js');
+    expect(jsList[1].type).toBe(AssetTypeEnum.EXTERNAL);
+    expect(jsList[1].content).not.toContain('<script');
+    expect(jsList[1].content).not.toContain('</script');
+    expect(jsList[1].content).toContain('//g.alicdn.com/1.1/test/index.js');
+    expect(jsList[2].type).toBe(AssetTypeEnum.EXTERNAL);
+    expect(jsList[2].content).toContain('/test.js');
+    expect(jsList[5].type).toBe(AssetTypeEnum.EXTERNAL);
+    expect(jsList[5].content).toContain('//g.alicdn.com/test.min.js');
 
 
     // script inline assets
-    expect(assets[0].type).toBe(AssetTypeEnum.INLINE);
-    expect(assets[0].content).toContain('console.log()');
-    expect(assets[4].type).toBe(AssetTypeEnum.INLINE);
-    expect(assets[4].content).toContain('window.g_config');
+    expect(jsList[0].type).toBe(AssetTypeEnum.INLINE);
+    expect(jsList[0].content).toContain('console.log()');
+    expect(jsList[4].type).toBe(AssetTypeEnum.INLINE);
+    expect(jsList[4].content).toContain('window.g_config');
 
   });
 });
 
-describe('appendScript', () => {
-  test('appendScript -> inline', () => {
+describe('appendExternalScript', () => {
+  test('appendExternalScript -> inline', () => {
     const div = document.createElement('div');
 
     expect.assertions(1);
     return expect(
-      appendScript(div, { type: AssetTypeEnum.INLINE, content: 'console.log()' }),
+      appendExternalScript(div, { type: AssetTypeEnum.INLINE, content: 'console.log()' }, 'js-id'),
     ).resolves.toBeUndefined();
   });
 
-  test('appendScript -> EXTERNAL success', () => {
+  test('appendExternalScript -> url', () => {
     const div = document.createElement('div');
 
-    appendScript(div, { type: AssetTypeEnum.EXTERNAL, content: '/test.js' })
+    appendExternalScript(div, '/test.js', 'js-id')
+      .then(() => expect(div.innerHTML).toContain('/test.js'))
+      .catch(() => {});
+    const scripts = div.getElementsByTagName('script');
+    for (let i = 0; i < scripts.length; i++) {
+      scripts[i].dispatchEvent(new Event('load'));
+    }
+  });
+
+  test('appendExternalScript -> EXTERNAL success', () => {
+    const div = document.createElement('div');
+
+    appendExternalScript(div, { type: AssetTypeEnum.EXTERNAL, content: '/test.js' }, 'js-id')
       .then(() => expect(div.innerHTML).toContain('/test.js'))
       .catch(() => {});
 
@@ -177,10 +191,10 @@ describe('appendScript', () => {
     }
   });
 
-  test('appendScript -> EXTERNAL error', () => {
+  test('appendExternalScript -> EXTERNAL error', () => {
     const div = document.createElement('div');
 
-    appendScript(div, { type: AssetTypeEnum.EXTERNAL, content: '/test.js' }).catch(err =>
+    appendExternalScript(div, { type: AssetTypeEnum.EXTERNAL, content: '/test.js' }, 'js-id').catch(err =>
       expect(err.message).toContain('js asset loaded error: '),
     );
 
@@ -189,7 +203,7 @@ describe('appendScript', () => {
   });
 });
 
-describe('loadEntry', () => {
+describe('getEntryAssets', () => {
   beforeEach(() => {
     (fetch as FetchMock).resetMocks();
   });
@@ -199,25 +213,31 @@ describe('loadEntry', () => {
     warn: warnMockFn,
   };
 
-  test('loadEntry', () => {
+  test('getEntryAssets innerHTML', () => {
     const fetchMockFn = jest.fn();
 
     const div = document.createElement('div');
     const htmlUrl = '//icestark.com';
-    loadEntry(
-      div,
-      htmlUrl,
-      url =>
+    getEntryAssets({
+      root: div,
+      entry: htmlUrl,
+      assetsCacheKey: '/test',
+      fetch: (url) => (
         new Promise(resolve => {
           resolve(fetchMockFn(url));
-        }),
-    )
+        })
+      ),
+    })
       .then(() => {
         expect(fetchMockFn).toBeCalledWith(htmlUrl);
       })
       .catch(() => {});
 
-    loadEntry(div, htmlUrl, null)
+    getEntryAssets({
+      root: div,
+      entry: htmlUrl,
+      assetsCacheKey: '/test',
+    })
       .then(() => {
         expect(warnMockFn).toBeCalledWith(
           'Current environment does not support window.fetch, please use custom fetch',
@@ -226,7 +246,7 @@ describe('loadEntry', () => {
       .catch(() => {});
   });
 
-  test('loadEntry -> success', () => {
+  test('getEntryAssets -> success', async () => {
     const htmlContent =
       '<html>' +
       '  <head>' +
@@ -262,26 +282,61 @@ describe('loadEntry', () => {
 
     const div = document.createElement('div');
 
-    loadEntry(div, '//icestark.com')
-      .then(() => {
-        const html = div.innerHTML;
-        expect(html).toContain(processHtml(htmlContent).html);
+    const assets = await getEntryAssets({
+      root: div,
+      entry: '//icestark.com',
+      assetsCacheKey: '/test',
+    });
+    
+    expect(assets).toStrictEqual({
+      cssList: [
+        {
+          content: 'http://icestark.com/index.css',
+          type: AssetTypeEnum.EXTERNAL,
+        },
+        {
+          content: 'http://icestark.com/test.css',
+          type: AssetTypeEnum.EXTERNAL,
+        },
+      ],
+      jsList: [
+        {
+          content: '      console.log()    ',
+          type: AssetTypeEnum.INLINE,
+        },
+        {
+          content: '//g.alicdn.com/1.1/test/index.js',
+          type: AssetTypeEnum.EXTERNAL,
+        },
+        {
+          content: 'http://icestark.com/test.js',
+          type: AssetTypeEnum.EXTERNAL,
+        },
+        {
+          content: 'http://icestark.com/test.min.js',
+          type: AssetTypeEnum.EXTERNAL,
+        },
+        {
+          content: 'http://icestark.com/index.js',
+          type: AssetTypeEnum.EXTERNAL,
+        },
+      ],
+    });
+    const html = div.innerHTML;
 
-        expect(html).not.toContain('src="//g.alicdn.com/1.1/test/index.js"');
-        expect(html).not.toContain('src="/test.js"');
-        expect(html).not.toContain('src="index.js"');
+    expect(html).not.toContain('src="//g.alicdn.com/1.1/test/index.js"');
+    expect(html).not.toContain('src="/test.js"');
+    expect(html).not.toContain('src="index.js"');
 
-        expect(html).toContain('<!--script /test.js replaced by @ice/stark-->');
-        expect(html).toContain('<!--script index.js replaced by @ice/stark-->');
+    expect(html).toContain('<!--script /test.js replaced by @ice/stark-->');
+    expect(html).toContain('<!--script index.js replaced by @ice/stark-->');
 
-        expect(html).toContain('<link rel="dns-prefetch" href="//g.alicdn.com" />');
-        expect(html).not.toContain('<link rel="stylesheet" href="/index.css');
-        expect(html).not.toContain('<link rel="stylesheet" href="test.css');
+    expect(html).toContain('href="//g.alicdn.com"');
+    expect(html).not.toContain('<link rel="stylesheet" href="/index.css');
+    expect(html).not.toContain('<link rel="stylesheet" href="test.css');
 
-        expect(html).toContain('<!--link /index.css processed by @ice/stark-->');
-        expect(html).toContain('<!--link test.css processed by @ice/stark-->');
-      })
-      .catch(() => {});
+    expect(html).toContain('<!--link /index.css processed by @ice/stark-->');
+    expect(html).toContain('<!--link test.css processed by @ice/stark-->');
 
     const scripts = div.getElementsByTagName('script');
     for (let i = 0; i < scripts.length; i++) {
@@ -289,13 +344,17 @@ describe('loadEntry', () => {
     }
   });
 
-  test('loadEntry -> error', () => {
+  test('getEntryAssets -> error', () => {
     const err = new Error('err');
     (fetch as FetchMock).mockRejectOnce(err);
 
     const div = document.createElement('div');
 
-    loadEntry(div, '//icestark.error.com').catch(() => {});
+    getEntryAssets({
+      root: div,
+      entry: '//icestark.error.com',
+      assetsCacheKey: '/test',
+    }).catch(() => {});
   });
 });
 
@@ -303,13 +362,13 @@ describe('loadEntry', () => {
 describe('appendAssets', () => {
   test('appendAssets basic', () => {
     emptyAssets(() => true, true);
-
+    const assets = getUrlAssets([
+      'http://icestark.com/js/index.js',
+      'http://icestark.com/css/index.css',
+      'http://icestark.com/js/test1.js',
+    ]);
     appendAssets(
-      [
-        'http://icestark.com/js/index.js',
-        'http://icestark.com/css/index.css',
-        'http://icestark.com/js/test1.js',
-      ],
+      assets,
     ).then(() => {
       const jsElement0 = document.getElementById('icestark-js-0');
       const jsElement1 = document.getElementById('icestark-js-1');
@@ -328,6 +387,18 @@ describe('appendAssets', () => {
 
       emptyAssets(() => true, true);
     });
+  });
+
+  test('appendAssets useShadow=true', () => {
+    setCache('root', document.getElementsByTagName('head')[0]);
+    const assets = getUrlAssets([
+      'http://icestark.com/js/index.js',
+      'http://icestark.com/css/index.css',
+      'http://icestark.com/js/test1.js',
+    ]);
+    appendAssets(
+      assets,
+    );
   });
 
   test('recordAssets', () => {
@@ -388,11 +459,11 @@ describe('appendAssets', () => {
   });
 });
 
-describe('appendLink', () => {
+describe('appendCSS', () => {
   test('appendLink -> success', () => {
     const div = document.createElement('div');
 
-    appendLink(div, '/test.css', 'icestark-css-0')
+    appendCSS(div, '/test.css', 'icestark-css-0')
       .then(() => {
         expect(div.innerHTML).toContain('id="icestark-css-0"');
         expect(div.innerHTML).toContain('/test.css');
@@ -405,6 +476,23 @@ describe('appendLink', () => {
     }
   });
 
+  test('appendCSS -> style', () => {
+    const div = document.createElement('div');
+    const style = '.test { color: #fff;}';
+    appendCSS(div, {
+      type: AssetTypeEnum.INLINE,
+      content: style,
+    }, 'icestark-css-0')
+      .then(() => {
+        expect(div.innerHTML).toContain('id="icestark-css-0"');
+        expect(div.innerHTML).toContain(style);
+      })
+      .catch(() => {});
+
+    const styles = div.getElementsByTagName('style');
+    expect(styles[0].innerHTML).toBe(style);
+  });
+
   test('appendLink -> error', () => {
     const errorMockFn = jest.fn();
     (global as any).console = {
@@ -413,7 +501,7 @@ describe('appendLink', () => {
 
     const div = document.createElement('div');
 
-    appendLink(div, '/test.css', 'icestark-css-0')
+    appendCSS(div, '/test.css', 'icestark-css-0')
       .then(() => {
         expect(div.innerHTML).toContain('id="icestark-css-0"');
         expect(div.innerHTML).toContain('/test.css');
