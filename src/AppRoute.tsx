@@ -317,7 +317,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
    * reset this.prevAppConfig
    */
   triggerPrevAppLeave = (): void => {
-    const { onAppLeave } = this.props;
+    const { onAppLeave, triggerLoading } = this.props;
 
     // trigger onAppLeave
     const prevAppConfig = this.prevAppConfig;
@@ -326,7 +326,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       if (typeof onAppLeave === 'function') onAppLeave(prevAppConfig);
       this.prevAppConfig = null;
     }
-
+    if (typeof triggerLoading === 'function') {
+      triggerLoading(false);
+    }
     callAppLeave();
   };
 
