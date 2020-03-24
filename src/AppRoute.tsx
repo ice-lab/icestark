@@ -327,6 +327,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       this.prevAppConfig = null;
     }
     if (typeof triggerLoading === 'function') {
+      // reset loading state when leave app
       triggerLoading(false);
     }
     callAppLeave();
