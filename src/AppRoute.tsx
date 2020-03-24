@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { AppHistory } from './appHistory';
 import renderComponent from './util/renderComponent';
-import { loadEntry, loadEntryContent, appendAssets, emptyAssets, cacheAssets } from './util/handleAssets';
+import { appendAssets, emptyAssets, cacheAssets, getEntryAssets, getUrlAssets } from './util/handleAssets';
 import { setCache, getCache } from './util/cache';
 import { callAppEnter, callAppLeave, cacheApp, isCached } from './util/appLifeCycle';
 import { callCapturedEventListeners } from './util/capturedListeners';
@@ -211,7 +211,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
   loadNextApp = async () => {
     const {
-      path,
       url,
       entry,
       entryContent,
@@ -222,11 +221,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       cache,
     } = this.props;
     const assetsCacheKey = this.getCacheKey();
-    let cached = false;
-    // cache is effective when setup urls
-    if (!entry && !entryContent && url) {
-      cached = cache && isCached(assetsCacheKey);
-    }
+    const cached = cache && isCached(assetsCacheKey);;
     // empty useless assets before loading
     emptyAssets(shouldAssetsRemove, !cached && assetsCacheKey);
 
@@ -257,18 +252,23 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     const currentAppConfig: AppConfig = this.triggerOnAppEnter();
 
     try {
-      if (entry) {
+      let appAssets = null;
+      if (entry || entryContent) {
         // entry for fetch -> process -> append
         const rootElement = getCache('root');
-        await loadEntry(rootElement, entry);
-      } else if (entryContent) {
-        // entryContent for process -> append
-        const rootElement = getCache('root');
-        const cachedKey = title || converArray2String(path);
-        await loadEntryContent(rootElement, entryContent, location.href, cachedKey);
-      } else if (!cached){
-        const assetsList = Array.isArray(url) ? url : [url];
-        await appendAssets(assetsList);
+        appAssets = await getEntryAssets({
+          root: rootElement,
+          entry,
+          href: location.href,
+          entryContent,
+          assetsCacheKey,
+        });
+      } else if (url){
+        const urls = Array.isArray(url) ? url : [url];
+        appAssets = getUrlAssets(urls);
+      }
+      if (appAssets && !cached) {
+        await appendAssets(appAssets);
       }
       // if AppRoute is unmounted, or current app is not the latest app, cancel all operations
       if (this.unmounted || this.prevAppConfig !== currentAppConfig) return;

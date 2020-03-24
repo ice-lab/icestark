@@ -8,7 +8,9 @@ const winFetch = window.fetch;
 const COMMENT_REGEX = /<!--.*?-->/g;
 const SCRIPT_REGEX = /<script\b[^>]*>([^<]*)<\/script>/gi;
 const SCRIPT_SRC_REGEX = /<script\b[^>]*src=['"]?([^'"]*)['"]?\b[^>]*>/gi;
+const STYLE_REGEX = /<style\b[^>]*>([^<]*)<\/style>/gi;
 const LINK_HREF_REGEX = /<link\b[^>]*href=['"]?([^'"]*)['"]?\b[^>]*>/gi;
+const CSS_REGEX = new RegExp([STYLE_REGEX, LINK_HREF_REGEX].map((reg) => reg.source).join('|'), 'gi');
 const STYLE_SHEET_REGEX = /rel=['"]stylesheet['"]/gi;
 
 export enum AssetTypeEnum {
@@ -28,7 +30,12 @@ export interface Asset {
 
 export interface ProcessedContent {
   html: string;
-  assets: Asset[];
+  assets: Assets;
+}
+
+export interface Assets {
+  jsList: Asset[];
+  cssList: Asset[];
 }
 
 export interface ParsedConfig {
@@ -37,22 +44,30 @@ export interface ParsedConfig {
 }
 
 /**
- * Create link element and append to root
+ * Create link/style element and append to root
  */
-export function appendLink(
+export function appendCSS(
   root: HTMLElement | ShadowRoot,
-  asset: string,
+  asset: string | Asset,
   id: string,
 ): Promise<string> {
   return new Promise<string>((resolve, reject) => {
-    if (!root) reject(new Error(`no root element for css assert: ${asset}`));
+    const { type, content } = (asset as Asset);
+    if (!root) reject(new Error(`no root element for css assert: ${content || asset}`));
+
+    if (type && type === AssetTypeEnum.INLINE) {
+      const styleElement: HTMLStyleElement = document.createElement('style');
+      styleElement.innerHTML = content;
+      root.appendChild(styleElement);
+      resolve();
+      return;
+    }
 
     const element: HTMLLinkElement = document.createElement('link');
-
     element.setAttribute(PREFIX, DYNAMIC);
     element.id = id;
     element.rel = 'stylesheet';
-    element.href = asset;
+    element.href = content || (asset as string);
 
     element.addEventListener(
       'error',
@@ -73,18 +88,25 @@ export function appendLink(
  */
 export function appendExternalScript(
   root: HTMLElement | ShadowRoot,
-  asset: string,
+  asset: string | Asset,
   id: string,
 ): Promise<string> {
   return new Promise<string>((resolve, reject) => {
-    if (!root) reject(new Error(`no root element for js assert: ${asset}`));
+    const { type, content } = (asset as Asset);
+    if (!root) reject(new Error(`no root element for js assert: ${content || asset}`));
 
     const element: HTMLScriptElement = document.createElement('script');
-
+    // inline script    
+    if (type && type  === AssetTypeEnum.INLINE) {
+      element.innerHTML = content;
+      root.appendChild(element);
+      resolve();
+      return;
+    }
     element.setAttribute(PREFIX, DYNAMIC);
     element.id = id;
     element.type = 'text/javascript';
-    element.src = asset;
+    element.src = content || (asset as string);
     element.async = false;
 
     element.addEventListener(
@@ -98,45 +120,50 @@ export function appendExternalScript(
   });
 }
 
-export function appendAllLink(
-  root: HTMLElement | ShadowRoot,
-  urlList: string[],
-): Promise<string[]> {
-  return Promise.all(
-    urlList.map((cssUrl, index) => appendLink(root, cssUrl, `${PREFIX}-css-${index}`)),
-  );
-}
+export function getUrlAssets(urls: string[]) {
+  const jsList = [];
+  const cssList = [];
 
-export function appendAllScriptWithOutInline(
-  root: HTMLElement,
-  urlList: string[],
-): Promise<string[]> {
-  return Promise.all(
-    urlList.map((jsUrl, index) => appendExternalScript(root, jsUrl, `${PREFIX}-js-${index}`)),
-  );
-}
-
-export async function appendAssets(assetsList: string[]) {
-  const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
-  const cssRoot: HTMLElement = document.getElementsByTagName('head')[0];
-
-  const jsList: string[] = [];
-  const cssList: string[] = [];
-
-  assetsList.forEach(url => {
+  urls.forEach(url => {
     // //icestark.com/index.css -> true
     // //icestark.com/index.css?timeSamp=1575443657834 -> true
     // //icestark.com/index.css?query=test.js -> false
     const isCss: boolean = IS_CSS_REGEX.test(url);
+    const assest: Asset = {
+      type: AssetTypeEnum.EXTERNAL,
+      content: url,
+    };
     if (isCss) {
-      cssList.push(url);
+      cssList.push(assest);
     } else {
-      jsList.push(url);
+      jsList.push(assest);
     }
   });
 
-  await appendAllLink(cssRoot, cssList);
-  await appendAllScriptWithOutInline(jsRoot, jsList);
+  return { jsList, cssList };
+}
+
+export async function appendAssets(assets: Assets) {
+  const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
+  const cssRoot: HTMLElement = document.getElementsByTagName('head')[0];
+
+  const { jsList, cssList } = assets;
+
+  // load css content
+  await Promise.all(
+    cssList.map((asset, index) => appendCSS(cssRoot, asset, `${PREFIX}-css-${index}`)),
+  );
+  const hasInlineScript = jsList.find((asset) => asset.type === AssetTypeEnum.INLINE);
+  if (hasInlineScript) {
+    // make sure js assets loaded in order if has inline scripts
+    await jsList.reduce((chain, asset, index) => {
+      return chain.then(() => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`));
+    }, Promise.resolve());
+  } else {
+    await Promise.all(
+      jsList.map((asset, index) => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`)),
+    );
+  }
 }
 
 export function parseUrl(entry: string): ParsedConfig {
@@ -187,24 +214,25 @@ export function getComment(tag: string, from: string, type: AssetCommentEnum): s
  * html -> { html: processedHtml, assets: processedAssets }
  */
 export function processHtml(html: string, entry?: string): ProcessedContent {
-  if (!html) return { html: '', assets: [] };
+  if (!html) return { html: '', assets: { cssList:[], jsList: []} };
 
-  const processedAssets = [];
-
+  const processedJSAssets = [];
+  const processedCSSAssets = [];
   const processedHtml = html
     .replace(COMMENT_REGEX, '')
-    .replace(SCRIPT_REGEX, (arg1, arg2) => {
-      if (!arg1.match(SCRIPT_SRC_REGEX)) {
-        processedAssets.push({
+    .replace(SCRIPT_REGEX, (...args) => {
+      const [matchStr, matchContent] = args;
+      if (!matchStr.match(SCRIPT_SRC_REGEX)) {
+        processedJSAssets.push({
           type: AssetTypeEnum.INLINE,
-          content: arg2,
+          content: matchContent,
         });
 
         return getComment('script', 'inline', AssetCommentEnum.REPLACED);
       } else {
-        return arg1.replace(SCRIPT_SRC_REGEX, (_, argSrc2) => {
+        return matchStr.replace(SCRIPT_SRC_REGEX, (_, argSrc2) => {
           const url = argSrc2.indexOf('//') >= 0 ? argSrc2 : getUrl(entry, argSrc2);
-          processedAssets.push({
+          processedJSAssets.push({
             type: AssetTypeEnum.EXTERNAL,
             content: url,
           });
@@ -213,97 +241,72 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
         });
       }
     })
-    .replace(LINK_HREF_REGEX, (arg1, arg2) => {
+    .replace(CSS_REGEX, (...args) => {
+      const [matchStr, matchStyle, matchLink] = args;
       // not stylesheet, return as it is
-      if (!arg1.match(STYLE_SHEET_REGEX)) {
-        return arg1;
+      if (matchStr.match(STYLE_SHEET_REGEX)) {
+        const url = matchLink.indexOf('//') >= 0 ? matchLink : getUrl(entry, matchLink);
+        processedCSSAssets.push({
+          type: AssetTypeEnum.EXTERNAL,
+          content: url,
+        });
+        return `${getComment('link', matchLink, AssetCommentEnum.PROCESSED)}`;
+      } else if (matchStyle){
+        processedCSSAssets.push({
+          type: AssetTypeEnum.INLINE,
+          content: matchStyle,
+        });
+        return getComment('style', 'inline', AssetCommentEnum.REPLACED);
       }
-
-      const url = arg2.indexOf('//') >= 0 ? arg2 : getUrl(entry, arg2);
-      return `${getComment('link', arg2, AssetCommentEnum.PROCESSED)}   ${arg1.replace(arg2, url)}`;
+      return matchStr;
     });
-
   return {
     html: processedHtml,
-    assets: processedAssets,
+    assets: {
+      jsList: processedJSAssets,
+      cssList: processedCSSAssets,
+    },
   };
-}
-
-/**
- * Append external/inline script to root, need to be appended in order
- */
-export function appendScript(root: HTMLElement | ShadowRoot, asset: Asset): Promise<string> {
-  const { type, content } = asset;
-
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-
-    // inline script
-    if (type === AssetTypeEnum.INLINE) {
-      script.innerHTML = content;
-      root.appendChild(script);
-      resolve();
-      return;
-    }
-
-    // external script
-    script.setAttribute('src', content);
-    script.addEventListener('load', () => resolve(), false);
-    script.addEventListener('error', () => reject(new Error(`js asset loaded error: ${content}`)));
-    root.appendChild(script);
-  });
-}
-
-export async function appendProcessedContent(
-  root: HTMLElement | ShadowRoot,
-  processedContent: ProcessedContent,
-) {
-  const { html: processedHtml, assets } = processedContent;
-
-  root.innerHTML = processedHtml;
-
-  // make sure assets loaded in order
-  await Array.prototype.slice.apply(assets).reduce((chain, asset) => {
-    return chain.then(() => appendScript(root, asset));
-  }, Promise.resolve());
 }
 
 const cachedProcessedContent: object = {};
 
-export async function loadEntry(
-  root: HTMLElement | ShadowRoot,
-  entry: string,
-  fetch: (input: RequestInfo, init?: RequestInit) => Promise<Response> = winFetch,
-) {
-  if (cachedProcessedContent[entry]) {
-    await appendProcessedContent(root, cachedProcessedContent[entry]);
-    return;
+export async function getEntryAssets({
+  root,
+  entry,
+  entryContent,
+  assetsCacheKey,
+  href,
+  fetch = winFetch,
+}: {
+  root: HTMLElement | ShadowRoot;
+  entry?: string;
+  entryContent?: string;
+  assetsCacheKey: string;
+  href?: string;
+  fetch?: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
+  assertsCached?: boolean;
+}) {
+  let cachedContent = cachedProcessedContent[assetsCacheKey];
+  if (!cachedContent) {
+    let htmlContent = entryContent;
+    if (!htmlContent && entry) {
+      if (!fetch) {
+        warn('Current environment does not support window.fetch, please use custom fetch');
+        throw new Error(
+          `fetch ${entry} error: Current environment does not support window.fetch, please use custom fetch`,
+        );
+      }
+
+      const res = await fetch(entry);
+      htmlContent = await res.text();
+    }
+    cachedContent = processHtml(htmlContent, entry || href);
+    cachedProcessedContent[assetsCacheKey] = cachedContent;
   }
 
-  if (!fetch) {
-    warn('Current environment does not support window.fetch, please use custom fetch');
-    throw new Error(
-      `fetch ${entry} error: Current environment does not support window.fetch, please use custom fetch`,
-    );
-  }
-
-  const res = await fetch(entry);
-  const html = await res.text();
-
-  cachedProcessedContent[entry] = processHtml(html, entry);
-  await appendProcessedContent(root, cachedProcessedContent[entry]);
-}
-
-export async function loadEntryContent(
-  root: HTMLElement | ShadowRoot,
-  entryContent: string,
-  href: string,
-  cachedKey: string,
-) {
-  if (!cachedProcessedContent[cachedKey]) {
-    cachedProcessedContent[cachedKey] = processHtml(entryContent, href);
-  }
-  await appendProcessedContent(root, cachedProcessedContent[cachedKey]);
+  root.innerHTML = cachedContent.html;
+  return cachedContent.assets;
 }
 
 export function getAssetsNode(): (HTMLStyleElement|HTMLScriptElement)[] {
