@@ -45,6 +45,10 @@ interface OriginalStateFunction {
   (state: any, title: string, url?: string): void;
 }
 
+interface OriginalPopstateFunction {
+  (event: any): void;
+}
+
 function addLeadingSlash(path: string): string {
   return path.charAt(0) === '/' ? path : `/${path}`;
 }
@@ -63,6 +67,8 @@ function getHashPath(hash: string = '/'): string {
   const searchIndex = hashPath.indexOf('?');
   return searchIndex === -1 ? hashPath : hashPath.substr(0, searchIndex);
 }
+
+const originalPopstate = (window.onpopstate as OriginalPopstateFunction);
 
 export default class AppRouter extends React.Component<AppRouterProps, AppRouterState> {
   private originalPush: OriginalStateFunction = window.history.pushState;
@@ -92,14 +98,14 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       showLoading: false,
     };
     recordAssets();
+  }
+
+  componentDidMount() {
     // render NotFoundComponent eventListener
     window.addEventListener('icestark:not-found', this.triggerNotFound);
 
     this.hijackHistory();
     this.hijackEventListener();
-  }
-
-  componentDidMount() {
     this.handleRouteChange(location.href, 'init');
   }
 
@@ -107,8 +113,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     this.unmounted = true;
     const { shouldAssetsRemove } = this.props;
 
-    this.unHijackHistory();
     this.unHijackEventListener();
+    this.unHijackHistory();
 
     window.removeEventListener('icestark:not-found', this.triggerNotFound);
     // empty all assets
@@ -166,7 +172,12 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       this.handleStateChange(state, url, 'replaceState');
     };
 
-    window.addEventListener('popstate', this.handlePopState, false);
+    window.onpopstate = (event) => {
+      this.handlePopState(event);
+      if (originalPopstate) {
+        originalPopstate(event);
+      }
+    };
   };
 
   /**
@@ -176,7 +187,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     window.history.pushState = this.originalPush;
     window.history.replaceState = this.originalReplace;
 
-    window.removeEventListener('popstate', this.handlePopState, false);
+    window.onpopstate = originalPopstate;
   };
 
   /**
