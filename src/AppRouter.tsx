@@ -45,10 +45,6 @@ interface OriginalStateFunction {
   (state: any, title: string, url?: string): void;
 }
 
-interface OriginalPopstateFunction {
-  (event: any): void;
-}
-
 function addLeadingSlash(path: string): string {
   return path.charAt(0) === '/' ? path : `/${path}`;
 }
