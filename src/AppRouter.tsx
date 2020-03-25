@@ -68,16 +68,12 @@ function getHashPath(hash: string = '/'): string {
   return searchIndex === -1 ? hashPath : hashPath.substr(0, searchIndex);
 }
 
-const originalPopstate = (window.onpopstate as OriginalPopstateFunction);
+const originalPush: OriginalStateFunction = window.history.pushState;
+const originalReplace: OriginalStateFunction = window.history.replaceState;
+const originalAddEventListener = window.addEventListener;
+const originalRemoveEventListener = window.removeEventListener;
 
 export default class AppRouter extends React.Component<AppRouterProps, AppRouterState> {
-  private originalPush: OriginalStateFunction = window.history.pushState;
-
-  private originalReplace: OriginalStateFunction = window.history.replaceState;
-
-  private originalAddEventListener = window.addEventListener;
-
-  private originalRemoveEventListener = window.removeEventListener;
 
   private unmounted: boolean = false;
 
@@ -163,31 +159,26 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    */
   hijackHistory = (): void => {
     window.history.pushState = (state: any, title: string, url?: string, ...rest) => {
-      this.originalPush.apply(window.history, [state, title, url, ...rest]);
+      originalPush.apply(window.history, [state, title, url, ...rest]);
       this.handleStateChange(state, url, 'pushState');
     };
 
     window.history.replaceState = (state: any, title: string, url?: string, ...rest) => {
-      this.originalReplace.apply(window.history, [state, title, url, ...rest]);
+      originalReplace.apply(window.history, [state, title, url, ...rest]);
       this.handleStateChange(state, url, 'replaceState');
     };
 
-    window.onpopstate = (event) => {
-      this.handlePopState(event);
-      if (originalPopstate) {
-        originalPopstate(event);
-      }
-    };
+    window.addEventListener('popstate', this.handlePopState, false);
   };
 
   /**
    * Unhijack window.history
    */
   unHijackHistory = (): void => {
-    window.history.pushState = this.originalPush;
-    window.history.replaceState = this.originalReplace;
+    window.history.pushState = originalPush;
+    window.history.replaceState = originalReplace;
 
-    window.onpopstate = originalPopstate;
+    window.removeEventListener('popstate', this.handlePopState, false);
   };
 
   /**
@@ -204,7 +195,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
         return;
       }
 
-      return this.originalAddEventListener.apply(window, [eventName, fn, ...rest]);
+      return originalAddEventListener.apply(window, [eventName, fn, ...rest]);
     };
 
     window.removeEventListener = (eventName, listenerFn, ...rest) => {
@@ -213,7 +204,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
         return;
       }
 
-      return this.originalRemoveEventListener.apply(window, [eventName, listenerFn, ...rest]);
+      return originalRemoveEventListener.apply(window, [eventName, listenerFn, ...rest]);
     };
   };
 
@@ -221,8 +212,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    * Unhijack eventListener
    */
   unHijackEventListener = (): void => {
-    window.addEventListener = this.originalAddEventListener;
-    window.removeEventListener = this.originalRemoveEventListener;
+    window.addEventListener = originalAddEventListener;
+    window.removeEventListener = originalRemoveEventListener;
   };
 
   /**
