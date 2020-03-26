@@ -64,14 +64,12 @@ function getHashPath(hash: string = '/'): string {
   return searchIndex === -1 ? hashPath : hashPath.substr(0, searchIndex);
 }
 
+const originalPush: OriginalStateFunction = window.history.pushState;
+const originalReplace: OriginalStateFunction = window.history.replaceState;
+const originalAddEventListener = window.addEventListener;
+const originalRemoveEventListener = window.removeEventListener;
+
 export default class AppRouter extends React.Component<AppRouterProps, AppRouterState> {
-  private originalPush: OriginalStateFunction = window.history.pushState;
-
-  private originalReplace: OriginalStateFunction = window.history.replaceState;
-
-  private originalAddEventListener = window.addEventListener;
-
-  private originalRemoveEventListener = window.removeEventListener;
 
   private unmounted: boolean = false;
 
@@ -92,14 +90,14 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       showLoading: false,
     };
     recordAssets();
+  }
+
+  componentDidMount() {
     // render NotFoundComponent eventListener
     window.addEventListener('icestark:not-found', this.triggerNotFound);
 
     this.hijackHistory();
     this.hijackEventListener();
-  }
-
-  componentDidMount() {
     this.handleRouteChange(location.href, 'init');
   }
 
@@ -107,8 +105,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     this.unmounted = true;
     const { shouldAssetsRemove } = this.props;
 
-    this.unHijackHistory();
     this.unHijackEventListener();
+    this.unHijackHistory();
 
     window.removeEventListener('icestark:not-found', this.triggerNotFound);
     // empty all assets
@@ -157,12 +155,12 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    */
   hijackHistory = (): void => {
     window.history.pushState = (state: any, title: string, url?: string, ...rest) => {
-      this.originalPush.apply(window.history, [state, title, url, ...rest]);
+      originalPush.apply(window.history, [state, title, url, ...rest]);
       this.handleStateChange(state, url, 'pushState');
     };
 
     window.history.replaceState = (state: any, title: string, url?: string, ...rest) => {
-      this.originalReplace.apply(window.history, [state, title, url, ...rest]);
+      originalReplace.apply(window.history, [state, title, url, ...rest]);
       this.handleStateChange(state, url, 'replaceState');
     };
 
@@ -173,8 +171,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    * Unhijack window.history
    */
   unHijackHistory = (): void => {
-    window.history.pushState = this.originalPush;
-    window.history.replaceState = this.originalReplace;
+    window.history.pushState = originalPush;
+    window.history.replaceState = originalReplace;
 
     window.removeEventListener('popstate', this.handlePopState, false);
   };
@@ -193,7 +191,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
         return;
       }
 
-      return this.originalAddEventListener.apply(window, [eventName, fn, ...rest]);
+      return originalAddEventListener.apply(window, [eventName, fn, ...rest]);
     };
 
     window.removeEventListener = (eventName, listenerFn, ...rest) => {
@@ -202,7 +200,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
         return;
       }
 
-      return this.originalRemoveEventListener.apply(window, [eventName, listenerFn, ...rest]);
+      return originalRemoveEventListener.apply(window, [eventName, listenerFn, ...rest]);
     };
   };
 
@@ -210,8 +208,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    * Unhijack eventListener
    */
   unHijackEventListener = (): void => {
-    window.addEventListener = this.originalAddEventListener;
-    window.removeEventListener = this.originalRemoveEventListener;
+    window.addEventListener = originalAddEventListener;
+    window.removeEventListener = originalRemoveEventListener;
   };
 
   /**
