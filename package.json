@@ -1,6 +1,6 @@
 {
   "name": "@ice/stark",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "description": "Icestark is a JavaScript library for multiple projects, Ice workbench solution.",
   "scripts": {
     "build": "rm -rf lib && tsc",
