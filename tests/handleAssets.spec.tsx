@@ -260,6 +260,7 @@ describe('getEntryAssets', () => {
       '  <body>' +
       '    <script>' +
       '      console.log()' +
+      '      console.log(1 > 2);console.log(1 < 2)' +
       '    </script>' +
       '    <script' +
       '      async' +
@@ -301,7 +302,7 @@ describe('getEntryAssets', () => {
       ],
       jsList: [
         {
-          content: '      console.log()    ',
+          content: '      console.log()      console.log(1 > 2);console.log(1 < 2)    ',
           type: AssetTypeEnum.INLINE,
         },
         {

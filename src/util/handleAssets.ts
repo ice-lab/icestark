@@ -6,7 +6,7 @@ const getCacheRoot = () => getCache('root');
 
 const winFetch = window.fetch;
 const COMMENT_REGEX = /<!--.*?-->/g;
-const SCRIPT_REGEX = /<script\b[^>]*>([^<]*)<\/script>/gi;
+const SCRIPT_REGEX = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
 const SCRIPT_SRC_REGEX = /<script\b[^>]*src=['"]?([^'"]*)['"]?\b[^>]*>/gi;
 const STYLE_REGEX = /<style\b[^>]*>([^<]*)<\/style>/gi;
 const LINK_HREF_REGEX = /<link\b[^>]*href=['"]?([^'"]*)['"]?\b[^>]*>/gi;
