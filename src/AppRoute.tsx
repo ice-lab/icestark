@@ -5,6 +5,7 @@ import { appendAssets, emptyAssets, cacheAssets, getEntryAssets, getUrlAssets } 
 import { setCache, getCache } from './util/cache';
 import { callAppEnter, callAppLeave, cacheApp, isCached } from './util/appLifeCycle';
 import { callCapturedEventListeners } from './util/capturedListeners';
+import Sandbox from './util/sandbox';
 
 import isEqual = require('lodash.isequal');
 
@@ -39,6 +40,7 @@ export interface AppRouteComponentProps<Params extends { [K in keyof Params]?: s
 
 // from user config
 export interface AppConfig {
+  sandbox?: boolean;
   title?: string;
   hashType?: boolean | hashType;
   basename?: string;
@@ -100,6 +102,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
   private myRefBase: HTMLDivElement = null;
 
+  private appSandbox: Sandbox;
+
   private unmounted: boolean = false;
 
   private prevAppConfig: AppConfig = null;
@@ -108,6 +112,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     exact: false,
     strict: false,
     sensitive: false,
+    sandbox: false,
     rootId: 'icestarkNode',
     shouldAssetsRemove: () => true,
   };
@@ -219,7 +224,11 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       triggerError,
       shouldAssetsRemove,
       cache,
+      sandbox,
     } = this.props;
+    if (sandbox) {
+      this.appSandbox = new Sandbox();
+    }
     const assetsCacheKey = this.getCacheKey();
     const cached = cache && isCached(assetsCacheKey);;
     // empty useless assets before loading
@@ -268,7 +277,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         appAssets = getUrlAssets(urls);
       }
       if (appAssets && !cached) {
-        await appendAssets(appAssets);
+        await appendAssets(appAssets, this.appSandbox);
       }
       // if AppRoute is unmounted, or current app is not the latest app, cancel all operations
       if (this.unmounted || this.prevAppConfig !== currentAppConfig) return;
@@ -307,7 +316,10 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
    */
   triggerPrevAppLeave = (): void => {
     const { onAppLeave, triggerLoading } = this.props;
-
+    if (this.appSandbox) {
+      this.appSandbox.clear();
+      this.appSandbox = null;
+    }
     // trigger onAppLeave
     const prevAppConfig = this.prevAppConfig;
 
