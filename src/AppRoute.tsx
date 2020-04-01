@@ -163,7 +163,10 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     emptyAssets(shouldAssetsRemove, !cache && this.getCacheKey());
     this.triggerPrevAppLeave();
     this.unmounted = true;
-    clearCacheRoot();
+    if (clearCacheRoot) {
+      clearCacheRoot();
+    }
+    
   }
 
   /**
