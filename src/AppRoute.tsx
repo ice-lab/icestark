@@ -66,6 +66,7 @@ export interface AppRouteProps extends AppConfig {
     element?: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement,
   ) => boolean;
   componentProps?: AppRouteComponentProps;
+  clearCacheRoot?: () => void;
 }
 
 export function converArray2String(list: string | string[]) {
@@ -154,7 +155,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
   componentWillUnmount() {
     // Empty useless assets before unmount
-    const { shouldAssetsRemove, cache } = this.props;
+    const { shouldAssetsRemove, cache, clearCacheRoot } = this.props;
     if (cache) {
       cacheAssets(this.getCacheKey());
     }
@@ -162,6 +163,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     emptyAssets(shouldAssetsRemove, !cache && this.getCacheKey());
     this.triggerPrevAppLeave();
     this.unmounted = true;
+    clearCacheRoot();
   }
 
   /**
