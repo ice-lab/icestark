@@ -156,7 +156,7 @@ function fetchScripts(jsList: Asset[], fetch: Fetch = winFetch) {
     }
   }));
 }
-export async function appendAssets(assets: Assets, sandbox: Sandbox) {
+export async function appendAssets(assets: Assets, sandbox?: Sandbox) {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
   const cssRoot: HTMLElement = document.getElementsByTagName('head')[0];
 
