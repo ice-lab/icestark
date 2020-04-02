@@ -4,7 +4,6 @@ const originalRemoveEventListener = window.removeEventListener;
 const originalSetInerval = window.setInterval;
 const originalSetTimeout = window.setTimeout;
 
-
 // check window contructor function， like Object Array
 function isConstructor(fn) {
   const functionStr = fn.toString();
@@ -97,7 +96,8 @@ export default class Sandbox {
       // run code with sandbox
       code(this.sandbox);
     } catch (error) {
-      console.log(error);
+      console.error(`error occurs when execute script in sandbox: ${error}`);
+      throw error;
     }
   }
 
