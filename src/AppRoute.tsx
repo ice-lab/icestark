@@ -66,6 +66,7 @@ export interface AppRouteProps extends AppConfig {
     element?: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement,
   ) => boolean;
   componentProps?: AppRouteComponentProps;
+  clearCacheRoot?: () => void;
 }
 
 export function converArray2String(list: string | string[]) {
@@ -154,7 +155,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
   componentWillUnmount() {
     // Empty useless assets before unmount
-    const { shouldAssetsRemove, cache } = this.props;
+    const { shouldAssetsRemove, cache, clearCacheRoot } = this.props;
     if (cache) {
       cacheAssets(this.getCacheKey());
     }
@@ -162,6 +163,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     emptyAssets(shouldAssetsRemove, !cache && this.getCacheKey());
     this.triggerPrevAppLeave();
     this.unmounted = true;
+    clearCacheRoot();
   }
 
   /**
@@ -234,7 +236,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       const { cssLoading } = this.state;
       if (loading !== cssLoading) {
         this.setState({ cssLoading: loading, showComponent: false });
-        typeof triggerLoading === 'function' && triggerLoading(loading);
+        triggerLoading(loading);
       }
     };
 
@@ -243,7 +245,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       if (this.unmounted) return;
 
       handleLoading(false);
-      typeof triggerError === 'function' && triggerError(errMessage);
+      triggerError(errMessage);
     };
 
     // trigger loading before handleAssets
@@ -315,10 +317,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       if (typeof onAppLeave === 'function') onAppLeave(prevAppConfig);
       this.prevAppConfig = null;
     }
-    if (typeof triggerLoading === 'function') {
-      // reset loading state when leave app
-      triggerLoading(false);
-    }
+    // reset loading state when leave app
+    triggerLoading(false);
     callAppLeave();
   };
 
