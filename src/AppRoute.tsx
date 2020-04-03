@@ -163,10 +163,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     emptyAssets(shouldAssetsRemove, !cache && this.getCacheKey());
     this.triggerPrevAppLeave();
     this.unmounted = true;
-    if (clearCacheRoot) {
-      clearCacheRoot();
-    }
-    
+    clearCacheRoot();
   }
 
   /**
@@ -239,7 +236,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       const { cssLoading } = this.state;
       if (loading !== cssLoading) {
         this.setState({ cssLoading: loading, showComponent: false });
-        typeof triggerLoading === 'function' && triggerLoading(loading);
+        triggerLoading(loading);
       }
     };
 
@@ -248,7 +245,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       if (this.unmounted) return;
 
       handleLoading(false);
-      typeof triggerError === 'function' && triggerError(errMessage);
+      triggerError(errMessage);
     };
 
     // trigger loading before handleAssets
@@ -320,10 +317,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       if (typeof onAppLeave === 'function') onAppLeave(prevAppConfig);
       this.prevAppConfig = null;
     }
-    if (typeof triggerLoading === 'function') {
-      // reset loading state when leave app
-      triggerLoading(false);
-    }
+    // reset loading state when leave app
+    triggerLoading(false);
     callAppLeave();
   };
 
