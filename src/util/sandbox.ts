@@ -1,9 +1,3 @@
-const originalWindow = window;
-const originalAddEventListener = window.addEventListener;
-const originalRemoveEventListener = window.removeEventListener;
-const originalSetInerval = window.setInterval;
-const originalSetTimeout = window.setTimeout;
-
 // check window contructor function， like Object Array
 function isConstructor(fn) {
   const functionStr = fn.toString();
@@ -29,7 +23,16 @@ export default class Sandbox {
   private intervalIds: number[] = [];
 
   constructor() {
+    this.sandbox = null;
+  }
+
+  createProxySandbox() {
     const proxyWindow = Object.create(null) as Window;
+    const originalWindow = window;
+    const originalAddEventListener = window.addEventListener;
+    const originalRemoveEventListener = window.removeEventListener;
+    const originalSetInerval = window.setInterval;
+    const originalSetTimeout = window.setTimeout;
     // hijack addEventListener
     proxyWindow.addEventListener = (eventName, fn, ...rest) => {
       const listeners = this.eventListeners[eventName] || [];
@@ -56,11 +59,7 @@ export default class Sandbox {
       this.intervalIds.push(intervalId);
       return intervalId;
     };
-    // create sandbox
-    this.createProxySandbox(proxyWindow);
-  }
 
-  createProxySandbox(proxyWindow) {
     const sandbox = new Proxy(proxyWindow, {
       set(target: Window, p: PropertyKey, value: any): boolean {
         // eslint-disable-next-line no-param-reassign
@@ -89,6 +88,10 @@ export default class Sandbox {
   }
 
   execScriptInSandbox(script: string): void {
+    // create sandbox before exec script
+    if (!this.sandbox) {
+      this.createProxySandbox();
+    }
     try {
       const execScript = `with (sandbox) {;${script}\n}`;
       // eslint-disable-next-line no-new-func
@@ -105,11 +108,11 @@ export default class Sandbox {
     // remove event listeners 
     Object.keys(this.eventListeners).forEach((eventName) => {
       (this.eventListeners[eventName] || []).forEach(listener => {
-        originalWindow.removeEventListener(eventName, listener);
+        window.removeEventListener(eventName, listener);
       });
     });
     // clear timeout
-    this.timeoutIds.forEach(id => originalWindow.clearTimeout(id));
-    this.intervalIds.forEach(id => originalWindow.clearInterval(id));
+    this.timeoutIds.forEach(id => window.clearTimeout(id));
+    this.intervalIds.forEach(id => window.clearInterval(id));
   }
 }
