@@ -40,7 +40,7 @@ export interface AppRouteComponentProps<Params extends { [K in keyof Params]?: s
 
 // from user config
 export interface AppConfig {
-  sandbox?: boolean;
+  sandbox?: boolean | Sandbox;
   title?: string;
   hashType?: boolean | hashType;
   basename?: string;
@@ -227,10 +227,11 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       sandbox,
     } = this.props;
     if (sandbox) {
-      this.appSandbox = new Sandbox();
+      // eslint-disable-next-line new-cap
+      this.appSandbox = typeof sandbox === 'boolean' ? new Sandbox() : sandbox;
     }
     const assetsCacheKey = this.getCacheKey();
-    const cached = cache && isCached(assetsCacheKey);;
+    const cached = cache && isCached(assetsCacheKey);
     // empty useless assets before loading
     emptyAssets(shouldAssetsRemove, !cached && assetsCacheKey);
 

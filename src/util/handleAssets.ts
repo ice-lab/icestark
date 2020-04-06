@@ -152,6 +152,7 @@ function fetchScripts(jsList: Asset[], fetch: Fetch = winFetch) {
     if (type === AssetTypeEnum.INLINE) {
       return content;
     } else {
+      // content will script url when type is AssetTypeEnum.EXTERNAL
       return cachedScriptsContent[content] || (cachedScriptsContent[content] = fetch(content).then(res => res.text()));
     }
   }));
@@ -167,7 +168,7 @@ export async function appendAssets(assets: Assets, sandbox?: Sandbox) {
     cssList.map((asset, index) => appendCSS(cssRoot, asset, `${PREFIX}-css-${index}`)),
   );
   
-  if (sandbox) {
+  if (sandbox && !sandbox.sandboxDisabled) {
     const jsContents = await fetchScripts(jsList);
     // excute code by order
     jsContents.forEach(script => {

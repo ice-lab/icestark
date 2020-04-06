@@ -13,6 +13,11 @@ function isConstructor(fn) {
   );
 }
 
+// get function from original window, such as scrollTo, parseInt
+function isWindowFunction(func) {
+  return func && typeof func === 'function' && !isConstructor(func);
+}
+
 export default class Sandbox {
   private sandbox: Window;
 
@@ -22,7 +27,13 @@ export default class Sandbox {
 
   private intervalIds: number[] = [];
 
+  public sandboxDisabled: boolean;
+
   constructor() {
+    if (!window.Proxy) {
+      console.warn('proxy sanbox is not support by current browser');
+      this.sandboxDisabled = true;
+    }
     this.sandbox = null;
   }
 
@@ -73,12 +84,20 @@ export default class Sandbox {
         if (['top', 'window', 'self', 'globalThis'].includes(p as string)) {
           return sandbox;
         }
-        const value = target[p] || originalWindow[p];
-        if (value && typeof value === 'function' && !target[p] && !isConstructor(value)) {
-          // fix Illegal invocation
-          return value.bind(originalWindow);
+        const targetValue = target[p];
+        if (targetValue) {
+          // case of addEventListener, removeEventListener, setTimeout, setInterval setted in sandbox
+          return targetValue;
+        } else {
+          const value = originalWindow[p];
+          if (isWindowFunction(value)) {
+            // fix Illegal invocation
+            return value.bind(originalWindow);
+          } else {
+            // case of window.clientWidth、new window.Object()
+            return value;
+          }
         }
-        return value;
       },
       has(target: Window, p: PropertyKey): boolean {
         return p in target || p in originalWindow;
@@ -88,31 +107,35 @@ export default class Sandbox {
   }
 
   execScriptInSandbox(script: string): void {
-    // create sandbox before exec script
-    if (!this.sandbox) {
-      this.createProxySandbox();
-    }
-    try {
-      const execScript = `with (sandbox) {;${script}\n}`;
-      // eslint-disable-next-line no-new-func
-      const code = new Function('sandbox', execScript);
-      // run code with sandbox
-      code(this.sandbox);
-    } catch (error) {
-      console.error(`error occurs when execute script in sandbox: ${error}`);
-      throw error;
+    if (!this.sandboxDisabled) {
+      // create sandbox before exec script
+      if (!this.sandbox) {
+        this.createProxySandbox();
+      }
+      try {
+        const execScript = `with (sandbox) {;${script}\n}`;
+        // eslint-disable-next-line no-new-func
+        const code = new Function('sandbox', execScript);
+        // run code with sandbox
+        code(this.sandbox);
+      } catch (error) {
+        console.error(`error occurs when execute script in sandbox: ${error}`);
+        throw error;
+      }
     }
   }
 
   clear() {
-    // remove event listeners 
-    Object.keys(this.eventListeners).forEach((eventName) => {
-      (this.eventListeners[eventName] || []).forEach(listener => {
-        window.removeEventListener(eventName, listener);
+    if (!this.sandboxDisabled) { 
+      // remove event listeners 
+      Object.keys(this.eventListeners).forEach((eventName) => {
+        (this.eventListeners[eventName] || []).forEach(listener => {
+          window.removeEventListener(eventName, listener);
+        });
       });
-    });
-    // clear timeout
-    this.timeoutIds.forEach(id => window.clearTimeout(id));
-    this.intervalIds.forEach(id => window.clearInterval(id));
+      // clear timeout
+      this.timeoutIds.forEach(id => window.clearTimeout(id));
+      this.intervalIds.forEach(id => window.clearInterval(id));
+    }
   }
 }
