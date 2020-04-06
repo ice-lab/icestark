@@ -1,11 +1,11 @@
 import * as React from 'react';
+import Sandbox from '@ice/sandbox';
 import { AppHistory } from './appHistory';
 import renderComponent from './util/renderComponent';
 import { appendAssets, emptyAssets, cacheAssets, getEntryAssets, getUrlAssets } from './util/handleAssets';
 import { setCache, getCache } from './util/cache';
 import { callAppEnter, callAppLeave, cacheApp, isCached } from './util/appLifeCycle';
 import { callCapturedEventListeners } from './util/capturedListeners';
-import Sandbox from './util/sandbox';
 
 import isEqual = require('lodash.isequal');
 

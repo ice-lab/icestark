@@ -1,4 +1,4 @@
-import Sandbox from '../src/util/sandbox';
+import Sandbox from '../src/index';
 
 describe('sandbox', () => {
   const sandbox = new Sandbox();

@@ -1,6 +1,6 @@
+import Sandbox from '@ice/sandbox';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { warn, error } from './message';
-import Sandbox from './sandbox';
 
 const winFetch = window.fetch;
 const COMMENT_REGEX = /<!--.*?-->/g;
