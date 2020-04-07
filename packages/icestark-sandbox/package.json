@@ -1,0 +1,41 @@
+{
+  "name": "@ice/sandbox",
+  "version": "1.0.0",
+  "description": "sandbox for execute scripts",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "rm -rf lib && tsc",
+    "watch": "tsc -w",
+    "prepublishOnly": "npm run test && npm run build",
+    "test": "NODE_ENV=unittest jest",
+    "coverage": "codecov"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ice-lab/icestark.git"
+  },
+  "keywords": [
+    "sandbox",
+    "icestark"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ice-lab/icestark/issues"
+  },
+  "homepage": "https://github.com/ice-lab/icestark#readme",
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "devDependencies": {
+    "jest": "^25.2.7",
+    "ts-jest": "^25.3.1",
+    "typescript": "^3.8.3"
+  },
+  "jest": {
+    "coverageDirectory": "./coverage/",
+    "collectCoverage": true,
+    "preset": "ts-jest"
+  }
+}
