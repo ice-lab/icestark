@@ -1,6 +1,6 @@
 {
   "name": "@ice/sandbox",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "sandbox for execute scripts",
   "main": "lib/index.js",
   "scripts": {
@@ -29,6 +29,7 @@
     }
   },
   "devDependencies": {
+    "codecov": "^3.4.0",
     "jest": "^25.2.7",
     "ts-jest": "^25.3.1",
     "typescript": "^3.8.3"
