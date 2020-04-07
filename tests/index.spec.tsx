@@ -12,6 +12,12 @@ describe('AppRouter', () => {
     (fetch as FetchMock).resetMocks();
   });
 
+  const defaultProps = {
+    triggerError: ()=>{},
+    triggerLoading: ()=>{},
+    clearCacheRoot: ()=>{},
+  };
+
   test('render the AppRouter', () => {
     const props = {
       onRouteChange: jest.fn(),
@@ -221,7 +227,7 @@ describe('AppRouter', () => {
   test('test for Only AppRoute Component', () => {
     window.history.pushState({}, 'test', '/');
     const { container, unmount } = render(
-      <AppRoute path="/" component={<div data-testid="icestarkTest">test component</div>} />,
+      <AppRoute {...defaultProps} path="/" component={<div data-testid="icestarkTest">test component</div>} />,
     );
     expect(container.innerHTML).toContain('test component');
     unmount();
@@ -230,7 +236,7 @@ describe('AppRouter', () => {
   test('test for Only AppRoute Render', () => {
     window.history.pushState({}, 'test', '/');
     const { container, unmount } = render(
-      <AppRoute path="/" render={() => <div data-testid="icestarkTest">test render</div>} />,
+      <AppRoute {...defaultProps} path="/" render={() => <div data-testid="icestarkTest">test render</div>} />,
     );
     expect(container.innerHTML).toContain('test render');
     unmount();

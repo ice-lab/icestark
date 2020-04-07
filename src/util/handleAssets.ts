@@ -1,12 +1,10 @@
+import Sandbox from '@ice/sandbox';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
-import { getCache } from './cache';
 import { warn, error } from './message';
-
-const getCacheRoot = () => getCache('root');
 
 const winFetch = window.fetch;
 const COMMENT_REGEX = /<!--.*?-->/g;
-const SCRIPT_REGEX = /<script\b[^>]*>([^<]*)<\/script>/gi;
+const SCRIPT_REGEX = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
 const SCRIPT_SRC_REGEX = /<script\b[^>]*src=['"]?([^'"]*)['"]?\b[^>]*>/gi;
 const STYLE_REGEX = /<style\b[^>]*>([^<]*)<\/style>/gi;
 const LINK_HREF_REGEX = /<link\b[^>]*href=['"]?([^'"]*)['"]?\b[^>]*>/gi;
@@ -41,6 +39,10 @@ export interface Assets {
 export interface ParsedConfig {
   origin: string;
   pathname: string;
+}
+
+export interface Fetch {
+  (input: RequestInfo, init?: RequestInit): Promise<Response>;
 }
 
 /**
@@ -143,7 +145,19 @@ export function getUrlAssets(urls: string[]) {
   return { jsList, cssList };
 }
 
-export async function appendAssets(assets: Assets) {
+const cachedScriptsContent: object = {};
+function fetchScripts(jsList: Asset[], fetch: Fetch = winFetch) {
+  return Promise.all(jsList.map((asset) => {
+    const { type, content } = asset;
+    if (type === AssetTypeEnum.INLINE) {
+      return content;
+    } else {
+      // content will script url when type is AssetTypeEnum.EXTERNAL
+      return cachedScriptsContent[content] || (cachedScriptsContent[content] = fetch(content).then(res => res.text()));
+    }
+  }));
+}
+export async function appendAssets(assets: Assets, sandbox?: Sandbox) {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
   const cssRoot: HTMLElement = document.getElementsByTagName('head')[0];
 
@@ -153,16 +167,25 @@ export async function appendAssets(assets: Assets) {
   await Promise.all(
     cssList.map((asset, index) => appendCSS(cssRoot, asset, `${PREFIX}-css-${index}`)),
   );
-  const hasInlineScript = jsList.find((asset) => asset.type === AssetTypeEnum.INLINE);
-  if (hasInlineScript) {
-    // make sure js assets loaded in order if has inline scripts
-    await jsList.reduce((chain, asset, index) => {
-      return chain.then(() => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`));
-    }, Promise.resolve());
+  
+  if (sandbox && !sandbox.sandboxDisabled) {
+    const jsContents = await fetchScripts(jsList);
+    // excute code by order
+    jsContents.forEach(script => {
+      sandbox.execScriptInSandbox(script);
+    });
   } else {
-    await Promise.all(
-      jsList.map((asset, index) => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`)),
-    );
+    const hasInlineScript = jsList.find((asset) => asset.type === AssetTypeEnum.INLINE);
+    if (hasInlineScript) {
+      // make sure js assets loaded in order if has inline scripts
+      await jsList.reduce((chain, asset, index) => {
+        return chain.then(() => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`));
+      }, Promise.resolve());
+    } else {
+      await Promise.all(
+        jsList.map((asset, index) => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`)),
+      );
+    }
   }
 }
 
@@ -284,7 +307,7 @@ export async function getEntryAssets({
   entryContent?: string;
   assetsCacheKey: string;
   href?: string;
-  fetch?: (input: RequestInfo, init?: RequestInit) => Promise<Response>;
+  fetch?: Fetch;
   assertsCached?: boolean;
 }) {
   let cachedContent = cachedProcessedContent[assetsCacheKey];

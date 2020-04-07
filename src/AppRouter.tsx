@@ -111,7 +111,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     window.removeEventListener('icestark:not-found', this.triggerNotFound);
     // empty all assets
     emptyAssets(shouldAssetsRemove, true);
-    setCache('root', null);
   }
 
   /**
@@ -251,6 +250,14 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     this.props.onRouteChange(pathname, query, hash, type);
   };
 
+  clearCacheRoot = () => {
+    // child unmout is called after parent unmount
+    // if AppRouter is unmounted remove cache root
+    if (this.unmounted) {
+      setCache('root', null);
+    }
+  }
+
   render() {
     const {
       NotFoundComponent,
@@ -310,6 +317,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
         onAppLeave,
         triggerLoading: this.triggerLoading,
         triggerError: this.triggerError,
+        clearCacheRoot: this.clearCacheRoot,
         shouldAssetsRemove,
         componentProps,
       };
