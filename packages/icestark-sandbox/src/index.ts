@@ -31,7 +31,7 @@ export default class Sandbox {
 
   constructor() {
     if (!window.Proxy) {
-      console.warn('proxy sanbox is not support by current browser');
+      console.warn('proxy sandbox is not support by current browser');
       this.sandboxDisabled = true;
     }
     this.sandbox = null;

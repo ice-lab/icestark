@@ -26,7 +26,7 @@ sandbox.clear();
 
 ## Inspiration
 
-`@ice/sandbox` is inspired by [tc39/proposal-realms](https://github.com/tc39/proposal-realms), [realms-shim](https://github.com/Agoric/realms-shim) and [qiankun sanbox](https://github.com/umijs/qiankun).
+`@ice/sandbox` is inspired by [tc39/proposal-realms](https://github.com/tc39/proposal-realms), [realms-shim](https://github.com/Agoric/realms-shim) and [qiankun sandbox](https://github.com/umijs/qiankun).
 
 ## Contributors
 

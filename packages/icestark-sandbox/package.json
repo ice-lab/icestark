@@ -1,7 +1,7 @@
 {
   "name": "@ice/sandbox",
   "version": "1.0.0",
-  "description": "sanbox for execute scripts",
+  "description": "sandbox for execute scripts",
   "main": "lib/index.js",
   "scripts": {
     "build": "rm -rf lib && tsc",
@@ -15,7 +15,7 @@
     "url": "git+https://github.com/ice-lab/icestark.git"
   },
   "keywords": [
-    "sanbox",
+    "sandbox",
     "icestark"
   ],
   "license": "MIT",
