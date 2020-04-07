@@ -7,46 +7,21 @@
 ## Installation
 
 ```bash
-npm install @ice/sandbox --save
+$ npm install @ice/sandbox --save
 ```
 
 ## Usage
 
-### Basic
+```js
+import Sandbox from '@ice/sandbox';
 
-`@ice/sandbox` is built-in solution for icestark
+const sandbox = new Sandbox();
 
-```jsx
-<AppRoute
-  sandbox
-  path="/seller"
-  title="商家平台"
-  url={[
-    '//unpkg.com/icestark-child-seller/build/js/index.js',
-    '//unpkg.com/icestark-child-seller/build/css/index.css',
-  ]}
-/>
-```
+// execute scripts in sandbox
+sandbox.execScriptInSandbox('window.a = 1;console.log(window.a);');
 
-### Custom sanbox
-
-custom sanbox for app by pass sandbox as follow defination.
-
-```jsx
-class CustomSanbox {
-  constructor() {}
-  // execute scripts in custom sandbox
-  execScriptInSandbox(script) {}
-  // clear side effects added by sandbox
-  clear() {}
-}
-
-// pass custom sandbox to AppRoute
-const sandbox = new CustomSanbox();
-<AppRoute
-  sanbox={sandbox}
-  ...
-/>
+// clear side effects added by sandbox, such as addEventListener, setInterval
+sandbox.clear();
 ```
 
 ## Inspiration
