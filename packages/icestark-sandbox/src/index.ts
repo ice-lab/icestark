@@ -27,6 +27,10 @@ export default class Sandbox {
 
   private intervalIds: number[] = [];
 
+  private propertyAdded = {};
+
+  private originalValues = {};
+
   public sandboxDisabled: boolean;
 
   constructor() {
@@ -38,6 +42,7 @@ export default class Sandbox {
   }
 
   createProxySandbox() {
+    const { propertyAdded, originalValues } = this;
     const proxyWindow = Object.create(null) as Window;
     const originalWindow = window;
     const originalAddEventListener = window.addEventListener;
@@ -73,8 +78,17 @@ export default class Sandbox {
 
     const sandbox = new Proxy(proxyWindow, {
       set(target: Window, p: PropertyKey, value: any): boolean {
-        // eslint-disable-next-line no-param-reassign
-        target[p] = value;
+        // eslint-disable-next-line no-prototype-builtins
+        if (!originalWindow.hasOwnProperty(p)) {
+          // recorde value added in sandbox
+          propertyAdded[p] = value;
+        // eslint-disable-next-line no-prototype-builtins
+        } else if (!originalValues.hasOwnProperty(p)) {
+          // if it is already been setted in orignal window, record it's original value
+          originalValues[p] = originalWindow[p];
+        }
+        // set new value to original window in case of jsonp, js bundle which will be execute outof sandbox
+        originalWindow[p] = value;
         return true;
       },
       get(target: Window, p: PropertyKey): any {
@@ -136,6 +150,13 @@ export default class Sandbox {
       // clear timeout
       this.timeoutIds.forEach(id => window.clearTimeout(id));
       this.intervalIds.forEach(id => window.clearInterval(id));
+      // recover original values
+      Object.keys(this.originalValues).forEach(key => {
+        window[key] = this.originalValues[key];
+      });
+      Object.keys(this.propertyAdded).forEach(key => {
+        delete window[key];
+      });
     }
   }
 }
