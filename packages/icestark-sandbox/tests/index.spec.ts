@@ -6,6 +6,8 @@ describe('sandbox', () => {
 
   test('execute script in sandbox', () => {
     sandbox.execScriptInSandbox('window.a = 1;expect(window.a).toBe(1);');
+    expect((window as any).a).toBe(1);
+    sandbox.clear();
     expect((window as any).a).toBe(undefined);
   });
 
