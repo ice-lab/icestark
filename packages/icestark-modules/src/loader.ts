@@ -31,8 +31,8 @@ export default class ModuleLoader {
 
   execModule(starkModule: StarkModule) {
     this.load(starkModule).then((source) => {
-      // check sandbox
       noteGlobalProps();
+      // check sandbox
       if ((window as any)?.proxyWindow?.execScriptInSandbox) {
         (window as any).proxyWindow.execScriptInSandbox(source);
       } else {
