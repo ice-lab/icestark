@@ -1,0 +1,39 @@
+{
+  "name": "@ice/stark-modules",
+  "version": "1.0.0",
+  "description": "toolkit for load standard micro-module",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "NODE_ENV=unittest jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ice-lab/icestark.git"
+  },
+  "keywords": [
+    "modules",
+    "icestark"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ice-lab/icestark/issues"
+  },
+  "homepage": "https://github.com/ice-lab/icestark#readme",
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "devDependencies": {
+    "codecov": "^3.4.0",
+    "jest": "^25.2.7",
+    "ts-jest": "^25.3.1",
+    "typescript": "^3.8.3"
+  },
+  "jest": {
+    "coverageDirectory": "./coverage/",
+    "collectCoverage": true,
+    "preset": "ts-jest"
+  }
+}
