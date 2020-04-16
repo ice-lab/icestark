@@ -2,6 +2,7 @@ import * as React from 'react';
 import Sandbox from '@ice/sandbox';
 import { AppHistory } from './appHistory';
 import renderComponent from './util/renderComponent';
+import renderModules, { StarkModule }  from '@ice/stark-modules';
 import { appendAssets, emptyAssets, cacheAssets, getEntryAssets, getUrlAssets } from './util/handleAssets';
 import { setCache, getCache } from './util/cache';
 import { callAppEnter, callAppLeave, cacheApp, isCached } from './util/appLifeCycle';
@@ -12,6 +13,7 @@ import isEqual = require('lodash.isequal');
 interface AppRouteState {
   cssLoading: boolean;
   showComponent: boolean;
+  modules: StarkModule[];
 }
 
 // "slash" - hashes like #/ and #/sunshine/lollipops
@@ -55,6 +57,7 @@ export interface AppConfig {
   component?: React.ReactElement;
   render?: (props?: AppRouteComponentProps) => React.ReactElement;
   cache?: boolean;
+  modules?: StarkModule[];
 }
 
 // from AppRouter
@@ -99,6 +102,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   state = {
     cssLoading: false,
     showComponent: false,
+    modules: [],
   };
 
   private myRefBase: HTMLDivElement = null;
@@ -282,6 +286,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       if (appAssets && !cached) {
         await appendAssets(appAssets, this.appSandbox);
       }
+
       // if AppRoute is unmounted, or current app is not the latest app, cancel all operations
       if (this.unmounted || this.prevAppConfig !== currentAppConfig) return;
       if (cache) {
@@ -353,11 +358,15 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   render() {
-    const { component, render, componentProps } = this.props;
+    const { component, render, componentProps, modules } = this.props;
     const { cssLoading, showComponent } = this.state;
 
     if (component) {
       return showComponent ? renderComponent(component, componentProps) : null;
+    }
+    
+    if (modules) {
+      return renderModules(modules, render, componentProps);
     }
 
     if (render && typeof render === 'function') {
