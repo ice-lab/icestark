@@ -36,7 +36,7 @@ export default class ModuleLoader {
       noteGlobalProps();
       // check sandbox
       if ((window as any)?.proxyWindow?.execScriptInSandbox) {
-        (window as any)?.proxyWindow.execScriptInSandbox(source);
+        (window as any).proxyWindow.execScriptInSandbox(source);
       } else {
         // https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/eval
         // eslint-disable-next-line no-eval

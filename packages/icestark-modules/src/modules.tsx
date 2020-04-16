@@ -5,6 +5,7 @@ import ModuleLoader, { StarkModule } from './loader';
 
 const { useEffect, useRef } = React;
 let globalModules = [];
+let importModules = {};
 
 if (!(window as any)?.proxyWindow) {
   window.proxyWindow = new Sandbox();
@@ -83,13 +84,19 @@ export const getModules = function () {
  * mount module function
  */
 export const mountModule = async (targetModule: StarkModule, targetNode: HTMLElement, props: any = {}) => {
-  const module = await moduleLoader.execModule(targetModule);
-  const mount = module.mount || defaultMount;
+  const { name } = targetModule;
+
+  if (!importModules[name]) {
+    importModules[name] = await moduleLoader.execModule(targetModule);
+  }
+
+  const module = importModules[name];
+  const mount = targetModule.mount || module.mount || defaultMount;
   const component = module.default || module;
 
   // clear proxyWindow
-  if ((window as any)?.proxyWindow?.clear) {
-    (window as any)?.proxyWindow?.clear();
+  if (window?.proxyWindow?.clear) {
+    window.proxyWindow.clear();
   }
 
   return mount(component, targetNode, props);
@@ -99,8 +106,10 @@ export const mountModule = async (targetModule: StarkModule, targetNode: HTMLEle
  * unmount module function
  */
 export const unmoutModule = (targetModule: StarkModule, targetNode: HTMLElement) => {
-  const mount = targetModule.unmount || defaultUnmount;
-  return mount(targetNode);
+  const { name } = targetModule;
+  const module = importModules[name];
+  const unmount = targetModule.unmount || module.unmount || defaultUnmount;
+  return unmount(targetNode);
 };
 
 /**
