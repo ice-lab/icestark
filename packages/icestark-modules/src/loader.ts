@@ -3,6 +3,8 @@ import { getGlobalProp, noteGlobalProps } from './global';
 export interface StarkModule {
   name: string;
   url: string;
+  mount?: (Component: any, targetNode: HTMLElement, props?: any) => void;
+  unmount?: (targetNode: HTMLElement) => void;
 };
 
 export interface ImportTask {
@@ -30,18 +32,18 @@ export default class ModuleLoader {
   }
 
   execModule(starkModule: StarkModule) {
-    this.load(starkModule).then((source) => {
+    return this.load(starkModule).then((source) => {
       noteGlobalProps();
       // check sandbox
       if ((window as any)?.proxyWindow?.execScriptInSandbox) {
-        (window as any).proxyWindow.execScriptInSandbox(source);
+        (window as any)?.proxyWindow.execScriptInSandbox(source);
       } else {
         // https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/eval
         // eslint-disable-next-line no-eval
         (0, eval)(source);
       }
       const libraryExport = getGlobalProp();
-      return (window as any).proxyWindow[libraryExport] || {};
+      return (window as any)[libraryExport] || {};
     });
   }
 };
