@@ -3,7 +3,7 @@ import * as ReactDOM from 'react-dom';
 import Sandbox from '@ice/sandbox';
 import ModuleLoader, { StarkModule } from './loader';
 
-const { useEffect, useRef } = React;
+const { createRef } = React;
 let globalModules = [];
 let importModules = {};
 
@@ -44,33 +44,73 @@ export function renderComponent(Component: any, props = {}): React.ReactElement 
   );
 }
 
+interface MicroModuleState {
+  renderNodeList: React.RefObject<HTMLDivElement>[];
+}
+
 /**
  * default render compoent, mount all modules
  */
-export const MicroModule = function (componentProps: any) {
-  const modules = getModules();
-  const renderNodeList: React.MutableRefObject<HTMLDivElement>[] = modules.map(() => useRef(null));
+export class MicroModule extends React.Component<any, MicroModuleState> {
+  modules = [];
 
-  useEffect(() => {
-    const unmountFn = modules.map((module, index) => {
-      // get ref current node
+  constructor(props) {
+    super(props);
+    this.state = {
+      renderNodeList: this.getRefs(),
+    };
+  }
+
+  componentDidMount() {
+    this.mountModules();
+  }
+
+  componentDidUpdate(prevProps, preState) {
+    if (prevProps.modules !== this.props.modules) {
+      this.setState({
+        renderNodeList: this.getRefs(),
+      });
+    }
+    if (preState.renderNodeList !== this.state.renderNodeList) {
+      this.mountModules();
+    }
+  }
+
+  componentWillUnmount() {
+    const { renderNodeList } = this.state;
+
+    this.modules.map((module, index) => {
       const renderNode = renderNodeList[index].current;
+      unmoutModule(module, renderNode);
+    });
+  }
+
+  getRefs() {
+    this.modules = getModules();
+    return this.modules.map((): React.RefObject<HTMLDivElement> => createRef());
+  }
+
+  mountModules() {
+    this.modules.map((module, index) => {
+      // get ref current node
+      const renderNode = this.state.renderNodeList[index].current;
 
       // mount module
-      mountModule(module, renderNode, componentProps);
-      return () => unmoutModule(module, renderNode);
+      mountModule(module, renderNode, this.props);
     });
+  }
 
-    return () => {
-      unmountFn.forEach(fn => fn());
-    };
-  }, []);
+  render() {
+    const { renderNodeList } = this.state;
 
-  return (<div>
-    {renderNodeList.map((node, index) => (
-      <div key={modules[index].name || index} ref={node} id={modules[index].name} />
-    ))}
-  </div>);
+    return (<div>
+      {renderNodeList.map((node, index) => (
+        <div key={this.modules[index].name || index} ref={node} id={this.modules[index].name} />
+      ))}
+    </div>);
+  }
+
+
 };
 
 /**
