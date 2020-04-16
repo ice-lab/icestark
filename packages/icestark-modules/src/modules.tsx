@@ -3,7 +3,6 @@ import * as ReactDOM from 'react-dom';
 import Sandbox from '@ice/sandbox';
 import ModuleLoader, { StarkModule } from './loader';
 
-const { createRef } = React;
 let globalModules = [];
 let importModules = {};
 
@@ -44,56 +43,43 @@ export function renderComponent(Component: any, props = {}): React.ReactElement 
   );
 }
 
-interface MicroModuleState {
-  renderNodeList: React.RefObject<HTMLDivElement>[];
-}
-
 /**
  * default render compoent, mount all modules
  */
-export class MicroModule extends React.Component<any, MicroModuleState> {
+export class MicroModule extends React.Component<any, {}> {
   modules = [];
+  nodeRefs = {};
 
   constructor(props) {
     super(props);
-    this.state = {
-      renderNodeList: this.getRefs(),
-    };
   }
 
   componentDidMount() {
+    this.modules = getModules();
     this.mountModules();
   }
 
-  componentDidUpdate(prevProps, preState) {
+  componentDidUpdate(prevProps) {
     if (prevProps.modules !== this.props.modules) {
-      this.setState({
-        renderNodeList: this.getRefs(),
-      });
-    }
-    if (preState.renderNodeList !== this.state.renderNodeList) {
+      this.modules = getModules();
       this.mountModules();
     }
   }
 
   componentWillUnmount() {
-    const { renderNodeList } = this.state;
+    const { nodeRefs } = this;
 
-    this.modules.map((module, index) => {
-      const renderNode = renderNodeList[index].current;
+    this.modules.map(module => {
+      const { name } = module;
+      const renderNode = nodeRefs[name];
       unmoutModule(module, renderNode);
     });
   }
 
-  getRefs() {
-    this.modules = getModules();
-    return this.modules.map((): React.RefObject<HTMLDivElement> => createRef());
-  }
-
   mountModules() {
-    this.modules.map((module, index) => {
-      // get ref current node
-      const renderNode = this.state.renderNodeList[index].current;
+    this.modules.map(module => {
+      // get ref node
+      const renderNode = this.nodeRefs[module.name];
 
       // mount module
       mountModule(module, renderNode, this.props);
@@ -101,11 +87,11 @@ export class MicroModule extends React.Component<any, MicroModuleState> {
   }
 
   render() {
-    const { renderNodeList } = this.state;
+    const modules = getModules();
 
     return (<div>
-      {renderNodeList.map((node, index) => (
-        <div key={this.modules[index].name || index} ref={node} id={this.modules[index].name} />
+      {modules.map(({ name }, index) => (
+        <div key={name || index} ref={ref => this.nodeRefs[name] = ref} id={name} />
       ))}
     </div>);
   }
