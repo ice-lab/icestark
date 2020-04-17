@@ -4,19 +4,9 @@ import Sandbox from '@ice/sandbox';
 import ModuleLoader, { StarkModule } from './loader';
 
 let globalModules = [];
-let importModules = {};
-
-if (!(window as any)?.proxyWindow) {
-  window.proxyWindow = new Sandbox();
-}
+const importModules = {};
 
 export const moduleLoader = new ModuleLoader();
-
-declare global {
-  interface Window {
-    proxyWindow?: Sandbox;
-  }
-}
 
 /**
  * support react module render
@@ -109,21 +99,19 @@ export const getModules = function () {
 /**
  * mount module function
  */
-export const mountModule = async (targetModule: StarkModule, targetNode: HTMLElement, props: any = {}) => {
+export const mountModule = async (targetModule: StarkModule, targetNode: HTMLElement, props: any = {}, sandbox: boolean | Sandbox) => {
   const { name } = targetModule;
-
+  let moduleSandbox = null;
   if (!importModules[name]) {
-    importModules[name] = await moduleLoader.execModule(targetModule);
+    if (sandbox) {
+      moduleSandbox = typeof sandbox === 'boolean' ? new Sandbox({}) : sandbox;
+    }
+    importModules[name] = await moduleLoader.execModule(targetModule, moduleSandbox);
   }
 
   const module = importModules[name];
   const mount = targetModule.mount || module.mount || defaultMount;
   const component = module.default || module;
-
-  // clear proxyWindow
-  if (window?.proxyWindow?.clear) {
-    window.proxyWindow.clear();
-  }
 
   return mount(component, targetNode, props);
 };

@@ -1,8 +1,8 @@
 import * as React from 'react';
-import Sandbox from '@ice/sandbox';
+import Sandbox, { SandboxProps } from '@ice/sandbox';
+import renderModules, { StarkModule }  from '@ice/stark-modules';
 import { AppHistory } from './appHistory';
 import renderComponent from './util/renderComponent';
-import renderModules, { StarkModule }  from '@ice/stark-modules';
 import { appendAssets, emptyAssets, cacheAssets, getEntryAssets, getUrlAssets } from './util/handleAssets';
 import { setCache, getCache } from './util/cache';
 import { callAppEnter, callAppLeave, cacheApp, isCached } from './util/appLifeCycle';
@@ -13,7 +13,6 @@ import isEqual = require('lodash.isequal');
 interface AppRouteState {
   cssLoading: boolean;
   showComponent: boolean;
-  modules: StarkModule[];
 }
 
 // "slash" - hashes like #/ and #/sunshine/lollipops
@@ -39,10 +38,10 @@ export interface AppRouteComponentProps<Params extends { [K in keyof Params]?: s
   location: Location;
   history: AppHistory;
 }
-
+class CustomSandbox extends Sandbox {}
 // from user config
 export interface AppConfig {
-  sandbox?: boolean | Sandbox;
+  sandbox?: boolean | SandboxProps | CustomSandbox;
   title?: string;
   hashType?: boolean | hashType;
   basename?: string;
@@ -102,7 +101,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   state = {
     cssLoading: false,
     showComponent: false,
-    modules: [],
   };
 
   private myRefBase: HTMLDivElement = null;
@@ -233,8 +231,12 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       sandbox,
     } = this.props;
     if (sandbox) {
-      // eslint-disable-next-line new-cap
-      this.appSandbox = typeof sandbox === 'boolean' ? new Sandbox() : sandbox;
+      if ((sandbox as Sandbox).execScriptInSandbox) {
+        this.appSandbox = sandbox as Sandbox;
+      } else {
+        const sandboxProps = typeof sandbox === 'boolean' ? {} : (sandbox as SandboxProps);
+        this.appSandbox = new Sandbox(sandboxProps);
+      }
     }
     const assetsCacheKey = this.getCacheKey();
     const cached = cache && isCached(assetsCacheKey);
