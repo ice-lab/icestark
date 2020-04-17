@@ -38,10 +38,10 @@ export interface AppRouteComponentProps<Params extends { [K in keyof Params]?: s
   location: Location;
   history: AppHistory;
 }
-class CustomSandbox extends Sandbox {}
+
 // from user config
 export interface AppConfig {
-  sandbox?: boolean | SandboxProps | CustomSandbox;
+  sandbox?: boolean | SandboxProps | Sandbox;
   title?: string;
   hashType?: boolean | hashType;
   basename?: string;
