@@ -17,6 +17,7 @@ export function renderComponent(Component: any, props = {}): React.ReactElement 
   return React.isValidElement(Component) ? (
     React.cloneElement(Component, props)
   ) : (
+    // eslint-disable-next-line react/jsx-filename-extension
     <Component {...props} />
   );
 }
@@ -28,6 +29,7 @@ const defaultMount = (Component: any, targetNode: HTMLElement, props?: any) => {
   console.warn('Please set mount, try run react mount function');
   try {
     ReactDOM.render(renderComponent(Component, props), targetNode);
+  // eslint-disable-next-line no-empty
   } catch(err) {}
 };
 
@@ -38,6 +40,7 @@ const defaultUnmount = (targetNode: HTMLElement) => {
   console.warn('Please set unmount, try run react unmount function');
   try {
     ReactDOM.unmountComponentAtNode(targetNode);
+  // eslint-disable-next-line no-empty
   } catch(err) {}
 };
 
@@ -56,46 +59,6 @@ function createSandbox(sandbox: ISandbox) {
 }
 
 /**
- * default render compoent, mount all modules
- */
-export class MicroModule extends React.Component<any, {}> {
-  mountModule = null;
-  mountNode = null;
-
-  constructor(props) {
-    super(props);
-  }
-
-  componentDidMount() {
-    this.mountModules();
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.modules !== this.props.modules || prevProps.name !== this.props.name) {
-      this.mountModules();
-    }
-  }
-
-  componentWillUnmount() {
-    unmoutModule(this.mountModule, this.mountNode);
-  }
-
-  mountModules() {
-    this.mountModule = getModules().filter(module => module.name === this.props.name)[0];
-    if (!this.mountModule) {
-      console.error(`Can't find ${this.props.name} module in modules config`);
-      return;
-    }
-
-    mountModule(this.mountModule, this.mountNode, this.props);
-  }
-
-  render() {
-    return (<div ref={ref => this.mountNode = ref} />);
-  }
-};
-
-/**
  * return globalModules
 */
 export const getModules = function () {
@@ -105,7 +68,7 @@ export const getModules = function () {
 /**
  * mount module function
  */
-export const mountModule = async (targetModule: StarkModule, targetNode: HTMLElement, props: any = {}) => {
+export const mountModule = async (targetModule: StarkModule, targetNode: HTMLElement, props: any = {}, sandbox?: ISandbox) => {
   const { name } = targetModule;
   let moduleSandbox = null;
   if (!importModules[name]) {
@@ -144,6 +107,44 @@ export const unmoutModule = (targetModule: StarkModule, targetNode: HTMLElement)
   }
 
   return unmount(targetNode);
+};
+
+/**
+ * default render compoent, mount all modules
+ */
+export class MicroModule extends React.Component<any, {}> {
+  private mountModule = null;
+
+  private mountNode = null;
+
+  componentDidMount() {
+    this.mountModules();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.modules !== this.props.modules || prevProps.name !== this.props.name) {
+      this.mountModules();
+    }
+  }
+
+  componentWillUnmount() {
+    unmoutModule(this.mountModule, this.mountNode);
+  }
+
+  mountModules() {
+    const { sandbox, ...rest } = this.props;
+    this.mountModule = getModules().filter(module => module.name === this.props.name)[0];
+    if (!this.mountModule) {
+      console.error(`Can't find ${this.props.name} module in modules config`);
+      return;
+    }
+
+    mountModule(this.mountModule, this.mountNode, rest, sandbox);
+  }
+
+  render() {
+    return (<div ref={ref => this.mountNode = ref} />);
+  }
 };
 
 /**
