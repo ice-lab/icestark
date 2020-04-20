@@ -115,7 +115,7 @@ export const getModules = function () {
 /**
  * mount module function
  */
-export const mountModule = async (targetModule: StarkModule, targetNode: HTMLElement, props: any = {}, sandbox: ISandbox) => {
+export const mountModule = async (targetModule: StarkModule, targetNode: HTMLElement, props: any = {}, sandbox?: ISandbox) => {
   const { name } = targetModule;
   let moduleSandbox = null;
   if (!importModules[name]) {
