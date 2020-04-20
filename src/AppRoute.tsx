@@ -1,5 +1,5 @@
 import * as React from 'react';
-import Sandbox, { SandboxProps } from '@ice/sandbox';
+import Sandbox, { SandboxProps, SandboxContructor } from '@ice/sandbox';
 import renderModules, { StarkModule }  from '@ice/stark-modules';
 import { AppHistory } from './appHistory';
 import renderComponent from './util/renderComponent';
@@ -41,7 +41,7 @@ export interface AppRouteComponentProps<Params extends { [K in keyof Params]?: s
 
 // from user config
 export interface AppConfig {
-  sandbox?: boolean | SandboxProps | Sandbox;
+  sandbox?: boolean | SandboxProps | SandboxContructor;
   title?: string;
   hashType?: boolean | hashType;
   basename?: string;
@@ -231,8 +231,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       sandbox,
     } = this.props;
     if (sandbox) {
-      if ((sandbox as Sandbox).execScriptInSandbox) {
-        this.appSandbox = sandbox as Sandbox;
+      if (typeof sandbox === 'function') {
+        // eslint-disable-next-line new-cap
+        this.appSandbox = new sandbox();
       } else {
         const sandboxProps = typeof sandbox === 'boolean' ? {} : (sandbox as SandboxProps);
         this.appSandbox = new Sandbox(sandboxProps);
@@ -360,7 +361,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   render() {
-    const { component, render, componentProps, modules } = this.props;
+    const { component, render, componentProps, modules, sandbox } = this.props;
     const { cssLoading, showComponent } = this.state;
 
     if (component) {
@@ -368,7 +369,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     }
     
     if (modules) {
-      return renderModules(modules, render, componentProps);
+      return renderModules(modules, render, componentProps, sandbox);
     }
 
     if (render && typeof render === 'function') {

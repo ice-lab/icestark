@@ -2,6 +2,10 @@
 export interface SandboxProps {
   escapeSandbox?: boolean;
 }
+
+export interface SandboxContructor {
+  new(): Sandbox;
+}
 // check window contructor function， like Object Array
 function isConstructor(fn) {
   const functionStr = fn.toString();

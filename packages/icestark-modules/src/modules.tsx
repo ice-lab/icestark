@@ -1,7 +1,9 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import Sandbox from '@ice/sandbox';
+import Sandbox, { SandboxProps, SandboxContructor } from '@ice/sandbox';
 import ModuleLoader, { StarkModule } from './loader';
+
+type ISandbox = boolean | SandboxProps | SandboxContructor;
 
 let globalModules = [];
 const importModules = {};
@@ -21,6 +23,20 @@ const defaultMount = (Component: any, targetNode: HTMLElement, props?: any) => {
 const defaultUnmount = (targetNode: HTMLElement) => {
   // do something
 };
+
+function createSandbox(sandbox: ISandbox) {
+  let moduleSandbox = null;
+  if (sandbox) {
+    if (typeof sandbox === 'function') {
+      // eslint-disable-next-line new-cap
+      moduleSandbox = new sandbox();
+    } else {
+      const sandboxProps = typeof sandbox === 'boolean' ? {} : sandbox;
+      moduleSandbox = new Sandbox(sandboxProps);
+    }
+  }
+  return moduleSandbox;
+}
 
 /**
  * Render Component, compatible with Component and <Component>
@@ -99,13 +115,11 @@ export const getModules = function () {
 /**
  * mount module function
  */
-export const mountModule = async (targetModule: StarkModule, targetNode: HTMLElement, props: any = {}, sandbox: boolean | Sandbox) => {
+export const mountModule = async (targetModule: StarkModule, targetNode: HTMLElement, props: any = {}, sandbox: ISandbox) => {
   const { name } = targetModule;
   let moduleSandbox = null;
   if (!importModules[name]) {
-    if (sandbox) {
-      moduleSandbox = typeof sandbox === 'boolean' ? new Sandbox({}) : sandbox;
-    }
+    moduleSandbox = createSandbox(sandbox);
     importModules[name] = await moduleLoader.execModule(targetModule, moduleSandbox);
   }
 
@@ -129,12 +143,13 @@ export const unmoutModule = (targetModule: StarkModule, targetNode: HTMLElement)
 /**
  * Render Modules, compatible with Render and <Render>
  */
-export default function renderModules(modules: StarkModule[], render: any, componentProps?: any): React.ReactElement {
+export default function renderModules(modules: StarkModule[], render: any, componentProps?: any, sandbox?: ISandbox): React.ReactElement {
   // save match app modules in global
   globalModules = modules;
 
   const Component = renderComponent(render || MicroModule, {
     modules,
+    sandbox,
     ...componentProps,
   });
 
