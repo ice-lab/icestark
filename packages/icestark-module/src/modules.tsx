@@ -150,7 +150,7 @@ export class MicroModule extends React.Component<any, {}> {
 /**
  * Render Modules, compatible with Render and <Render>
  */
-export default function renderModules(modules: StarkModule[], render: any, componentProps?: any): React.ReactElement {
+export default function renderModules(modules: StarkModule[], render: any, componentProps?: any, sandbox?: ISandbox): React.ReactElement {
   // save match app modules in global
   globalModules = modules;
 
@@ -158,6 +158,7 @@ export default function renderModules(modules: StarkModule[], render: any, compo
     return renderComponent(render, {
       modules,
       ...componentProps,
+      sandbox,
     });
   }
 

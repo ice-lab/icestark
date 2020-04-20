@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@ice/sandbox": "^1.0.0",
+    "@ice/stark-module": "^1.0.0",
     "lodash.isequal": "^4.5.0",
     "path-to-regexp": "^1.7.0",
     "url-parse": "^1.1.9"

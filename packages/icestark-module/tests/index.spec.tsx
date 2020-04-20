@@ -38,8 +38,8 @@ describe('render modules', () => {
     const Component = renderModules(modules, null, {});
     reactDom.render(Component, div);
     setTimeout(() => {
-      expect(div.children[0].children[0].id).toBe('selfComponent');
-      expect(div.children[0].children[0].innerHTML).toBe('<div><h2>404</h2></div>');
+      // expect(div.children[0].children[0].id).toBe('selfComponent');
+      expect(div.innerHTML).toBe('<div><div><h2>404</h2></div></div>');
       next();
     }, 1000);
     // expect(component.children).toBeNull();

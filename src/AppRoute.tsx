@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Sandbox, { SandboxProps, SandboxContructor } from '@ice/sandbox';
-import renderModules, { StarkModule }  from '@ice/stark-modules';
+import renderModules, { StarkModule }  from '@ice/stark-module';
 import { AppHistory } from './appHistory';
 import renderComponent from './util/renderComponent';
 import { appendAssets, emptyAssets, cacheAssets, getEntryAssets, getUrlAssets } from './util/handleAssets';

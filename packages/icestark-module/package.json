@@ -1,5 +1,5 @@
 {
-  "name": "@ice/stark-modules",
+  "name": "@ice/stark-module",
   "version": "1.0.0",
   "description": "toolkit for load standard micro-module",
   "main": "lib/index.js",
@@ -13,6 +13,12 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ice-lab/icestark.git"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "registry": "http://registry.npmjs.com/"
   },
   "keywords": [
     "modules",
