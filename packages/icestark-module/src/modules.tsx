@@ -73,22 +73,22 @@ export const mountModule = async (targetModule: StarkModule, targetNode: HTMLEle
   let moduleSandbox = null;
   if (!importModules[name]) {
     moduleSandbox = createSandbox(sandbox);
-    const module = await moduleLoader.execModule(targetModule, moduleSandbox);
+    const mountModule = await moduleLoader.execModule(targetModule, moduleSandbox);
     importModules[name] = {
-      module,
+      mountModule,
       moduleSandbox,
     };
   }
 
-  const module = importModules[name].module;
+  const mountModule = importModules[name].mountModule;
 
-  if (!module) {
+  if (!mountModule) {
     console.error('load or exec module faild');
     return;
   }
 
-  const mount = targetModule.mount || module.mount || defaultMount;
-  const component = module.default || module;
+  const mount = targetModule.mount || mountModule.mount || defaultMount;
+  const component = mountModule.default || mountModule;
 
   return mount(component, targetNode, props);
 };
@@ -98,9 +98,9 @@ export const mountModule = async (targetModule: StarkModule, targetNode: HTMLEle
  */
 export const unmoutModule = (targetModule: StarkModule, targetNode: HTMLElement) => {
   const { name } = targetModule;
-  const module = importModules[name]?.module;
+  const mountModule = importModules[name]?.module;
   const moduleSandbox = importModules[name]?.moduleSandbox;
-  const unmount = targetModule.unmount || module?.unmount || defaultUnmount;
+  const unmount = targetModule.unmount || mountModule?.unmount || defaultUnmount;
 
   if (moduleSandbox?.clear) {
     moduleSandbox.clear();
@@ -133,7 +133,7 @@ export class MicroModule extends React.Component<any, {}> {
 
   mountModules() {
     const { sandbox, moduleInfo, ...rest } = this.props;
-    this.mountModule = moduleInfo || getModules().filter(module => module.name === this.props.name)[0];
+    this.mountModule = moduleInfo || getModules().filter(m => m.name === this.props.name)[0];
     if (!this.mountModule) {
       console.error(`Can't find ${this.props.name} module in modules config`);
       return;
