@@ -132,8 +132,8 @@ export class MicroModule extends React.Component<any, {}> {
   }
 
   mountModules() {
-    const { sandbox, ...rest } = this.props;
-    this.mountModule = getModules().filter(module => module.name === this.props.name)[0];
+    const { sandbox, moduleInfo, ...rest } = this.props;
+    this.mountModule = moduleInfo || getModules().filter(module => module.name === this.props.name)[0];
     if (!this.mountModule) {
       console.error(`Can't find ${this.props.name} module in modules config`);
       return;
