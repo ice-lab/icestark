@@ -1,6 +1,5 @@
-
 export interface SandboxProps {
-  escapeSandbox?: boolean;
+  multiMode?: boolean;
 }
 
 export interface SandboxContructor {
@@ -29,7 +28,7 @@ function isWindowFunction(func) {
 export default class Sandbox {
   private sandbox: Window;
 
-  private escapeSandbox: boolean = false;
+  private multiMode: boolean = false;
 
   private eventListeners = {};
 
@@ -43,17 +42,18 @@ export default class Sandbox {
 
   public sandboxDisabled: boolean;
 
-  constructor({ escapeSandbox }: SandboxProps) {
+  constructor({ multiMode }: SandboxProps) {
     if (!window.Proxy) {
       console.warn('proxy sandbox is not support by current browser');
       this.sandboxDisabled = true;
     }
-    this.escapeSandbox = escapeSandbox;
+    // enable multiMode in case of create mulit sandbox in same time
+    this.multiMode = multiMode;
     this.sandbox = null;
   }
 
   createProxySandbox() {
-    const { propertyAdded, originalValues, escapeSandbox } = this;
+    const { propertyAdded, originalValues, multiMode } = this;
     const proxyWindow = Object.create(null) as Window;
     const originalWindow = window;
     const originalAddEventListener = window.addEventListener;
@@ -99,7 +99,7 @@ export default class Sandbox {
           originalValues[p] = originalWindow[p];
         }
         // set new value to original window in case of jsonp, js bundle which will be execute outof sandbox
-        if (escapeSandbox) {
+        if (!multiMode) {
           originalWindow[p] = value;
         }
         // eslint-disable-next-line no-param-reassign

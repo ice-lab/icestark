@@ -1,7 +1,7 @@
 import Sandbox from '../src/index';
 
 describe('sandbox: excapeSandbox', () => {
-  const sandbox = new Sandbox({ escapeSandbox: true });
+  const sandbox = new Sandbox({});
   const delay = (time) => new Promise((resolve) => setTimeout(() => resolve(), time));
 
   test('execute script in sandbox', () => {
@@ -26,7 +26,7 @@ describe('sandbox: excapeSandbox', () => {
 });
 
 describe('sandbox: default props', () => {
-  const sandbox = new Sandbox({});
+  const sandbox = new Sandbox({ multiMode: true });
 
   test('execute script in sandbox', () => {
     sandbox.execScriptInSandbox('window.a = 1;expect(window.a).toBe(1);');
