@@ -73,22 +73,22 @@ export const mountModule = async (targetModule: StarkModule, targetNode: HTMLEle
   let moduleSandbox = null;
   if (!importModules[name]) {
     moduleSandbox = createSandbox(sandbox);
-    const mountModule = await moduleLoader.execModule(targetModule, moduleSandbox);
+    const moduleInfo = await moduleLoader.execModule(targetModule, moduleSandbox);
     importModules[name] = {
-      mountModule,
+      mountModule: moduleInfo,
       moduleSandbox,
     };
   }
 
-  const mountModule = importModules[name].mountModule;
+  const moduleInfo = importModules[name].mountModule;
 
   if (!mountModule) {
     console.error('load or exec module faild');
     return;
   }
 
-  const mount = targetModule.mount || mountModule.mount || defaultMount;
-  const component = mountModule.default || mountModule;
+  const mount = targetModule.mount || moduleInfo?.mount || defaultMount;
+  const component = moduleInfo.default || mountModule;
 
   return mount(component, targetNode, props);
 };
@@ -98,9 +98,9 @@ export const mountModule = async (targetModule: StarkModule, targetNode: HTMLEle
  */
 export const unmoutModule = (targetModule: StarkModule, targetNode: HTMLElement) => {
   const { name } = targetModule;
-  const mountModule = importModules[name]?.module;
+  const moduleInfo = importModules[name]?.module;
   const moduleSandbox = importModules[name]?.moduleSandbox;
-  const unmount = targetModule.unmount || mountModule?.unmount || defaultUnmount;
+  const unmount = targetModule.unmount || moduleInfo?.unmount || defaultUnmount;
 
   if (moduleSandbox?.clear) {
     moduleSandbox.clear();

@@ -40,6 +40,8 @@
     "react-dom": ">=15.0.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^5.5.0",
+    "@testing-library/react": "^10.0.3",
     "codecov": "^3.4.0",
     "jest": "^25.2.7",
     "react": "^16.13.1",
@@ -51,5 +53,8 @@
     "coverageDirectory": "./coverage/",
     "collectCoverage": true,
     "preset": "ts-jest"
+  },
+  "dependencies": {
+    "@ice/sandbox": "^1.0.2"
   }
 }

@@ -32,10 +32,16 @@ export default class ModuleLoader {
     return task;
   }
 
-  execModule(starkModule: StarkModule, sandbox: Sandbox) {
+  execModule(starkModule: StarkModule, sandbox?: Sandbox) {
     return this.load(starkModule).then((source) => {
-      const global = sandbox?.getSandbox() || window;
-      noteGlobalProps(global);
+      let globalWindow = null;
+      if (sandbox?.getSandbox) {
+        sandbox.createProxySandbox();
+        globalWindow = sandbox.getSandbox();
+      } else {
+        globalWindow = window;
+      }
+      noteGlobalProps(globalWindow);
       // check sandbox
       if (sandbox?.execScriptInSandbox) {
         sandbox.execScriptInSandbox(source);
@@ -44,8 +50,8 @@ export default class ModuleLoader {
         // eslint-disable-next-line no-eval
         (0, eval)(source);
       }
-      const libraryExport = getGlobalProp(global);
-      return (global as any)[libraryExport] || {};
+      const libraryExport = getGlobalProp(globalWindow);
+      return (globalWindow as any)[libraryExport] || {};
     });
   }
 };

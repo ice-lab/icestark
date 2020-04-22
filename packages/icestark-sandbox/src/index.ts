@@ -42,7 +42,8 @@ export default class Sandbox {
 
   public sandboxDisabled: boolean;
 
-  constructor({ multiMode }: SandboxProps) {
+  constructor(props: SandboxProps = {}) {
+    const { multiMode } = props;
     if (!window.Proxy) {
       console.warn('proxy sandbox is not support by current browser');
       this.sandboxDisabled = true;
