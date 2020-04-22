@@ -45,15 +45,4 @@ describe('module loader', () => {
       expect(text).toEqual(source.toString());
     });
   });
-
-  test('execute module', async () => {
-    const moduleInfo = await moduleLoader.execModule({ name: 'modulename', url: '//source' });
-    expect(!!moduleInfo.default).toBe(true);
-  });
-
-  test('excute module in sandbox', async () => {
-    const sandbox = new Sandbox({ multiMode: true });
-    const moduleInfo = await moduleLoader.execModule({ name: 'modulename', url: '//source' }, sandbox);
-    expect(!!moduleInfo.default).toBe(true);
-  });
 });
