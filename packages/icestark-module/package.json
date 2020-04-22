@@ -1,6 +1,6 @@
 {
   "name": "@ice/stark-module",
-  "version": "1.0.0",
+  "version": "1.0.0-1",
   "description": "toolkit for load standard micro-module",
   "main": "lib/index.js",
   "scripts": {
@@ -55,6 +55,6 @@
     "preset": "ts-jest"
   },
   "dependencies": {
-    "@ice/sandbox": "^1.0.2"
+    "@ice/sandbox": "^1.0.3-2"
   }
 }
