@@ -10,9 +10,9 @@ declare global {
 }
 
 describe('module loader', () => {
+  const source = fs.readFileSync(path.resolve(__dirname, './component.js'));
   beforeEach(() => {
     // mock fetch
-    const source = fs.readFileSync(path.resolve(__dirname, './component.js'));
     window.fetch = (url) => {
       const isSource = url.indexOf('source') > 0;
       return Promise.resolve({
@@ -36,6 +36,13 @@ describe('module loader', () => {
     const task = moduleLoader.load({ name: 'test', url: '//localhost2' });
     task.then((text) => {
       expect(text).toEqual('//localhost');
+    });
+  });
+
+  test('load source', () => {
+    const task = moduleLoader.load({ name: 'testsource', url: '//source' });
+    task.then((text) => {
+      expect(text).toEqual(source.toString());
     });
   });
 

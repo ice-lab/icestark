@@ -43,7 +43,7 @@ describe('render modules', () => {
       expect(container.innerHTML).toBe('<div><div><h2>404</h2></div></div>');
       unmount();
       next();
-    }, 0);
+    }, 1000);
   });
 
   test('render skeleton', () => {
