@@ -39,7 +39,7 @@ export default class ModuleLoader {
         sandbox.createProxySandbox();
         globalWindow = sandbox.getSandbox();
       } else {
-        globalWindow = global;
+        globalWindow = window;
       }
       noteGlobalProps(globalWindow);
       // check sandbox
