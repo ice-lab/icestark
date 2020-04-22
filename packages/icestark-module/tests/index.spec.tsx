@@ -35,16 +35,17 @@ describe('render modules', () => {
   });
 
   
-  /* test('fallback render', (next) => {
+  test('fallback render', (next) => {
     const Component = renderModules(modules, null, {});
     const { container, unmount } = render(Component);
     expect(getModules()).toEqual(modules);
     setTimeout(() => {
       expect(container.innerHTML).toBe('<div><div><h2>404</h2></div></div>');
       unmount();
+      expect(container.innerHTML).toBe('');
       next();
-    }, 1000);
-  }); */
+    }, 0);
+  });
 
   test('render skeleton', () => {
     const { container } = render(renderModules(modules, () => {
@@ -55,15 +56,7 @@ describe('render modules', () => {
     expect(container.innerHTML).toBe('<div id="skeleon"></div>');
   });
 
-  test('render MicroModule with name', () => {
-    const { container } = render(<MicroModule name="selfComponent" />);
-    /* setTimeout(() => {
-      expect(container.innerHTML).toBe('<div><div><h2>404</h2></div></div>');
-      next();
-    }, 0); */
-  });
-
-  /* test('render MicroModule with name', (next) => {
+  test('render MicroModule with name', (next) => {
     const { container } = render(<MicroModule name="selfComponent" />);
     setTimeout(() => {
       expect(container.innerHTML).toBe('<div><div><h2>404</h2></div></div>');
@@ -77,7 +70,7 @@ describe('render modules', () => {
       expect(container.innerHTML).toBe('<div><div><h2>404</h2></div></div>');
       next();
     }, 0);
-  }); */
+  }); 
 
   test('mountModule with default sandbox', (next) => {
     const moduleInfo = { name: 'defaultSandbox', url: '//localhost' };

@@ -75,20 +75,20 @@ export const mountModule = async (targetModule: StarkModule, targetNode: HTMLEle
     moduleSandbox = createSandbox(sandbox);
     const moduleInfo = await moduleLoader.execModule(targetModule, moduleSandbox);
     importModules[name] = {
-      mountModule: moduleInfo,
+      moduleInfo,
       moduleSandbox,
     };
   }
 
-  const moduleInfo = importModules[name].mountModule;
+  const moduleInfo = importModules[name].moduleInfo;
 
-  if (!mountModule) {
+  if (!moduleInfo) {
     console.error('load or exec module faild');
     return;
   }
 
   const mount = targetModule.mount || moduleInfo?.mount || defaultMount;
-  const component = moduleInfo.default || mountModule;
+  const component = moduleInfo.default || moduleInfo;
 
   return mount(component, targetNode, props);
 };
@@ -113,33 +113,33 @@ export const unmoutModule = (targetModule: StarkModule, targetNode: HTMLElement)
  * default render compoent, mount all modules
  */
 export class MicroModule extends React.Component<any, {}> {
-  private mountModule = null;
+  private moduleInfo = null;
 
   private mountNode = null;
 
   componentDidMount() {
-    this.mountModules();
+    this.mountModule();
   }
 
   componentDidUpdate(prevProps) {
     if (prevProps.modules !== this.props.modules || prevProps.name !== this.props.name) {
-      this.mountModules();
+      this.mountModule();
     }
   }
 
   componentWillUnmount() {
-    unmoutModule(this.mountModule, this.mountNode);
+    unmoutModule(this.moduleInfo, this.mountNode);
   }
 
-  mountModules() {
+  mountModule() {
     const { sandbox, moduleInfo, ...rest } = this.props;
-    this.mountModule = moduleInfo || getModules().filter(m => m.name === this.props.name)[0];
-    if (!this.mountModule) {
+    this.moduleInfo = moduleInfo || getModules().filter(m => m.name === this.props.name)[0];
+    if (!this.moduleInfo) {
       console.error(`Can't find ${this.props.name} module in modules config`);
       return;
     }
 
-    mountModule(this.mountModule, this.mountNode, rest, sandbox);
+    mountModule(this.moduleInfo, this.mountNode, rest, sandbox);
   }
 
   render() {

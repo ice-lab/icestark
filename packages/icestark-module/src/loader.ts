@@ -50,8 +50,10 @@ export default class ModuleLoader {
         // eslint-disable-next-line no-eval
         (0, eval)(source);
       }
+      const { name } = starkModule;
       const libraryExport = getGlobalProp(globalWindow);
-      return (globalWindow as any)[libraryExport] || {};
+
+      return (globalWindow as any)[name] || (globalWindow as any)[libraryExport] || {};
     });
   }
 };
