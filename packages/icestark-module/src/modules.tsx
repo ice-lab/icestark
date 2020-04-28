@@ -132,7 +132,8 @@ export class MicroModule extends React.Component<any, {}> {
   }
 
   mountModule() {
-    const { sandbox, moduleInfo, ...rest } = this.props;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { sandbox, moduleInfo, className, style, ...rest } = this.props;
     this.moduleInfo = moduleInfo || getModules().filter(m => m.name === this.props.name)[0];
     if (!this.moduleInfo) {
       console.error(`Can't find ${this.props.name} module in modules config`);
@@ -143,7 +144,8 @@ export class MicroModule extends React.Component<any, {}> {
   }
 
   render() {
-    return (<div ref={ref => this.mountNode = ref} />);
+    const { className, style } = this.props;
+    return (<div className={className} style={style} ref={ref => this.mountNode = ref} />);
   }
 };
 
