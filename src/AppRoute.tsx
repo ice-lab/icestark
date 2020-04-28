@@ -287,7 +287,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       if (appAssets && !cached) {
         await appendAssets(appAssets, this.appSandbox);
       }
-
       // if AppRoute is unmounted, or current app is not the latest app, cancel all operations
       if (this.unmounted || this.prevAppConfig !== currentAppConfig) return;
       if (cache) {
@@ -365,7 +364,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     if (component) {
       return showComponent ? renderComponent(component, componentProps) : null;
     }
-    
+
     if (render && typeof render === 'function') {
       return showComponent ? render(componentProps) : null;
     }
