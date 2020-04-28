@@ -6,9 +6,20 @@ import ModuleLoader, { StarkModule } from './loader';
 type ISandbox = boolean | SandboxProps | SandboxContructor;
 
 let globalModules = [];
-const importModules = {};
+let importModules = {};
 
 export const moduleLoader = new ModuleLoader();
+
+export const setModules = (modules: StarkModule[]) => {
+  globalModules = modules;
+};
+
+export const clearModules = () => {
+  // reset module info
+  globalModules = [];
+  importModules = {};
+  moduleLoader.clearTask();
+};
 
 /**
  * Render Component, compatible with Component and <Component>
@@ -154,7 +165,7 @@ export class MicroModule extends React.Component<any, {}> {
  */
 export default function renderModules(modules: StarkModule[], render: any, componentProps?: any, sandbox?: ISandbox): React.ReactElement {
   // save match app modules in global
-  globalModules = modules;
+  setModules(modules);
 
   if (render) {
     return renderComponent(render, {

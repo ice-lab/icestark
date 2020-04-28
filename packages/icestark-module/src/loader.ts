@@ -32,6 +32,10 @@ export default class ModuleLoader {
     return task;
   }
 
+  clearTask() {
+    this.importTask = {};
+  }
+
   execModule(starkModule: StarkModule, sandbox?: Sandbox) {
     return this.load(starkModule).then((source) => {
       let globalWindow = null;
