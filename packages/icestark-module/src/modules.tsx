@@ -10,7 +10,7 @@ let importModules = {};
 
 export const moduleLoader = new ModuleLoader();
 
-export const setModules = (modules: StarkModule[]) => {
+export const registerModules = (modules: StarkModule[]) => {
   globalModules = modules;
 };
 
@@ -165,7 +165,7 @@ export class MicroModule extends React.Component<any, {}> {
  */
 export default function renderModules(modules: StarkModule[], render: any, componentProps?: any, sandbox?: ISandbox): React.ReactElement {
   // save match app modules in global
-  setModules(modules);
+  registerModules(modules);
 
   if (render) {
     return renderComponent(render, {
