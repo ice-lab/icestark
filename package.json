@@ -1,6 +1,6 @@
 {
   "name": "@ice/stark",
-  "version": "1.6.0-1",
+  "version": "1.5.1",
   "description": "Icestark is a JavaScript library for multiple projects, Ice workbench solution.",
   "scripts": {
     "build": "rm -rf lib && tsc",
@@ -38,8 +38,7 @@
     "react": ">=15.0.0"
   },
   "dependencies": {
-    "@ice/sandbox": "^1.0.3-2",
-    "@ice/stark-module": "^1.0.0-1",
+    "@ice/sandbox": "^1.0.0",
     "lodash.isequal": "^4.5.0",
     "path-to-regexp": "^1.7.0",
     "url-parse": "^1.1.9"

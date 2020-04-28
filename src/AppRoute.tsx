@@ -1,6 +1,5 @@
 import * as React from 'react';
 import Sandbox, { SandboxProps, SandboxContructor } from '@ice/sandbox';
-import renderModules, { StarkModule }  from '@ice/stark-module';
 import { AppHistory } from './appHistory';
 import renderComponent from './util/renderComponent';
 import { appendAssets, emptyAssets, cacheAssets, getEntryAssets, getUrlAssets } from './util/handleAssets';
@@ -56,7 +55,6 @@ export interface AppConfig {
   component?: React.ReactElement;
   render?: (props?: AppRouteComponentProps) => React.ReactElement;
   cache?: boolean;
-  modules?: StarkModule[];
 }
 
 // from AppRouter
@@ -361,17 +359,13 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   render() {
-    const { component, render, componentProps, modules, sandbox } = this.props;
+    const { component, render, componentProps } = this.props;
     const { cssLoading, showComponent } = this.state;
 
     if (component) {
       return showComponent ? renderComponent(component, componentProps) : null;
     }
     
-    if (modules) {
-      return renderModules(modules, render, componentProps, sandbox);
-    }
-
     if (render && typeof render === 'function') {
       return showComponent ? render(componentProps) : null;
     }
