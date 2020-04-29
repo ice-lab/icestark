@@ -1,6 +1,17 @@
-import renderModule from './modules';
+import {
+  MicroModule,
+  registerModules,
+  getModules,
+  mountModule,
+  unmoutModule,
+  clearModules,
+} from './modules';
 
-export default renderModule;
-export * from './modules';
-export * from './loader';
-export * from './global';
+export {
+  MicroModule,
+  registerModules,
+  clearModules,
+  getModules,
+  mountModule,
+  unmoutModule,
+};

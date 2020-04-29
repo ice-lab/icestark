@@ -37,7 +37,7 @@ export default SampleComponent;
 ### Basic Usage
 
 ```jsx
-import { MicroModule } from '@ice/module';
+import { MicroModule } from '@ice/stark-module';
 
 const App = () => {
   const moduleProps = {
@@ -51,7 +51,7 @@ const App = () => {
 ### Register Modules
 
 ```jsx
-import { MicroModule, registerModules } from '@ice/module';
+import { MicroModule, registerModules, getModules } from '@ice/stark-module';
 
 registerModules([
   {
@@ -64,6 +64,9 @@ registerModules([
   },
 ]);
 
+// get module info registered by API registerModules
+const moduleInfo = getModules();
+
 const App = () => {
   // after registerMdoules, use micro module by specify module name
   return (
@@ -75,10 +78,25 @@ const App = () => {
 }
 ```
 
+### Clear Modules
+
+```js
+import { registerModules, getModules } from '@ice/stark-module';
+
+registerModules([
+  {
+    url: 'https://localhost/module-a.js',
+    name: 'module-a',
+  },
+]);
+// clear module information registered by API registerModules including content cache
+clearModules();
+```
+
 ### Custom Lifecyle
 
 ```jsx
-import { MicroModule } from '@ice/module';
+import { MicroModule } from '@ice/stark-module';
 
 const App = () => {
   const moduleProps = {
@@ -91,6 +109,26 @@ const App = () => {
   }
   return <MicroModule {...moduleProps} />;
 }
+```
+
+### Custom mount component
+
+```jsx
+import { mountModule, unmoutModule } from '@ice/stark-module';
+
+const moduleInfo = {
+  name: 'moduleName',
+  url: 'https://localhost/module.js',
+};
+
+const ModuleComponent = () => {
+  const renderNode = useRef(null);
+  useEffect(() => {
+    mountModule(moduleInfo, renderNode, {});
+    return unmoutModule(moduleInfo, renderNode);
+  }, []);
+  return (<div ref={renderNode}></div>);
+};
 ```
 
 ## Contributors
