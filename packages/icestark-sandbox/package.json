@@ -1,6 +1,6 @@
 {
   "name": "@ice/sandbox",
-  "version": "1.0.3-2",
+  "version": "1.0.3",
   "description": "sandbox for execute scripts",
   "main": "lib/index.js",
   "scripts": {
