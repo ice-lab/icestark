@@ -6,7 +6,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import Sandbox, { SandboxContructor } from '@ice/sandbox';
 
-import renderModules, { getModules, MicroModule, mountModule, unmoutModule } from '../src/index';
+import renderModules, { getModules, MicroModule, mountModule, unmoutModule } from '../src/modules';
 
 const modules = [{
   name: 'selfComponent',
