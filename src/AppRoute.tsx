@@ -1,5 +1,5 @@
 import * as React from 'react';
-import Sandbox from '@ice/sandbox';
+import Sandbox, { SandboxProps, SandboxContructor } from '@ice/sandbox';
 import { AppHistory } from './appHistory';
 import renderComponent from './util/renderComponent';
 import { appendAssets, emptyAssets, cacheAssets, getEntryAssets, getUrlAssets } from './util/handleAssets';
@@ -40,7 +40,7 @@ export interface AppRouteComponentProps<Params extends { [K in keyof Params]?: s
 
 // from user config
 export interface AppConfig {
-  sandbox?: boolean | Sandbox;
+  sandbox?: boolean | SandboxProps | SandboxContructor;
   title?: string;
   hashType?: boolean | hashType;
   basename?: string;
@@ -229,8 +229,13 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       sandbox,
     } = this.props;
     if (sandbox) {
-      // eslint-disable-next-line new-cap
-      this.appSandbox = typeof sandbox === 'boolean' ? new Sandbox() : sandbox;
+      if (typeof sandbox === 'function') {
+        // eslint-disable-next-line new-cap
+        this.appSandbox = new sandbox();
+      } else {
+        const sandboxProps = typeof sandbox === 'boolean' ? {} : (sandbox as SandboxProps);
+        this.appSandbox = new Sandbox(sandboxProps);
+      }
     }
     const assetsCacheKey = this.getCacheKey();
     const cached = cache && isCached(assetsCacheKey);
