@@ -71,8 +71,8 @@ const App = () => {
   // after registerMdoules, use micro module by specify module name
   return (
     <div>
-      <MicroModule name="module-a" />
-      <MicroModule name="module-b" />
+      <MicroModule moduleName="module-a" />
+      <MicroModule moduleName="module-b" />
     </div>
   );
 }
@@ -99,7 +99,7 @@ clearModules();
 import { MicroModule } from '@ice/stark-module';
 
 const App = () => {
-  const moduleProps = {
+  const moduleInfo = {
     name: 'moduleName',
     url: 'https://localhost/module.js',
     mount: (ModuleComponent, mountNode) => {
@@ -107,7 +107,7 @@ const App = () => {
       ReactDOM.render(<ModuleComponent />, mountNode);
     },
   }
-  return <MicroModule {...moduleProps} />;
+  return <MicroModule moduleInfo={moduleInfo} />;
 }
 ```
 

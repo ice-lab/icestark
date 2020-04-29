@@ -57,7 +57,7 @@ describe('render modules', () => {
   });
 
   test('render MicroModule with name', (next) => {
-    const { container } = render(<MicroModule name="selfComponent" />);
+    const { container } = render(<MicroModule moduleName="selfComponent" />);
     setTimeout(() => {
       expect(container.innerHTML).toBe('<div><div><h2>404</h2></div></div>');
       next();
@@ -65,9 +65,17 @@ describe('render modules', () => {
   });
 
   test('render MicroModule with default sanbox', (next) => {
-    const { container } = render(<MicroModule name="selfComponent" sandbox />);
+    const { container } = render(<MicroModule moduleName="selfComponent" sandbox />);
     setTimeout(() => {
       expect(container.innerHTML).toBe('<div><div><h2>404</h2></div></div>');
+      next();
+    }, 0);
+  }); 
+
+  test('render MicroModule with custom className and style', (next) => {
+    const { container } = render(<MicroModule moduleName="selfComponent" wrapperClassName="test" wrapperStyle={{ fontSize: '14px' }} sandbox />);
+    setTimeout(() => {
+      expect(container.innerHTML).toBe('<div class="test" style="font-size: 14px;"><div><h2>404</h2></div></div>');
       next();
     }, 0);
   }); 

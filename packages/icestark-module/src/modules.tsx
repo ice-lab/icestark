@@ -144,10 +144,10 @@ export class MicroModule extends React.Component<any, {}> {
 
   mountModule() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { sandbox, moduleInfo, className, style, ...rest } = this.props;
-    this.moduleInfo = moduleInfo || getModules().filter(m => m.name === this.props.name)[0];
+    const { sandbox, moduleInfo, wrapperClassName, wrapperStyle, ...rest } = this.props;
+    this.moduleInfo = moduleInfo || getModules().filter(m => m.name === this.props.moduleName)[0];
     if (!this.moduleInfo) {
-      console.error(`Can't find ${this.props.name} module in modules config`);
+      console.error(`Can't find ${this.props.moduleName} module in modules config`);
       return;
     }
 
@@ -155,8 +155,8 @@ export class MicroModule extends React.Component<any, {}> {
   }
 
   render() {
-    const { className, style } = this.props;
-    return (<div className={className} style={style} ref={ref => this.mountNode = ref} />);
+    const { wrapperClassName, wrapperStyle } = this.props;
+    return (<div className={wrapperClassName} style={wrapperStyle} ref={ref => this.mountNode = ref} />);
   }
 };
 
@@ -176,5 +176,5 @@ export default function renderModules(modules: StarkModule[], render: any, compo
   }
 
   console.warn('Please set render Component, try use MicroModule and mount first module');
-  return <MicroModule name={modules[0]?.name} modules={modules} {...componentProps} />;
+  return <MicroModule moduleName={modules[0]?.name} modules={modules} {...componentProps} />;
 };
