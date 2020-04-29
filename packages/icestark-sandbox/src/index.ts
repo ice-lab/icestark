@@ -1,3 +1,10 @@
+export interface SandboxProps {
+  multiMode?: boolean;
+}
+
+export interface SandboxContructor {
+  new(): Sandbox;
+}
 // check window contructor function， like Object Array
 function isConstructor(fn) {
   const functionStr = fn.toString();
@@ -21,6 +28,8 @@ function isWindowFunction(func) {
 export default class Sandbox {
   private sandbox: Window;
 
+  private multiMode: boolean = false;
+
   private eventListeners = {};
 
   private timeoutIds: number[] = [];
@@ -33,16 +42,19 @@ export default class Sandbox {
 
   public sandboxDisabled: boolean;
 
-  constructor() {
+  constructor(props: SandboxProps = {}) {
+    const { multiMode } = props;
     if (!window.Proxy) {
       console.warn('proxy sandbox is not support by current browser');
       this.sandboxDisabled = true;
     }
+    // enable multiMode in case of create mulit sandbox in same time
+    this.multiMode = multiMode;
     this.sandbox = null;
   }
 
   createProxySandbox() {
-    const { propertyAdded, originalValues } = this;
+    const { propertyAdded, originalValues, multiMode } = this;
     const proxyWindow = Object.create(null) as Window;
     const originalWindow = window;
     const originalAddEventListener = window.addEventListener;
@@ -88,7 +100,11 @@ export default class Sandbox {
           originalValues[p] = originalWindow[p];
         }
         // set new value to original window in case of jsonp, js bundle which will be execute outof sandbox
-        originalWindow[p] = value;
+        if (!multiMode) {
+          originalWindow[p] = value;
+        }
+        // eslint-disable-next-line no-param-reassign
+        target[p] = value;
         return true;
       },
       get(target: Window, p: PropertyKey): any {
@@ -118,6 +134,10 @@ export default class Sandbox {
       },
     });
     this.sandbox = sandbox;
+  }
+
+  getSandbox() {
+    return this.sandbox;
   }
 
   execScriptInSandbox(script: string): void {
