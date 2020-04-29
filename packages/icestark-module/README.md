@@ -40,11 +40,11 @@ export default SampleComponent;
 import { MicroModule } from '@ice/stark-module';
 
 const App = () => {
-  const moduleProps = {
+  const moduleInfo = {
     name: 'moduleName',
     url: 'https://localhost/module.js',
   }
-  return <MicroModule {...moduleProps} />;
+  return <MicroModule moduleInfo={moduleInfo} />;
 }
 ```
 
