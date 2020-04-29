@@ -133,7 +133,7 @@ export class MicroModule extends React.Component<any, {}> {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.modules !== this.props.modules || prevProps.name !== this.props.name) {
+    if (prevProps.moduleInfo !== this.props.moduleInfo || prevProps.name !== this.props.name) {
       this.mountModule();
     }
   }
@@ -176,5 +176,5 @@ export default function renderModules(modules: StarkModule[], render: any, compo
   }
 
   console.warn('Please set render Component, try use MicroModule and mount first module');
-  return <MicroModule moduleName={modules[0]?.name} modules={modules} {...componentProps} />;
+  return <MicroModule moduleName={modules[0]?.name} {...componentProps} />;
 };
