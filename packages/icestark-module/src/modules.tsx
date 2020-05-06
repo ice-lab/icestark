@@ -165,10 +165,9 @@ export const mountModule = async (targetModule: StarkModule, targetNode: HTMLEle
 
   // append css before mount module
   if (moduleCSS.length) {
-    return Promise.all(moduleCSS.map((css: string) => appendCSS(name, css))).then(() => mount(component, targetNode, props));
-  } else {
-    return new Promise(() => mount(component, targetNode, props));
+    await Promise.all(moduleCSS.map((css: string) => appendCSS(name, css)));
   }
+  return mount(component, targetNode, props);
 };
 
 /**
