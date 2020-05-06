@@ -8,6 +8,7 @@ type ISandbox = boolean | SandboxProps | SandboxContructor;
 let globalModules = [];
 let importModules = {};
 
+const IS_CSS_REGEX = /\.css(\?((?!\.js$).)+)?$/;
 export const moduleLoader = new ModuleLoader();
 
 export const registerModules = (modules: StarkModule[]) => {
@@ -70,6 +71,65 @@ function createSandbox(sandbox: ISandbox) {
 }
 
 /**
+ * parse url assets
+ */
+const parseUrlAssets = (assets: string | string[]) => {
+  const jsList = [];
+  const cssList = [];
+  (Array.isArray(assets) ? assets : [assets]).forEach(url => {
+    const isCss: boolean = IS_CSS_REGEX.test(url);
+    if (isCss) {
+      cssList.push(url);
+    } else {
+      jsList.push(url);
+    }
+  });
+
+  return { jsList, cssList };
+};
+
+
+export function appendCSS(
+  name: string,
+  url: string,
+  root: HTMLElement | ShadowRoot = document.getElementsByTagName('head')[0],
+): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    if (!root) reject(new Error(`no root element for css assert: ${url}`));
+
+    const element: HTMLLinkElement = document.createElement('link');
+    element.setAttribute('module', name);
+    element.rel = 'stylesheet';
+    element.href = url;
+
+    element.addEventListener(
+      'error',
+      () => {
+        console.error(`css asset loaded error: ${url}`);
+        return resolve();
+      },
+      false,
+    );
+    element.addEventListener('load', () => resolve(), false);
+
+    root.appendChild(element);
+  });
+}
+
+/**
+ * remove css
+ */
+
+export function removeCSS(name: string) {
+  const linkList: NodeListOf<HTMLElement> = document.querySelectorAll(
+    `link[module=${name}]`,
+  );
+  linkList.forEach(link => {
+    link.parentNode.removeChild(link);
+  });
+}
+
+/**
  * return globalModules
 */
 export const getModules = function () {
@@ -80,18 +140,20 @@ export const getModules = function () {
  * mount module function
  */
 export const mountModule = async (targetModule: StarkModule, targetNode: HTMLElement, props: any = {}, sandbox?: ISandbox) => {
-  const { name } = targetModule;
+  const { name, url } = targetModule;
   let moduleSandbox = null;
   if (!importModules[name]) {
+    const { jsList, cssList } = parseUrlAssets(url);
     moduleSandbox = createSandbox(sandbox);
-    const moduleInfo = await moduleLoader.execModule(targetModule, moduleSandbox);
+    const moduleInfo = await moduleLoader.execModule({ name, url: jsList }, moduleSandbox);
     importModules[name] = {
       moduleInfo,
       moduleSandbox,
+      moduleCSS: cssList,
     };
   }
 
-  const moduleInfo = importModules[name].moduleInfo;
+  const { moduleInfo, moduleCSS } = importModules[name];
 
   if (!moduleInfo) {
     console.error('load or exec module faild');
@@ -101,7 +163,12 @@ export const mountModule = async (targetModule: StarkModule, targetNode: HTMLEle
   const mount = targetModule.mount || moduleInfo?.mount || defaultMount;
   const component = moduleInfo.default || moduleInfo;
 
-  return mount(component, targetNode, props);
+  // append css before mount module
+  if (moduleCSS.length) {
+    return Promise.all(moduleCSS.map((css: string) => appendCSS(name, css))).then(() => mount(component, targetNode, props));
+  } else {
+    return new Promise(() => mount(component, targetNode, props));
+  }
 };
 
 /**
@@ -112,7 +179,7 @@ export const unmoutModule = (targetModule: StarkModule, targetNode: HTMLElement)
   const moduleInfo = importModules[name]?.module;
   const moduleSandbox = importModules[name]?.moduleSandbox;
   const unmount = targetModule.unmount || moduleInfo?.unmount || defaultUnmount;
-
+  removeCSS(name);
   if (moduleSandbox?.clear) {
     moduleSandbox.clear();
   }
