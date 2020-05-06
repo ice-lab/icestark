@@ -167,6 +167,7 @@ export const mountModule = async (targetModule: StarkModule, targetNode: HTMLEle
   if (moduleCSS.length) {
     await Promise.all(moduleCSS.map((css: string) => appendCSS(name, css)));
   }
+
   return mount(component, targetNode, props);
 };
 
@@ -194,6 +195,8 @@ export class MicroModule extends React.Component<any, {}> {
 
   private mountNode = null;
 
+  private unmout = false;
+
   componentDidMount() {
     this.mountModule();
   }
@@ -206,9 +209,10 @@ export class MicroModule extends React.Component<any, {}> {
 
   componentWillUnmount() {
     unmoutModule(this.moduleInfo, this.mountNode);
+    this.unmout = true;
   }
 
-  mountModule() {
+  async mountModule() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { sandbox, moduleInfo, wrapperClassName, wrapperStyle, ...rest } = this.props;
     this.moduleInfo = moduleInfo || getModules().filter(m => m.name === this.props.moduleName)[0];
@@ -217,7 +221,10 @@ export class MicroModule extends React.Component<any, {}> {
       return;
     }
 
-    mountModule(this.moduleInfo, this.mountNode, rest, sandbox);
+    await mountModule(this.moduleInfo, this.mountNode, rest, sandbox);
+    if (this.unmout) {
+      unmoutModule(this.moduleInfo, this.mountNode);
+    }
   }
 
   render() {
