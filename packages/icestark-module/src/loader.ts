@@ -48,7 +48,7 @@ export default class ModuleLoader {
         globalWindow = window;
       }
       const { name } = starkModule;
-      let libraryExport = name;
+      let libraryExport = '';
       // excute script in order
       sources.forEach((source, index) => {
         const lastScript = index === sources.length - 1;
