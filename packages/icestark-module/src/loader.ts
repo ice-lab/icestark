@@ -67,7 +67,12 @@ export default class ModuleLoader {
           libraryExport = getGlobalProp(globalWindow);
         }
       });
-      return (globalWindow as any)[name] || (globalWindow as any)[libraryExport] || {};
+      const moduleInfo = libraryExport ? (globalWindow as any)[libraryExport] : ((globalWindow as any)[name] || {});
+      // remove moduleInfo from globalWindow in case of excute multi module in globalWindow
+      if ((globalWindow as any)[libraryExport]) {
+        delete globalWindow[libraryExport];
+      }
+      return moduleInfo;
     });
   }
 };
