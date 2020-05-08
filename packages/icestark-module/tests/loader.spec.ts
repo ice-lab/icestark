@@ -51,6 +51,6 @@ describe('module loader', () => {
   test('excute module in sandbox', async () => {
     const sandbox = new Sandbox({ multiMode: true });
     const moduleInfo = await moduleLoader.execModule({ name: 'modulename', url: '//source' }, sandbox);
-    expect(moduleInfo).toBe(true);
+    expect(!!moduleInfo.default).toBe(true);
   });
 });

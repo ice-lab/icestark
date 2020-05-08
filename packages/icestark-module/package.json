@@ -55,6 +55,6 @@
     "preset": "ts-jest"
   },
   "dependencies": {
-    "@ice/sandbox": "^1.0.4-0"
+    "@ice/sandbox": "^1.0.3"
   }
 }
