@@ -137,9 +137,10 @@ export const getModules = function () {
 };
 
 /**
- * mount module function
+ * load module source
  */
-export const mountModule = async (targetModule: StarkModule, targetNode: HTMLElement, props: any = {}, sandbox?: ISandbox) => {
+
+export const loadModule = async(targetModule: StarkModule, sandbox?: ISandbox) => {
   const { name, url } = targetModule;
   let moduleSandbox = null;
   if (!importModules[name]) {
@@ -155,9 +156,10 @@ export const mountModule = async (targetModule: StarkModule, targetNode: HTMLEle
 
   const { moduleInfo, moduleCSS } = importModules[name];
 
-  if (!moduleInfo) {
-    console.error('load or exec module faild');
-    return;
+  if (moduleInfo) {
+    const errMsg = 'load or exec module faild';
+    console.error(errMsg);
+    return Promise.reject(new Error(errMsg));
   }
 
   const mount = targetModule.mount || moduleInfo?.mount || defaultMount;
@@ -168,6 +170,17 @@ export const mountModule = async (targetModule: StarkModule, targetNode: HTMLEle
     await Promise.all(moduleCSS.map((css: string) => appendCSS(name, css)));
   }
 
+  return {
+    mount,
+    component,
+  }
+}
+
+/**
+ * mount module function
+ */
+export const mountModule = async (targetModule: StarkModule, targetNode: HTMLElement, props: any = {}, sandbox?: ISandbox) => {
+  const { mount, component } = await loadModule(targetModule, sandbox);
   return mount(component, targetNode, props);
 };
 
@@ -190,12 +203,24 @@ export const unmoutModule = (targetModule: StarkModule, targetNode: HTMLElement)
 /**
  * default render compoent, mount all modules
  */
-export class MicroModule extends React.Component<any, {}> {
+export class MicroModule extends React.Component<any, { loading: boolean }> {
+  static defaultProps = {
+    loadingComponent: null,
+    handleError: () => {},
+  };
+
   private moduleInfo = null;
 
   private mountNode = null;
 
   private unmout = false;
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      loading: false,
+    };
+  }
 
   componentDidMount() {
     this.mountModule();
@@ -214,22 +239,33 @@ export class MicroModule extends React.Component<any, {}> {
 
   async mountModule() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { sandbox, moduleInfo, wrapperClassName, wrapperStyle, ...rest } = this.props;
+    const { sandbox, moduleInfo, wrapperClassName, wrapperStyle, loadingComponent, handleError, ...rest } = this.props;
     this.moduleInfo = moduleInfo || getModules().filter(m => m.name === this.props.moduleName)[0];
     if (!this.moduleInfo) {
       console.error(`Can't find ${this.props.moduleName} module in modules config`);
       return;
     }
-
-    await mountModule(this.moduleInfo, this.mountNode, rest, sandbox);
-    if (this.unmout) {
-      unmoutModule(this.moduleInfo, this.mountNode);
+    this.setState({ loading: true });
+    try {
+      const { mount, component } =  await loadModule(this.moduleInfo, sandbox);
+      if (mount && component) {
+        this.setState({ loading: false });
+        if (this.unmout) {
+          unmoutModule(this.moduleInfo, this.mountNode);
+        } else {
+          mount(component, this.mountNode, rest);
+        }
+      }
+    } catch (err) {
+      handleError(err);
     }
   }
 
   render() {
-    const { wrapperClassName, wrapperStyle } = this.props;
-    return (<div className={wrapperClassName} style={wrapperStyle} ref={ref => this.mountNode = ref} />);
+    const { loading } = this.state;
+    const { wrapperClassName, wrapperStyle, loadingComponent } = this.props;
+    return loading ? loadingComponent
+      : <div className={wrapperClassName} style={wrapperStyle} ref={ref => this.mountNode = ref} />;
   }
 };
 
