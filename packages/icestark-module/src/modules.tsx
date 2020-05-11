@@ -156,7 +156,7 @@ export const loadModule = async(targetModule: StarkModule, sandbox?: ISandbox) =
 
   const { moduleInfo, moduleCSS } = importModules[name];
 
-  if (moduleInfo) {
+  if (!moduleInfo) {
     const errMsg = 'load or exec module faild';
     console.error(errMsg);
     return Promise.reject(new Error(errMsg));
@@ -248,8 +248,8 @@ export class MicroModule extends React.Component<any, { loading: boolean }> {
     this.setState({ loading: true });
     try {
       const { mount, component } =  await loadModule(this.moduleInfo, sandbox);
+      this.setState({ loading: false });
       if (mount && component) {
-        this.setState({ loading: false });
         if (this.unmout) {
           unmoutModule(this.moduleInfo, this.mountNode);
         } else {
@@ -257,6 +257,7 @@ export class MicroModule extends React.Component<any, { loading: boolean }> {
         }
       }
     } catch (err) {
+      this.setState({ loading: false });
       handleError(err);
     }
   }
