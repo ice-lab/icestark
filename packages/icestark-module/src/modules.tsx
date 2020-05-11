@@ -175,8 +175,8 @@ export const loadModule = async(targetModule: StarkModule, sandbox?: ISandbox) =
   return {
     mount,
     component,
-  }
-}
+  };
+};
 
 /**
  * mount module function
@@ -206,16 +206,16 @@ export const unmoutModule = (targetModule: StarkModule, targetNode: HTMLElement)
  * default render compoent, mount all modules
  */
 export class MicroModule extends React.Component<any, { loading: boolean }> {
-  static defaultProps = {
-    loadingComponent: null,
-    handleError: () => {},
-  };
-
   private moduleInfo = null;
 
   private mountNode = null;
 
   private unmout = false;
+
+  static defaultProps = {
+    loadingComponent: null,
+    handleError: () => {},
+  };
 
   constructor(props) {
     super(props);
