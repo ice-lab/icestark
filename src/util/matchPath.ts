@@ -35,11 +35,14 @@ export default function matchPath(pathname: string, options: any = {}) {
   return paths.reduce((matched, path) => {
     if (!path) return null;
     if (matched) return matched;
-
-    const { regexp, keys } = compilePath(path, {
+    const { value, ...restOptions } = Object.prototype.toString.call(path) === '[object Object]'
+      ? path
+      : ({} as { value?: string; });
+    const { regexp, keys } = compilePath(value || path, {
       end: exact,
       strict,
       sensitive,
+      ...restOptions,
     });
     const match = regexp.exec(pathname);
 
