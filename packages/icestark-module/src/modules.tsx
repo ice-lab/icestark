@@ -41,8 +41,9 @@ const defaultMount = (Component: any, targetNode: HTMLElement, props?: any) => {
   console.warn('Please set mount, try run react mount function');
   try {
     ReactDOM.render(renderComponent(Component, props), targetNode);
-  // eslint-disable-next-line no-empty
-  } catch(err) {}
+  } catch(err) {
+    throw err;
+  }
 };
 
 /**
@@ -52,8 +53,9 @@ const defaultUnmount = (targetNode: HTMLElement) => {
   console.warn('Please set unmount, try run react unmount function');
   try {
     ReactDOM.unmountComponentAtNode(targetNode);
-  // eslint-disable-next-line no-empty
-  } catch(err) {}
+  } catch(err) {
+    throw err;
+  }
 };
 
 function createSandbox(sandbox: ISandbox) {
@@ -73,7 +75,7 @@ function createSandbox(sandbox: ISandbox) {
 /**
  * parse url assets
  */
-const parseUrlAssets = (assets: string | string[]) => {
+export const parseUrlAssets = (assets: string | string[]) => {
   const jsList = [];
   const cssList = [];
   (Array.isArray(assets) ? assets : [assets]).forEach(url => {
@@ -120,8 +122,8 @@ export function appendCSS(
  * remove css
  */
 
-export function removeCSS(name: string) {
-  const linkList: NodeListOf<HTMLElement> = document.querySelectorAll(
+export function removeCSS(name: string, node?: HTMLElement | Document) {
+  const linkList: NodeListOf<HTMLElement> = (node || document).querySelectorAll(
     `link[module=${name}]`,
   );
   linkList.forEach(link => {
