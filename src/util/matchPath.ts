@@ -38,6 +38,7 @@ export default function matchPath(pathname: string, options: any = {}) {
     const { value, ...restOptions } = Object.prototype.toString.call(path) === '[object Object]'
       ? path
       : ({} as { value?: string; });
+    const pathValue = value || path;
     const pathOptions = {
       end: exact,
       strict,
@@ -49,7 +50,7 @@ export default function matchPath(pathname: string, options: any = {}) {
       pathOptions.end = pathOptions.exact;
       delete pathOptions.exact;
     }
-    const { regexp, keys } = compilePath(value || path, pathOptions);
+    const { regexp, keys } = compilePath(pathValue, pathOptions);
     const match = regexp.exec(pathname);
 
     if (!match) return null;
@@ -60,7 +61,7 @@ export default function matchPath(pathname: string, options: any = {}) {
     if (exact && !isExact) return null;
 
     return {
-      path, // the path used to match
+      path: pathValue, // the path used to match
       url: path === '/' && url === '' ? '/' : url, // the matched portion of the URL
       isExact, // whether or not we matched exactly
       params: keys.reduce((memo, key, index) => {
