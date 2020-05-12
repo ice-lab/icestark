@@ -38,12 +38,18 @@ export default function matchPath(pathname: string, options: any = {}) {
     const { value, ...restOptions } = Object.prototype.toString.call(path) === '[object Object]'
       ? path
       : ({} as { value?: string; });
-    const { regexp, keys } = compilePath(value || path, {
+    const pathOptions = {
       end: exact,
       strict,
       sensitive,
       ...restOptions,
-    });
+    };
+    if (pathOptions.exact) {
+      // overwrite exact value to end
+      pathOptions.end = pathOptions.exact;
+      delete pathOptions.exact;
+    }
+    const { regexp, keys } = compilePath(value || path, pathOptions);
     const match = regexp.exec(pathname);
 
     if (!match) return null;
