@@ -4,7 +4,7 @@ import { AppHistory } from './appHistory';
 import renderComponent from './util/renderComponent';
 import { appendAssets, emptyAssets, cacheAssets, getEntryAssets, getUrlAssets } from './util/handleAssets';
 import { setCache, getCache } from './util/cache';
-import { callAppEnter, callAppLeave, cacheApp, isCached } from './util/appLifeCycle';
+import { callAppEnter, callAppLeave, cacheApp, isCached, AppLifeCycleEnum } from './util/appLifeCycle';
 import { callCapturedEventListeners } from './util/capturedListeners';
 
 import isEqual = require('lodash.isequal');
@@ -227,6 +227,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       shouldAssetsRemove,
       cache,
       sandbox,
+      path,
     } = this.props;
     if (sandbox) {
       if (typeof sandbox === 'function') {
@@ -293,7 +294,14 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         // cache app lifecycle after load assets
         cacheApp(assetsCacheKey);
       }
-
+      if (process.env.NODE_ENV === 'development') {
+        if (!getCache(AppLifeCycleEnum.AppEnter)) {
+          console.warn('[icestark] please trigger app mount manually via registerAppEnter, app path: ', path);
+        }
+        if (!getCache(AppLifeCycleEnum.AppLeave)) {
+          console.warn('[icestark] please trigger app unmount manually via registerAppLeave, app path: ', path);
+        }
+      }
       // trigger sub-application render
       callAppEnter();
 
