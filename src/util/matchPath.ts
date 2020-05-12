@@ -37,7 +37,7 @@ export default function matchPath(pathname: string, options: any = {}) {
     if (matched) return matched;
     const { value, ...restOptions } = Object.prototype.toString.call(path) === '[object Object]'
       ? path
-      : ({} as { value?: string; });
+      : ({} as unknown);
     const pathValue = value || path;
     const pathOptions = {
       end: exact,
