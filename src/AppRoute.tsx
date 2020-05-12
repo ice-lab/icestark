@@ -294,13 +294,12 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         // cache app lifecycle after load assets
         cacheApp(assetsCacheKey);
       }
-      if (process.env.NODE_ENV === 'development') {
-        if (!getCache(AppLifeCycleEnum.AppEnter)) {
-          console.warn('[icestark] please trigger app mount manually via registerAppEnter, app path: ', path);
-        }
-        if (!getCache(AppLifeCycleEnum.AppLeave)) {
-          console.warn('[icestark] please trigger app unmount manually via registerAppLeave, app path: ', path);
-        }
+
+      if (!getCache(AppLifeCycleEnum.AppEnter)) {
+        console.warn('[icestark] please trigger app mount manually via registerAppEnter, app path: ', path);
+      }
+      if (!getCache(AppLifeCycleEnum.AppLeave)) {
+        console.warn('[icestark] please trigger app unmount manually via registerAppLeave, app path: ', path);
       }
       // trigger sub-application render
       callAppEnter();
