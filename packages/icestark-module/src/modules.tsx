@@ -39,11 +39,7 @@ export function renderComponent(Component: any, props = {}): React.ReactElement 
  */
 const defaultMount = (Component: any, targetNode: HTMLElement, props?: any) => {
   console.warn('Please set mount, try run react mount function');
-  try {
-    ReactDOM.render(renderComponent(Component, props), targetNode);
-  } catch(err) {
-    throw err;
-  }
+  ReactDOM.render(renderComponent(Component, props), targetNode);
 };
 
 /**
@@ -51,11 +47,7 @@ const defaultMount = (Component: any, targetNode: HTMLElement, props?: any) => {
  */
 const defaultUnmount = (targetNode: HTMLElement) => {
   console.warn('Please set unmount, try run react unmount function');
-  try {
-    ReactDOM.unmountComponentAtNode(targetNode);
-  } catch(err) {
-    throw err;
-  }
+  ReactDOM.unmountComponentAtNode(targetNode);
 };
 
 function createSandbox(sandbox: ISandbox) {
