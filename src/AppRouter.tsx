@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as urlParse from 'url-parse';
-import { AppConfig, AppRouteProps, AppRouteComponentProps } from './AppRoute';
+import { AppConfig, AppRouteProps, AppRouteComponentProps, PathData } from './AppRoute';
 import appHistory from './appHistory';
 import renderComponent from './util/renderComponent';
 import matchPath from './util/matchPath';
@@ -288,7 +288,9 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
         element = child;
 
         const { path, hashType } = child.props as AppRouteProps;
-        const routerPath = appBasename ? `${addLeadingSlash(appBasename)}${path}` : path;
+        const routerPath = appBasename
+          ? [].concat(path).map((pathStr: string | PathData) => `${addLeadingSlash(appBasename)}${(pathStr as PathData).value || pathStr}`)
+          : path;
         if (hashType) {
           const decodePath = HashPathDecoders[hashType === true ? 'slash' : hashType];
           const hashPath = decodePath(getHashPath(hash));
@@ -310,7 +312,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       };
 
       // render AppRoute
-      setCache('basename', `${appBasename}${basename || (Array.isArray(path) ? path[0] : path)}`);
+      setCache('basename', `${appBasename}${basename || (Array.isArray(path) ? (path[0] as PathData).value || path[0] : path)}`);
 
       const extraProps: any = {
         onAppEnter,
