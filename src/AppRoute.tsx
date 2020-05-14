@@ -4,7 +4,7 @@ import { AppHistory } from './appHistory';
 import renderComponent from './util/renderComponent';
 import { appendAssets, emptyAssets, cacheAssets, getEntryAssets, getUrlAssets } from './util/handleAssets';
 import { setCache, getCache } from './util/cache';
-import { callAppEnter, callAppLeave, cacheApp, isCached } from './util/appLifeCycle';
+import { callAppEnter, callAppLeave, cacheApp, isCached, AppLifeCycleEnum } from './util/appLifeCycle';
 import { callCapturedEventListeners } from './util/capturedListeners';
 
 import isEqual = require('lodash.isequal');
@@ -38,6 +38,13 @@ export interface AppRouteComponentProps<Params extends { [K in keyof Params]?: s
   history: AppHistory;
 }
 
+export interface PathData {
+  value: string;
+  exact?: boolean;
+  strict?: boolean;
+  sensitive?: boolean;
+}
+
 // from user config
 export interface AppConfig {
   sandbox?: boolean | SandboxProps | SandboxContructor;
@@ -48,7 +55,7 @@ export interface AppConfig {
   strict?: boolean;
   sensitive?: boolean;
   rootId?: string;
-  path: string | string[];
+  path: string | (string | PathData)[];
   url?: string | string[];
   entry?: string;
   entryContent?: string;
@@ -71,9 +78,14 @@ export interface AppRouteProps extends AppConfig {
   clearCacheRoot?: () => void;
 }
 
-export function converArray2String(list: string | string[]) {
+export function converArray2String(list: string | (string | PathData)[]) {
   if (Array.isArray(list)) {
-    return list.join(',');
+    return list.map((item) => {
+      if (Object.prototype.toString.call(item) === '[object Object]') {
+        return Object.keys(item).map((key) => `${key}:${item[key]}`).join(',');
+      }
+      return item;
+    }).join(',');
   }
 
   return String(list);
@@ -227,6 +239,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       shouldAssetsRemove,
       cache,
       sandbox,
+      path,
     } = this.props;
     if (sandbox) {
       if (typeof sandbox === 'function') {
@@ -294,6 +307,12 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         cacheApp(assetsCacheKey);
       }
 
+      if (!getCache(AppLifeCycleEnum.AppEnter)) {
+        console.warn('[icestark] please trigger app mount manually via registerAppEnter, app path: ', path);
+      }
+      if (!getCache(AppLifeCycleEnum.AppLeave)) {
+        console.warn('[icestark] please trigger app unmount manually via registerAppLeave, app path: ', path);
+      }
       // trigger sub-application render
       callAppEnter();
 

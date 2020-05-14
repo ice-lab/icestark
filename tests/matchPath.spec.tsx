@@ -23,5 +23,11 @@ describe('matchPath', () => {
 
     match = matchPath('/test/123', { path: '/test', exact: true });
     expect(match).toBeNull();
+
+    match = matchPath('/', { path: [{ value: '/', exact: true }, { value: '/test' }] });
+    expect(match.url).toBe('/');
+
+    match = matchPath('/test/123', { path: [{ value: '/', exact: true }, { value: '/test' }] });
+    expect(match.url).toBe('/test');
   });
 });

@@ -114,6 +114,11 @@ export default class Sandbox {
         if (['top', 'window', 'self', 'globalThis'].includes(p as string)) {
           return sandbox;
         }
+        // proxy hasOwnProperty, in case of proxy.hasOwnProperty value represented as originalWindow.hasOwnProperty
+        if (p === 'hasOwnProperty') {
+          // eslint-disable-next-line no-prototype-builtins
+          return (key: PropertyKey) => !!target[key] || originalWindow.hasOwnProperty(key);
+        }
         const targetValue = target[p];
         if (targetValue) {
           // case of addEventListener, removeEventListener, setTimeout, setInterval setted in sandbox

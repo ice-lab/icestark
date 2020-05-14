@@ -22,28 +22,25 @@ describe('module loader', () => {
   });
   const moduleLoader = new ModuleLoader();
 
-  test('load module', () => {
+  test('load module', async () => {
     const task = moduleLoader.load({
       url: '//localhost',
       name: 'test',
     });
-    task.then((text) => {
-      expect(text).toEqual('//localhost');
-    });
+    const res = await task;
+    expect(res).toEqual(['//localhost']);
   });
 
-  test('load cache', () => {
+  test('load cache', async () => {
     const task = moduleLoader.load({ name: 'test', url: '//localhost2' });
-    task.then((text) => {
-      expect(text).toEqual('//localhost');
-    });
+    const res = await task;
+    expect(res).toEqual(['//localhost']);
   });
 
-  test('load source', () => {
+  test('load source', async () => {
     const task = moduleLoader.load({ name: 'testsource', url: '//source' });
-    task.then((text) => {
-      expect(text).toEqual(source.toString());
-    });
+    const res = await task;
+    expect(res).toEqual([source.toString()]);
   });
 
   test('execute module', async () => {

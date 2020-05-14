@@ -8,6 +8,7 @@ type ISandbox = boolean | SandboxProps | SandboxContructor;
 let globalModules = [];
 let importModules = {};
 
+const IS_CSS_REGEX = /\.css(\?((?!\.js$).)+)?$/;
 export const moduleLoader = new ModuleLoader();
 
 export const registerModules = (modules: StarkModule[]) => {
@@ -38,10 +39,7 @@ export function renderComponent(Component: any, props = {}): React.ReactElement 
  */
 const defaultMount = (Component: any, targetNode: HTMLElement, props?: any) => {
   console.warn('Please set mount, try run react mount function');
-  try {
-    ReactDOM.render(renderComponent(Component, props), targetNode);
-  // eslint-disable-next-line no-empty
-  } catch(err) {}
+  ReactDOM.render(renderComponent(Component, props), targetNode);
 };
 
 /**
@@ -49,10 +47,7 @@ const defaultMount = (Component: any, targetNode: HTMLElement, props?: any) => {
  */
 const defaultUnmount = (targetNode: HTMLElement) => {
   console.warn('Please set unmount, try run react unmount function');
-  try {
-    ReactDOM.unmountComponentAtNode(targetNode);
-  // eslint-disable-next-line no-empty
-  } catch(err) {}
+  ReactDOM.unmountComponentAtNode(targetNode);
 };
 
 function createSandbox(sandbox: ISandbox) {
@@ -70,6 +65,65 @@ function createSandbox(sandbox: ISandbox) {
 }
 
 /**
+ * parse url assets
+ */
+export const parseUrlAssets = (assets: string | string[]) => {
+  const jsList = [];
+  const cssList = [];
+  (Array.isArray(assets) ? assets : [assets]).forEach(url => {
+    const isCss: boolean = IS_CSS_REGEX.test(url);
+    if (isCss) {
+      cssList.push(url);
+    } else {
+      jsList.push(url);
+    }
+  });
+
+  return { jsList, cssList };
+};
+
+
+export function appendCSS(
+  name: string,
+  url: string,
+  root: HTMLElement | ShadowRoot = document.getElementsByTagName('head')[0],
+): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    if (!root) reject(new Error(`no root element for css assert: ${url}`));
+
+    const element: HTMLLinkElement = document.createElement('link');
+    element.setAttribute('module', name);
+    element.rel = 'stylesheet';
+    element.href = url;
+
+    element.addEventListener(
+      'error',
+      () => {
+        console.error(`css asset loaded error: ${url}`);
+        return resolve();
+      },
+      false,
+    );
+    element.addEventListener('load', () => resolve(), false);
+
+    root.appendChild(element);
+  });
+}
+
+/**
+ * remove css
+ */
+
+export function removeCSS(name: string, node?: HTMLElement | Document) {
+  const linkList: NodeListOf<HTMLElement> = (node || document).querySelectorAll(
+    `link[module=${name}]`,
+  );
+  linkList.forEach(link => {
+    link.parentNode.removeChild(link);
+  });
+}
+
+/**
  * return globalModules
 */
 export const getModules = function () {
@@ -77,30 +131,50 @@ export const getModules = function () {
 };
 
 /**
- * mount module function
+ * load module source
  */
-export const mountModule = async (targetModule: StarkModule, targetNode: HTMLElement, props: any = {}, sandbox?: ISandbox) => {
-  const { name } = targetModule;
+
+export const loadModule = async(targetModule: StarkModule, sandbox?: ISandbox) => {
+  const { name, url } = targetModule;
   let moduleSandbox = null;
   if (!importModules[name]) {
+    const { jsList, cssList } = parseUrlAssets(url);
     moduleSandbox = createSandbox(sandbox);
-    const moduleInfo = await moduleLoader.execModule(targetModule, moduleSandbox);
+    const moduleInfo = await moduleLoader.execModule({ name, url: jsList }, moduleSandbox);
     importModules[name] = {
       moduleInfo,
       moduleSandbox,
+      moduleCSS: cssList,
     };
   }
 
-  const moduleInfo = importModules[name].moduleInfo;
+  const { moduleInfo, moduleCSS } = importModules[name];
 
   if (!moduleInfo) {
-    console.error('load or exec module faild');
-    return;
+    const errMsg = 'load or exec module faild';
+    console.error(errMsg);
+    return Promise.reject(new Error(errMsg));
   }
 
   const mount = targetModule.mount || moduleInfo?.mount || defaultMount;
   const component = moduleInfo.default || moduleInfo;
 
+  // append css before mount module
+  if (moduleCSS.length) {
+    await Promise.all(moduleCSS.map((css: string) => appendCSS(name, css)));
+  }
+
+  return {
+    mount,
+    component,
+  };
+};
+
+/**
+ * mount module function
+ */
+export const mountModule = async (targetModule: StarkModule, targetNode: HTMLElement, props: any = {}, sandbox?: ISandbox) => {
+  const { mount, component } = await loadModule(targetModule, sandbox);
   return mount(component, targetNode, props);
 };
 
@@ -112,7 +186,7 @@ export const unmoutModule = (targetModule: StarkModule, targetNode: HTMLElement)
   const moduleInfo = importModules[name]?.module;
   const moduleSandbox = importModules[name]?.moduleSandbox;
   const unmount = targetModule.unmount || moduleInfo?.unmount || defaultUnmount;
-
+  removeCSS(name);
   if (moduleSandbox?.clear) {
     moduleSandbox.clear();
   }
@@ -123,10 +197,24 @@ export const unmoutModule = (targetModule: StarkModule, targetNode: HTMLElement)
 /**
  * default render compoent, mount all modules
  */
-export class MicroModule extends React.Component<any, {}> {
+export class MicroModule extends React.Component<any, { loading: boolean }> {
   private moduleInfo = null;
 
   private mountNode = null;
+
+  private unmout = false;
+
+  static defaultProps = {
+    loadingComponent: null,
+    handleError: () => {},
+  };
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      loading: false,
+    };
+  }
 
   componentDidMount() {
     this.mountModule();
@@ -140,23 +228,39 @@ export class MicroModule extends React.Component<any, {}> {
 
   componentWillUnmount() {
     unmoutModule(this.moduleInfo, this.mountNode);
+    this.unmout = true;
   }
 
-  mountModule() {
+  async mountModule() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { sandbox, moduleInfo, wrapperClassName, wrapperStyle, ...rest } = this.props;
+    const { sandbox, moduleInfo, wrapperClassName, wrapperStyle, loadingComponent, handleError, ...rest } = this.props;
     this.moduleInfo = moduleInfo || getModules().filter(m => m.name === this.props.moduleName)[0];
     if (!this.moduleInfo) {
       console.error(`Can't find ${this.props.moduleName} module in modules config`);
       return;
     }
-
-    mountModule(this.moduleInfo, this.mountNode, rest, sandbox);
+    this.setState({ loading: true });
+    try {
+      const { mount, component } =  await loadModule(this.moduleInfo, sandbox);
+      this.setState({ loading: false });
+      if (mount && component) {
+        if (this.unmout) {
+          unmoutModule(this.moduleInfo, this.mountNode);
+        } else {
+          mount(component, this.mountNode, rest);
+        }
+      }
+    } catch (err) {
+      this.setState({ loading: false });
+      handleError(err);
+    }
   }
 
   render() {
-    const { wrapperClassName, wrapperStyle } = this.props;
-    return (<div className={wrapperClassName} style={wrapperStyle} ref={ref => this.mountNode = ref} />);
+    const { loading } = this.state;
+    const { wrapperClassName, wrapperStyle, loadingComponent } = this.props;
+    return loading ? loadingComponent
+      : <div className={wrapperClassName} style={wrapperStyle} ref={ref => this.mountNode = ref} />;
   }
 };
 
