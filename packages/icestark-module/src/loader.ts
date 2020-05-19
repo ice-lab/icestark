@@ -50,23 +50,27 @@ export default class ModuleLoader {
       const { name } = starkModule;
       let libraryExport = '';
       // excute script in order
-      sources.forEach((source, index) => {
-        const lastScript = index === sources.length - 1;
-        if (lastScript) {
-          noteGlobalProps(globalWindow);
-        }
-        // check sandbox
-        if (sandbox?.execScriptInSandbox) {
-          sandbox.execScriptInSandbox(source);
-        } else {
-          // https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/eval
-          // eslint-disable-next-line no-eval
-          (0, eval)(source);
-        }
-        if (lastScript) {
-          libraryExport = getGlobalProp(globalWindow);
-        }
-      });
+      try {
+        sources.forEach((source, index) => {
+          const lastScript = index === sources.length - 1;
+          if (lastScript) {
+            noteGlobalProps(globalWindow);
+          }
+          // check sandbox
+          if (sandbox?.execScriptInSandbox) {
+            sandbox.execScriptInSandbox(source);
+          } else {
+            // https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/eval
+            // eslint-disable-next-line no-eval
+            (0, eval)(source);
+          }
+          if (lastScript) {
+            libraryExport = getGlobalProp(globalWindow);
+          }
+        });
+      } catch (err) {
+        console.error(err);
+      }
       const moduleInfo = libraryExport ? (globalWindow as any)[libraryExport] : ((globalWindow as any)[name] || {});
       // remove moduleInfo from globalWindow in case of excute multi module in globalWindow
       if ((globalWindow as any)[libraryExport]) {
