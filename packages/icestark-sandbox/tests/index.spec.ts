@@ -34,3 +34,13 @@ describe('sandbox: default props', () => {
     expect((window as any).a).toBe(undefined);
   });
 });
+
+describe('sandbox: access contructor', () => {
+  const sandbox = new Sandbox();
+
+  test('execute global functions', () => {
+    sandbox.execScriptInSandbox('window.error = new Error("errmsg");Error.toString();');
+    const globalWindow = sandbox.getSandbox();
+    expect((globalWindow as any).error.toString()).toBe('Error: errmsg');
+  });
+});
