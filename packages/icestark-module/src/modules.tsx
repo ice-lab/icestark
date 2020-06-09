@@ -183,7 +183,7 @@ export const mountModule = async (targetModule: StarkModule, targetNode: HTMLEle
  */
 export const unmoutModule = (targetModule: StarkModule, targetNode: HTMLElement) => {
   const { name } = targetModule;
-  const moduleInfo = importModules[name]?.module;
+  const moduleInfo = importModules[name]?.moduleInfo;
   const moduleSandbox = importModules[name]?.moduleSandbox;
   const unmount = targetModule.unmount || moduleInfo?.unmount || defaultUnmount;
   removeCSS(name);
@@ -221,7 +221,7 @@ export class MicroModule extends React.Component<any, { loading: boolean }> {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.moduleInfo !== this.props.moduleInfo || prevProps.name !== this.props.name) {
+    if (prevProps.moduleInfo !== this.props.moduleInfo || prevProps.moduleName !== this.props.moduleName) {
       this.mountModule();
     }
   }

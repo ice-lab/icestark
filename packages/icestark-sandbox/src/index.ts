@@ -7,12 +7,14 @@ export interface SandboxContructor {
 }
 // check window contructor function， like Object Array
 function isConstructor(fn) {
-  const functionStr = fn.toString();
+  // generator function and has own prototype properties
+  const hasConstructor = fn.prototype && fn.prototype.constructor === fn && Object.getOwnPropertyNames(fn.prototype).length > 1;
+  // unnecessary to call toString if it has contructor function
+  const functionStr = !hasConstructor && fn.toString();
   const upperCaseRegex = /^function\s+[A-Z]/;
 
   return (
-    // generator function and has own prototype properties
-    (fn.prototype && fn.prototype.constructor === fn && Object.getOwnPropertyNames(fn.prototype).length > 1) ||
+    hasConstructor ||
     // upper case
     upperCaseRegex.test(functionStr) ||
     // ES6 class, window function do not have this case

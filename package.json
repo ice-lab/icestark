@@ -65,6 +65,9 @@
     "ts-jest": "^24.0.2",
     "typescript": "^3.4.4"
   },
+  "resolutions": {
+    "eslint-plugin-import": "2.20.2"
+  },
   "jest": {
     "coverageDirectory": "./coverage/",
     "collectCoverage": true,
