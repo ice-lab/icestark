@@ -5,6 +5,7 @@ export interface SandboxProps {
 export interface SandboxContructor {
   new(): Sandbox;
 }
+const boundValueSymbol = Symbol('bound value');
 // check window contructor function， like Object Array
 function isConstructor(fn) {
   // generator function and has own prototype properties
@@ -156,7 +157,7 @@ export default class Sandbox {
       try {
         const execScript = `with (sandbox) {;${script}\n}`;
         // eslint-disable-next-line no-new-func
-        const code = new Function('sandbox', execScript);
+        const code = new Function('sandbox', execScript).bind(this.sandbox);
         // run code with sandbox
         code(this.sandbox);
       } catch (error) {
