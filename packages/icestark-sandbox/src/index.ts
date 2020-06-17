@@ -5,7 +5,7 @@ export interface SandboxProps {
 export interface SandboxContructor {
   new(): Sandbox;
 }
-const boundValueSymbol = Symbol('bound value');
+
 // check window contructor function， like Object Array
 function isConstructor(fn) {
   // generator function and has own prototype properties
