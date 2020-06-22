@@ -44,3 +44,10 @@ describe('sandbox: access contructor', () => {
     expect((globalWindow as any).error.toString()).toBe('Error: errmsg');
   });
 });
+
+describe('sanbox: binding this', () => {
+  const sandbox = new Sandbox();
+  test('bind this to proxy', () => {
+    sandbox.execScriptInSandbox('expect(window === this).toBe(true);');
+  });
+});
