@@ -220,7 +220,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
     // setHistoryState before setState
     // setState is only async batched when it is called inside a React event handler, otherwise it is sync
-    // make sure histroy state had beed recorded before render
+    // make sure history state had beed recorded before render
     setHistoryState(state);
     this.setState({ url });
 
