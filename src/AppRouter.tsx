@@ -218,11 +218,11 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     // if AppRouter is unmounted, cancel all operations
     if (this.unmounted) return;
 
-    this.setState({ url });
-
-    // setHistoryState after setState
-    // history in sub-application will not triggered callCapturedEventListeners for historyState is null
+    // setHistoryState before setState
+    // setState is only async batched when it is called inside a React event handler, otherwise it is sync
+    // make sure history state had beed recorded before render
     setHistoryState(state);
+    this.setState({ url });
 
     this.handleRouteChange(url, routeType);
   };
