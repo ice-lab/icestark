@@ -230,13 +230,13 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   /**
    * Trigger popstate
    */
-  handlePopState = (state): void => {
+  handlePopState = (event: PopStateEvent): void => {
     // if AppRouter is unmounted, cancel all operations
     if (this.unmounted) return;
 
     const url = location.href;
 
-    setHistoryState(state);
+    setHistoryState(event.state);
     this.setState({ url });
 
     this.handleRouteChange(url, 'popstate');
