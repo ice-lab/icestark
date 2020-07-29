@@ -90,7 +90,7 @@ export function appendCSS(
 ): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     if (!root) reject(new Error(`no root element for css assert: ${url}`));
-
+    removeCSS(name); // remove css  when MicroModule mutiple render
     const element: HTMLLinkElement = document.createElement('link');
     element.setAttribute('module', name);
     element.rel = 'stylesheet';
