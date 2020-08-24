@@ -74,7 +74,7 @@ export function appendCSS(
     element.addEventListener(
       'error',
       () => {
-        error(`css asset loaded error: ${asset}`);
+        error(`css asset loaded error: ${content || asset}`);
         return resolve();
       },
       false,
@@ -113,7 +113,7 @@ export function appendExternalScript(
 
     element.addEventListener(
       'error',
-      () => reject(new Error(`js asset loaded error: ${asset}`)),
+      () => reject(new Error(`js asset loaded error: ${content || asset}`)),
       false,
     );
     element.addEventListener('load', () => resolve(), false);
