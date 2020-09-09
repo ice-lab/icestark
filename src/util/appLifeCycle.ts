@@ -1,5 +1,7 @@
 import { setCache, getCache } from './cache';
 import { resetCapturedEventListeners } from './capturedListeners';
+import { exeuteUmdMount, executeUmdUnmount, executeUmdUpdate } from './handleAssets';
+import getMountNode from './getMountNode';
 
 export enum AppLifeCycleEnum {
   AppEnter = 'appEnter',
@@ -49,4 +51,41 @@ export function callAppLeave() {
     registerAppLeaveCallback();
     setCache(appLeaveKey, null);
   }
+}
+
+
+/**
+ * call umd App when app enter
+ *
+ * @export
+ * @param {string} name
+ */
+export function callUmdAppEnter(name: string, rootId?: string, props?: object) {
+  const container = getMountNode(rootId);
+  return exeuteUmdMount(name, container, props);
+}
+
+/**
+ * call umd app when app unmount
+ *
+ * @export
+ * @param {string} name
+ * @returns
+ */
+export function callUmdAppLeave(name: string, rootId?: string, props?: object) {
+  const container = getMountNode(rootId);
+  return executeUmdUnmount(name, container, props);
+}
+
+
+/**
+ * call umd app when app update
+ *
+ * @export
+ * @param {string} name
+ * @returns
+ */
+export function callUmdAppUpdate(name: string, rootId?: string, props?: object) {
+  const container = getMountNode(rootId);
+  return executeUmdUpdate(name, container, props);
 }

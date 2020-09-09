@@ -1,6 +1,7 @@
 import Sandbox from '@ice/sandbox';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { warn, error } from './message';
+import { loadUmdScript, execUmdScript } from './umdLoader';
 
 const winFetch = window.fetch;
 const COMMENT_REGEX = /<!--.*?-->/g;
@@ -43,6 +44,13 @@ export interface ParsedConfig {
 
 export interface Fetch {
   (input: RequestInfo, init?: RequestInit): Promise<Response>;
+}
+
+// Lifecycle Props
+// https://yuque.antfin-inc.com/mo/wei/api#VeFA4
+export interface ILifecycleProps {
+  container: HTMLElement;
+  customProps?: object;
 }
 
 /**
@@ -157,7 +165,8 @@ function fetchScripts(jsList: Asset[], fetch: Fetch = winFetch) {
     }
   }));
 }
-export async function appendAssets(assets: Assets, sandbox?: Sandbox) {
+export async function appendAssets(assets: Assets, sandbox?: Sandbox, ...props: [boolean, string]) {
+  const [umd, name] = props;
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
   const cssRoot: HTMLElement = document.getElementsByTagName('head')[0];
 
@@ -167,26 +176,37 @@ export async function appendAssets(assets: Assets, sandbox?: Sandbox) {
   await Promise.all(
     cssList.map((asset, index) => appendCSS(cssRoot, asset, `${PREFIX}-css-${index}`)),
   );
-  
-  if (sandbox && !sandbox.sandboxDisabled) {
+
+  // handle scripts
+  if (!umd && sandbox && !sandbox.sandboxDisabled) {
     const jsContents = await fetchScripts(jsList);
     // excute code by order
     jsContents.forEach(script => {
       sandbox.execScriptInSandbox(script);
     });
-  } else {
-    const hasInlineScript = jsList.find((asset) => asset.type === AssetTypeEnum.INLINE);
-    if (hasInlineScript) {
-      // make sure js assets loaded in order if has inline scripts
-      await jsList.reduce((chain, asset, index) => {
-        return chain.then(() => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`));
-      }, Promise.resolve());
-    } else {
-      await Promise.all(
-        jsList.map((asset, index) => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`)),
-      );
-    }
+    return;
   }
+
+  // dispose inline script
+  const hasInlineScript = jsList.find((asset) => asset.type === AssetTypeEnum.INLINE);
+  if (hasInlineScript) {
+    // make sure js assets loaded in order if has inline scripts
+    await jsList.reduce((chain, asset, index) => {
+      return chain.then(() => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`));
+    }, Promise.resolve());
+    return;
+  }
+
+  if (umd) {
+    await Promise.all(
+      jsList.map((asset) => appendUmdScript(name, asset, sandbox))
+    )
+    return;
+  }
+
+  await Promise.all(
+    jsList.map((asset, index) => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`)),
+  );
 }
 
 export function parseUrl(entry: string): ParsedConfig {
@@ -417,4 +437,78 @@ export function cacheAssets(cacheKey: string): void {
       assetsNode.setAttribute('cache', cacheKey);
     }
   });
+}
+
+const importUmdApps = {};
+
+/**
+ *
+ *
+ * @export
+ * @param {string} name
+ * @param {Asset} asset
+ * @param {Sandbox} [sandbox]
+ * @returns
+ */
+export async function appendUmdScript(name: string, asset: Asset, sandbox?: Sandbox) {
+  const { content } = asset;
+  let moduleInfo = importUmdApps[name];
+  if (!importUmdApps[name]) {
+    const tasks = loadUmdScript({url: content});
+    try {
+      const moduleInfo = await execUmdScript(tasks, sandbox);
+      importUmdApps[name] = moduleInfo;
+    } catch (err) {
+      return new Error(`js asset loaded error: ${asset}`);
+    }
+  }
+  // exeuteUmdMount(name);
+}
+
+/**
+ * execute umd script mount function
+ *
+ * @export
+ * @param {string} name
+ * @returns
+ */
+export function exeuteUmdMount(
+  name: string,
+  container: HTMLElement,
+  customProps = {}
+) {
+  const mount = importUmdApps[name]?.mount ?? (() => {});
+  return mount(container, customProps);
+}
+
+/**
+ * execute umd script unmount function
+ *
+ * @export
+ * @param {string} name
+ * @returns
+ */
+export function executeUmdUnmount(
+  name: string,
+  container: HTMLElement,
+  customProps = {}
+) {
+  const unmont = importUmdApps[name]?.unmount ?? (() => {});
+  return unmont(container, customProps);
+}
+
+/**
+ * execute umd script update function
+ *
+ * @export
+ * @param {string} name
+ * @returns
+ */
+export function executeUmdUpdate(
+  name: string,
+  container: HTMLElement,
+  customProps = {}
+) {
+  const update = importUmdApps[name]?.update ?? (() => {});
+  return update(container, customProps);
 }
