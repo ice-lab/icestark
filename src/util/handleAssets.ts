@@ -1,7 +1,10 @@
-import Sandbox from '@ice/sandbox';
+import Sandbox, { SandboxProps } from '@ice/sandbox';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { warn, error } from './message';
 import { loadUmdScript, execUmdScript } from './umdLoader';
+import { isCached, cacheApp, callAppEnter, callUmdAppEnter, AppLifeCycleEnum } from './appLifeCycle';
+import { converArray2String } from './assist';
+import { getCache } from './cache';
 
 const winFetch = window.fetch;
 const COMMENT_REGEX = /<!--.*?-->/g;
@@ -165,8 +168,7 @@ function fetchScripts(jsList: Asset[], fetch: Fetch = winFetch) {
     }
   }));
 }
-export async function appendAssets(assets: Assets, sandbox?: Sandbox, ...props: [boolean, string]) {
-  const [umd, name] = props;
+export async function appendAssets(assets: Assets, sandbox?: Sandbox) {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
   const cssRoot: HTMLElement = document.getElementsByTagName('head')[0];
 
@@ -178,7 +180,7 @@ export async function appendAssets(assets: Assets, sandbox?: Sandbox, ...props: 
   );
 
   // handle scripts
-  if (!umd && sandbox && !sandbox.sandboxDisabled) {
+  if (sandbox && !sandbox.sandboxDisabled) {
     const jsContents = await fetchScripts(jsList);
     // excute code by order
     jsContents.forEach(script => {
@@ -194,13 +196,6 @@ export async function appendAssets(assets: Assets, sandbox?: Sandbox, ...props: 
     await jsList.reduce((chain, asset, index) => {
       return chain.then(() => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`));
     }, Promise.resolve());
-    return;
-  }
-
-  if (umd) {
-    await Promise.all(
-      jsList.map((asset) => appendUmdScript(name, asset, sandbox))
-    )
     return;
   }
 
@@ -511,4 +506,175 @@ export function executeUmdUpdate(
 ) {
   const update = importUmdApps[name]?.update ?? (() => {});
   return update(container, customProps);
+}
+
+
+/**
+ * load and append css assets
+ *
+ * @export
+ * @param {Assets} assets
+ */
+export async function loadAndAppendCssAssets(assets: Assets) {
+  const cssRoot: HTMLElement = document.getElementsByTagName('head')[0];
+
+  const { cssList } = assets;
+
+  // load css content
+  await Promise.all(
+    cssList.map((asset, index) => appendCSS(cssRoot, asset, `${PREFIX}-css-${index}`)),
+  );
+}
+
+
+/**
+ * load and append js assets, compatible with v1
+ *
+ * @export
+ * @param {Assets} assets
+ * @param {Sandbox} [sandbox]
+ * @returns
+ */
+export async function loadAndAppendJsAssets(assets: Assets, sandbox?: Sandbox) {
+  const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
+
+  const { jsList } = assets;
+
+  // handle scripts
+  if (sandbox && !sandbox.sandboxDisabled) {
+    const jsContents = await fetchScripts(jsList);
+    // excute code by order
+    jsContents.forEach(script => {
+      sandbox.execScriptInSandbox(script);
+    });
+    return;
+  }
+
+  // dispose inline script
+  const hasInlineScript = jsList.find((asset) => asset.type === AssetTypeEnum.INLINE);
+  if (hasInlineScript) {
+    // make sure js assets loaded in order if has inline scripts
+    await jsList.reduce((chain, asset, index) => {
+      return chain.then(() => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`));
+    }, Promise.resolve());
+    return;
+  }
+
+  await Promise.all(
+    jsList.map((asset, index) => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`)),
+  );
+}
+
+/**
+ * Load micro app
+ *
+ * @export
+ * @param {*} {
+ *   umd,
+ *   props,
+ *   url,
+ *   rootId,
+ *   entry,
+ *   entryContent,
+ *   title,
+ *   triggerLoading,
+ *   triggerError,
+ *   shouldAssetsRemove,
+ *   cache,
+ *   sandbox,
+ *   path,
+ * }
+ */
+export async function loadMicroApp({
+  umd,
+  props,
+  url,
+  rootId,
+  entry,
+  entryContent,
+  title,
+  triggerLoading,
+  triggerError,
+  shouldAssetsRemove,
+  cache,
+  sandbox,
+  path,
+}) {
+  // Create appSandbox if sandbox is active
+  let appSandbox = null
+  if (sandbox) {
+    if (typeof sandbox === 'function') {
+      // eslint-disable-next-line new-cap
+      appSandbox = new sandbox();
+    } else {
+      const sandboxProps = typeof sandbox === 'boolean' ? {} : (sandbox as SandboxProps);
+      appSandbox = new Sandbox(sandboxProps);
+    }
+  }
+
+  const assetsCacheKey = converArray2String(path);
+  const cached = cache && isCached(assetsCacheKey);
+
+  // clear useless assets before loading
+  emptyAssets(shouldAssetsRemove, !cached && assetsCacheKey);
+
+  // set document title
+  if (title) document.title = title;
+
+  // trigger loading before handleAssets
+  !cached && triggerLoading(true);
+
+  // handle assets
+  try {
+    let appAssets = null;
+    if (entry || entryContent) {
+      const rootElement = getCache('root');
+      appAssets = await getEntryAssets({
+        root: rootElement,
+        entry,
+        href: location.href,
+        entryContent,
+        assetsCacheKey,
+      });
+    } else if (url) {
+      const urls = Array.isArray(url) ? url : [url];
+      appAssets = getUrlAssets(urls);
+    }
+
+    if (appAssets && !cached) {
+      const { jsList } = appAssets;
+      await loadAndAppendCssAssets(appAssets);
+
+      if (umd) {
+        await Promise.all(
+          jsList.map((asset) => appendUmdScript(name, asset, sandbox))
+        )
+      } else {
+        await loadAndAppendJsAssets(appAssets, sandbox);
+      }
+    }
+
+    if (cache) {
+      // cache app lifecycle after load assets
+      cacheApp(assetsCacheKey);
+    }
+
+    if (umd) {
+      callUmdAppEnter(name, rootId, props)
+    } else {
+      if (!getCache(AppLifeCycleEnum.AppEnter)) {
+        console.warn('[icestark] please trigger app mount manually via registerAppEnter, app path: ', path);
+      }
+      if (!getCache(AppLifeCycleEnum.AppLeave)) {
+        console.warn('[icestark] please trigger app unmount manually via registerAppLeave, app path: ', path);
+      }
+
+      callAppEnter();
+    }
+
+  } catch (e) {
+    triggerError(e)
+  } finally {
+    triggerLoading(false);
+  }
 }
