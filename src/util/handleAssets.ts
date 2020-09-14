@@ -451,7 +451,7 @@ export async function appendUmdScript(name: string, asset: Asset, sandbox?: Sand
   if (!importUmdApps[name]) {
     const tasks = loadUmdScript({url: content});
     try {
-      const moduleInfo = await execUmdScript(tasks, sandbox);
+      moduleInfo = await execUmdScript(tasks, sandbox);
       importUmdApps[name] = moduleInfo;
     } catch (err) {
       return new Error(`js asset loaded error: ${asset}`);
@@ -472,7 +472,7 @@ export function exeuteUmdMount(
   container: HTMLElement,
   customProps = {}
 ) {
-  const mount = importUmdApps[name]?.mount ?? (() => {});
+  const mount = importUmdApps[name]?.mount || (() => {});
   return mount(container, customProps);
 }
 
@@ -488,7 +488,7 @@ export function executeUmdUnmount(
   container: HTMLElement,
   customProps = {}
 ) {
-  const unmont = importUmdApps[name]?.unmount ?? (() => {});
+  const unmont = importUmdApps[name]?.unmount || (() => {});
   return unmont(container, customProps);
 }
 
@@ -504,7 +504,7 @@ export function executeUmdUpdate(
   container: HTMLElement,
   customProps = {}
 ) {
-  const update = importUmdApps[name]?.update ?? (() => {});
+  const update = importUmdApps[name]?.update || (() => {});
   return update(container, customProps);
 }
 
@@ -601,7 +601,7 @@ export async function loadMicroApp({
   path,
 }) {
   // Create appSandbox if sandbox is active
-  let appSandbox = null
+  let appSandbox = null;
   if (sandbox) {
     if (typeof sandbox === 'function') {
       // eslint-disable-next-line new-cap
@@ -648,7 +648,7 @@ export async function loadMicroApp({
       if (umd) {
         await Promise.all(
           jsList.map((asset) => appendUmdScript(name, asset, sandbox))
-        )
+        );
       } else {
         await loadAndAppendJsAssets(appAssets, sandbox);
       }
@@ -660,7 +660,7 @@ export async function loadMicroApp({
     }
 
     if (umd) {
-      callUmdAppEnter(name, rootId, props)
+      callUmdAppEnter(name, rootId, props);
     } else {
       if (!getCache(AppLifeCycleEnum.AppEnter)) {
         console.warn('[icestark] please trigger app mount manually via registerAppEnter, app path: ', path);
@@ -673,7 +673,7 @@ export async function loadMicroApp({
     }
 
   } catch (e) {
-    triggerError(e)
+    triggerError(e);
   } finally {
     triggerLoading(false);
   }
