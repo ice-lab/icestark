@@ -570,6 +570,7 @@ export async function loadAndAppendJsAssets(assets: Assets, sandbox?: Sandbox) {
  *
  * @export
  * @param {*} {
+ *   name,
  *   umd,
  *   props,
  *   url,
@@ -586,6 +587,7 @@ export async function loadAndAppendJsAssets(assets: Assets, sandbox?: Sandbox) {
  * }
  */
 export async function loadMicroApp({
+  name,
   umd,
   props,
   url,
@@ -612,7 +614,7 @@ export async function loadMicroApp({
     }
   }
 
-  const assetsCacheKey = converArray2String(path);
+  const assetsCacheKey = name || converArray2String(path);
   const cached = cache && isCached(assetsCacheKey);
 
   // clear useless assets before loading
