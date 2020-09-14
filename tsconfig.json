@@ -4,11 +4,11 @@
     "jsx": "react",
     "experimentalDecorators": true,
     "declaration": true,
-    "sourceMap": true,
+    // "sourceMap": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "lib"
   },
-  "include": ["src/*"],
+  "include": ["src/*", "src/apis/*"],
   "exclude": ["node_modules"]
 }
