@@ -24,7 +24,7 @@ export interface AppConfig extends ActivePathObject {
 const microApps = [];
 
 function getAppNames() {
-  return microApps.map((app) => app.name);
+  return microApps.map((app: AppConfig) => app.name);
 }
 
 export function createMicroApp(appConfig: AppConfig) {
@@ -54,7 +54,7 @@ export function createMicroApp(appConfig: AppConfig) {
   microApps.push(microApp);
 }
 
-export function removeMicroApp(appName) {
+export function removeMicroApp(appName: string) {
   const appIndex = getAppNames().indexOf(appName);
   microApps.splice(appIndex, 1);
 }
@@ -81,7 +81,7 @@ function getHashPath(hash: string = '/'): string {
 }
 
 const HashPathDecoders = {
-  hashbang: path => (path.charAt(0) === '!' ? path.substr(1) : path),
+  hashbang: (path: string) => (path.charAt(0) === '!' ? path.substr(1) : path),
   noslash: addLeadingSlash,
   slash: addLeadingSlash,
 };
@@ -101,7 +101,7 @@ export function getActivedApps(url: string) {
   const activeApps = [];
   microApps.forEach((microApp) => {
     const { activeRules } = microApp;
-    if (activeRules.some((activeRule) => activeRule(url))) {
+    if (activeRules.some((activeRule: ActiveFn) => activeRule(url))) {
       activeApps.push(microApp);
     }
   });

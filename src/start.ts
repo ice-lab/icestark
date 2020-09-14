@@ -39,7 +39,7 @@ const originalReplace: OriginalStateFunction = window.history.replaceState;
 const originalAddEventListener = window.addEventListener;
 const originalRemoveEventListener = window.removeEventListener;
 
-const handleStateChange = (state, url: string, method: RouteType) => {
+const handleStateChange = (state: any, url: string, method: RouteType) => {
   setHistoryState(state);
   routeChange(url, method);
 };
