@@ -1,4 +1,5 @@
 import * as urlParse from 'url-parse';
+import { NOT_LOADED } from './util/constant';
 import matchPath from './util/matchPath';
 
 interface ActiveFn {
@@ -46,7 +47,7 @@ export function createMicroApp(appConfig: AppConfig) {
     }
   });
   const microApp = {
-    status: '',
+    status: NOT_LOADED,
     ...appConfig,
     activeRules,
   };
