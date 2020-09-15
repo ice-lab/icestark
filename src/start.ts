@@ -7,7 +7,8 @@ import {
   setHistoryState,
 } from './util/capturedListeners';
 import globalConfiguration from './globalConfiguration';
-import { AppConfig, getActivedApps } from './microApps';
+import { AppConfig, getActivedApps, loadMicroApp, unloadMicroApp } from './microApps';
+import { setCache } from './util/cache';
 
 export interface StartConfiguration {
   shouldAssetsRemove?: (
@@ -54,7 +55,11 @@ function routeChange (url: string, type: RouteType | 'init' | 'popstate' ) {
   console.log('router change', pathname, query, hash, type);
   globalConfiguration.onRouteChange(pathname, query, hash, type);
   const activeApps = getActivedApps(url);
-  console.log(activeApps);
+  setCache('basename', activeApps[0].activePath);
+  setCache('root', document.getElementById('icestark-container'));
+  activeApps.forEach(app => {
+    loadMicroApp(app.name);
+  });
 };
 
 /**

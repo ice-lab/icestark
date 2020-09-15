@@ -1,9 +1,18 @@
 import * as urlParse from 'url-parse';
-import { NOT_LOADED } from './util/constant';
+import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
 import matchPath from './util/matchPath';
+import { createSandbox, getUrlAssets, getEntryAssets, appendAssets, loadAndAppendCssAssets } from './util/handleAssets';
+import { getCache } from './util/cache';
+import { AppLifeCycleEnum } from './util/appLifeCycle';
+import { loadUmdModule } from './util/umdLoader';
 
 interface ActiveFn {
   (url: string): boolean;
+}
+
+interface AppLifeCycle {
+  mount?: (container: HTMLElement, props: any) => void;
+  unmount?: (container: HTMLElement) => void;
 }
 
 interface ActivePathObject {
@@ -18,10 +27,11 @@ export interface AppConfig extends ActivePathObject {
   name: string;
   activePath: string | string[] | ActiveFn;
   url?: string | string[];
+  container?: HTMLElement;
 }
 
 // cache all microApp
-const microApps = [];
+let microApps = [];
 
 function getAppNames() {
   return microApps.map((app: AppConfig) => app.name);
@@ -59,12 +69,86 @@ export function removeMicroApp(appName: string) {
   microApps.splice(appIndex, 1);
 }
 
-export function loadMicroApp() {
-  console.log('loadMicroApp');
+export function getAppConfig(appName: string) {
+  return microApps.find((microApp) => microApp.name === appName);
 }
 
-export function unloadMicroApp() {
-  console.log('unloadMicroApp');
+export function updateAppConfig(appName: string, config) {
+  microApps = microApps.map((microApp) => {
+    if (microApp.appName === appName) {
+      return {
+        ...microApp,
+        ...config,
+      };
+    }
+    return microApp;
+  });
+}
+
+export async function loadMicroApp(appName: string) {
+  const appConfig = getAppConfig(appName);
+  if (appConfig) {
+    // check status of app
+    if (appConfig.status === NOT_LOADED) {
+      updateAppConfig(appName, { status: LOADING_ASSETS });
+      try {
+        const appSandbox = createSandbox(appConfig.sandbox);
+        const { url, container, entry, entryContent, name } = appConfig;
+        const appAssets = url ? getUrlAssets(url) : await getEntryAssets({
+          root: container,
+          entry,
+          href: location.href,
+          entryContent,
+          assetsCacheKey: name,
+        });
+        let lifeCycle: AppLifeCycle = {};
+        if (appConfig.umd) {
+          await loadAndAppendCssAssets(appAssets);
+          lifeCycle = await loadUmdModule(appAssets.jsList);
+        } else {
+          await appendAssets(appAssets, appSandbox);
+          lifeCycle = {
+            mount: getCache(AppLifeCycleEnum.AppEnter),
+            unmount: getCache(AppLifeCycleEnum.AppLeave),
+          };
+        }
+        updateAppConfig(appName, {...lifeCycle, status: NOT_MOUNTED });
+      } catch {
+        updateAppConfig(appName, { status: LOAD_ERROR });
+      }
+    } else {
+      console.info(`[icestark] current status of app ${appName} is ${appConfig.status}`);
+    }
+    return getAppConfig(appName);
+  } else {
+    console.error(`[icestark] fail to get app config of ${appName}`);
+  }
+  return null;
+}
+
+export function mountMicroApp(appName: string) {
+  const appConfig = getAppConfig(appName);
+  if (appConfig && appConfig.status === NOT_MOUNTED) {
+    appConfig.mount(appConfig.container, appConfig.props);
+    updateAppConfig(appName, { status: MOUNTED });
+  }
+}
+
+export function unmountMicroApp(appName: string) {
+  const appConfig = getAppConfig(appName);
+  if (appConfig && appConfig.status === UNMOUNTED) {
+    appConfig.unmount(appConfig.container);
+    updateAppConfig(appName, { status: UNMOUNTED });
+  }
+}
+
+export function unloadMicroApp(appName: string) {
+  const appConfig = getAppConfig(appName);
+  if (appConfig) {
+    delete appConfig.mount;
+    delete appConfig.unmount;
+    updateAppConfig(appName, { status: NOT_LOADED });
+  }
 }
 
 function addLeadingSlash(path: string): string {

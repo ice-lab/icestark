@@ -1,52 +1,18 @@
 import Sandbox from '@ice/sandbox';
 import { getGlobalProp, noteGlobalProps } from './global';
-
-export interface StarkUmdScript {
-  url: string | string[];
-  mount?: any;
-  unmount?: any;
-  update?: any;
-}
-
-export type Task = Promise<string[]>;
-
-export interface Fetch {
-  (input: RequestInfo, init?: RequestInit): Promise<Response>;
-}
+import { Asset, fetchScripts } from './handleAssets';
 
 /**
- * Load umd script and Return scripts as text
+ * load umd bundle
  *
- * @export
- * @param {StarkUmdScript} script
- * @param {Fetch} [fetcher=window.fetch]
- * @returns {Task}
- */
-export function loadUmdScript(script: StarkUmdScript, fetcher: Fetch = window.fetch): Task {
-  const { url } = script;
-
-  const urls = Array.isArray(url) ? url : [url];
-  return Promise.all(urls.map(
-    scriptUrl => fetcher(scriptUrl)
-      .then(response => response.text())
-  ));
-}
-
-
-/**
- * Execute umd script
- *
- * @export
- * @param {Task} task
+ * @param {Asset[]} jsList
  * @param {Sandbox} [sandbox]
- * @returns
  */
-export function execUmdScript(task: Task, sandbox?: Sandbox) {
-  return task
+export function loadUmdModule(jsList: Asset[], sandbox?: Sandbox) {
+  return fetchScripts(jsList)
     .then(scriptTexts => {
       const globalwindow = getGobalWindow(sandbox);
       let libraryExport = null;
-
       // exeute script in order
       try {
         scriptTexts.forEach((script, index) => {
@@ -67,7 +33,7 @@ export function execUmdScript(task: Task, sandbox?: Sandbox) {
           }
         });
       } catch (err) {
-        console.error('r');
+        console.error(err);
       }
 
       const moduleInfo = libraryExport ? globalwindow[libraryExport] : {};
