@@ -28,6 +28,7 @@ export interface AppConfig extends ActivePathObject {
   activePath: string | string[] | ActiveFn;
   url?: string | string[];
   container?: HTMLElement;
+  status?: string;
 }
 
 // cache all microApp
@@ -85,8 +86,9 @@ export function updateAppConfig(appName: string, config) {
   });
 }
 
-export async function loadMicroApp(appName: string) {
-  const appConfig = getAppConfig(appName);
+export async function loadMicroApp(app: string | AppConfig) {
+  const appConfig = typeof app === 'string' ? getAppConfig(app) : app;
+  const appName = appConfig.name;
   if (appConfig) {
     // check status of app
     if (appConfig.status === NOT_LOADED) {
