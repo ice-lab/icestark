@@ -1,6 +1,10 @@
 import Sandbox, { SandboxProps, SandboxContructor } from '@ice/sandbox';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { warn, error } from './message';
+import { loadUmdScript, execUmdScript } from './umdLoader';
+import { isCached, cacheApp, callAppEnter, callUmdAppEnter, AppLifeCycleEnum } from './appLifeCycle';
+import { converArray2String } from './assist';
+import { getCache } from './cache';
 
 const winFetch = window.fetch;
 const COMMENT_REGEX = /<!--.*?-->/g;
