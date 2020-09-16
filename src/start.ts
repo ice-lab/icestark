@@ -4,12 +4,12 @@ import {
   isInCapturedEventListeners,
   addCapturedEventListeners,
   removeCapturedEventListeners,
+  callCapturedEventListeners,
   setHistoryState,
 } from './util/capturedListeners';
-import globalConfiguration from './globalConfiguration';
 import { AppConfig, getMicroApps, loadMicroApp, unmountMicroApp } from './microApps';
+import { emptyAssets } from './util/handleAssets';
 // import { setCache } from './util/cache';
-
 export interface StartConfiguration {
   shouldAssetsRemove?: (
     assetUrl?: string,
@@ -27,6 +27,16 @@ export interface StartConfiguration {
   onError?: (err: Error) => void;
   onNotFound?: () => void;
 }
+
+const globalConfiguration: StartConfiguration = {
+  shouldAssetsRemove: () => true,
+  onRouteChange: () => {},
+  onAppEnter: () => {},
+  onAppLeave: () => {},
+  onLoadingApp: () => {},
+  onError: () => {},
+  onNotFound: () => {},
+};
 
 interface OriginalStateFunction {
   (state: any, title: string, url?: string): void;
@@ -47,19 +57,24 @@ const handleStateChange = (state: any, url: string, method: RouteType) => {
 
 const handlePopState = (event: PopStateEvent): void => {
   setHistoryState(event.state);
+  console.log('event.state', event);
   routeChange(location.href, 'popstate');
 };
 
 function routeChange (url: string, type: RouteType | 'init' | 'popstate' ) {
   const { pathname, query, hash } = urlParse(url, true);
   globalConfiguration.onRouteChange(pathname, query, hash, type);
-  
+  const appsToMount = [];
   getMicroApps().forEach((microApp: AppConfig) => {
     if (microApp.activeRuleFunction(url)) {
-      loadMicroApp(microApp.name);
+      appsToMount.push(loadMicroApp(microApp.name));
     } else {
       unmountMicroApp(microApp.name);
     }
+  });
+  Promise.all(appsToMount).then(() => {
+    console.log('callCapturedEventListeners');
+    callCapturedEventListeners();
   });
 };
 
@@ -68,6 +83,7 @@ function routeChange (url: string, type: RouteType | 'init' | 'popstate' ) {
  */
 const hijackHistory = (): void => {
   window.history.pushState = (state: any, title: string, url?: string, ...rest) => {
+    console.log(state);
     originalPush.apply(window.history, [state, title, url, ...rest]);
     handleStateChange(state, url, 'pushState');
   };
@@ -148,7 +164,8 @@ function unload() {
   unHijackHistory();
 
   // remove all assets added by micro apps
+  emptyAssets(globalConfiguration.shouldAssetsRemove, true);
 }
 
-export { unload };
+export { unload, globalConfiguration };
 export default start;
