@@ -31,7 +31,7 @@ export function getGlobalProp (globalWindow) {
   if (lastProp !== lastGlobalProp) {
     return lastProp;
   } else {
-    // plyfill for UC browser which lastprops will alway be window
+    // polyfill for UC browser which lastprops will alway be window
     // eslint-disable-next-line no-restricted-syntax
     for (const p in globalWindow) {
       if (!noteGlobalKeys.includes(p)) {
