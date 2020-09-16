@@ -1,4 +1,5 @@
 import * as urlParse from 'url-parse';
+import { SandboxContructor, SandboxProps } from '@ice/sandbox';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
 import matchPath from './util/matchPath';
 import { createSandbox, getUrlAssets, getEntryAssets, appendAssets, loadAndAppendCssAssets } from './util/handleAssets';
@@ -11,8 +12,8 @@ interface ActiveFn {
 }
 
 interface AppLifeCycle {
-  mount?: (container: HTMLElement, props: any) => void;
-  unmount?: (container: HTMLElement) => void;
+  mount?: (container: HTMLElement, props: any) => Promise<void> | void;
+  unmount?: (container: HTMLElement) => Promise<void> | void;
 }
 
 interface ActivePathObject {
@@ -29,6 +30,11 @@ export interface AppConfig extends ActivePathObject {
   url?: string | string[];
   container?: HTMLElement;
   status?: string;
+  sandbox?: boolean | SandboxProps | SandboxContructor;
+  entry?: string;
+  entryContent?: string;
+  umd?: boolean;
+  activeRuleFunction?: (url: string) => boolean;
 }
 
 // cache all microApp
@@ -38,6 +44,10 @@ function getAppNames() {
   return microApps.map((app: AppConfig) => app.name);
 }
 
+export function getMicroApps() {
+  return microApps;
+}
+
 export function createMicroApp(appConfig: AppConfig) {
   // check appConfig.name 
   if (getAppNames().includes(appConfig.name)) {
@@ -45,8 +55,8 @@ export function createMicroApp(appConfig: AppConfig) {
   }
   // set activeRules
   const { activePath, hashType = false, exact = false, sensitive = false, strict = false } = appConfig;
-  let activeRules = Array.isArray(activePath) ? activePath : [activePath];
-  activeRules = activeRules.map((activeRule: ActiveFn | string | ActivePathObject) => {
+  const activeRules = Array.isArray(activePath) ? activePath : [activePath];
+  const activeRuleFunction = (url: string) => activeRules.map((activeRule: ActiveFn | string | ActivePathObject) => {
     if (typeof activeRule === 'function' ) {
       return activeRule;
     } else {
@@ -56,11 +66,11 @@ export function createMicroApp(appConfig: AppConfig) {
         : { path: activeRule as string, ...pathOptions };
       return (checkUrl: string) => matchActivePath(checkUrl, pathInfo);
     }
-  });
+  }).some((activeRule: ActiveFn) => activeRule(url));
   const microApp = {
     status: NOT_LOADED,
     ...appConfig,
-    activeRules,
+    activeRuleFunction,
   };
   microApps.push(microApp);
 }
@@ -76,7 +86,7 @@ export function getAppConfig(appName: string) {
 
 export function updateAppConfig(appName: string, config) {
   microApps = microApps.map((microApp) => {
-    if (microApp.appName === appName) {
+    if (microApp.name === appName) {
       return {
         ...microApp,
         ...config,
@@ -86,6 +96,30 @@ export function updateAppConfig(appName: string, config) {
   });
 }
 
+export async function loadAppModule(appConfig: AppConfig) {
+  let lifeCycle: AppLifeCycle = {};
+  const appSandbox = createSandbox(appConfig.sandbox);
+  const { url, container, entry, entryContent, name } = appConfig;
+  const appAssets = url ? getUrlAssets(url) : await getEntryAssets({
+    root: container,
+    entry,
+    href: location.href,
+    entryContent,
+    assetsCacheKey: name,
+  });
+  if (appConfig.umd) {
+    await loadAndAppendCssAssets(appAssets);
+    lifeCycle = await loadUmdModule(appAssets.jsList);
+  } else {
+    await appendAssets(appAssets, appSandbox);
+    lifeCycle = {
+      mount: getCache(AppLifeCycleEnum.AppEnter),
+      unmount: getCache(AppLifeCycleEnum.AppLeave),
+    };
+  }
+  return lifeCycle;
+}
+
 export async function loadMicroApp(app: string | AppConfig) {
   const appConfig = typeof app === 'string' ? getAppConfig(app) : app;
   const appName = appConfig.name;
@@ -93,30 +127,19 @@ export async function loadMicroApp(app: string | AppConfig) {
     // check status of app
     if (appConfig.status === NOT_LOADED) {
       updateAppConfig(appName, { status: LOADING_ASSETS });
+      let lifeCycle: AppLifeCycle = {};
       try {
-        const appSandbox = createSandbox(appConfig.sandbox);
-        const { url, container, entry, entryContent, name } = appConfig;
-        const appAssets = url ? getUrlAssets(url) : await getEntryAssets({
-          root: container,
-          entry,
-          href: location.href,
-          entryContent,
-          assetsCacheKey: name,
-        });
-        let lifeCycle: AppLifeCycle = {};
-        if (appConfig.umd) {
-          await loadAndAppendCssAssets(appAssets);
-          lifeCycle = await loadUmdModule(appAssets.jsList);
-        } else {
-          await appendAssets(appAssets, appSandbox);
-          lifeCycle = {
-            mount: getCache(AppLifeCycleEnum.AppEnter),
-            unmount: getCache(AppLifeCycleEnum.AppLeave),
-          };
-        }
-        updateAppConfig(appName, {...lifeCycle, status: NOT_MOUNTED });
+        lifeCycle = await loadAppModule(appConfig);
+        updateAppConfig(appName, { ...lifeCycle, status: NOT_MOUNTED });
       } catch {
         updateAppConfig(appName, { status: LOAD_ERROR });
+      }
+      if (lifeCycle.mount) {
+        // check current url before mount
+        if (appConfig.activeRuleFunction(window.location.href)) {
+          await lifeCycle.mount(appConfig.container, appConfig.props || {});
+          updateAppConfig(appName, { status: MOUNTED });
+        }
       }
     } else {
       console.info(`[icestark] current status of app ${appName} is ${appConfig.status}`);
@@ -138,7 +161,7 @@ export function mountMicroApp(appName: string) {
 
 export function unmountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
-  if (appConfig && appConfig.status === UNMOUNTED) {
+  if (appConfig && appConfig.status === MOUNTED) {
     appConfig.unmount(appConfig.container);
     updateAppConfig(appName, { status: UNMOUNTED });
   }
@@ -181,15 +204,4 @@ export function matchActivePath(url: string, pathInfo: ActivePathObject) {
     checkPath = decodePath(getHashPath(hash));
   }
   return matchPath(checkPath, pathInfo);
-}
-
-export function getActivedApps(url: string) {
-  const activeApps = [];
-  microApps.forEach((microApp) => {
-    const { activeRules } = microApp;
-    if (activeRules.some((activeRule: ActiveFn) => activeRule(url))) {
-      activeApps.push(microApp);
-    }
-  });
-  return activeApps;
 }

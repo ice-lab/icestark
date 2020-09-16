@@ -7,8 +7,8 @@ import {
   setHistoryState,
 } from './util/capturedListeners';
 import globalConfiguration from './globalConfiguration';
-import { AppConfig, getActivedApps, loadMicroApp, unloadMicroApp } from './microApps';
-import { setCache } from './util/cache';
+import { AppConfig, getMicroApps, loadMicroApp, unmountMicroApp } from './microApps';
+// import { setCache } from './util/cache';
 
 export interface StartConfiguration {
   shouldAssetsRemove?: (
@@ -52,13 +52,14 @@ const handlePopState = (event: PopStateEvent): void => {
 
 function routeChange (url: string, type: RouteType | 'init' | 'popstate' ) {
   const { pathname, query, hash } = urlParse(url, true);
-  console.log('router change', pathname, query, hash, type);
   globalConfiguration.onRouteChange(pathname, query, hash, type);
-  const activeApps = getActivedApps(url);
-  setCache('basename', activeApps[0].activePath);
-  setCache('root', document.getElementById('icestark-container'));
-  activeApps.forEach(app => {
-    loadMicroApp(app.name);
+  
+  getMicroApps().forEach((microApp: AppConfig) => {
+    if (microApp.activeRuleFunction(url)) {
+      loadMicroApp(microApp.name);
+    } else {
+      unmountMicroApp(microApp.name);
+    }
   });
 };
 
@@ -131,7 +132,6 @@ function start(options?: StartConfiguration) {
     return;
   }
   started = true;
-  console.log(globalConfiguration);
   // update globalConfiguration
   Object.keys(options || {}).forEach((configKey) => {
     globalConfiguration[configKey] = options[configKey];
