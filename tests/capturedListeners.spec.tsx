@@ -7,7 +7,8 @@ import {
   removeCapturedEventListeners,
   isInCapturedEventListeners,
   callCapturedEventListeners,
-  setHistoryState,
+  setHistoryEvent,
+  createPopStateEvent,
   resetCapturedEventListeners,
 } from '../src/util/capturedListeners';
 
@@ -38,7 +39,7 @@ describe('capturedListeners', () => {
     expect(isInCapturedEventListeners(CapturedEventNameEnum.POPSTATE, popStateMockFn)).toBe(true);
 
     // call
-    setHistoryState({});
+    setHistoryEvent(createPopStateEvent({}, 'popstate'));
     callCapturedEventListeners();
 
     expect(popStateMockFn).toBeCalledTimes(1);
@@ -52,7 +53,7 @@ describe('capturedListeners', () => {
     );
 
     // call
-    setHistoryState({});
+    setHistoryEvent(createPopStateEvent({}, 'popstate'));
     callCapturedEventListeners();
 
     expect(popStateMockFn).toBeCalledTimes(2);
@@ -62,7 +63,7 @@ describe('capturedListeners', () => {
     resetCapturedEventListeners();
 
     // call
-    setHistoryState({});
+    setHistoryEvent(createPopStateEvent({}, 'popstate'));
     callCapturedEventListeners();
 
     expect(popStateMockFn).toBeCalledTimes(2);
