@@ -12,7 +12,8 @@ import {
   isInCapturedEventListeners,
   addCapturedEventListeners,
   removeCapturedEventListeners,
-  setHistoryState,
+  createPopStateEvent,
+  setHistoryEvent,
 } from './util/capturedListeners';
 
 type RouteType = 'pushState' | 'replaceState';
@@ -155,12 +156,12 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   hijackHistory = (): void => {
     window.history.pushState = (state: any, title: string, url?: string, ...rest) => {
       originalPush.apply(window.history, [state, title, url, ...rest]);
-      this.handleStateChange(state, url, 'pushState');
+      this.handleStateChange(createPopStateEvent(state, 'pushState'), url, 'pushState');
     };
 
     window.history.replaceState = (state: any, title: string, url?: string, ...rest) => {
       originalReplace.apply(window.history, [state, title, url, ...rest]);
-      this.handleStateChange(state, url, 'replaceState');
+      this.handleStateChange(createPopStateEvent(state, 'replaceState'), url, 'replaceState');
     };
 
     window.addEventListener('popstate', this.handlePopState, false);
@@ -214,14 +215,13 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   /**
    * Trigger statechange: pushState | replaceState
    */
-  handleStateChange = (state: any, url: string, routeType?: RouteType): void => {
+  handleStateChange = (evt: PopStateEvent, url: string, routeType?: RouteType): void => {
     // if AppRouter is unmounted, cancel all operations
     if (this.unmounted) return;
-
     // setHistoryState before setState
     // setState is only async batched when it is called inside a React event handler, otherwise it is sync
     // make sure history state had beed recorded before render
-    setHistoryState(state);
+    setHistoryEvent(evt);
     this.setState({ url });
 
     this.handleRouteChange(url, routeType);
@@ -235,8 +235,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     if (this.unmounted) return;
 
     const url = location.href;
-
-    setHistoryState(event.state);
+    setHistoryEvent(event);
     this.setState({ url });
 
     this.handleRouteChange(url, 'popstate');
