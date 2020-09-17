@@ -8,7 +8,7 @@ import {
   createPopStateEvent,
   setHistoryEvent,
 } from './util/capturedListeners';
-import { AppConfig, getMicroApps, loadMicroApp, unmountMicroApp } from './microApps';
+import { AppConfig, getMicroApps, loadMicroApp, unmountMicroApp } from './apps';
 import { emptyAssets } from './util/handleAssets';
 // import { setCache } from './util/cache';
 export interface StartConfiguration {
@@ -56,8 +56,8 @@ const handleStateChange = (event: PopStateEvent, url: string, method: RouteType)
   routeChange(url, method);
 };
 
-const urlChange = (event: PopStateEvent, ...args): void => {
-  console.log('[icestark] url change', args);
+const urlChange = (event: PopStateEvent | HashChangeEvent, eventType: string): void => {
+  console.log('[icestark] url change', event, eventType);
   setHistoryEvent(event);
   routeChange(location.href, 'popstate');
 };
@@ -73,7 +73,8 @@ function routeChange (url: string, type: RouteType | 'init' | 'popstate' ) {
   lastUrl = url;
   const appsToMount = [];
   getMicroApps().forEach((microApp: AppConfig) => {
-    if (microApp.checkActive(url)) {
+    const shouldBeActive = microApp.checkActive(url);
+    if (shouldBeActive) {
       appsToMount.push(loadMicroApp(microApp.name));
     } else {
       unmountMicroApp(microApp.name);
@@ -81,7 +82,7 @@ function routeChange (url: string, type: RouteType | 'init' | 'popstate' ) {
   });
   // call captured event after app mounted
   Promise.all(appsToMount).then(() => {
-    callCapturedEventListeners();
+    // callCapturedEventListeners();
   });
 };
 
@@ -101,8 +102,8 @@ const hijackHistory = (): void => {
     handleStateChange(createPopStateEvent(state, eventName), url, eventName);
   };
 
-  window.addEventListener('popstate', urlChange, false);
-  window.addEventListener('hashchange', urlChange, false);
+  window.addEventListener('popstate', (event) => urlChange(event, 'popstate'), false);
+  window.addEventListener('hashchange', (event) => urlChange(event, 'hashchange'), false);
 };
 
 /**
@@ -112,8 +113,8 @@ const unHijackHistory = (): void => {
   window.history.pushState = originalPush;
   window.history.replaceState = originalReplace;
 
-  window.removeEventListener('popstate', urlChange, false);
-  window.removeEventListener('hashchange', urlChange, false);
+  // window.removeEventListener('popstate', urlChange, false);
+  // window.removeEventListener('hashchange', urlChange, false);
 };
 
 /**

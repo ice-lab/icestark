@@ -1,6 +1,6 @@
 import { SandboxContructor, SandboxProps } from '@ice/sandbox';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
-import { matchActivePath } from './util/matchPath';
+import { matchActivePath, MatchOptions } from './util/matchPath';
 import { createSandbox, getUrlAssets, getEntryAssets, appendAssets, loadAndAppendCssAssets, emptyAssets, Assets } from './util/handleAssets';
 import { getCache } from './util/cache';
 import { AppLifeCycleEnum } from './util/appLifeCycle';
@@ -16,15 +16,7 @@ interface AppLifeCycle {
   unmount?: (container: HTMLElement) => Promise<void> | void;
 }
 
-interface ActivePathObject {
-  path?: string;
-  exact?: boolean;
-  strict?: boolean;
-  sensitive?: boolean;
-  hashType?: boolean;
-}
-
-export interface AppConfig extends ActivePathObject {
+export interface AppConfig extends MatchOptions {
   name: string;
   activePath: string | string[] | ActiveFn;
   url?: string | string[];
@@ -57,13 +49,13 @@ export function createMicroApp(appConfig: AppConfig) {
   // set activeRules
   const { activePath, hashType = false, exact = false, sensitive = false, strict = false } = appConfig;
   const activeRules = Array.isArray(activePath) ? activePath : [activePath];
-  const checkActive = activePath ? (url: string) => activeRules.map((activeRule: ActiveFn | string | ActivePathObject) => {
+  const checkActive = activePath ? (url: string) => activeRules.map((activeRule: ActiveFn | string | MatchOptions) => {
     if (typeof activeRule === 'function' ) {
       return activeRule;
     } else {
-      const pathOptions: ActivePathObject = { hashType, exact, sensitive, strict };
+      const pathOptions: MatchOptions = { hashType, exact, sensitive, strict };
       const pathInfo = Object.prototype.toString.call(activeRule) === '[object Object]'
-        ? { ...pathOptions, ...(activeRule as ActivePathObject) }
+        ? { ...pathOptions, ...(activeRule as MatchOptions) }
         : { path: activeRule as string, ...pathOptions };
       return (checkUrl: string) => matchActivePath(checkUrl, pathInfo);
     }

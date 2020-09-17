@@ -57,7 +57,7 @@ export function callCapturedEventListeners() {
   }
 }
 
-export function setHistoryEvent(evt: PopStateEvent) {
+export function setHistoryEvent(evt: PopStateEvent | HashChangeEvent) {
   historyEvent = evt;
 }
 

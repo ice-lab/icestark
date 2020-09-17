@@ -1,7 +1,7 @@
 import * as pathToRegexp from 'path-to-regexp';
 import * as urlParse from 'url-parse';
 
-interface MatchOptions {
+export interface MatchOptions {
   path?: string;
   exact?: boolean;
   strict?: boolean;
