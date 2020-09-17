@@ -1,7 +1,6 @@
-import * as urlParse from 'url-parse';
 import { SandboxContructor, SandboxProps } from '@ice/sandbox';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
-import matchPath from './util/matchPath';
+import { matchActivePath } from './util/matchPath';
 import { createSandbox, getUrlAssets, getEntryAssets, appendAssets, loadAndAppendCssAssets, emptyAssets, Assets } from './util/handleAssets';
 import { getCache } from './util/cache';
 import { AppLifeCycleEnum } from './util/appLifeCycle';
@@ -35,7 +34,7 @@ export interface AppConfig extends ActivePathObject {
   entry?: string;
   entryContent?: string;
   umd?: boolean;
-  activeRuleFunction?: (url: string) => boolean;
+  checkActive?: (url: string) => boolean;
   appAssets?: Assets;
 }
 
@@ -58,7 +57,7 @@ export function createMicroApp(appConfig: AppConfig) {
   // set activeRules
   const { activePath, hashType = false, exact = false, sensitive = false, strict = false } = appConfig;
   const activeRules = Array.isArray(activePath) ? activePath : [activePath];
-  const activeRuleFunction = activePath ? (url: string) => activeRules.map((activeRule: ActiveFn | string | ActivePathObject) => {
+  const checkActive = activePath ? (url: string) => activeRules.map((activeRule: ActiveFn | string | ActivePathObject) => {
     if (typeof activeRule === 'function' ) {
       return activeRule;
     } else {
@@ -72,14 +71,15 @@ export function createMicroApp(appConfig: AppConfig) {
   const microApp = {
     status: NOT_LOADED,
     ...appConfig,
-    activeRuleFunction,
+    checkActive,
   };
   microApps.push(microApp);
 }
 
-export function removeMicroApp(appName: string) {
-  const appIndex = getAppNames().indexOf(appName);
-  microApps.splice(appIndex, 1);
+export function createMicroApps(appConfigs: AppConfig[]) {
+  appConfigs.forEach(appConfig => {
+    createMicroApp(appConfig);
+  });
 }
 
 export function getAppConfig(appName: string) {
@@ -98,6 +98,7 @@ export function updateAppConfig(appName: string, config) {
   });
 }
 
+// load app js assets
 export async function loadAppModule(appConfig: AppConfig) {
   let lifeCycle: AppLifeCycle = {};
   const appSandbox = createSandbox(appConfig.sandbox);
@@ -112,7 +113,7 @@ export async function loadAppModule(appConfig: AppConfig) {
   updateAppConfig(appConfig.name, { appAssets });
   if (appConfig.umd) {
     await loadAndAppendCssAssets(appAssets);
-    lifeCycle = await loadUmdModule(appAssets.jsList);
+    lifeCycle = await loadUmdModule(appAssets.jsList, appSandbox);
   } else {
     await appendAssets(appAssets, appSandbox);
     lifeCycle = {
@@ -158,7 +159,7 @@ export async function loadMicroApp(app: string | AppConfig) {
 
 export async function mountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
-  if (appConfig && appConfig.activeRuleFunction(window.location.href)) {
+  if (appConfig && appConfig.checkActive(window.location.href)) {
     await appConfig.mount(appConfig.container, appConfig.props);
     updateAppConfig(appName, { status: MOUNTED });
   }
@@ -176,39 +177,24 @@ export async function unmountMicroApp(appName: string) {
 export function unloadMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   if (appConfig) {
+    unmountMicroApp(appName);
     delete appConfig.mount;
     delete appConfig.unmount;
     delete appConfig.appAssets;
     updateAppConfig(appName, { status: NOT_LOADED });
+  } else {
+    console.log(`[icestark] can not find app ${appName} when call unloadMicroApp`);
   }
 }
 
-function addLeadingSlash(path: string): string {
-  return path.charAt(0) === '/' ? path : `/${path}`;
-}
-
-function getHashPath(hash: string = '/'): string {
-  const hashIndex = hash.indexOf('#');
-  const hashPath = hashIndex === -1 ? hash : hash.substr(hashIndex + 1);
-
-  // remove hash query
-  const searchIndex = hashPath.indexOf('?');
-  return searchIndex === -1 ? hashPath : hashPath.substr(0, searchIndex);
-}
-
-const HashPathDecoders = {
-  hashbang: (path: string) => (path.charAt(0) === '!' ? path.substr(1) : path),
-  noslash: addLeadingSlash,
-  slash: addLeadingSlash,
-};
-
-export function matchActivePath(url: string, pathInfo: ActivePathObject) {
-  const { pathname, hash } = urlParse(url, true);
-  const { hashType } = pathInfo;
-  let checkPath = pathname;
-  if (hashType) {
-    const decodePath = HashPathDecoders[hashType === true ? 'slash' : hashType];
-    checkPath = decodePath(getHashPath(hash));
+export function removeMicroApp(appName: string) {
+  const appIndex = getAppNames().indexOf(appName);
+  if (appIndex > -1) {
+    // unload micro app in case of app is mounted
+    unloadMicroApp(appName);
+    microApps.splice(appIndex, 1);
+  } else {
+    console.log(`[icestark] can not find app ${appName} when call removeMicroApp`);
   }
-  return matchPath(checkPath, pathInfo);
 }
+

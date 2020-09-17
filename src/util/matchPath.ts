@@ -1,6 +1,20 @@
 import * as pathToRegexp from 'path-to-regexp';
+import * as urlParse from 'url-parse';
 
-const cache: any = {};
+interface MatchOptions {
+  path?: string;
+  exact?: boolean;
+  strict?: boolean;
+  sensitive?: boolean;
+  hashType?: boolean;
+}
+
+interface MatchResult {
+  regexp?: pathToRegexp.PathRegExp;
+  keys?: string[];
+}
+
+const cache: {[key: string]: MatchResult} = {};
 const cacheLimit = 10000;
 let cacheCount = 0;
 
@@ -22,15 +36,48 @@ function compilePath(path, options) {
   return result;
 }
 
+
+function addLeadingSlash(path: string): string {
+  return path.charAt(0) === '/' ? path : `/${path}`;
+}
+
+function getHashPath(hash: string = '/'): string {
+  const hashIndex = hash.indexOf('#');
+  const hashPath = hashIndex === -1 ? hash : hash.substr(hashIndex + 1);
+
+  // remove hash query
+  const searchIndex = hashPath.indexOf('?');
+  return searchIndex === -1 ? hashPath : hashPath.substr(0, searchIndex);
+}
+
+const HashPathDecoders = {
+  hashbang: (path: string) => (path.charAt(0) === '!' ? path.substr(1) : path),
+  noslash: addLeadingSlash,
+  slash: addLeadingSlash,
+};
+
+export function matchActivePath(url: string, pathInfo: MatchOptions) {
+  const { pathname, hash } = urlParse(url, true);
+  const { hashType } = pathInfo;
+  let checkPath = pathname;
+  if (hashType) {
+    const decodePath = HashPathDecoders[hashType === true ? 'slash' : hashType];
+    checkPath = decodePath(getHashPath(hash));
+  }
+  return matchPath(checkPath, pathInfo);
+}
+
+
 /**
  * Public API for matching a URL pathname to a path.
  */
-export default function matchPath(pathname: string, options: any = {}) {
-  if (typeof options === 'string') options = { path: options };
+export default function matchPath(pathname: string, options: MatchOptions = {}) {
+  let matchOptions = options;
+  if (typeof options === 'string') matchOptions = { path: options };
 
-  const { path, exact = false, strict = false, sensitive = false } = options;
+  const { exact = false, strict = false, sensitive = false } = matchOptions;
 
-  const paths = [].concat(path);
+  const paths = [].concat(matchOptions.path);
 
   return paths.reduce((matched, path) => {
     if (!path) return null;

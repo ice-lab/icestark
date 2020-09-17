@@ -46,14 +46,15 @@ export function callCapturedEventListeners() {
   if (historyEvent) {
     Object.keys(capturedEventListeners).forEach(eventName => {
       const capturedListeners = capturedEventListeners[eventName];
+      console.log('icestark',capturedListeners);
       if (capturedListeners.length) {
         capturedListeners.forEach(listener => {
           listener.call(this, historyEvent);
         });
       }
     });
+    historyEvent = null;
   }
-  historyEvent = null;
 }
 
 export function setHistoryEvent(evt: PopStateEvent) {

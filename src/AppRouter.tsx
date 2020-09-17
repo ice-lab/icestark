@@ -218,7 +218,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   handleStateChange = (evt: PopStateEvent, url: string, routeType?: RouteType): void => {
     // if AppRouter is unmounted, cancel all operations
     if (this.unmounted) return;
-    // setHistoryState before setState
+    // setHistoryEvent before setState
     // setState is only async batched when it is called inside a React event handler, otherwise it is sync
     // make sure history state had beed recorded before render
     setHistoryEvent(evt);

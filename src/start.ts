@@ -5,7 +5,8 @@ import {
   addCapturedEventListeners,
   removeCapturedEventListeners,
   callCapturedEventListeners,
-  setHistoryState,
+  createPopStateEvent,
+  setHistoryEvent,
 } from './util/capturedListeners';
 import { AppConfig, getMicroApps, loadMicroApp, unmountMicroApp } from './microApps';
 import { emptyAssets } from './util/handleAssets';
@@ -50,30 +51,36 @@ const originalReplace: OriginalStateFunction = window.history.replaceState;
 const originalAddEventListener = window.addEventListener;
 const originalRemoveEventListener = window.removeEventListener;
 
-const handleStateChange = (state: any, url: string, method: RouteType) => {
-  setHistoryState(state);
+const handleStateChange = (event: PopStateEvent, url: string, method: RouteType) => {
+  setHistoryEvent(event);
   routeChange(url, method);
 };
 
-const handlePopState = (event: PopStateEvent): void => {
-  setHistoryState(event.state);
-  console.log('event.state', event);
+const urlChange = (event: PopStateEvent, ...args): void => {
+  console.log('[icestark] url change', args);
+  setHistoryEvent(event);
   routeChange(location.href, 'popstate');
 };
 
+let lastUrl = null;
+
 function routeChange (url: string, type: RouteType | 'init' | 'popstate' ) {
   const { pathname, query, hash } = urlParse(url, true);
-  globalConfiguration.onRouteChange(pathname, query, hash, type);
+  // trigger onRouteChange when url is changed
+  if (lastUrl !== url) {
+    globalConfiguration.onRouteChange(pathname, query, hash, type);
+  }
+  lastUrl = url;
   const appsToMount = [];
   getMicroApps().forEach((microApp: AppConfig) => {
-    if (microApp.activeRuleFunction(url)) {
+    if (microApp.checkActive(url)) {
       appsToMount.push(loadMicroApp(microApp.name));
     } else {
       unmountMicroApp(microApp.name);
     }
   });
+  // call captured event after app mounted
   Promise.all(appsToMount).then(() => {
-    console.log('callCapturedEventListeners');
     callCapturedEventListeners();
   });
 };
@@ -83,17 +90,19 @@ function routeChange (url: string, type: RouteType | 'init' | 'popstate' ) {
  */
 const hijackHistory = (): void => {
   window.history.pushState = (state: any, title: string, url?: string, ...rest) => {
-    console.log(state);
     originalPush.apply(window.history, [state, title, url, ...rest]);
-    handleStateChange(state, url, 'pushState');
+    const eventName = 'pushState';
+    handleStateChange(createPopStateEvent(state, eventName), url, eventName);
   };
 
   window.history.replaceState = (state: any, title: string, url?: string, ...rest) => {
     originalReplace.apply(window.history, [state, title, url, ...rest]);
-    handleStateChange(state, url, 'replaceState');
+    const eventName = 'replaceState';
+    handleStateChange(createPopStateEvent(state, eventName), url, eventName);
   };
 
-  window.addEventListener('popstate', handlePopState, false);
+  window.addEventListener('popstate', urlChange, false);
+  window.addEventListener('hashchange', urlChange, false);
 };
 
 /**
@@ -103,7 +112,8 @@ const unHijackHistory = (): void => {
   window.history.pushState = originalPush;
   window.history.replaceState = originalReplace;
 
-  window.removeEventListener('popstate', handlePopState, false);
+  window.removeEventListener('popstate', urlChange, false);
+  window.removeEventListener('hashchange', urlChange, false);
 };
 
 /**
@@ -140,7 +150,6 @@ const unHijackEventListener = (): void => {
   window.addEventListener = originalAddEventListener;
   window.removeEventListener = originalRemoveEventListener;
 };
-
 
 function start(options?: StartConfiguration) {
   if (started) {
