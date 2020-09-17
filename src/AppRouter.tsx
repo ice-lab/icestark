@@ -25,9 +25,9 @@ export interface AppRouterProps {
     hash?: string,
     type?: RouteType | 'init' | 'popstate',
   ) => void;
-  ErrorComponent?: any;
-  LoadingComponent?: any;
-  NotFoundComponent?: any;
+  ErrorComponent?: React.ComponentType;
+  LoadingComponent?: React.ComponentType;
+  NotFoundComponent?: React.ComponentType;
   onAppEnter?: (appConfig: AppConfig) => void;
   onAppLeave?: (appConfig: AppConfig) => void;
   shouldAssetsRemove?: (
@@ -78,6 +78,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
   static defaultProps = {
     onRouteChange: () => {},
+    // eslint-disable-next-line react/jsx-filename-extension
     ErrorComponent: ({ err }) => <div>{err}</div>,
     NotFoundComponent: <div>NotFound</div>,
     shouldAssetsRemove: () => true,

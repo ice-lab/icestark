@@ -93,6 +93,7 @@ export function updateAppConfig(appName: string, config) {
 // load app js assets
 export async function loadAppModule(appConfig: AppConfig) {
   let lifeCycle: AppLifeCycle = {};
+  globalConfiguration.onLoadingApp(appConfig);
   const appSandbox = createSandbox(appConfig.sandbox);
   const { url, container, entry, entryContent, name } = appConfig;
   const appAssets = url ? getUrlAssets(url) : await getEntryAssets({
@@ -113,6 +114,7 @@ export async function loadAppModule(appConfig: AppConfig) {
       unmount: getCache(AppLifeCycleEnum.AppLeave),
     };
   }
+  globalConfiguration.onFinishLoading(appConfig);
   return lifeCycle;
 }
 
@@ -127,7 +129,8 @@ export async function loadMicroApp(app: string | AppConfig) {
       try {
         lifeCycle = await loadAppModule(appConfig);
         updateAppConfig(appName, { ...lifeCycle, status: NOT_MOUNTED });
-      } catch {
+      } catch (err){
+        globalConfiguration.onError(err);
         updateAppConfig(appName, { status: LOAD_ERROR });
       }
       if (lifeCycle.mount) {

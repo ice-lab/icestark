@@ -9,7 +9,8 @@ import {
   setHistoryEvent,
 } from './util/capturedListeners';
 import { AppConfig, getMicroApps, loadMicroApp, unmountMicroApp } from './apps';
-import { emptyAssets } from './util/handleAssets';
+import { emptyAssets, recordAssets } from './util/handleAssets';
+import { MOUNTED, UNMOUNTED } from './util/constant';
 // import { setCache } from './util/cache';
 export interface StartConfiguration {
   shouldAssetsRemove?: (
@@ -25,8 +26,9 @@ export interface StartConfiguration {
   onAppEnter?: (appConfig: AppConfig) => void;
   onAppLeave?: (appConfig: AppConfig) => void;
   onLoadingApp?: (appConfig: AppConfig) => void;
+  onFinishLoading?:  (appConfig: AppConfig) => void;
   onError?: (err: Error) => void;
-  onNotFound?: () => void;
+  onActiveApps: (appConfigs: AppConfig[]) => void;
 }
 
 const globalConfiguration: StartConfiguration = {
@@ -35,8 +37,9 @@ const globalConfiguration: StartConfiguration = {
   onAppEnter: () => {},
   onAppLeave: () => {},
   onLoadingApp: () => {},
+  onFinishLoading: () => {},
   onError: () => {},
-  onNotFound: () => {},
+  onActiveApps: () => {},
 };
 
 interface OriginalStateFunction {
@@ -66,23 +69,33 @@ let lastUrl = null;
 
 function routeChange (url: string, type: RouteType | 'init' | 'popstate' ) {
   const { pathname, query, hash } = urlParse(url, true);
-  // trigger onRouteChange when url is changed
-  if (lastUrl !== url) {
-    globalConfiguration.onRouteChange(pathname, query, hash, type);
-  }
+  
   lastUrl = url;
   const appsToMount = [];
+  const activeApps = [];
   getMicroApps().forEach((microApp: AppConfig) => {
     const shouldBeActive = microApp.checkActive(url);
     if (shouldBeActive) {
+      if (microApp.status !== MOUNTED) {
+        globalConfiguration.onAppEnter(microApp);
+      }
+      activeApps.push(microApp);
       appsToMount.push(loadMicroApp(microApp.name));
     } else {
+      if (microApp.status !== UNMOUNTED) {
+        globalConfiguration.onAppLeave(microApp);
+      }
       unmountMicroApp(microApp.name);
     }
   });
+  // trigger onRouteChange / onActiveApps when url is changed
+  if (lastUrl !== url) {
+    globalConfiguration.onRouteChange(pathname, query, hash, type);
+    globalConfiguration.onActiveApps(activeApps);
+  }
   // call captured event after app mounted
   Promise.all(appsToMount).then(() => {
-    // callCapturedEventListeners();
+    callCapturedEventListeners();
   });
 };
 
@@ -158,6 +171,7 @@ function start(options?: StartConfiguration) {
     return;
   }
   started = true;
+  recordAssets();
   // update globalConfiguration
   Object.keys(options || {}).forEach((configKey) => {
     globalConfiguration[configKey] = options[configKey];
