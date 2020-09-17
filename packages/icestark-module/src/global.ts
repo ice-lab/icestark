@@ -4,6 +4,7 @@
 let firstGlobalProp;
 let secondGlobalProp;
 let lastGlobalProp;
+let noteGlobalKeys = [];
 const isIE11 = typeof navigator !== 'undefined' && navigator.userAgent.indexOf('Trident') !== -1;
 
 function shouldSkipProperty(p, globalWindow) {
@@ -27,8 +28,18 @@ export function getGlobalProp (globalWindow) {
     cnt++;
     lastProp = p;
   }
-  if (lastProp !== lastGlobalProp)
+  if (lastProp !== lastGlobalProp) {
     return lastProp;
+  } else {
+    // polyfill for UC browser which lastprops will alway be window
+    // eslint-disable-next-line no-restricted-syntax
+    for (const p in globalWindow) {
+      if (!noteGlobalKeys.includes(p)) {
+        lastProp = p;
+      }
+    }
+    return lastProp;
+  }
 }
 
 export function noteGlobalProps (globalWindow) {
@@ -36,6 +47,7 @@ export function noteGlobalProps (globalWindow) {
   // but this may be faster (pending benchmarks)
   firstGlobalProp = undefined;
   secondGlobalProp = undefined;
+  noteGlobalKeys = Object.keys(globalWindow);
   // eslint-disable-next-line no-restricted-syntax
   for (const p in globalWindow) {
     // do not check frames cause it could be removed during import
