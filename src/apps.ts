@@ -18,7 +18,7 @@ interface AppLifeCycle {
 
 export interface AppConfig extends MatchOptions {
   name: string;
-  activePath: string | string[] | ActiveFn;
+  activePath?: string | string[] | ActiveFn;
   url?: string | string[];
   container?: HTMLElement;
   status?: string;
@@ -28,13 +28,17 @@ export interface AppConfig extends MatchOptions {
   umd?: boolean;
   checkActive?: (url: string) => boolean;
   appAssets?: Assets;
+  props?: object;
+  cached?: boolean;
 }
 
+export type MicroApp = AppConfig & AppLifeCycle;
+
 // cache all microApp
-let microApps = [];
+let microApps: MicroApp[] = [];
 
 function getAppNames() {
-  return microApps.map((app: AppConfig) => app.name);
+  return microApps.map(app => app.name);
 }
 
 export function getMicroApps() {
@@ -118,8 +122,20 @@ export async function loadAppModule(appConfig: AppConfig) {
   return lifeCycle;
 }
 
+export function getAppConfigForLoad (app: string | AppConfig) {
+  if (typeof app === 'string') {
+    return getAppConfig(app);
+  }
+  const { name } = app;
+  const appIndex = getAppNames().indexOf(name);
+  if (appIndex === -1) {
+    createMicroApp(app);
+  }
+  return getAppConfig(name);
+};
+
 export async function loadMicroApp(app: string | AppConfig) {
-  const appConfig = typeof app === 'string' ? getAppConfig(app) : app;
+  const appConfig = getAppConfigForLoad(app);
   const appName = appConfig.name;
   if (appConfig) {
     // check status of app
@@ -137,15 +153,15 @@ export async function loadMicroApp(app: string | AppConfig) {
         // check current url before mount
         mountMicroApp(appConfig.name);
       }
+    } else if (appConfig.status === UNMOUNTED) {
+      if (!appConfig.cached) {
+        await loadAndAppendCssAssets(appConfig.appAssets);
+      }
+      mountMicroApp(appConfig.name);
     } else {
       console.info(`[icestark] current status of app ${appName} is ${appConfig.status}`);
     }
     return getAppConfig(appName);
-  } else if (appConfig.status === UNMOUNTED) {
-    if (!appConfig.cached) {
-      await loadAndAppendCssAssets(appConfig.appAssets);
-    }
-    mountMicroApp(appConfig.name);
   } else {
     console.error(`[icestark] fail to get app config of ${appName}`);
   }
@@ -191,5 +207,12 @@ export function removeMicroApp(appName: string) {
   } else {
     console.log(`[icestark] can not find app ${appName} when call removeMicroApp`);
   }
+}
+
+export function clearMicroApps () {
+  getAppNames().forEach(name => {
+    unloadMicroApp(name);
+  });
+  microApps = [];
 }
 
