@@ -18,17 +18,18 @@ export interface StartConfiguration {
     element?: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement,
   ) => boolean;
   onRouteChange?: (
+    url: string,
     pathname: string,
     query: object,
     hash?: string,
-    type?: RouteType | 'init' | 'popstate',
+    type?: RouteType | 'init' | 'popstate' | 'hashchange',
   ) => void;
   onAppEnter?: (appConfig: AppConfig) => void;
   onAppLeave?: (appConfig: AppConfig) => void;
   onLoadingApp?: (appConfig: AppConfig) => void;
   onFinishLoading?:  (appConfig: AppConfig) => void;
   onError?: (err: Error) => void;
-  onActiveApps: (appConfigs: AppConfig[]) => void;
+  onActiveApps?: (appConfigs: AppConfig[]) => void;
 }
 
 const globalConfiguration: StartConfiguration = {
@@ -59,44 +60,54 @@ const handleStateChange = (event: PopStateEvent, url: string, method: RouteType)
   routeChange(url, method);
 };
 
-const urlChange = (event: PopStateEvent | HashChangeEvent, eventType: string): void => {
-  console.log('[icestark] url change', event, eventType);
+const urlChange = (event: PopStateEvent | HashChangeEvent): void => {
   setHistoryEvent(event);
-  routeChange(location.href, 'popstate');
+  routeChange(location.href, event.type as RouteType);
 };
 
 let lastUrl = null;
 
-function routeChange (url: string, type: RouteType | 'init' | 'popstate' ) {
+export function routeChange (url: string, type: RouteType | 'init' | 'popstate'| 'hashchange' ) {
   const { pathname, query, hash } = urlParse(url, true);
-  
-  lastUrl = url;
-  const appsToMount = [];
-  const activeApps = [];
-  getMicroApps().forEach((microApp: AppConfig) => {
-    const shouldBeActive = microApp.checkActive(url);
-    if (shouldBeActive) {
-      if (microApp.status !== MOUNTED) {
-        globalConfiguration.onAppEnter(microApp);
-      }
-      activeApps.push(microApp);
-      appsToMount.push(loadMicroApp(microApp.name));
-    } else {
-      if (microApp.status !== UNMOUNTED) {
-        globalConfiguration.onAppLeave(microApp);
-      }
-      unmountMicroApp(microApp.name);
-    }
-  });
-  // trigger onRouteChange / onActiveApps when url is changed
+  // trigger onRouteChange when url is changed
   if (lastUrl !== url) {
-    globalConfiguration.onRouteChange(pathname, query, hash, type);
+    globalConfiguration.onRouteChange(url, pathname, query, hash, type);
+  
+    const unmountApps = [];
+    const activeApps = [];
+    getMicroApps().forEach((microApp: AppConfig) => {
+      const shouldBeActive = microApp.checkActive(url);
+      if (shouldBeActive) {
+        if (microApp.status !== MOUNTED) {
+          globalConfiguration.onAppEnter(microApp);
+        }
+        activeApps.push(microApp);
+      } else {
+        if (microApp.status !== UNMOUNTED) {
+          globalConfiguration.onAppLeave(microApp);
+        }
+        unmountApps.push(microApp);
+      }
+    });
+    // trigger onActiveApps when url is changed
     globalConfiguration.onActiveApps(activeApps);
+
+    // call unmount apps
+    unmountApps.forEach((unmountApp) => {
+      unmountMicroApp(unmountApp.name);
+    });
+
+    // call captured event after app mounted
+    Promise.all(activeApps.map( async (activeApp) => {
+      if (activeApp.status !== MOUNTED) {
+        globalConfiguration.onAppEnter(activeApp);
+      }
+      await loadMicroApp(activeApp);
+    })).then(() => {
+      callCapturedEventListeners();
+    });
   }
-  // call captured event after app mounted
-  Promise.all(appsToMount).then(() => {
-    callCapturedEventListeners();
-  });
+  lastUrl = url;
 };
 
 /**
@@ -115,8 +126,8 @@ const hijackHistory = (): void => {
     handleStateChange(createPopStateEvent(state, eventName), url, eventName);
   };
 
-  window.addEventListener('popstate', (event) => urlChange(event, 'popstate'), false);
-  window.addEventListener('hashchange', (event) => urlChange(event, 'hashchange'), false);
+  window.addEventListener('popstate', urlChange, false);
+  window.addEventListener('hashchange', urlChange, false);
 };
 
 /**
@@ -126,8 +137,8 @@ const unHijackHistory = (): void => {
   window.history.pushState = originalPush;
   window.history.replaceState = originalReplace;
 
-  // window.removeEventListener('popstate', urlChange, false);
-  // window.removeEventListener('hashchange', urlChange, false);
+  window.removeEventListener('popstate', urlChange, false);
+  window.removeEventListener('hashchange', urlChange, false);
 };
 
 /**

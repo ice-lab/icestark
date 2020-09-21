@@ -1,12 +1,13 @@
 import * as pathToRegexp from 'path-to-regexp';
 import * as urlParse from 'url-parse';
+import { HashType } from '../AppRoute';
 
 export interface MatchOptions {
   path?: string;
   exact?: boolean;
   strict?: boolean;
   sensitive?: boolean;
-  hashType?: boolean;
+  hashType?: boolean | HashType;
 }
 
 interface MatchResult {
