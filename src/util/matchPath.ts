@@ -1,9 +1,19 @@
 import * as pathToRegexp from 'path-to-regexp';
 import * as urlParse from 'url-parse';
-import { HashType } from '../AppRoute';
+
+// "slash" - hashes like #/ and #/sunshine/lollipops
+// "noslash" - hashes like # and #sunshine/lollipops
+// "hashbang" - “ajax crawlable” (deprecated by Google) hashes like #!/ and #!/sunshine/lollipops
+type HashType = 'hashbang' | 'noslash' | 'slash';
+export interface PathData {
+  value: string;
+  exact?: boolean;
+  strict?: boolean;
+  sensitive?: boolean;
+}
 
 export interface MatchOptions {
-  path?: string;
+  path?: string | string[] | PathData[];
   exact?: boolean;
   strict?: boolean;
   sensitive?: boolean;
@@ -72,13 +82,13 @@ export function matchActivePath(url: string, pathInfo: MatchOptions) {
 /**
  * Public API for matching a URL pathname to a path.
  */
-export default function matchPath(pathname: string, options: MatchOptions = {}) {
+export default function matchPath(pathname: string, options: MatchOptions | string = {}) {
   let matchOptions = options;
   if (typeof options === 'string') matchOptions = { path: options };
 
-  const { exact = false, strict = false, sensitive = false } = matchOptions;
+  const { exact = false, strict = false, sensitive = false } = matchOptions as MatchOptions;
 
-  const paths = [].concat(matchOptions.path);
+  const paths = [].concat((matchOptions as MatchOptions).path);
 
   return paths.reduce((matched, path) => {
     if (!path) return null;

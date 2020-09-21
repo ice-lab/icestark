@@ -197,7 +197,7 @@ function start(options?: StartConfiguration) {
 function unload() {
   unHijackEventListener();
   unHijackHistory();
-
+  started = false;
   // remove all assets added by micro apps
   emptyAssets(globalConfiguration.shouldAssetsRemove, true);
 }

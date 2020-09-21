@@ -17,7 +17,7 @@ interface AppLifeCycle {
 }
 
 export interface BaseConfig extends MatchOptions {
-  name: string;
+  name?: string;
   activePath?: string | (string | MatchOptions)[] | ActiveFn;
   url?: string | string[];
   container?: HTMLElement;
@@ -30,6 +30,7 @@ export interface BaseConfig extends MatchOptions {
   appAssets?: Assets;
   props?: object;
   cached?: boolean;
+  title?: string;
 }
 
 export interface AppConfig extends BaseConfig {
@@ -143,7 +144,8 @@ export async function loadMicroApp(app: string | AppConfig) {
   const appName = appConfig.name;
   if (appConfig) {
     // check status of app
-    if (appConfig.status === NOT_LOADED || !appConfig.appAssets) {
+    if (appConfig.status === NOT_LOADED) {
+      if (appConfig.title) document.title = appConfig.title;
       updateAppConfig(appName, { status: LOADING_ASSETS });
       let lifeCycle: AppLifeCycle = {};
       try {

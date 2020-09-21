@@ -6,17 +6,10 @@ import renderComponent from './util/renderComponent';
 import { ICESTSRK_ERROR } from './util/constant';
 import { setCache } from './util/cache';
 import start, { unload } from './start';
-import { matchActivePath } from './util/matchPath';
+import { matchActivePath, PathData } from './util/matchPath';
 import { AppConfig } from './apps';
 
 type RouteType = 'pushState' | 'replaceState';
-
-export interface PathData {
-  value: string;
-  exact?: boolean;
-  strict?: boolean;
-  sensitive?: boolean;
-}
 
 export interface AppRouterProps {
   onRouteChange?: (
@@ -25,9 +18,9 @@ export interface AppRouterProps {
     hash?: string,
     type?: RouteType | 'init' | 'popstate',
   ) => void;
-  ErrorComponent?: React.ComponentType;
-  LoadingComponent?: React.ComponentType;
-  NotFoundComponent?: React.ComponentType;
+  ErrorComponent?: React.ComponentType | React.ReactElement;
+  LoadingComponent?: React.ComponentType | React.ReactElement;
+  NotFoundComponent?: React.ComponentType | React.ReactElement;
   onAppEnter?: (appConfig: AppConfig) => void;
   onAppLeave?: (appConfig: AppConfig) => void;
   shouldAssetsRemove?: (
@@ -65,7 +58,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   static defaultProps = {
     onRouteChange: () => {},
     // eslint-disable-next-line react/jsx-filename-extension
-    ErrorComponent: ({ err }) => <div>{err}</div>,
+    ErrorComponent: ({ err }) => <div>error</div>,
     NotFoundComponent: <div>NotFound</div>,
     shouldAssetsRemove: () => true,
     onAppEnter: () => {},
@@ -79,7 +72,10 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       url: location.href,
       appLoading: '',
     };
-    const { shouldAssetsRemove, onAppEnter, onAppLeave } = props;
+  }
+
+  componentDidMount() {
+    const { shouldAssetsRemove, onAppEnter, onAppLeave } = this.props;
     start({
       shouldAssetsRemove,
       onRouteChange: this.handleRouteChange,
@@ -104,22 +100,27 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     if (this.unmounted) return;
 
     this.err = err;
+    console.log('[icestark] error', err);
     this.setState({ url: ICESTSRK_ERROR });
   };
 
   /**
    * Trigger onRouteChange
    */
-  handleRouteChange = (url: string, pathname, query, hash, type: RouteType | 'init' | 'popstate'): void => {
-    this.setState({ url });
+  handleRouteChange = (url: string, pathname: string, query: {[key: string]: string}, hash: string, type: RouteType | 'init' | 'popstate'): void => {
+    if (!this.unmounted) {
+      this.setState({ url });
+    }
     this.props.onRouteChange(pathname, query, hash, type);
   };
 
-  loadingApp = (app) => {
+  loadingApp = (app: AppConfig) => {
+    if (this.unmounted) return;
     this.setState({ appLoading: app.name });
   }
 
-  finishLoading = (app) => {
+  finishLoading = (app: AppConfig) => {
+    if (this.unmounted) return;
     const { appLoading } = this.state;
     if (appLoading === app.name) {
       this.setState({ appLoading: '' });
@@ -132,7 +133,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       ErrorComponent,
       LoadingComponent,
       children,
-      basename: appBasename ,
+      basename: appBasename,
     } = this.props;
     const { url, appLoading } = this.state;
 
@@ -162,7 +163,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       return (
         <div>
           {appLoading === this.appKey ? renderComponent(LoadingComponent, {}) : null}
-          {React.cloneElement(element, { name: this.appKey, componentProps, cssLoading: appLoading === this.appKey })}
+          {React.cloneElement(element, { key: this.appKey, name: this.appKey, componentProps, cssLoading: appLoading === this.appKey })}
         </div>
       );
     }

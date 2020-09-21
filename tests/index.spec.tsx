@@ -12,18 +12,14 @@ describe('AppRouter', () => {
     (fetch as FetchMock).resetMocks();
   });
 
-  const defaultProps = {
-    triggerError: ()=>{},
-    triggerLoading: ()=>{},
-    clearCacheRoot: ()=>{},
-  };
+  const defaultProps = {};
 
   test('render the AppRouter', () => {
     const props = {
       onRouteChange: jest.fn(),
       NotFoundComponent: <div data-testid="icestarkDefalut">NotFound</div>,
     };
-    const { getByTestId } = render(<AppRouter {...props} />);
+    const { getByTestId, unmount } = render(<AppRouter {...props} />);
 
     const textNode = getByTestId('icestarkDefalut');
 
@@ -35,192 +31,6 @@ describe('AppRouter', () => {
 
     window.history.replaceState({}, 'test2', '/#/test2');
     expect(props.onRouteChange).toHaveBeenCalledTimes(3);
-  });
-
-  test('test for AppRoute', () => {
-    window.history.pushState({}, 'test', '/');
-
-    const props = {
-      onRouteChange: jest.fn(),
-      LoadingComponent: <div>Loading</div>,
-    };
-
-    /**
-     * Test for render
-     */
-    const { container, rerender, unmount, getByText } = render(
-      <AppRouter {...props}>
-        <AppRoute
-          path="/"
-          title="component"
-          component={<div data-testid="icestarkTest">test</div>}
-        />
-      </AppRouter>,
-    );
-
-    expect(container.innerHTML).toContain('test');
-    expect(props.onRouteChange).toHaveBeenCalledTimes(1);
-
-    rerender(
-      <AppRouter {...props}>
-        <AppRoute
-          path="/"
-          title="render"
-          render={() => (
-            <div data-testid="icestarkTest">
-              testRender
-              <button
-                type="submit"
-                onClick={() => {
-                  window.dispatchEvent(new CustomEvent('icestark:not-found'));
-                }}
-              >
-                Jump NotFound
-              </button>
-              <button
-                type="submit"
-                onClick={() => {
-                  window.dispatchEvent(new PopStateEvent('popstate', {}));
-                }}
-              >
-                Jump Hash
-              </button>
-            </div>
-          )}
-        />
-      </AppRouter>,
-    );
-
-    expect(container.innerHTML).toContain('testRender');
-    expect(props.onRouteChange).toHaveBeenCalledTimes(1);
-
-    fireEvent.click(getByText(/Jump Hash/i));
-    expect(props.onRouteChange).toHaveBeenCalledTimes(2);
-
-    fireEvent.click(getByText(/Jump NotFound/i));
-    expect(container.innerHTML).toContain('NotFound');
-
-    /**
-     * Test for HashType
-     */
-    window.history.pushState({}, 'test', '/');
-
-    setCache('appLeave', () => {});
-    rerender(
-      <AppRouter {...props}>
-        <AppRoute path="/" title="empty" url={[]} hashType />
-      </AppRouter>,
-    );
-
-    const appRouteNode = container.querySelector('.ice-stark-loading');
-    expect(container.innerHTML).toContain('Loading');
-    expect(appRouteNode.childNodes.length).toBe(1);
-    unmount();
-  });
-
-  test('test for AppRoute url -> error', done => {
-    window.history.pushState({}, 'test', '/');
-
-    const props = {
-      onRouteChange: jest.fn(),
-      LoadingComponent: <div>Loading</div>,
-    };
-
-    const { container, unmount } = render(
-      <AppRouter {...props}>
-        <AppRoute path="/" url={['//icestark.com/js/index.js']} hashType="hashbang" />
-      </AppRouter>,
-    );
-
-    expect(container.innerHTML).toContain('Loading');
-
-    setTimeout(function() {
-      unmount();
-    }, done());
-  });
-
-  test('test for AppRoute url -> success', () => {
-    window.history.pushState({}, 'test', '/');
-
-    const props = {
-      onRouteChange: jest.fn(),
-      LoadingComponent: <div>Loading</div>,
-    };
-
-    const { unmount } = render(
-      <AppRouter {...props}>
-        <AppRoute
-          path="/"
-          url={['//icestark.com/js/index.js', '//icestark.com/css/index.css']}
-        />
-      </AppRouter>,
-    );
-    unmount();
-  });
-
-  test('test for AppRoute entry -> success', done => {
-    window.history.pushState({}, 'test', '/');
-
-    const props = {
-      onRouteChange: jest.fn(),
-      LoadingComponent: <div>Loading</div>,
-    };
-
-    (fetch as FetchMock).mockResponseOnce(
-      '<html>' +
-        '  <head>' +
-        '    <meta charset="utf-8" />' +
-        '    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />' +
-        '    <link rel="dns-prefetch" href="//g.alicdn.com" />' +
-        '    <link rel="stylesheet" href="/index.css" />' +
-        '    <title>This is for test</title>' +
-        '  </head>' +
-        '  <body>' +
-        '    <div id="App">' +
-        '    </div>' +
-        '    <script src="index.js"></script>' +
-        '    <div id="page_bottom"></div>' +
-        '  </body>' +
-        '</html>',
-    );
-
-    const { container, unmount } = render(
-      <AppRouter {...props}>
-        <AppRoute path="/" entry="//icestark.com" />
-      </AppRouter>,
-    );
-
-    setTimeout(function() {
-      expect(container.innerHTML).toContain('Loading');
-      expect(container.innerHTML).toContain('<!--link /index.css processed by @ice/stark-->');
-      expect(container.innerHTML).toContain('<!--script index.js replaced by @ice/stark-->');
-
-      const scripts = container.getElementsByTagName('script');
-      for (let i = 0; i < scripts.length; i++) {
-        scripts[i].dispatchEvent(new Event('load'));
-      }
-
-      unmount();
-    }, done());
-  });
-
-  test('test for AppRoute entry -> error', () => {
-    window.history.pushState({}, 'test', '/');
-
-    const props = {
-      onRouteChange: jest.fn(),
-      LoadingComponent: <div>Loading</div>,
-    };
-
-    const err = new Error('err');
-    (fetch as FetchMock).mockRejectOnce(err);
-
-    const { unmount } = render(
-      <AppRouter {...props}>
-        <AppRoute path="/" entry="//icestark.com" />
-      </AppRouter>,
-    );
-
     unmount();
   });
 
@@ -286,7 +96,6 @@ describe('AppRouter', () => {
         </div>
       );
     };
-    
     const { container, unmount } = render(
       <AppRouter>
         <AppRoute
@@ -300,6 +109,151 @@ describe('AppRouter', () => {
     window.history.pushState({}, 'test', '/b');
     expect(container.innerHTML).toContain('test render b');
     unmount();
+  });
+  test('test for AppRoute entry -> success', done => {
+    window.history.pushState({}, 'test', '/');
+
+    const props = {
+      onRouteChange: jest.fn(),
+      LoadingComponent: <div>Loading</div>,
+    };
+
+    (fetch as FetchMock).mockResponseOnce(
+      '<html>' +
+        '  <head>' +
+        '    <meta charset="utf-8" />' +
+        '    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />' +
+        '    <link rel="dns-prefetch" href="//g.alicdn.com" />' +
+        '    <link rel="stylesheet" href="/index.css" />' +
+        '    <title>This is for test</title>' +
+        '  </head>' +
+        '  <body>' +
+        '    <div id="App">' +
+        '    </div>' +
+        '    <script src="index.js"></script>' +
+        '    <div id="page_bottom"></div>' +
+        '  </body>' +
+        '</html>',
+    );
+
+    const { container, unmount } = render(
+      <AppRouter {...props}>
+        <AppRoute path="/" entry="//icestark.com" />
+      </AppRouter>,
+    );
+    setTimeout(function() {
+      expect(container.innerHTML).toContain('<!--link /index.css processed by @ice/stark-->');
+      expect(container.innerHTML).toContain('<!--script index.js replaced by @ice/stark-->');
+
+      const scripts = container.getElementsByTagName('script');
+      for (let i = 0; i < scripts.length; i++) {
+        scripts[i].dispatchEvent(new Event('load'));
+      }
+      unmount();
+      done()
+    }, 100);
+  });
+
+  test('test for AppRoute', () => {
+    window.history.pushState({}, 'test', '/');
+
+    const props = {
+      onRouteChange: jest.fn(),
+      LoadingComponent: <div>Loading</div>,
+    };
+
+    // Test for render
+    const { container, rerender, unmount, getByText } = render(
+      <AppRouter {...props}>
+        <AppRoute
+          path="/"
+          exact
+          title="component"
+          render={() => <div data-testid="icestarkTest">test</div>}
+        />
+      </AppRouter>,
+    );
+    expect(container.innerHTML).toContain('test');
+    expect(props.onRouteChange).toHaveBeenCalledTimes(0);
+
+    rerender(
+      <AppRouter {...props}>
+        <AppRoute
+          path="/"
+          exact
+          title="render"
+          render={() => (
+            <div data-testid="icestarkTest">
+              testRender
+              <button
+                type="submit"
+                onClick={() => {
+                  window.history.pushState({}, 'test', '/test');
+                }}
+              >
+                Jump 404
+              </button>
+              <button
+                type="submit"
+                onClick={() => {
+                  window.dispatchEvent(new PopStateEvent('popstate', {}));
+                }}
+              >
+                Jump Hash
+              </button>
+            </div>
+          )}
+        />
+      </AppRouter>,
+    );
+
+    expect(container.innerHTML).toContain('testRender');
+    expect(props.onRouteChange).toHaveBeenCalledTimes(0);
+    
+    fireEvent.click(getByText(/Jump Hash/i));
+    // url do not change, will not trigger onRouteChange
+    expect(props.onRouteChange).toHaveBeenCalledTimes(0);
+
+    fireEvent.click(getByText(/Jump 404/i));
+    expect(props.onRouteChange).toHaveBeenCalledTimes(1);
+    expect(container.innerHTML).toContain('NotFound');
+
+    // Test for HashType
+    window.history.pushState({}, 'test', '/');
+    rerender(
+      <AppRouter {...props}>
+        <AppRoute path="/" title="empty" url={['//icestark.com/js/index.js']} hashType />
+      </AppRouter>,
+    );
+
+    const appRouteNode = container.querySelector('.ice-stark-loading');
+    expect(container.innerHTML).toContain('Loading');
+    expect(appRouteNode.childNodes.length).toBe(1);
+    unmount();
+  });
+
+  test('test for AppRoute entry -> error', done => {
+    window.history.pushState({}, 'test', '/testerror');
+
+    const props = {
+      onRouteChange: jest.fn(),
+      LoadingComponent: <div>Loading</div>,
+    };
+
+    const err = new Error('err');
+    (fetch as FetchMock).mockRejectOnce(err);
+
+    const { unmount, container } = render(
+      <AppRouter {...props}>
+        <AppRoute path="/testerror" exact entry="//icestark.com" />
+      </AppRouter>,
+    );
+    
+    setTimeout(function() {
+      expect(container.innerHTML).toContain('error');
+      unmount();
+      done();
+    }, 100)
   });
 });
 

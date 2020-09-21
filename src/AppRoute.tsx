@@ -3,6 +3,7 @@ import renderComponent from './util/renderComponent';
 import { AppHistory } from './appHistory';
 import { setCache } from './util/cache';
 import { loadMicroApp, unloadMicroApp, BaseConfig } from './apps';
+import { converArray2String } from './AppRouter';
 
 interface AppRouteState {
   showComponent: boolean;
@@ -32,8 +33,9 @@ export interface AppRouteProps extends BaseConfig {
   componentProps?: AppRouteComponentProps;
   cssLoading?: boolean;
   rootId?: string;
-  component?: React.ComponentType;
-  render?: (componentProps: AppRouteComponentProps) => React.ComponentType;
+  component?: React.ReactElement;
+  basename?: string;
+  render?: (componentProps: AppRouteComponentProps) => React.ReactElement;
 }
 
 export default class AppRoute extends React.Component<AppRouteProps, AppRouteState> {
@@ -60,9 +62,30 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     }
   }
 
+  componentDidUpdate(prevProps) {
+    const { url, title, rootId, entry, entryContent } = this.props;
+
+    if (
+      converArray2String(url) !== converArray2String(prevProps.url) ||
+      title !== prevProps.title ||
+      entry !== prevProps.entry ||
+      entryContent !== prevProps.entryContent ||
+      rootId !== prevProps.rootId
+    ) {
+      this.unmountApp();
+      this.renderChild();
+    }
+  }
+
   componentWillUnmount() {
+    this.unmountApp();
+  }
+
+  unmountApp = () => {
     const { name } = this.props;
-    unloadMicroApp(name);
+    if (!this.validateRender()) {
+      unloadMicroApp(name);
+    }
   }
 
   renderChild = (): void => {
@@ -73,9 +96,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     setCache('root', rootElement);
 
-    
     loadMicroApp({
-      ...rest,
+      ...(rest as BaseConfig),
       name,
       activePath: path,
       container: rootElement,
@@ -97,12 +119,12 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   }
 
   validateRender() {
-    const { render } = this.props;
-    return render && typeof render === 'function';
+    const { render, component } = this.props;
+    return render && typeof render === 'function' || component;
   }
 
   render() {
-    const { render, component, componentProps } = this.props;
+    const { render, component, componentProps, cssLoading } = this.props;
     const { showComponent } = this.state;
     if (component) {
       return showComponent ? renderComponent(component, componentProps) : null;
@@ -116,7 +138,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         ref={element => {
           this.myRefBase = element;
         }}
-        className='ice-stark-loaded'
+        className={cssLoading ? 'ice-stark-loading' : 'ice-stark-loaded'}
       />
     );
   }
