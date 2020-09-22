@@ -4,6 +4,7 @@ import { AppHistory } from './appHistory';
 import { setCache } from './util/cache';
 import { loadMicroApp, unloadMicroApp, BaseConfig } from './apps';
 import { converArray2String } from './AppRouter';
+import { PathData } from './util/matchPath';
 
 interface AppRouteState {
   showComponent: boolean;
@@ -36,6 +37,7 @@ export interface AppRouteProps extends BaseConfig {
   component?: React.ReactElement;
   basename?: string;
   render?: (componentProps: AppRouteComponentProps) => React.ReactElement;
+  path?: string | string[] | PathData[];
 }
 
 export default class AppRoute extends React.Component<AppRouteProps, AppRouteState> {

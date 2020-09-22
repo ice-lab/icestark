@@ -8,7 +8,7 @@ import {
   createPopStateEvent,
   setHistoryEvent,
 } from './util/capturedListeners';
-import { AppConfig, getMicroApps, loadMicroApp, unmountMicroApp } from './apps';
+import { AppConfig, getMicroApps, loadMicroApp, unmountMicroApp, clearMicroApps } from './apps';
 import { emptyAssets, recordAssets } from './util/handleAssets';
 import { MOUNTED, UNMOUNTED } from './util/constant';
 // import { setCache } from './util/cache';
@@ -200,6 +200,7 @@ function unload() {
   started = false;
   // remove all assets added by micro apps
   emptyAssets(globalConfiguration.shouldAssetsRemove, true);
+  clearMicroApps();
 }
 
 export { unload, globalConfiguration };

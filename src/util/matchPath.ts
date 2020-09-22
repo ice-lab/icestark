@@ -12,8 +12,11 @@ export interface PathData {
   sensitive?: boolean;
 }
 
-export interface MatchOptions {
+export interface MatchOptions extends PathOptions {
   path?: string | string[] | PathData[];
+}
+
+export interface PathOptions {
   exact?: boolean;
   strict?: boolean;
   sensitive?: boolean;

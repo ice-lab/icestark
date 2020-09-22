@@ -4,7 +4,6 @@ import { FetchMock } from 'jest-fetch-mock';
 import * as React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import { AppRouter, AppRoute, AppLink, appHistory } from '../src/index';
-import { setCache } from '../src/util/cache';
 import { IS_CSS_REGEX } from '../src/util/constant';
 
 describe('AppRouter', () => {
@@ -35,39 +34,51 @@ describe('AppRouter', () => {
   });
 
   test('test for Only AppRoute Component', () => {
-    window.history.pushState({}, 'test', '/');
+    window.history.pushState({}, 'test', '/render-component');
     const { container, unmount } = render(
-      <AppRoute {...defaultProps} path="/" component={<div data-testid="icestarkTest">test component</div>} />,
+      <AppRoute {...defaultProps} path="/render-component" component={<div data-testid="icestarkTest">test component</div>} />,
     );
     expect(container.innerHTML).toContain('test component');
     unmount();
   });
 
   test('test for Only AppRoute Render', () => {
-    window.history.pushState({}, 'test', '/');
+    window.history.pushState({}, 'test', '/props-render');
     const { container, unmount } = render(
-      <AppRoute {...defaultProps} path="/" render={() => <div data-testid="icestarkTest">test render</div>} />,
+      <AppRoute {...defaultProps} path="/props-render" render={() => <div data-testid="icestarkTest">test render</div>} />,
     );
     expect(container.innerHTML).toContain('test render');
     unmount();
   });
 
   test('test for app basename', () => {
-    window.history.pushState({}, 'test', '/icestark');
+    window.history.pushState({}, 'test', '/icestark-basename');
     const { container, unmount } = render(
-      <AppRouter basename="icestark">
+      <AppRouter basename="icestark-basename">
         <AppRoute path="/" render={() => <div data-testid="icestarkTest">test render</div>} />
       </AppRouter>,
     );
     expect(container.innerHTML).toContain('test render');
+    unmount();
+  });
+
+  test('test for 404', () => {
+    window.history.pushState({}, 'test', '/404');
+    const { container, unmount } = render(
+      <AppRouter>
+        <AppRoute path="/notfound" render={() => <div data-testid="icestarkTest">test render</div>} />
+      </AppRouter>,
+    );
+    expect(container.innerHTML).toContain('NotFound');
+    unmount();
   });
 
   test('test for component update', () => {
-    window.history.pushState({}, 'test', '/');
+    window.history.pushState({}, 'test', '/component-update');
     const RenerComponent = (props) => {
       return (
         <div data-testid="icestarkTest">
-          {props.location.pathname === '/' ? 'test render a' : 'test render b'}
+          {props.location.pathname === '/component-update' ? 'test render a' : 'test render b'}
         </div>
       );
     };
@@ -75,43 +86,43 @@ describe('AppRouter', () => {
     const { container, unmount } = render(
       <AppRouter>
         <AppRoute
-          path="/"
+          path="/component-update"
           title="component"
           component={<RenerComponent />}
         />
       </AppRouter>
     );
     expect(container.innerHTML).toContain('test render a');
-    window.history.pushState({}, 'test', '/b');
+    window.history.pushState({}, 'test', '/component-update/b');
     expect(container.innerHTML).toContain('test render b');
     unmount();
   });
 
   test('test for render update', () => {
-    window.history.pushState({}, 'test', '/');
+    window.history.pushState({}, 'test', '/render-update');
     const RenerComponent = (props) => {
       return (
         <div data-testid="icestarkTest">
-          {props.location.pathname === '/' ? 'test render a' : 'test render b'}
+          {props.location.pathname === '/render-update' ? 'test render a' : 'test render b'}
         </div>
       );
     };
     const { container, unmount } = render(
       <AppRouter>
         <AppRoute
-          path="/"
+          path="/render-update"
           title="component"
           render={(props) => <RenerComponent {...props} />}
         />
       </AppRouter>
     );
     expect(container.innerHTML).toContain('test render a');
-    window.history.pushState({}, 'test', '/b');
+    window.history.pushState({}, 'test', '/render-update/b');
     expect(container.innerHTML).toContain('test render b');
     unmount();
   });
   test('test for AppRoute entry -> success', done => {
-    window.history.pushState({}, 'test', '/');
+    window.history.pushState({}, 'test', '/fetch-entry');
 
     const props = {
       onRouteChange: jest.fn(),
@@ -138,7 +149,7 @@ describe('AppRouter', () => {
 
     const { container, unmount } = render(
       <AppRouter {...props}>
-        <AppRoute path="/" entry="//icestark.com" />
+        <AppRoute path="/fetch-entry" entry="//icestark.com" />
       </AppRouter>,
     );
     setTimeout(function() {
@@ -155,7 +166,7 @@ describe('AppRouter', () => {
   });
 
   test('test for AppRoute', () => {
-    window.history.pushState({}, 'test', '/');
+    window.history.pushState({}, 'test', '/test-routerchange');
 
     const props = {
       onRouteChange: jest.fn(),
@@ -166,7 +177,7 @@ describe('AppRouter', () => {
     const { container, rerender, unmount, getByText } = render(
       <AppRouter {...props}>
         <AppRoute
-          path="/"
+          path="/test-routerchange"
           exact
           title="component"
           render={() => <div data-testid="icestarkTest">test</div>}
@@ -174,12 +185,12 @@ describe('AppRouter', () => {
       </AppRouter>,
     );
     expect(container.innerHTML).toContain('test');
-    expect(props.onRouteChange).toHaveBeenCalledTimes(0);
+    expect(props.onRouteChange).toHaveBeenCalledTimes(1);
 
     rerender(
       <AppRouter {...props}>
         <AppRoute
-          path="/"
+          path="/test-routerchange"
           exact
           title="render"
           render={() => (
@@ -208,14 +219,14 @@ describe('AppRouter', () => {
     );
 
     expect(container.innerHTML).toContain('testRender');
-    expect(props.onRouteChange).toHaveBeenCalledTimes(0);
+    expect(props.onRouteChange).toHaveBeenCalledTimes(1);
     
     fireEvent.click(getByText(/Jump Hash/i));
     // url do not change, will not trigger onRouteChange
-    expect(props.onRouteChange).toHaveBeenCalledTimes(0);
+    expect(props.onRouteChange).toHaveBeenCalledTimes(1);
 
     fireEvent.click(getByText(/Jump 404/i));
-    expect(props.onRouteChange).toHaveBeenCalledTimes(1);
+    expect(props.onRouteChange).toHaveBeenCalledTimes(2);
     expect(container.innerHTML).toContain('NotFound');
 
     // Test for HashType
@@ -295,6 +306,15 @@ describe('AppLink', () => {
     const appLinkNode = container.querySelector(`.${className}`);
     expect(appLinkNode.getAttribute('href')).toBe('/#/test');
   });
+
+  test('message of AppLink', () => {
+    window.confirm = () => false;
+    const { getByText } = render(<AppLink to="/test-message" message="test">click</AppLink>);
+    const mockReplaceState = jest.fn();
+    window.history.replaceState = mockReplaceState;
+    fireEvent.click(getByText(/click/i));
+    expect(mockReplaceState.mock.calls.length).toBe(0);
+  })
 });
 
 describe('appHistory', () => {

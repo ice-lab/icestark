@@ -1,6 +1,6 @@
 import { SandboxContructor, SandboxProps } from '@ice/sandbox';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
-import { matchActivePath, MatchOptions } from './util/matchPath';
+import { matchActivePath, MatchOptions, PathData, PathOptions } from './util/matchPath';
 import { createSandbox, getUrlAssets, getEntryAssets, appendAssets, loadAndAppendCssAssets, emptyAssets, Assets } from './util/handleAssets';
 import { getCache } from './util/cache';
 import { AppLifeCycleEnum } from './util/appLifeCycle';
@@ -11,14 +11,13 @@ interface ActiveFn {
   (url: string): boolean;
 }
 
-interface AppLifeCycle {
+export interface AppLifeCycle {
   mount?: (container: HTMLElement, props: any) => Promise<void> | void;
   unmount?: (container: HTMLElement) => Promise<void> | void;
 }
 
-export interface BaseConfig extends MatchOptions {
+export interface BaseConfig extends PathOptions {
   name?: string;
-  activePath?: string | (string | MatchOptions)[] | ActiveFn;
   url?: string | string[];
   container?: HTMLElement;
   status?: string;
@@ -34,7 +33,7 @@ export interface BaseConfig extends MatchOptions {
 }
 
 export interface AppConfig extends BaseConfig {
-  render?: () => {};
+  activePath?: string | string[] | PathData[] | MatchOptions[] | ActiveFn;
 }
 
 export type MicroApp = AppConfig & AppLifeCycle;
@@ -141,8 +140,8 @@ export function getAppConfigForLoad (app: string | AppConfig) {
 
 export async function loadMicroApp(app: string | AppConfig) {
   const appConfig = getAppConfigForLoad(app);
-  const appName = appConfig.name;
-  if (appConfig) {
+  const appName = appConfig && appConfig.name;
+  if (appConfig && appName) {
     // check status of app
     if (appConfig.status === NOT_LOADED) {
       if (appConfig.title) document.title = appConfig.title;
@@ -161,7 +160,7 @@ export async function loadMicroApp(app: string | AppConfig) {
       }
     } else if (appConfig.status === UNMOUNTED) {
       if (!appConfig.cached) {
-        await loadAndAppendCssAssets(appConfig.appAssets);
+        await loadAndAppendCssAssets(appConfig.appAssets || { cssList: [], jsList: []});
       }
       mountMicroApp(appConfig.name);
     } else {
@@ -185,6 +184,7 @@ export async function mountMicroApp(appName: string) {
 export async function unmountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   if (appConfig && appConfig.status === MOUNTED) {
+    // remove assets if app is not cached
     emptyAssets(globalConfiguration.shouldAssetsRemove, !appConfig.cached && appConfig.name);
     updateAppConfig(appName, { status: UNMOUNTED });
     await appConfig.unmount(appConfig.container);
@@ -221,4 +221,3 @@ export function clearMicroApps () {
   });
   microApps = [];
 }
-

@@ -100,7 +100,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     if (this.unmounted) return;
 
     this.err = err;
-    console.log('[icestark] error', err);
     this.setState({ url: ICESTSRK_ERROR });
   };
 
