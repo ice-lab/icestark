@@ -2,7 +2,7 @@ import * as React from 'react';
 import renderComponent from './util/renderComponent';
 import { AppHistory } from './appHistory';
 import { setCache } from './util/cache';
-import { loadMicroApp, unloadMicroApp, BaseConfig } from './apps';
+import { createMicroApp, unloadMicroApp, BaseConfig } from './apps';
 import { converArray2String } from './AppRouter';
 import { PathData } from './util/matchPath';
 
@@ -98,7 +98,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     setCache('root', rootElement);
 
-    loadMicroApp({
+    createMicroApp({
       ...(rest as BaseConfig),
       name,
       activePath: path,

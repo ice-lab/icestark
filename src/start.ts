@@ -8,7 +8,7 @@ import {
   createPopStateEvent,
   setHistoryEvent,
 } from './util/capturedListeners';
-import { AppConfig, getMicroApps, loadMicroApp, unmountMicroApp, clearMicroApps } from './apps';
+import { AppConfig, getMicroApps, createMicroApp, unmountMicroApp, clearMicroApps } from './apps';
 import { emptyAssets, recordAssets } from './util/handleAssets';
 import { MOUNTED, UNMOUNTED } from './util/constant';
 // import { setCache } from './util/cache';
@@ -102,7 +102,7 @@ export function routeChange (url: string, type: RouteType | 'init' | 'popstate'|
       if (activeApp.status !== MOUNTED) {
         globalConfiguration.onAppEnter(activeApp);
       }
-      await loadMicroApp(activeApp);
+      await createMicroApp(activeApp);
     })).then(() => {
       callCapturedEventListeners();
     });
