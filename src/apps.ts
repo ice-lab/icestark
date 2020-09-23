@@ -70,6 +70,11 @@ export function getMicroApps() {
   return microApps;
 }
 
+export function getAppStatus(appName: string) {
+  const app = microApps.find(microApp => appName === microApp.name);
+  return app ? app.status : '';
+}
+
 export function registerMicroApp(appConfig: AppConfig, appLifecyle?: AppLifecylceOptions) {
   // check appConfig.name 
   if (getAppNames().includes(appConfig.name)) {
@@ -166,7 +171,7 @@ function combineLifecyle(lifecycle: ModuleLifeCycle, appConfig: AppConfig) {
   const combinedLifecyle = { ...lifecycle };
   ['mount', 'unmount', 'update'].forEach((lifecycleKey) => {
     if (lifecycle[lifecycleKey]) {
-      combineLifecyle[lifecycleKey] = async (props) => {
+      combinedLifecyle[lifecycleKey] = async (props) => {
         await callAppLifecycle('before', lifecycleKey, appConfig);
         await lifecycle[lifecycleKey](props);
         await callAppLifecycle('after', lifecycleKey, appConfig);
@@ -199,19 +204,24 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
       let lifeCycle: ModuleLifeCycle = {};
       try {
         lifeCycle = await loadAppModule(appConfig);
-        updateAppConfig(appName, { ...lifeCycle, status: NOT_MOUNTED });
+        // in case of app status modified by unload event
+        if (getAppStatus(appName) === LOADING_ASSETS) {
+          updateAppConfig(appName, { ...lifeCycle, status: NOT_MOUNTED });
+        }
       } catch (err){
         globalConfiguration.onError(err);
         updateAppConfig(appName, { status: LOAD_ERROR });
       }
       if (lifeCycle.mount) {
-        mountMicroApp(appConfig.name);
+        await mountMicroApp(appConfig.name);
       }
     } else if (appConfig.status === UNMOUNTED) {
       if (!appConfig.cached) {
         await loadAndAppendCssAssets(appConfig.appAssets || { cssList: [], jsList: []});
       }
-      mountMicroApp(appConfig.name);
+      await mountMicroApp(appConfig.name);
+    } else if (appConfig.status === NOT_MOUNTED) {
+      await mountMicroApp(appConfig.name);
     } else {
       console.info(`[icestark] current status of app ${appName} is ${appConfig.status}`);
     }
@@ -225,9 +235,9 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
 export async function mountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   // check current url before mount
-  if (appConfig && appConfig.checkActive(window.location.href)) {
-    await appConfig.mount({ container: appConfig.container, customProps: appConfig.props });
+  if (appConfig && appConfig.checkActive(window.location.href) && appConfig.status !== MOUNTED) {
     updateAppConfig(appName, { status: MOUNTED });
+    appConfig.mount({ container: appConfig.container, customProps: appConfig.props });
   }
 }
 
@@ -242,7 +252,7 @@ export async function unmountMicroApp(appName: string) {
 }
 
 // unload micro app, load app bundles when create micro app
-export function unloadMicroApp(appName: string) {
+export async function unloadMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   if (appConfig) {
     unmountMicroApp(appName);

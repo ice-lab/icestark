@@ -97,7 +97,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     const rootElement: HTMLElement = this.reCreateElementInBase(rootId);
 
     setCache('root', rootElement);
-
     createMicroApp({
       ...(rest as BaseConfig),
       name,

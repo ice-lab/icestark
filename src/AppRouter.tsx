@@ -72,10 +72,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       url: location.href,
       appLoading: '',
     };
-  }
-
-  componentDidMount() {
-    const { shouldAssetsRemove, onAppEnter, onAppLeave } = this.props;
+    const { shouldAssetsRemove, onAppEnter, onAppLeave } = props;
     start({
       shouldAssetsRemove,
       onRouteChange: this.handleRouteChange,
