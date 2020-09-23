@@ -1,7 +1,6 @@
 import * as React from 'react';
 import renderComponent from './util/renderComponent';
 import { AppHistory } from './appHistory';
-import { setCache } from './util/cache';
 import { createMicroApp, unloadMicroApp, BaseConfig } from './apps';
 import { converArray2String } from './AppRouter';
 import { PathData } from './util/matchPath';
@@ -96,7 +95,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     // rootElement is created for render sub-application
     const rootElement: HTMLElement = this.reCreateElementInBase(rootId);
 
-    setCache('root', rootElement);
     createMicroApp({
       ...(rest as BaseConfig),
       name,

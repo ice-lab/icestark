@@ -2,7 +2,7 @@ import { SandboxContructor, SandboxProps } from '@ice/sandbox';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
 import { matchActivePath, MatchOptions, PathData, PathOptions } from './util/matchPath';
 import { createSandbox, getUrlAssets, getEntryAssets, appendAssets, loadAndAppendCssAssets, emptyAssets, Assets } from './util/handleAssets';
-import { getCache } from './util/cache';
+import { getCache, setCache } from './util/cache';
 import { AppLifeCycleEnum } from './util/appLifeCycle';
 import { loadUmdModule } from './util/umdLoader';
 import { globalConfiguration } from './start';
@@ -197,6 +197,7 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
   const appConfig = getAppConfigForLoad(app, appLifecyle);
   const appName = appConfig && appConfig.name;
   if (appConfig && appName) {
+    setCache('root', appConfig?.container || null);
     // check status of app
     if (appConfig.status === NOT_LOADED) {
       if (appConfig.title) document.title = appConfig.title;
