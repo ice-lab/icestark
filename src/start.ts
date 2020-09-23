@@ -11,7 +11,7 @@ import {
 import { AppConfig, getMicroApps, createMicroApp, unmountMicroApp, clearMicroApps } from './apps';
 import { emptyAssets, recordAssets } from './util/handleAssets';
 import { MOUNTED, UNMOUNTED } from './util/constant';
-// import { setCache } from './util/cache';
+
 export interface StartConfiguration {
   shouldAssetsRemove?: (
     assetUrl?: string,
@@ -71,6 +71,7 @@ export function routeChange (url: string, type: RouteType | 'init' | 'popstate'|
   const { pathname, query, hash } = urlParse(url, true);
   // trigger onRouteChange when url is changed
   if (lastUrl !== url) {
+    console.log('appchange', lastUrl, url);
     globalConfiguration.onRouteChange(url, pathname, query, hash, type);
   
     const unmountApps = [];
@@ -78,32 +79,29 @@ export function routeChange (url: string, type: RouteType | 'init' | 'popstate'|
     getMicroApps().forEach((microApp: AppConfig) => {
       const shouldBeActive = microApp.checkActive(url);
       if (shouldBeActive) {
-        if (microApp.status !== MOUNTED) {
-          globalConfiguration.onAppEnter(microApp);
-        }
         activeApps.push(microApp);
       } else {
-        if (microApp.status !== UNMOUNTED) {
-          globalConfiguration.onAppLeave(microApp);
-        }
         unmountApps.push(microApp);
       }
     });
     // trigger onActiveApps when url is changed
     globalConfiguration.onActiveApps(activeApps);
 
-    // call unmount apps
-    unmountApps.forEach((unmountApp) => {
-      unmountMicroApp(unmountApp.name);
-    });
-
     // call captured event after app mounted
-    Promise.all(activeApps.map( async (activeApp) => {
-      if (activeApp.status !== MOUNTED) {
-        globalConfiguration.onAppEnter(activeApp);
-      }
-      await createMicroApp(activeApp);
-    })).then(() => {
+    Promise.all(
+      // call unmount apps
+      unmountApps.map(async (unmountApp) => {
+        if (unmountApp.status === MOUNTED) {
+          globalConfiguration.onAppLeave(unmountApp);
+        }  
+        await unmountMicroApp(unmountApp.name);
+      }).concat(activeApps.map(async (activeApp) => {
+        if (activeApp.status !== MOUNTED) {
+          globalConfiguration.onAppEnter(activeApp);
+        }
+        await createMicroApp(activeApp);
+      }))
+    ).then(() => {
       callCapturedEventListeners();
     });
   }
