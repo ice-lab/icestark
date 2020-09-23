@@ -11,9 +11,16 @@ interface ActiveFn {
   (url: string): boolean;
 }
 
-export interface AppLifeCycle {
-  mount?: (container: HTMLElement, props: any) => Promise<void> | void;
-  unmount?: (container: HTMLElement) => Promise<void> | void;
+interface LifecycleProps {
+  container: HTMLElement | string;
+  customProps?: object;
+}
+
+export interface ModuleLifeCycle {
+  mount?: (props: LifecycleProps) => Promise<void> | void;
+  unmount?: (props: LifecycleProps) => Promise<void> | void;
+  update?: (props: LifecycleProps) => Promise<void> | void;
+  bootstrap?: (props: LifecycleProps) => Promise<void> | void;
 }
 
 export interface BaseConfig extends PathOptions {
@@ -32,11 +39,25 @@ export interface BaseConfig extends PathOptions {
   title?: string;
 }
 
-export interface AppConfig extends BaseConfig {
-  activePath?: string | string[] | PathData[] | MatchOptions[] | ActiveFn;
+interface LifeCycleFn {
+  (app: AppConfig): void;
 }
 
-export type MicroApp = AppConfig & AppLifeCycle;
+interface AppLifecylceOptions {
+  beforeMount?: LifeCycleFn;
+  afterMount?: LifeCycleFn;
+  beforeUnmount?: LifeCycleFn;
+  afterUnmount?: LifeCycleFn;
+  beforeUpdate?: LifeCycleFn;
+  afterUpdate?: LifeCycleFn;
+}
+
+export interface AppConfig extends BaseConfig {
+  activePath?: string | string[] | PathData[] | MatchOptions[] | ActiveFn;
+  appLifecycle?: AppLifecylceOptions;
+}
+
+export type MicroApp = AppConfig & ModuleLifeCycle;
 
 // cache all microApp
 let microApps: MicroApp[] = [];
@@ -49,7 +70,12 @@ export function getMicroApps() {
   return microApps;
 }
 
-export function registerMicroApp(appConfig: AppConfig) {
+export function getAppStatus(appName: string) {
+  const app = microApps.find(microApp => appName === microApp.name);
+  return app ? app.status : '';
+}
+
+export function registerMicroApp(appConfig: AppConfig, appLifecyle?: AppLifecylceOptions) {
   // check appConfig.name 
   if (getAppNames().includes(appConfig.name)) {
     throw Error(`name ${appConfig.name} already been regsitered`);
@@ -57,28 +83,32 @@ export function registerMicroApp(appConfig: AppConfig) {
   // set activeRules
   const { activePath, hashType = false, exact = false, sensitive = false, strict = false } = appConfig;
   const activeRules: (ActiveFn | string | MatchOptions)[] = Array.isArray(activePath) ? activePath : [activePath];
-  const checkActive = activePath ? (url: string) => activeRules.map((activeRule: ActiveFn | string | MatchOptions) => {
-    if (typeof activeRule === 'function' ) {
-      return activeRule;
-    } else {
-      const pathOptions: MatchOptions = { hashType, exact, sensitive, strict };
-      const pathInfo = Object.prototype.toString.call(activeRule) === '[object Object]'
-        ? { ...pathOptions, ...(activeRule as MatchOptions) }
-        : { path: activeRule as string, ...pathOptions };
-      return (checkUrl: string) => matchActivePath(checkUrl, pathInfo);
-    }
-  }).some((activeRule: ActiveFn) => activeRule(url)) : () => true;
+  const checkActive = activePath
+    ? (url: string) => activeRules.map((activeRule: ActiveFn | string | MatchOptions) => {
+      if (typeof activeRule === 'function' ) {
+        return activeRule;
+      } else {
+        const pathOptions: MatchOptions = { hashType, exact, sensitive, strict };
+        const pathInfo = Object.prototype.toString.call(activeRule) === '[object Object]'
+          ? { ...pathOptions, ...(activeRule as MatchOptions) }
+          : { path: activeRule as string, ...pathOptions };
+        return (checkUrl: string) => matchActivePath(checkUrl, pathInfo);
+      }
+    }).some((activeRule: ActiveFn) => activeRule(url))
+    // active app when activePath is not specified
+    : () => true;
   const microApp = {
     status: NOT_LOADED,
     ...appConfig,
+    appLifecycle: appLifecyle,
     checkActive,
   };
   microApps.push(microApp);
 }
 
-export function registerMicroApps(appConfigs: AppConfig[]) {
+export function registerMicroApps(appConfigs: AppConfig[], appLifecyle?: AppLifecylceOptions) {
   appConfigs.forEach(appConfig => {
-    registerMicroApp(appConfig);
+    registerMicroApp(appConfig, appLifecyle);
   });
 }
 
@@ -100,7 +130,7 @@ export function updateAppConfig(appName: string, config) {
 
 // load app js assets
 export async function loadAppModule(appConfig: AppConfig) {
-  let lifeCycle: AppLifeCycle = {};
+  let lifecycle: ModuleLifeCycle = {};
   globalConfiguration.onLoadingApp(appConfig);
   const appSandbox = createSandbox(appConfig.sandbox);
   const { url, container, entry, entryContent, name } = appConfig;
@@ -114,32 +144,57 @@ export async function loadAppModule(appConfig: AppConfig) {
   updateAppConfig(appConfig.name, { appAssets });
   if (appConfig.umd) {
     await loadAndAppendCssAssets(appAssets);
-    lifeCycle = await loadUmdModule(appAssets.jsList, appSandbox);
+    lifecycle = await loadUmdModule(appAssets.jsList, appSandbox);
   } else {
     await appendAssets(appAssets, appSandbox);
-    lifeCycle = {
+    lifecycle = {
       mount: getCache(AppLifeCycleEnum.AppEnter),
       unmount: getCache(AppLifeCycleEnum.AppLeave),
     };
   }
   globalConfiguration.onFinishLoading(appConfig);
-  return lifeCycle;
+  return combineLifecyle(lifecycle, appConfig);
 }
 
-export function getAppConfigForLoad (app: string | AppConfig) {
+function capitalize(str: string) {
+  if (typeof str !== 'string') return '';
+  return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
+}
+
+async function callAppLifecycle(primaryKey: string, lifecycleKey: string, appConfig: AppConfig) {
+  if (appConfig.appLifecycle && appConfig.appLifecycle[`${primaryKey}${capitalize(lifecycleKey)}`]) {
+    await appConfig.appLifecycle[`${primaryKey}${capitalize(lifecycleKey)}`](appConfig);
+  }
+}
+
+function combineLifecyle(lifecycle: ModuleLifeCycle, appConfig: AppConfig) {
+  const combinedLifecyle = { ...lifecycle };
+  ['mount', 'unmount', 'update'].forEach((lifecycleKey) => {
+    if (lifecycle[lifecycleKey]) {
+      combinedLifecyle[lifecycleKey] = async (props) => {
+        await callAppLifecycle('before', lifecycleKey, appConfig);
+        await lifecycle[lifecycleKey](props);
+        await callAppLifecycle('after', lifecycleKey, appConfig);
+      };
+    }
+  });
+  return combinedLifecyle;
+}
+
+export function getAppConfigForLoad (app: string | AppConfig, options?: AppLifecylceOptions) {
   if (typeof app === 'string') {
     return getAppConfig(app);
   }
   const { name } = app;
   const appIndex = getAppNames().indexOf(name);
   if (appIndex === -1) {
-    registerMicroApp(app);
+    registerMicroApp(app, options);
   }
   return getAppConfig(name);
 };
 
-export async function loadMicroApp(app: string | AppConfig) {
-  const appConfig = getAppConfigForLoad(app);
+export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppLifecylceOptions) {
+  const appConfig = getAppConfigForLoad(app, appLifecyle);
   const appName = appConfig && appConfig.name;
   if (appConfig && appName) {
     setCache('root', appConfig?.container || null);
@@ -147,23 +202,27 @@ export async function loadMicroApp(app: string | AppConfig) {
     if (appConfig.status === NOT_LOADED) {
       if (appConfig.title) document.title = appConfig.title;
       updateAppConfig(appName, { status: LOADING_ASSETS });
-      let lifeCycle: AppLifeCycle = {};
+      let lifeCycle: ModuleLifeCycle = {};
       try {
         lifeCycle = await loadAppModule(appConfig);
-        updateAppConfig(appName, { ...lifeCycle, status: NOT_MOUNTED });
+        // in case of app status modified by unload event
+        if (getAppStatus(appName) === LOADING_ASSETS) {
+          updateAppConfig(appName, { ...lifeCycle, status: NOT_MOUNTED });
+        }
       } catch (err){
         globalConfiguration.onError(err);
         updateAppConfig(appName, { status: LOAD_ERROR });
       }
       if (lifeCycle.mount) {
-        // check current url before mount
-        mountMicroApp(appConfig.name);
+        await mountMicroApp(appConfig.name);
       }
     } else if (appConfig.status === UNMOUNTED) {
       if (!appConfig.cached) {
         await loadAndAppendCssAssets(appConfig.appAssets || { cssList: [], jsList: []});
       }
-      mountMicroApp(appConfig.name);
+      await mountMicroApp(appConfig.name);
+    } else if (appConfig.status === NOT_MOUNTED) {
+      await mountMicroApp(appConfig.name);
     } else {
       console.info(`[icestark] current status of app ${appName} is ${appConfig.status}`);
     }
@@ -176,9 +235,10 @@ export async function loadMicroApp(app: string | AppConfig) {
 
 export async function mountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
-  if (appConfig && appConfig.checkActive(window.location.href)) {
-    await appConfig.mount(appConfig.container, appConfig.props);
+  // check current url before mount
+  if (appConfig && appConfig.checkActive(window.location.href) && appConfig.status !== MOUNTED) {
     updateAppConfig(appName, { status: MOUNTED });
+    appConfig.mount({ container: appConfig.container, customProps: appConfig.props });
   }
 }
 
@@ -188,11 +248,12 @@ export async function unmountMicroApp(appName: string) {
     // remove assets if app is not cached
     emptyAssets(globalConfiguration.shouldAssetsRemove, !appConfig.cached && appConfig.name);
     updateAppConfig(appName, { status: UNMOUNTED });
-    await appConfig.unmount(appConfig.container);
+    await appConfig.unmount({ container: appConfig.container, customProps: appConfig.props });
   }
 }
 
-export function unloadMicroApp(appName: string) {
+// unload micro app, load app bundles when create micro app
+export async function unloadMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   if (appConfig) {
     unmountMicroApp(appName);
@@ -205,6 +266,7 @@ export function unloadMicroApp(appName: string) {
   }
 }
 
+// remove app config from cache
 export function removeMicroApp(appName: string) {
   const appIndex = getAppNames().indexOf(appName);
   if (appIndex > -1) {
@@ -216,6 +278,7 @@ export function removeMicroApp(appName: string) {
   }
 }
 
+// clear all micro app configs
 export function clearMicroApps () {
   getAppNames().forEach(name => {
     unloadMicroApp(name);

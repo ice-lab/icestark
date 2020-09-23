@@ -1,6 +1,6 @@
 import { registerMicroApps } from '../src';
 import start, { unload } from '../src/start';
-import { AppConfig, getMicroApps, mountMicroApp, removeMicroApp, unmountMicroApp, loadMicroApp } from '../src/apps';
+import { AppConfig, getMicroApps, mountMicroApp, removeMicroApp, unmountMicroApp, createMicroApp } from '../src/apps';
 import { LOADING_ASSETS, MOUNTED, NOT_LOADED, UNMOUNTED } from '../src/util/constant';
 
 describe('app start', () => {
@@ -111,10 +111,10 @@ describe('app start', () => {
     expect(status).toBe(MOUNTED);
     await unmountMicroApp('app');
     expect(status).toBe(UNMOUNTED);
-    await loadMicroApp('app');
+    await createMicroApp('app');
     expect(status).toBe(MOUNTED);
 
-    const errorApp = await loadMicroApp('app-error');
+    const errorApp = await createMicroApp('app-error');
     expect(errorApp).toBe(null);
   })
 });
