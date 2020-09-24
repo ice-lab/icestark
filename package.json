@@ -68,7 +68,6 @@
   "resolutions": {
     "eslint-plugin-import": "2.20.2",
     "@types/testing-library__dom": "7.0.2"
-
   },
   "jest": {
     "coverageDirectory": "./coverage/",

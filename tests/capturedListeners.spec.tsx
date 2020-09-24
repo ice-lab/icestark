@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom/extend-expect';
+import { create } from 'domain';
 
 import {
   CapturedEventNameEnum,
@@ -7,8 +8,9 @@ import {
   removeCapturedEventListeners,
   isInCapturedEventListeners,
   callCapturedEventListeners,
-  setHistoryState,
+  setHistoryEvent,
   resetCapturedEventListeners,
+  createPopStateEvent,
 } from '../src/util/capturedListeners';
 
 describe('capturedListeners', () => {
@@ -38,7 +40,7 @@ describe('capturedListeners', () => {
     expect(isInCapturedEventListeners(CapturedEventNameEnum.POPSTATE, popStateMockFn)).toBe(true);
 
     // call
-    setHistoryState({});
+    setHistoryEvent(createPopStateEvent({}, 'popstate'));
     callCapturedEventListeners();
 
     expect(popStateMockFn).toBeCalledTimes(1);
@@ -52,7 +54,7 @@ describe('capturedListeners', () => {
     );
 
     // call
-    setHistoryState({});
+    setHistoryEvent(createPopStateEvent({}, 'popstate'));
     callCapturedEventListeners();
 
     expect(popStateMockFn).toBeCalledTimes(2);
@@ -62,7 +64,7 @@ describe('capturedListeners', () => {
     resetCapturedEventListeners();
 
     // call
-    setHistoryState({});
+    setHistoryEvent(createPopStateEvent({}, 'popstate'));
     callCapturedEventListeners();
 
     expect(popStateMockFn).toBeCalledTimes(2);

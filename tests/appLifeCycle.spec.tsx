@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/extend-expect';
 
-import { AppLifeCycleEnum, callAppEnter, callAppLeave } from '../src/util/appLifeCycle';
+import { AppLifeCycleEnum, cacheApp, callAppEnter, callAppLeave, isCached, deleteCache } from '../src/util/appLifeCycle';
 import { setCache } from '../src/util/cache';
 
 describe('appLifeCycle', () => {
@@ -29,4 +29,16 @@ describe('appLifeCycle', () => {
     callAppLeave();
     expect(appLeaveMockFn).toBeCalledTimes(1);
   });
+
+  test('cache app', () => {
+    const appEnterMockFn = jest.fn();
+    const appLeaveMockFn = jest.fn();
+    const appKey = 'appKey';
+    setCache(AppLifeCycleEnum.AppEnter, appEnterMockFn);
+    setCache(AppLifeCycleEnum.AppLeave, appLeaveMockFn);
+    cacheApp(appKey);
+    expect(isCached(appKey)).toBe(true);
+    deleteCache(appKey);
+    expect(isCached(appKey)).toBe(false);
+  })
 });
