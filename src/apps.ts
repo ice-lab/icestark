@@ -278,6 +278,12 @@ export function removeMicroApp(appName: string) {
   }
 }
 
+export function removeMicroApps(appNames: string[]) {
+  appNames.forEach((appName) => {
+    removeMicroApp(appName);
+  });
+}
+
 // clear all micro app configs
 export function clearMicroApps () {
   getAppNames().forEach(name => {
