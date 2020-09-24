@@ -1,6 +1,6 @@
 import { registerMicroApps } from '../src';
 import start, { unload } from '../src/start';
-import { AppConfig, getMicroApps, mountMicroApp, removeMicroApp, unmountMicroApp, createMicroApp } from '../src/apps';
+import { AppConfig, getMicroApps, mountMicroApp, removeMicroApp, removeMicroApps, unmountMicroApp, createMicroApp } from '../src/apps';
 import { LOADING_ASSETS, MOUNTED, NOT_LOADED, UNMOUNTED } from '../src/util/constant';
 
 describe('app start', () => {
@@ -87,7 +87,7 @@ describe('app start', () => {
     expect(getMicroApps().length).toBe(1);
     removeMicroApp('app2');
     expect(getMicroApps().length).toBe(1);
-    removeMicroApp('app1');
+    removeMicroApps(['app1']);
     expect(getMicroApps().length).toBe(0);
   });
 
