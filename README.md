@@ -12,6 +12,10 @@ English | [简体中文](https://ice.work/docs/icestark/about)
 npm install @ice/stark --save
 ```
 
+## Documentation
+
+[https://ice.work/docs/icestark/about](https://ice.work/docs/icestark/about)
+
 ## Introduction
 
 `icestark` is a micro frontends solution for large application, contains:
@@ -38,6 +42,7 @@ npm install @ice/stark --save
 
 ### Framework Application
 
+#### setup in react app
 ```javascript
 // src/App.jsx
 import React from 'react';
@@ -88,11 +93,44 @@ ReactDOM.render(<App />, document.getElementById('ice-container'));
 - `AppRoute` corresponds to the configuration of a sub-application, `path` configures all route information, `basename` configures a uniform route prefix, `url` configures assets url
 - `icestark` will follow the route parsing rules like to determine the current `path`, load the static resources of the corresponding sub-application, and render
 
+#### setup with APIs
+
+> supported by @ice/stark@2.0.0
+
+```javascript
+import { registerMicroApps } from '@ice/stark';
+
+regsiterMicroApps([
+  {
+    name: 'app1',
+    activePath: ['/', '/message', '/about'],
+    exact: true,
+    title: '通用页面',
+    container: document.getElementById('icestarkNode'),
+    url: ['//unpkg.com/icestark-child-common/build/js/index.js'],
+  },
+  {
+    name: 'app2',
+    activePath: '/seller',
+    title: '商家平台',
+    container: document.getElementById('icestarkNode'),
+    url: [
+      '//unpkg.com/icestark-child-seller/build/js/index.js',
+      '//unpkg.com/icestark-child-seller/build/css/index.css',
+    ],
+  },
+]);
+
+start();
+```
+
+after sub-application is registered, icestark will load app according to the `activePath`.
+
 ### Sub-application
 
-- Get the render `DOM Node` via `getMountNode`
-- Trigger app mount manually via `registerAppEnter`
-- Trigger app unmount manually via `registerAppLeave`
+sub-application can expose lifecycles by both register and exports.
+
+#### regsiter lifecycles
 
 ```javascript
 // src/index.js
@@ -117,8 +155,9 @@ if (isInIcestark()) {
 
 ```
 
-- Get the `basename` configuration in the framework application via `getBasename`
-- `renderNotFound` triggers the framework application rendering global NotFound
+- Get the render `DOM Node` via `getMountNode`
+- Trigger app mount manually via `registerAppEnter`
+- Trigger app unmount manually via `registerAppLeave`
 
 ```javascript
 // src/router.js
@@ -152,6 +191,38 @@ export default class App extends React.Component {
     );
   }
 }
+```
+
+- Get the `basename` configuration in the framework application via `getBasename`
+- `renderNotFound` triggers the framework application rendering global NotFound
+
+#### exports lifecycles
+
+exports lifecycles in sub-application: 
+
+```javascript
+import ReactDOM from 'react-dom';
+import App from './app';
+
+export function mount(props) {
+  ReactDOM.render(<App />, document.getElementById('icestarkNode'));
+}
+
+export function unmount() {
+  ReactDOM.unmountComponentAtNode(document.getElementById('icestarkNode'));
+}
+
+```
+
+sub-application should be bundled as an UMD module, add the following configuration of webpack: 
+
+```javascript
+module.exports = {
+  output: {
+    library: 'sub-app-name',
+    libraryTarget: 'umd',
+  },
+};
 ```
 
 ## Ecosystem
