@@ -128,7 +128,7 @@ after sub-application is registered, icestark will load app according to the `ac
 
 ### Sub-application
 
-sub-application can expose lifecycles by both register and exports.
+sub-application can expose lifecycles in both register lifecycles and export lifecycles ways.
 
 #### regsiter lifecycles
 
