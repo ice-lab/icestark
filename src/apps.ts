@@ -196,8 +196,12 @@ export function getAppConfigForLoad (app: string | AppConfig, options?: AppLifec
 export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppLifecylceOptions) {
   const appConfig = getAppConfigForLoad(app, appLifecyle);
   const appName = appConfig && appConfig.name;
+  // compatible with use inIcestark
+  const container = (app as AppConfig).container || appConfig?.container;
+  if (container) {
+    setCache('root', container);
+  }
   if (appConfig && appName) {
-    setCache('root', appConfig?.container || null);
     // check status of app
     if (appConfig.status === NOT_LOADED) {
       if (appConfig.title) document.title = appConfig.title;
