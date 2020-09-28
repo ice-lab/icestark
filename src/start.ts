@@ -10,7 +10,7 @@ import {
 } from './util/capturedListeners';
 import { AppConfig, getMicroApps, createMicroApp, unmountMicroApp, clearMicroApps } from './apps';
 import { emptyAssets, recordAssets } from './util/handleAssets';
-import { MOUNTED, UNMOUNTED } from './util/constant';
+import { MOUNTED } from './util/constant';
 
 export interface StartConfiguration {
   shouldAssetsRemove?: (
