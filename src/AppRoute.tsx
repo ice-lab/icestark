@@ -6,9 +6,9 @@ import { appendAssets, emptyAssets, cacheAssets, getEntryAssets, getUrlAssets } 
 import { setCache, getCache } from './util/cache';
 import { callAppEnter, callAppLeave, cacheApp, isCached, AppLifeCycleEnum } from './util/appLifeCycle';
 import { callCapturedEventListeners } from './util/capturedListeners';
+import ModuleLoader from './util/umdLoader';
 
 import isEqual = require('lodash.isequal');
-import ModuleLoader from './util/umdLoader';
 
 interface AppRouteState {
   cssLoading: boolean;
