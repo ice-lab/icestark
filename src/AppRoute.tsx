@@ -8,6 +8,7 @@ import { callAppEnter, callAppLeave, cacheApp, isCached, AppLifeCycleEnum } from
 import { callCapturedEventListeners } from './util/capturedListeners';
 
 import isEqual = require('lodash.isequal');
+import ModuleLoader from './util/umdLoader';
 
 interface AppRouteState {
   cssLoading: boolean;
@@ -62,6 +63,9 @@ export interface AppConfig {
   component?: React.ReactElement;
   render?: (props?: AppRouteComponentProps) => React.ReactElement;
   cache?: boolean;
+  umd?: boolean; // mark if sub-application is an umd module
+  name?: string; // used to mark a umd module, recommaded config it as same as webpack.output.library
+  customProps?: object; // custom props passed from framework app to sub app
 }
 
 // from AppRouter
@@ -76,6 +80,7 @@ export interface AppRouteProps extends AppConfig {
   ) => boolean;
   componentProps?: AppRouteComponentProps;
   clearCacheRoot?: () => void;
+  moduleLoader?: ModuleLoader;
 }
 
 export function converArray2String(list: string | (string | PathData)[]) {
@@ -120,6 +125,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   private unmounted: boolean = false;
 
   private prevAppConfig: AppConfig = null;
+
+  private rootElement: HTMLElement;
 
   static defaultProps = {
     exact: false,
@@ -221,9 +228,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
     // reCreate rootElement to remove sub-application instance,
     // rootElement is created for render sub-application
-    const rootElement: HTMLElement = this.reCreateElementInBase(rootId);
+    this.rootElement = this.reCreateElementInBase(rootId);
 
-    setCache('root', rootElement);
+    setCache('root', this.rootElement);
 
     this.loadNextApp();
   };
@@ -240,6 +247,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       cache,
       sandbox,
       path,
+      umd,
+      name,
+      customProps,
     } = this.props;
     if (sandbox) {
       if (typeof sandbox === 'function') {
@@ -280,14 +290,12 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     !cached && handleLoading(true);
 
     const currentAppConfig: AppConfig = this.triggerOnAppEnter();
-
     try {
       let appAssets = null;
       if (entry || entryContent) {
         // entry for fetch -> process -> append
-        const rootElement = getCache('root');
         appAssets = await getEntryAssets({
-          root: rootElement,
+          root: this.rootElement,
           entry,
           href: location.href,
           entryContent,
@@ -298,7 +306,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         appAssets = getUrlAssets(urls);
       }
       if (appAssets && !cached) {
-        await appendAssets(appAssets, this.appSandbox);
+        await appendAssets(appAssets, name || assetsCacheKey, umd, this.appSandbox);
       }
       // if AppRoute is unmounted, or current app is not the latest app, cancel all operations
       if (this.unmounted || this.prevAppConfig !== currentAppConfig) return;
@@ -314,7 +322,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         console.warn('[icestark] please trigger app unmount manually via registerAppLeave, app path: ', path);
       }
       // trigger sub-application render
-      callAppEnter();
+      callAppEnter({ container: this.rootElement, customProps });
 
       // cancel loading after handleAssets
       handleLoading(false);
@@ -342,7 +350,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
    * reset this.prevAppConfig
    */
   triggerPrevAppLeave = (): void => {
-    const { onAppLeave, triggerLoading } = this.props;
+    const { onAppLeave, triggerLoading, customProps } = this.props;
     if (this.appSandbox) {
       this.appSandbox.clear();
       this.appSandbox = null;
@@ -356,7 +364,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     }
     // reset loading state when leave app
     triggerLoading(false);
-    callAppLeave();
+    callAppLeave({ customProps, container: this.rootElement });
   };
 
   /**
