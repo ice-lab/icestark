@@ -370,6 +370,8 @@ describe('appendAssets', () => {
     ]);
     appendAssets(
       assets,
+      'test-append',
+      false,
     ).then(() => {
       const jsElement0 = document.getElementById('icestark-js-0');
       const jsElement1 = document.getElementById('icestark-js-1');
@@ -399,6 +401,8 @@ describe('appendAssets', () => {
     ]);
     appendAssets(
       assets,
+      'test-root',
+      false,
     );
   });
 
