@@ -10,7 +10,7 @@ import {
 } from './util/capturedListeners';
 import { AppConfig, getMicroApps, createMicroApp, unmountMicroApp, clearMicroApps } from './apps';
 import { emptyAssets, recordAssets } from './util/handleAssets';
-import { MOUNTED } from './util/constant';
+import { LOADING_ASSETS, MOUNTED } from './util/constant';
 
 export interface StartConfiguration {
   shouldAssetsRemove?: (
@@ -71,7 +71,6 @@ export function routeChange (url: string, type: RouteType | 'init' | 'popstate'|
   const { pathname, query, hash } = urlParse(url, true);
   // trigger onRouteChange when url is changed
   if (lastUrl !== url) {
-    console.log('appchange', lastUrl, url);
     globalConfiguration.onRouteChange(url, pathname, query, hash, type);
   
     const unmountApps = [];
@@ -91,9 +90,9 @@ export function routeChange (url: string, type: RouteType | 'init' | 'popstate'|
     Promise.all(
       // call unmount apps
       unmountApps.map(async (unmountApp) => {
-        if (unmountApp.status === MOUNTED) {
+        if (unmountApp.status === MOUNTED || unmountApp.status === LOADING_ASSETS) {
           globalConfiguration.onAppLeave(unmountApp);
-        }  
+        }
         await unmountMicroApp(unmountApp.name);
       }).concat(activeApps.map(async (activeApp) => {
         if (activeApp.status !== MOUNTED) {

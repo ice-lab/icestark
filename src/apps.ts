@@ -199,6 +199,9 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
   // compatible with use inIcestark
   const container = (app as AppConfig).container || appConfig?.container;
   if (container) {
+    if (appName) {
+      updateAppConfig(appName, { container });
+    }
     setCache('root', container);
   }
   if (appConfig && appName) {
@@ -248,11 +251,13 @@ export async function mountMicroApp(appName: string) {
 
 export async function unmountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
-  if (appConfig && appConfig.status === MOUNTED) {
+  if (appConfig && (appConfig.status === MOUNTED || appConfig.status === LOADING_ASSETS)) {
     // remove assets if app is not cached
     emptyAssets(globalConfiguration.shouldAssetsRemove, !appConfig.cached && appConfig.name);
     updateAppConfig(appName, { status: UNMOUNTED });
-    await appConfig.unmount({ container: appConfig.container, customProps: appConfig.props });
+    if (appConfig.unmount) {
+      await appConfig.unmount({ container: appConfig.container, customProps: appConfig.props });
+    }
   }
 }
 
