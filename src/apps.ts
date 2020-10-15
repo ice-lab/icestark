@@ -152,6 +152,8 @@ export async function loadAppModule(appConfig: AppConfig) {
       mount: getCache(AppLifeCycleEnum.AppEnter),
       unmount: getCache(AppLifeCycleEnum.AppLeave),
     };
+    setCache(AppLifeCycleEnum.AppEnter, null);
+    setCache(AppLifeCycleEnum.AppLeave, null);
   }
   globalConfiguration.onFinishLoading(appConfig);
   return combineLifecyle(lifecycle, appConfig);
