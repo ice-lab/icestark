@@ -30,6 +30,7 @@ export interface StartConfiguration {
   onFinishLoading?:  (appConfig: AppConfig) => void;
   onError?: (err: Error) => void;
   onActiveApps?: (appConfigs: AppConfig[]) => void;
+  reroute?: (url: string, type: RouteType | 'init' | 'popstate'| 'hashchange') => void;
 }
 
 const globalConfiguration: StartConfiguration = {
@@ -41,6 +42,7 @@ const globalConfiguration: StartConfiguration = {
   onFinishLoading: () => {},
   onError: () => {},
   onActiveApps: () => {},
+  reroute,
 };
 
 interface OriginalStateFunction {
@@ -57,17 +59,17 @@ const originalRemoveEventListener = window.removeEventListener;
 
 const handleStateChange = (event: PopStateEvent, url: string, method: RouteType) => {
   setHistoryEvent(event);
-  routeChange(url, method);
+  globalConfiguration.reroute(url, method);
 };
 
 const urlChange = (event: PopStateEvent | HashChangeEvent): void => {
   setHistoryEvent(event);
-  routeChange(location.href, event.type as RouteType);
+  globalConfiguration.reroute(location.href, event.type as RouteType);
 };
 
 let lastUrl = null;
 
-export function routeChange (url: string, type: RouteType | 'init' | 'popstate'| 'hashchange' ) {
+export function reroute (url: string, type: RouteType | 'init' | 'popstate'| 'hashchange' ) {
   const { pathname, query, hash } = urlParse(url, true);
   // trigger onRouteChange when url is changed
   if (lastUrl !== url) {
@@ -188,7 +190,7 @@ function start(options?: StartConfiguration) {
   hijackEventListener();
 
   // trigger init router
-  routeChange(location.href, 'init');
+  globalConfiguration.reroute(location.href, 'init');
 }
 
 function unload() {
