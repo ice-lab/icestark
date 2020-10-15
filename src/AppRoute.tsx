@@ -69,25 +69,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     }
   }
 
-  componentDidUpdate(prevProps) {
-    const { url, title, rootId, entry, entryContent } = this.props;
-
-    if (
-      converArray2String(url) !== converArray2String(prevProps.url) ||
-      title !== prevProps.title ||
-      entry !== prevProps.entry ||
-      entryContent !== prevProps.entryContent ||
-      rootId !== prevProps.rootId
-    ) {
-      this.unmountApp();
-      this.renderChild();
-    }
-  }
-
-  componentWillUnmount() {
-    this.unmountApp();
-  }
-
   shouldComponentUpdate(nextProps, nextState) {
     const { url, title, rootId, componentProps, cssLoading, name } = this.props;
     const { showComponent } = this.state;
@@ -109,6 +90,25 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       return false;
     }
     return true;
+  }
+
+  componentDidUpdate(prevProps) {
+    const { url, title, rootId, entry, entryContent } = this.props;
+
+    if (
+      converArray2String(url) !== converArray2String(prevProps.url) ||
+      title !== prevProps.title ||
+      entry !== prevProps.entry ||
+      entryContent !== prevProps.entryContent ||
+      rootId !== prevProps.rootId
+    ) {
+      this.unmountApp();
+      this.renderChild();
+    }
+  }
+
+  componentWillUnmount() {
+    this.unmountApp();
   }
 
   unmountApp = () => {
