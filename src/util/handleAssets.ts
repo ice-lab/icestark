@@ -1,4 +1,5 @@
 import Sandbox from '@ice/sandbox';
+import * as urlParse from 'url-parse';
 import { AppLifeCycleEnum } from './appLifeCycle';
 import { setCache } from './cache';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
@@ -199,12 +200,11 @@ export async function appendAssets(assets: Assets, cacheKey: string, umd: boolea
 }
 
 export function parseUrl(entry: string): ParsedConfig {
-  const a = document.createElement('a');
-  a.href = entry;
+  const { origin, pathname } = parseUrl(entry);
 
   return {
-    origin: a.origin,
-    pathname: a.pathname,
+    origin,
+    pathname,
   };
 }
 
