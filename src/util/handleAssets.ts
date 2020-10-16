@@ -1,6 +1,6 @@
+import * as urlParse from 'url-parse';
 import Sandbox, { SandboxProps, SandboxContructor } from '@ice/sandbox';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
-import * as urlParse from 'url-parse';
 import { warn, error } from './message';
 
 const winFetch = window.fetch;
