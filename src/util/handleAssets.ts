@@ -200,7 +200,7 @@ export async function appendAssets(assets: Assets, cacheKey: string, umd: boolea
 }
 
 export function parseUrl(entry: string): ParsedConfig {
-  const { origin, pathname } = parseUrl(entry);
+  const { origin, pathname } = urlParse(entry);
 
   return {
     origin,
