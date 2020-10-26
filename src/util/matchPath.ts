@@ -1,6 +1,34 @@
 import * as pathToRegexp from 'path-to-regexp';
+import * as urlParse from 'url-parse';
 
-const cache: any = {};
+// "slash" - hashes like #/ and #/sunshine/lollipops
+// "noslash" - hashes like # and #sunshine/lollipops
+// "hashbang" - “ajax crawlable” (deprecated by Google) hashes like #!/ and #!/sunshine/lollipops
+type HashType = 'hashbang' | 'noslash' | 'slash';
+export interface PathData {
+  value: string;
+  exact?: boolean;
+  strict?: boolean;
+  sensitive?: boolean;
+}
+
+export interface MatchOptions extends PathOptions {
+  path?: string | string[] | PathData[];
+}
+
+export interface PathOptions {
+  exact?: boolean;
+  strict?: boolean;
+  sensitive?: boolean;
+  hashType?: boolean | HashType;
+}
+
+interface MatchResult {
+  regexp?: pathToRegexp.PathRegExp;
+  keys?: string[];
+}
+
+const cache: {[key: string]: MatchResult} = {};
 const cacheLimit = 10000;
 let cacheCount = 0;
 
@@ -22,15 +50,48 @@ function compilePath(path, options) {
   return result;
 }
 
+
+function addLeadingSlash(path: string): string {
+  return path.charAt(0) === '/' ? path : `/${path}`;
+}
+
+function getHashPath(hash: string = '/'): string {
+  const hashIndex = hash.indexOf('#');
+  const hashPath = hashIndex === -1 ? hash : hash.substr(hashIndex + 1);
+
+  // remove hash query
+  const searchIndex = hashPath.indexOf('?');
+  return searchIndex === -1 ? hashPath : hashPath.substr(0, searchIndex);
+}
+
+const HashPathDecoders = {
+  hashbang: (path: string) => (path.charAt(0) === '!' ? path.substr(1) : path),
+  noslash: addLeadingSlash,
+  slash: addLeadingSlash,
+};
+
+export function matchActivePath(url: string, pathInfo: MatchOptions) {
+  const { pathname, hash } = urlParse(url, true);
+  const { hashType } = pathInfo;
+  let checkPath = pathname;
+  if (hashType) {
+    const decodePath = HashPathDecoders[hashType === true ? 'slash' : hashType];
+    checkPath = decodePath(getHashPath(hash));
+  }
+  return matchPath(checkPath, pathInfo);
+}
+
+
 /**
  * Public API for matching a URL pathname to a path.
  */
-export default function matchPath(pathname: string, options: any = {}) {
-  if (typeof options === 'string') options = { path: options };
+export default function matchPath(pathname: string, options: MatchOptions | string = {}) {
+  let matchOptions = options;
+  if (typeof options === 'string') matchOptions = { path: options };
 
-  const { path, exact = false, strict = false, sensitive = false } = options;
+  const { exact = false, strict = false, sensitive = false } = matchOptions as MatchOptions;
 
-  const paths = [].concat(path);
+  const paths = [].concat((matchOptions as MatchOptions).path);
 
   return paths.reduce((matched, path) => {
     if (!path) return null;

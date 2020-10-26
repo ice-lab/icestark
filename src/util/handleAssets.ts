@@ -1,4 +1,5 @@
-import Sandbox from '@ice/sandbox';
+import * as urlParse from 'url-parse';
+import Sandbox, { SandboxProps, SandboxContructor } from '@ice/sandbox';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { warn, error } from './message';
 
@@ -43,6 +44,12 @@ export interface ParsedConfig {
 
 export interface Fetch {
   (input: RequestInfo, init?: RequestInit): Promise<Response>;
+}
+
+// Lifecycle Props
+export interface ILifecycleProps {
+  container: HTMLElement;
+  customProps?: object;
 }
 
 /**
@@ -122,7 +129,8 @@ export function appendExternalScript(
   });
 }
 
-export function getUrlAssets(urls: string[]) {
+export function getUrlAssets(url: string | string[]) {
+  const urls = Array.isArray(url) ? url : [url];
   const jsList = [];
   const cssList = [];
 
@@ -146,7 +154,7 @@ export function getUrlAssets(urls: string[]) {
 }
 
 const cachedScriptsContent: object = {};
-function fetchScripts(jsList: Asset[], fetch: Fetch = winFetch) {
+export function fetchScripts(jsList: Asset[], fetch: Fetch = winFetch) {
   return Promise.all(jsList.map((asset) => {
     const { type, content } = asset;
     if (type === AssetTypeEnum.INLINE) {
@@ -158,44 +166,15 @@ function fetchScripts(jsList: Asset[], fetch: Fetch = winFetch) {
   }));
 }
 export async function appendAssets(assets: Assets, sandbox?: Sandbox) {
-  const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
-  const cssRoot: HTMLElement = document.getElementsByTagName('head')[0];
-
-  const { jsList, cssList } = assets;
-
-  // load css content
-  await Promise.all(
-    cssList.map((asset, index) => appendCSS(cssRoot, asset, `${PREFIX}-css-${index}`)),
-  );
-  
-  if (sandbox && !sandbox.sandboxDisabled) {
-    const jsContents = await fetchScripts(jsList);
-    // excute code by order
-    jsContents.forEach(script => {
-      sandbox.execScriptInSandbox(script);
-    });
-  } else {
-    const hasInlineScript = jsList.find((asset) => asset.type === AssetTypeEnum.INLINE);
-    if (hasInlineScript) {
-      // make sure js assets loaded in order if has inline scripts
-      await jsList.reduce((chain, asset, index) => {
-        return chain.then(() => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`));
-      }, Promise.resolve());
-    } else {
-      await Promise.all(
-        jsList.map((asset, index) => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`)),
-      );
-    }
-  }
+  await loadAndAppendCssAssets(assets);
+  await loadAndAppendJsAssets(assets, sandbox);
 }
 
 export function parseUrl(entry: string): ParsedConfig {
-  const a = document.createElement('a');
-  a.href = entry;
-
+  const { origin, pathname } = urlParse(entry);
   return {
-    origin: a.origin,
-    pathname: a.pathname,
+    origin,
+    pathname,
   };
 }
 
@@ -417,4 +396,74 @@ export function cacheAssets(cacheKey: string): void {
       assetsNode.setAttribute('cache', cacheKey);
     }
   });
+}
+
+/**
+ * load and append css assets
+ *
+ * @export
+ * @param {Assets} assets
+ */
+export async function loadAndAppendCssAssets(assets: Assets) {
+  const cssRoot: HTMLElement = document.getElementsByTagName('head')[0];
+
+  const { cssList } = assets;
+
+  // load css content
+  await Promise.all(
+    cssList.map((asset, index) => appendCSS(cssRoot, asset, `${PREFIX}-css-${index}`)),
+  );
+}
+
+/**
+ * load and append js assets, compatible with v1
+ *
+ * @export
+ * @param {Assets} assets
+ * @param {Sandbox} [sandbox]
+ * @returns
+ */
+export async function loadAndAppendJsAssets(assets: Assets, sandbox?: Sandbox) {
+  const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
+
+  const { jsList } = assets;
+
+  // handle scripts
+  if (sandbox && !sandbox.sandboxDisabled) {
+    const jsContents = await fetchScripts(jsList);
+    // excute code by order
+    jsContents.forEach(script => {
+      sandbox.execScriptInSandbox(script);
+    });
+    return;
+  }
+
+  // dispose inline script
+  const hasInlineScript = jsList.find((asset) => asset.type === AssetTypeEnum.INLINE);
+  if (hasInlineScript) {
+    // make sure js assets loaded in order if has inline scripts
+    await jsList.reduce((chain, asset, index) => {
+      return chain.then(() => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`));
+    }, Promise.resolve());
+    return;
+  }
+
+  await Promise.all(
+    jsList.map((asset, index) => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`)),
+  );
+}
+
+export function createSandbox(sandbox?: boolean | SandboxProps | SandboxContructor) {
+  // Create appSandbox if sandbox is active
+  let appSandbox = null;
+  if (sandbox) {
+    if (typeof sandbox === 'function') {
+      // eslint-disable-next-line new-cap
+      appSandbox = new sandbox();
+    } else {
+      const sandboxProps = typeof sandbox === 'boolean' ? {} : (sandbox as SandboxProps);
+      appSandbox = new Sandbox(sandboxProps);
+    }
+  }
+  return appSandbox;
 }

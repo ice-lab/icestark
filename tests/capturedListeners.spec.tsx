@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom/extend-expect';
+import { create } from 'domain';
 
 import {
   CapturedEventNameEnum,
@@ -8,8 +9,8 @@ import {
   isInCapturedEventListeners,
   callCapturedEventListeners,
   setHistoryEvent,
-  createPopStateEvent,
   resetCapturedEventListeners,
+  createPopStateEvent,
 } from '../src/util/capturedListeners';
 
 describe('capturedListeners', () => {
