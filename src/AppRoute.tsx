@@ -1,9 +1,13 @@
 import * as React from 'react';
 import renderComponent from './util/renderComponent';
 import { AppHistory } from './appHistory';
-import { createMicroApp, unloadMicroApp, BaseConfig } from './apps';
+import { unloadMicroApp, BaseConfig, getAppConfig, createMicroApp, AppConfig } from './apps';
 import { converArray2String } from './AppRouter';
 import { PathData } from './util/matchPath';
+import { setCache } from './util/cache';
+import { callCapturedEventListeners, resetCapturedEventListeners } from './util/capturedListeners';
+
+import isEqual = require('lodash.isequal');
 
 interface AppRouteState {
   showComponent: boolean;
@@ -37,6 +41,7 @@ export interface AppRouteProps extends BaseConfig {
   basename?: string;
   render?: (componentProps: AppRouteComponentProps) => React.ReactElement;
   path?: string | string[] | PathData[];
+  loadingApp?: (appConfig: AppConfig) => void;
 }
 
 export default class AppRoute extends React.Component<AppRouteProps, AppRouteState> {
@@ -56,11 +61,35 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   componentDidMount() {
+    resetCapturedEventListeners();
     if (this.validateRender()) {
       this.setState({ showComponent: true });
     } else {
       this.renderChild();
     }
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    const { url, title, rootId, componentProps, cssLoading, name } = this.props;
+    const { showComponent } = this.state;
+    // re-render and callCapturedEventListeners if componentProps is changed
+    if ((nextProps.component || nextProps.render && typeof nextProps.render === 'function') &&
+      !isEqual(componentProps, nextProps.componentProps)) {
+      callCapturedEventListeners();
+      return true;
+    } else if (
+      name === nextProps.name &&
+      converArray2String(url) === converArray2String(nextProps.url) &&
+      title === nextProps.title &&
+      rootId === nextProps.rootId &&
+      cssLoading === nextProps.cssLoading &&
+      showComponent === nextState.showComponent
+    ) {
+      // reRender is triggered by sub-application router / browser, call popStateListeners
+      callCapturedEventListeners();
+      return false;
+    }
+    return true;
   }
 
   componentDidUpdate(prevProps) {
@@ -90,17 +119,21 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   }
 
   renderChild = (): void => {
-    const { path, name, rootId, ...rest } = this.props;
+    const { path, name, rootId, loadingApp, ...rest } = this.props;
     // reCreate rootElement to remove sub-application instance,
     // rootElement is created for render sub-application
     const rootElement: HTMLElement = this.reCreateElementInBase(rootId);
-
-    createMicroApp({
+    const appConfig = {
       ...(rest as BaseConfig),
       name,
       activePath: path,
       container: rootElement,
-    });
+    };
+    setCache('root', rootElement);
+    if (!getAppConfig(name)) {
+      loadingApp({ name });
+    }
+    createMicroApp(appConfig);  
   }
 
   reCreateElementInBase = (elementId: string): HTMLElement => {

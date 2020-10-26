@@ -1,4 +1,4 @@
-import { SandboxContructor, SandboxProps } from '@ice/sandbox';
+import Sandbox, { SandboxContructor, SandboxProps } from '@ice/sandbox';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
 import { matchActivePath, MatchOptions, PathData, PathOptions } from './util/matchPath';
 import { createSandbox, getUrlAssets, getEntryAssets, appendAssets, loadAndAppendCssAssets, emptyAssets, Assets } from './util/handleAssets';
@@ -55,6 +55,7 @@ interface AppLifecylceOptions {
 export interface AppConfig extends BaseConfig {
   activePath?: string | string[] | PathData[] | MatchOptions[] | ActiveFn;
   appLifecycle?: AppLifecylceOptions;
+  appSandbox?: Sandbox;
 }
 
 export type MicroApp = AppConfig & ModuleLifeCycle;
@@ -141,7 +142,7 @@ export async function loadAppModule(appConfig: AppConfig) {
     entryContent,
     assetsCacheKey: name,
   });
-  updateAppConfig(appConfig.name, { appAssets });
+  updateAppConfig(appConfig.name, { appAssets, appSandbox });
   if (appConfig.umd) {
     await loadAndAppendCssAssets(appAssets);
     lifecycle = await loadUmdModule(appAssets.jsList, appSandbox);
@@ -151,6 +152,8 @@ export async function loadAppModule(appConfig: AppConfig) {
       mount: getCache(AppLifeCycleEnum.AppEnter),
       unmount: getCache(AppLifeCycleEnum.AppLeave),
     };
+    setCache(AppLifeCycleEnum.AppEnter, null);
+    setCache(AppLifeCycleEnum.AppLeave, null);
   }
   globalConfiguration.onFinishLoading(appConfig);
   return combineLifecyle(lifecycle, appConfig);
@@ -189,6 +192,8 @@ export function getAppConfigForLoad (app: string | AppConfig, options?: AppLifec
   const appIndex = getAppNames().indexOf(name);
   if (appIndex === -1) {
     registerMicroApp(app, options);
+  } else {
+    updateAppConfig(name, app);
   }
   return getAppConfig(name);
 };
@@ -198,15 +203,12 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
   const appName = appConfig && appConfig.name;
   // compatible with use inIcestark
   const container = (app as AppConfig).container || appConfig?.container;
-  if (container) {
-    if (appName) {
-      updateAppConfig(appName, { container });
-    }
+  if (container && !getCache('root')) {
     setCache('root', container);
   }
   if (appConfig && appName) {
     // check status of app
-    if (appConfig.status === NOT_LOADED) {
+    if (appConfig.status === NOT_LOADED || appConfig.status === LOAD_ERROR ) {
       if (appConfig.title) document.title = appConfig.title;
       updateAppConfig(appName, { status: LOADING_ASSETS });
       let lifeCycle: ModuleLifeCycle = {};
@@ -224,7 +226,7 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
         await mountMicroApp(appConfig.name);
       }
     } else if (appConfig.status === UNMOUNTED) {
-      if (!appConfig.cached) {
+      if (!appConfig.cached && appConfig.umd) {
         await loadAndAppendCssAssets(appConfig.appAssets || { cssList: [], jsList: []});
       }
       await mountMicroApp(appConfig.name);
@@ -245,16 +247,22 @@ export async function mountMicroApp(appName: string) {
   // check current url before mount
   if (appConfig && appConfig.checkActive(window.location.href) && appConfig.status !== MOUNTED) {
     updateAppConfig(appName, { status: MOUNTED });
-    appConfig.mount({ container: appConfig.container, customProps: appConfig.props });
+    if (appConfig.mount) {
+      await appConfig.mount({ container: appConfig.container, customProps: appConfig.props });
+    }
   }
 }
 
 export async function unmountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
-  if (appConfig && (appConfig.status === MOUNTED || appConfig.status === LOADING_ASSETS)) {
+  if (appConfig && (appConfig.status === MOUNTED || appConfig.status === LOADING_ASSETS || appConfig.status === NOT_MOUNTED)) {
     // remove assets if app is not cached
     emptyAssets(globalConfiguration.shouldAssetsRemove, !appConfig.cached && appConfig.name);
     updateAppConfig(appName, { status: UNMOUNTED });
+    if (!appConfig.cached && appConfig.appSandbox) {
+      appConfig.appSandbox.clear();
+      appConfig.appSandbox = null;
+    }
     if (appConfig.unmount) {
       await appConfig.unmount({ container: appConfig.container, customProps: appConfig.props });
     }

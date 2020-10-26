@@ -3,7 +3,7 @@ import * as urlParse from 'url-parse';
 import { AppRouteProps, AppRouteComponentProps } from './AppRoute';
 import appHistory from './appHistory';
 import renderComponent from './util/renderComponent';
-import { ICESTSRK_ERROR } from './util/constant';
+import { ICESTSRK_ERROR, ICESTSRK_NOT_FOUND } from './util/constant';
 import { setCache } from './util/cache';
 import start, { unload } from './start';
 import { matchActivePath, PathData } from './util/matchPath';
@@ -76,19 +76,22 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
   componentDidMount() {
     const { shouldAssetsRemove, onAppEnter, onAppLeave } = this.props;
+    // render NotFoundComponent eventListener
+    window.addEventListener('icestark:not-found', this.triggerNotFound);
     start({
       shouldAssetsRemove,
-      onRouteChange: this.handleRouteChange,
       onAppLeave,
       onAppEnter,
       onLoadingApp: this.loadingApp,
       onFinishLoading: this.finishLoading,
       onError: this.triggerError,
+      reroute: this.handleRouteChange,
     });
   }
 
   componentWillUnmount() {
     this.unmounted = true;
+    window.removeEventListener('icestark:not-found', this.triggerNotFound);
     unload();
   }
 
@@ -103,13 +106,20 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     this.setState({ url: ICESTSRK_ERROR });
   };
 
+  triggerNotFound = (): void => {
+    // if AppRouter is unmounted, cancel all operations
+    if (this.unmounted) return;
+    this.setState({ url: ICESTSRK_NOT_FOUND });
+  };
+
   /**
    * Trigger onRouteChange
    */
-  handleRouteChange = (url: string, pathname: string, query: {[key: string]: string}, hash: string, type: RouteType | 'init' | 'popstate'): void => {
-    if (!this.unmounted) {
+  handleRouteChange = (url: string, type: RouteType | 'init' | 'popstate'): void => {
+    if (!this.unmounted && url !== this.state.url) {
       this.setState({ url });
     }
+    const { pathname, query, hash } = urlParse(url, true);
     this.props.onRouteChange(pathname, query, hash, type);
   };
 
@@ -137,7 +147,9 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     const { url, appLoading } = this.state;
 
     // directly render ErrorComponent
-    if (url === ICESTSRK_ERROR) {
+    if (url === ICESTSRK_NOT_FOUND) {
+      return renderComponent(NotFoundComponent, {});
+    } else if (url === ICESTSRK_ERROR) {
       return renderComponent(ErrorComponent, { err: this.err });
     }
     
@@ -162,7 +174,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       return (
         <div>
           {appLoading === this.appKey ? renderComponent(LoadingComponent, {}) : null}
-          {React.cloneElement(element, { key: this.appKey, name: this.appKey, componentProps, cssLoading: appLoading === this.appKey })}
+          {React.cloneElement(element, { key: this.appKey, name: this.appKey, componentProps, cssLoading: appLoading === this.appKey, loadingApp: this.loadingApp })}
         </div>
       );
     }

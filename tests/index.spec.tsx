@@ -223,10 +223,10 @@ describe('AppRouter', () => {
     
     fireEvent.click(getByText(/Jump Hash/i));
     // url do not change, will not trigger onRouteChange
-    expect(props.onRouteChange).toHaveBeenCalledTimes(1);
+    expect(props.onRouteChange).toHaveBeenCalledTimes(2);
 
     fireEvent.click(getByText(/Jump 404/i));
-    expect(props.onRouteChange).toHaveBeenCalledTimes(2);
+    expect(props.onRouteChange).toHaveBeenCalledTimes(3);
     expect(container.innerHTML).toContain('NotFound');
 
     // Test for HashType

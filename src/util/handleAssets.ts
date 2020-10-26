@@ -1,3 +1,4 @@
+import * as urlParse from 'url-parse';
 import Sandbox, { SandboxProps, SandboxContructor } from '@ice/sandbox';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { warn, error } from './message';
@@ -170,12 +171,10 @@ export async function appendAssets(assets: Assets, sandbox?: Sandbox) {
 }
 
 export function parseUrl(entry: string): ParsedConfig {
-  const a = document.createElement('a');
-  a.href = entry;
-
+  const { origin, pathname } = urlParse(entry);
   return {
-    origin: a.origin,
-    pathname: a.pathname,
+    origin,
+    pathname,
   };
 }
 
