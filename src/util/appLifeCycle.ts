@@ -6,6 +6,11 @@ export enum AppLifeCycleEnum {
   AppLeave = 'appLeave',
 }
 
+interface AppLifecycleProps {
+  container: HTMLElement;
+  customProps: object;
+}
+
 export function cacheApp(cacheKey: string) {
   [AppLifeCycleEnum.AppEnter, AppLifeCycleEnum.AppLeave].forEach(lifeCycle => {
     const lifeCycleCacheKey = `cache_${cacheKey}_${lifeCycle}`;
@@ -28,17 +33,17 @@ export function isCached(cacheKey: string) {
   return !!getCache(`cache_${cacheKey}_${AppLifeCycleEnum.AppEnter}`);
 }
 
-export function callAppEnter() {
+export function callAppEnter(props?: AppLifecycleProps) {
   const appEnterKey = AppLifeCycleEnum.AppEnter;
   const registerAppEnterCallback = getCache(appEnterKey);
 
   if (registerAppEnterCallback) {
-    registerAppEnterCallback();
+    registerAppEnterCallback(props);
     setCache(appEnterKey, null);
   }
 }
 
-export function callAppLeave() {
+export function callAppLeave(props?: AppLifecycleProps) {
   // resetCapturedEventListeners when app change, remove react-router/vue-router listeners
   resetCapturedEventListeners();
 
@@ -46,7 +51,7 @@ export function callAppLeave() {
   const registerAppLeaveCallback = getCache(appLeaveKey);
 
   if (registerAppLeaveCallback) {
-    registerAppLeaveCallback();
+    registerAppLeaveCallback(props);
     setCache(appLeaveKey, null);
   }
 }

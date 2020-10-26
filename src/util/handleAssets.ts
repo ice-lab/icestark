@@ -1,6 +1,10 @@
 import Sandbox from '@ice/sandbox';
+import * as urlParse from 'url-parse';
+import { AppLifeCycleEnum } from './appLifeCycle';
+import { setCache } from './cache';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { warn, error } from './message';
+import ModuleLoader from './umdLoader';
 
 const winFetch = window.fetch;
 const COMMENT_REGEX = /<!--.*?-->/g;
@@ -10,6 +14,7 @@ const STYLE_REGEX = /<style\b[^>]*>([^<]*)<\/style>/gi;
 const LINK_HREF_REGEX = /<link\b[^>]*href=['"]?([^'"]*)['"]?\b[^>]*>/gi;
 const CSS_REGEX = new RegExp([STYLE_REGEX, LINK_HREF_REGEX].map((reg) => reg.source).join('|'), 'gi');
 const STYLE_SHEET_REGEX = /rel=['"]stylesheet['"]/gi;
+const moduleLoader = new ModuleLoader();
 
 export enum AssetTypeEnum {
   INLINE = 'inline',
@@ -146,7 +151,7 @@ export function getUrlAssets(urls: string[]) {
 }
 
 const cachedScriptsContent: object = {};
-function fetchScripts(jsList: Asset[], fetch: Fetch = winFetch) {
+export function fetchScripts(jsList: Asset[], fetch: Fetch = winFetch) {
   return Promise.all(jsList.map((asset) => {
     const { type, content } = asset;
     if (type === AssetTypeEnum.INLINE) {
@@ -157,7 +162,7 @@ function fetchScripts(jsList: Asset[], fetch: Fetch = winFetch) {
     }
   }));
 }
-export async function appendAssets(assets: Assets, sandbox?: Sandbox) {
+export async function appendAssets(assets: Assets, cacheKey: string, umd: boolean, sandbox?: Sandbox) {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
   const cssRoot: HTMLElement = document.getElementsByTagName('head')[0];
 
@@ -167,8 +172,13 @@ export async function appendAssets(assets: Assets, sandbox?: Sandbox) {
   await Promise.all(
     cssList.map((asset, index) => appendCSS(cssRoot, asset, `${PREFIX}-css-${index}`)),
   );
-  
-  if (sandbox && !sandbox.sandboxDisabled) {
+
+  if (umd) {
+    const moduleInfo = await moduleLoader.execModule({ jsList, cacheKey }, sandbox);
+    // set app lifecycle after exec umd module
+    setCache(AppLifeCycleEnum.AppEnter, moduleInfo?.mount);
+    setCache(AppLifeCycleEnum.AppLeave, moduleInfo?.unmount);
+  } else if (sandbox && !sandbox.sandboxDisabled) {
     const jsContents = await fetchScripts(jsList);
     // excute code by order
     jsContents.forEach(script => {
@@ -190,12 +200,11 @@ export async function appendAssets(assets: Assets, sandbox?: Sandbox) {
 }
 
 export function parseUrl(entry: string): ParsedConfig {
-  const a = document.createElement('a');
-  a.href = entry;
+  const { origin, pathname } = urlParse(entry);
 
   return {
-    origin: a.origin,
-    pathname: a.pathname,
+    origin,
+    pathname,
   };
 }
 
