@@ -251,6 +251,12 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       name,
       customProps,
     } = this.props;
+    // set loadMode when load micro app
+    if (umd) {
+      setCache('loadMode', 'umd');
+    } else {
+      setCache('loadMode', sandbox ? 'script' : 'sandbox');
+    }
     if (sandbox) {
       if (typeof sandbox === 'function') {
         // eslint-disable-next-line new-cap
