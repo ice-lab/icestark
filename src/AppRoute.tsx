@@ -255,7 +255,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     if (umd) {
       setCache('loadMode', 'umd');
     } else {
-      setCache('loadMode', sandbox ? 'script' : 'sandbox');
+      setCache('loadMode', sandbox ? 'sandbox' : 'script');
     }
     if (sandbox) {
       if (typeof sandbox === 'function') {
