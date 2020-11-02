@@ -166,8 +166,10 @@ export function fetchScripts(jsList: Asset[], fetch: Fetch = winFetch) {
   }));
 }
 export async function appendAssets(assets: Assets, sandbox?: Sandbox) {
-  await loadAndAppendCssAssets(assets);
-  await loadAndAppendJsAssets(assets, sandbox);
+  await Promise.all([
+    loadAndAppendCssAssets(assets),
+    loadAndAppendJsAssets(assets, sandbox),
+  ]);
 }
 
 export function parseUrl(entry: string): ParsedConfig {
