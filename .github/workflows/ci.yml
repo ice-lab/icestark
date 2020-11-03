@@ -17,9 +17,13 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: yarn install
+        registry-url: https://registry.npmjs.org/
+    - run: npm run install:deps
     - run: npm run lint
     - run: npm run test
     - run: npm run coverage
       env:
         CI: true
+    - run: npm run publish:packages
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
