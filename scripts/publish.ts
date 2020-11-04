@@ -43,5 +43,5 @@ Promise.all([
       }
     }
   }
-  console.log(`[PUBLISH] Complete (count=${publishedCount}).`)
+  console.log(`[PUBLISH] Complete (count=${publishedCount}).`);
 });
