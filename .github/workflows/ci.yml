@@ -21,7 +21,6 @@ jobs:
       run: echo >>$GITHUB_ENV BRANCH_NAME=${GITHUB_REF#refs/heads/}
     - name: Echo branch name
       run: echo ${BRANCH_NAME}
-    - uses: nelonoel/branch-name@v1
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
