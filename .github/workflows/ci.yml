@@ -13,11 +13,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set branch name for pull request
-      if: github.event_name == 'pull_request'
-      run: echo >>$GITHUB_ENV BRANCH_NAME=${{github.event.pull_request.head.ref}}
     - name: Set branch name
-      if: github.event_name != 'pull_request'
       run: echo >>$GITHUB_ENV BRANCH_NAME=${GITHUB_REF#refs/heads/}
     - name: Echo branch name
       run: echo ${BRANCH_NAME}
