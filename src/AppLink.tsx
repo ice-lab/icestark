@@ -6,28 +6,29 @@ export type AppLinkProps = {
   replace?: boolean;
   message?: string;
   children?: React.ReactNode;
+  tag?: string;
 } & React.AnchorHTMLAttributes<any>;
 
 const AppLink: React.SFC<AppLinkProps> = (props: AppLinkProps) => {
-  const { to, hashType, replace, message, children, ...rest } = props;
+  const { to, hashType, replace, message, children, tag, ...rest } = props;
   const linkTo = hashType && to.indexOf('#') === -1 ? `/#${to}` : to;
-  return (
-    <a
-      {...rest}
-      href={linkTo}
-      onClick={e => {
+
+  return React.createElement(
+    tag ?? 'a',
+    Object.assign({}, rest, {
+      href: linkTo,
+      onClick: (e) => {
         e.preventDefault();
+
         if (message && window.confirm(message) === false) {
           return false;
         }
 
         const changeState = window.history[replace ? 'replaceState' : 'pushState'];
-
         changeState({}, null, linkTo);
-      }}
-    >
-      {children}
-    </a>
+      },
+    }),
+    children,
   );
 };
 
