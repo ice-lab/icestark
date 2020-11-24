@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
 import { unmoutModule, loadModule, getModules, registerModules, ISandbox } from './modules';
 import { StarkModule } from './loader';
 
@@ -48,8 +47,12 @@ export default class MicroModule extends React.Component<any, { loading: boolean
   }
 
   componentWillUnmount() {
-    unmoutModule(this.moduleInfo, this.mountNode);
-    this.unmout = true;
+    try {
+      unmoutModule(this.moduleInfo, this.mountNode);
+      this.unmout = true;
+    } catch (error) {
+      console.log('[icestark] error occurred when unmount module');
+    }
   }
 
   async mountModule() {
