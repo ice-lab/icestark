@@ -58,7 +58,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   static defaultProps = {
     onRouteChange: () => {},
     // eslint-disable-next-line react/jsx-filename-extension
-    ErrorComponent: ({ err }) => <div>error</div>,
+    ErrorComponent: ({ err }) => <div>{ err || 'Error' }</div>,
+    LoadingComponent: <div>Loading...</div>,
     NotFoundComponent: <div>NotFound</div>,
     shouldAssetsRemove: () => true,
     onAppEnter: () => {},
@@ -174,7 +175,15 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       return (
         <div>
           {appLoading === this.appKey ? renderComponent(LoadingComponent, {}) : null}
-          {React.cloneElement(element, { key: this.appKey, name: this.appKey, componentProps, cssLoading: appLoading === this.appKey, loadingApp: this.loadingApp })}
+          {React.cloneElement(element, {
+            key: this.appKey,
+            name: this.appKey,
+            componentProps,
+            cssLoading: appLoading === this.appKey,
+            loadingApp: this.loadingApp,
+            onAppEnter: this.props.onAppEnter,
+            onAppLeave: this.props.onAppLeave,
+          })}
         </div>
       );
     }

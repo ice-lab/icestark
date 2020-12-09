@@ -6,7 +6,7 @@ import { converArray2String } from './AppRouter';
 import { PathData } from './util/matchPath';
 import { setCache } from './util/cache';
 import { callCapturedEventListeners, resetCapturedEventListeners } from './util/capturedListeners';
-
+// eslint-disable-next-line import/order
 import isEqual = require('lodash.isequal');
 
 interface AppRouteState {
@@ -42,6 +42,8 @@ export interface AppRouteProps extends BaseConfig {
   render?: (componentProps: AppRouteComponentProps) => React.ReactElement;
   path?: string | string[] | PathData[];
   loadingApp?: (appConfig: AppConfig) => void;
+  onAppEnter: (appConfig: AppConfig) => void;
+  onAppLeave: (appConfig: AppConfig) => void;
 }
 
 export default class AppRoute extends React.Component<AppRouteProps, AppRouteState> {
@@ -112,14 +114,16 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   }
 
   unmountApp = () => {
-    const { name } = this.props;
+    const { name, onAppLeave } = this.props;
     if (!this.validateRender()) {
+      const appConfig = getAppConfig(name);
+      onAppLeave(appConfig);
       unloadMicroApp(name);
     }
   }
 
   renderChild = (): void => {
-    const { path, name, rootId, loadingApp, ...rest } = this.props;
+    const { path, name, rootId, loadingApp, onAppEnter, ...rest } = this.props;
     // reCreate rootElement to remove sub-application instance,
     // rootElement is created for render sub-application
     const rootElement: HTMLElement = this.reCreateElementInBase(rootId);
@@ -133,7 +137,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     if (!getAppConfig(name)) {
       loadingApp({ name });
     }
-    createMicroApp(appConfig);  
+    onAppEnter(appConfig);
+    createMicroApp(appConfig);
   }
 
   reCreateElementInBase = (elementId: string): HTMLElement => {
