@@ -42,8 +42,8 @@ export interface AppRouteProps extends BaseConfig {
   render?: (componentProps: AppRouteComponentProps) => React.ReactElement;
   path?: string | string[] | PathData[];
   loadingApp?: (appConfig: AppConfig) => void;
-  onAppEnter: (appConfig: CompatibleAppConfig) => void;
-  onAppLeave: (appConfig: CompatibleAppConfig) => void;
+  onAppEnter?: (appConfig: CompatibleAppConfig) => void;
+  onAppLeave?: (appConfig: CompatibleAppConfig) => void;
 }
 
 export type CompatibleAppConfig = Omit<AppRouteProps, 'componentProps' | 'cssLoading' | 'loadingApp' | 'onAppEnter' | 'onAppLeave'>
