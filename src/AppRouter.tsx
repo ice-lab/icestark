@@ -9,6 +9,12 @@ import start, { unload } from './start';
 import { matchActivePath, PathData } from './util/matchPath';
 import { AppConfig } from './apps';
 
+type PropertyType<T extends object, K extends keyof T> = T[K]
+
+export type CompatibleAppConfig = AppConfig & {
+  path: PropertyType<AppConfig, 'activePath'>;
+}
+
 type RouteType = 'pushState' | 'replaceState';
 
 export interface AppRouterProps {
@@ -21,8 +27,8 @@ export interface AppRouterProps {
   ErrorComponent?: React.ComponentType | React.ReactElement;
   LoadingComponent?: React.ComponentType | React.ReactElement;
   NotFoundComponent?: React.ComponentType | React.ReactElement;
-  onAppEnter?: (appConfig: AppConfig) => void;
-  onAppLeave?: (appConfig: AppConfig) => void;
+  onAppEnter?: (appConfig: CompatibleAppConfig) => void;
+  onAppLeave?: (appConfig: CompatibleAppConfig) => void;
   shouldAssetsRemove?: (
     assetUrl?: string,
     element?: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement,

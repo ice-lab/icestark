@@ -2,7 +2,7 @@ import * as React from 'react';
 import renderComponent from './util/renderComponent';
 import { AppHistory } from './appHistory';
 import { unloadMicroApp, BaseConfig, getAppConfig, createMicroApp, AppConfig } from './apps';
-import { converArray2String } from './AppRouter';
+import { converArray2String, CompatibleAppConfig } from './AppRouter';
 import { PathData } from './util/matchPath';
 import { setCache } from './util/cache';
 import { callCapturedEventListeners, resetCapturedEventListeners } from './util/capturedListeners';
@@ -42,8 +42,8 @@ export interface AppRouteProps extends BaseConfig {
   render?: (componentProps: AppRouteComponentProps) => React.ReactElement;
   path?: string | string[] | PathData[];
   loadingApp?: (appConfig: AppConfig) => void;
-  onAppEnter: (appConfig: AppConfig) => void;
-  onAppLeave: (appConfig: AppConfig) => void;
+  onAppEnter: (appConfig: CompatibleAppConfig) => void;
+  onAppLeave: (appConfig: CompatibleAppConfig) => void;
 }
 
 export default class AppRoute extends React.Component<AppRouteProps, AppRouteState> {
@@ -117,7 +117,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     const { name, onAppLeave } = this.props;
     if (!this.validateRender()) {
       const appConfig = getAppConfig(name);
-      onAppLeave(appConfig);
+      onAppLeave({ ...appConfig, path: appConfig.activePath});
       unloadMicroApp(name);
     }
   }
@@ -137,7 +137,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     if (!getAppConfig(name)) {
       loadingApp({ name });
     }
-    onAppEnter(appConfig);
+    onAppEnter({ ...appConfig, path });
     createMicroApp(appConfig);
   }
 
