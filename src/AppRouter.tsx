@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as urlParse from 'url-parse';
-import { AppRouteProps, AppRouteComponentProps } from './AppRoute';
+import { AppRouteProps, AppRouteComponentProps, CompatibleAppConfig } from './AppRoute';
 import appHistory from './appHistory';
 import renderComponent from './util/renderComponent';
 import { ICESTSRK_ERROR, ICESTSRK_NOT_FOUND } from './util/constant';
@@ -8,12 +8,6 @@ import { setCache } from './util/cache';
 import start, { unload } from './start';
 import { matchActivePath, PathData } from './util/matchPath';
 import { AppConfig } from './apps';
-
-type PropertyType<T extends object, K extends keyof T> = T[K]
-
-export type CompatibleAppConfig = AppConfig & {
-  path: PropertyType<AppConfig, 'activePath'>;
-}
 
 type RouteType = 'pushState' | 'replaceState';
 

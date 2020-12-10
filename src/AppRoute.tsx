@@ -2,7 +2,7 @@ import * as React from 'react';
 import renderComponent from './util/renderComponent';
 import { AppHistory } from './appHistory';
 import { unloadMicroApp, BaseConfig, getAppConfig, createMicroApp, AppConfig } from './apps';
-import { converArray2String, CompatibleAppConfig } from './AppRouter';
+import { converArray2String } from './AppRouter';
 import { PathData } from './util/matchPath';
 import { setCache } from './util/cache';
 import { callCapturedEventListeners, resetCapturedEventListeners } from './util/capturedListeners';
@@ -46,6 +46,24 @@ export interface AppRouteProps extends BaseConfig {
   onAppLeave: (appConfig: CompatibleAppConfig) => void;
 }
 
+export type CompatibleAppConfig = Omit<AppRouteProps, 'componentProps' | 'cssLoading' | 'loadingApp' | 'onAppEnter' | 'onAppLeave'>
+
+/**
+ * Gen compatible app config from AppRoute props
+ */
+function genCompatibleAppConfig (appRouteProps: AppRouteProps): CompatibleAppConfig {
+  const appConfig: CompatibleAppConfig = {};
+  const omitProperties = ['componentProps', 'cssLoading', 'loadingApp', 'onAppEnter', 'onAppLeave'];
+
+  Object.keys(appRouteProps).forEach(key => {
+    if (omitProperties.indexOf(key) === -1) {
+      appConfig[key] = appRouteProps[key];
+    }
+  });
+
+  return appConfig;
+}
+
 export default class AppRoute extends React.Component<AppRouteProps, AppRouteState> {
   state = {
     showComponent: false,
@@ -63,12 +81,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   componentDidMount() {
-    resetCapturedEventListeners();
-    if (this.validateRender()) {
-      this.setState({ showComponent: true });
-    } else {
-      this.renderChild();
-    }
+    this.mountApp();
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -105,7 +118,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       rootId !== prevProps.rootId
     ) {
       this.unmountApp();
-      this.renderChild();
+      this.mountApp();
     }
   }
 
@@ -113,17 +126,37 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     this.unmountApp();
   }
 
+  mountApp = () => {
+    resetCapturedEventListeners();
+    const { onAppEnter } = this.props;
+
+    // Trigger app enter
+    if(typeof onAppEnter === 'function') {
+      onAppEnter(genCompatibleAppConfig(this.props));
+    }
+
+    if (this.validateRender()) {
+      this.setState({ showComponent: true });
+    } else {
+      this.renderChild();
+    }
+  }
+
   unmountApp = () => {
     const { name, onAppLeave } = this.props;
+
+    // Trigger app leave
+    if (typeof onAppLeave === 'function') {
+      onAppLeave(genCompatibleAppConfig(this.props));
+    }
+
     if (!this.validateRender()) {
-      const appConfig = getAppConfig(name);
-      onAppLeave({ ...appConfig, path: appConfig.activePath});
       unloadMicroApp(name);
     }
   }
 
   renderChild = (): void => {
-    const { path, name, rootId, loadingApp, onAppEnter, ...rest } = this.props;
+    const { path, name, rootId, loadingApp, ...rest } = this.props;
     // reCreate rootElement to remove sub-application instance,
     // rootElement is created for render sub-application
     const rootElement: HTMLElement = this.reCreateElementInBase(rootId);
@@ -137,7 +170,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     if (!getAppConfig(name)) {
       loadingApp({ name });
     }
-    onAppEnter({ ...appConfig, path });
     createMicroApp(appConfig);
   }
 
