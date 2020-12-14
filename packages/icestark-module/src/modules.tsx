@@ -5,6 +5,8 @@ export type ISandbox = boolean | SandboxProps | SandboxContructor;
 
 let globalModules = [];
 let importModules = {};
+// store css link
+const cssStorage = {};
 
 const IS_CSS_REGEX = /\.css(\?((?!\.js$).)+)?$/;
 export const moduleLoader = new ModuleLoader();
@@ -19,6 +21,32 @@ export const clearModules = () => {
   importModules = {};
   moduleLoader.clearTask();
 };
+
+// if css link already loaded, record load count
+const filterAppendCSS = (cssList: string[]) => {
+  return (cssList || []).filter((cssLink) => {
+    if (cssStorage[cssLink]) {
+      cssStorage[cssLink] += 1;
+      return false;
+    } else {
+      cssStorage[cssLink] = 1;
+      return true;
+    }
+  });
+};
+
+const filterRemoveCSS = (cssList: string[]) => {
+  return (cssList || []).filter((cssLink) => {
+    if (cssStorage[cssLink] > 1) {
+      cssStorage[cssLink] -= 1;
+      return false;
+    } else {
+      delete cssStorage[cssLink];
+      return true;
+    }
+  });
+};
+
 /**
  * support react module render
  */
@@ -97,12 +125,16 @@ export function appendCSS(
  * remove css
  */
 
-export function removeCSS(name: string, node?: HTMLElement | Document) {
+export function removeCSS(name: string, node?: HTMLElement | Document, removeList?: string[]) {
   const linkList: NodeListOf<HTMLElement> = (node || document).querySelectorAll(
     `link[module=${name}]`,
   );
   linkList.forEach(link => {
-    link.parentNode.removeChild(link);
+    // check link href if it is in remove list
+    // compatible with removeList is undefined
+    if (removeList && removeList.includes(link.getAttribute('href')) || !removeList) {
+      link.parentNode.removeChild(link);
+    }
   });
 }
 
@@ -143,8 +175,9 @@ export const loadModule = async(targetModule: StarkModule, sandbox?: ISandbox) =
   const component = moduleInfo.default || moduleInfo;
 
   // append css before mount module
-  if (moduleCSS.length) {
-    await Promise.all(moduleCSS.map((css: string) => appendCSS(name, css)));
+  const cssList = filterAppendCSS(moduleCSS);
+  if (cssList.length) {
+    await Promise.all(cssList.map((css: string) => appendCSS(name, css)));
   }
 
   return {
@@ -169,7 +202,8 @@ export const unmoutModule = (targetModule: StarkModule, targetNode: HTMLElement)
   const moduleInfo = importModules[name]?.moduleInfo;
   const moduleSandbox = importModules[name]?.moduleSandbox;
   const unmount = targetModule.unmount || moduleInfo?.unmount || defaultUnmount;
-  removeCSS(name);
+  const cssList = filterRemoveCSS(importModules[name]?.moduleCSS);
+  removeCSS(name, document, cssList);
   if (moduleSandbox?.clear) {
     moduleSandbox.clear();
   }
