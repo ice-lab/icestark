@@ -1,6 +1,6 @@
 {
   "name": "@ice/stark",
-  "version": "2.0.1",
+  "version": "2.0.2-0",
   "description": "Icestark is a JavaScript library for multiple projects, Ice workbench solution.",
   "scripts": {
     "install:deps": "rm -rf node_modules && rm -rf ./packages/*/node_modules && yarn install && lerna exec -- npm install",
@@ -8,7 +8,7 @@
     "build": "rm -rf lib && tsc",
     "watch": "tsc -w",
     "prepublishOnly": "npm run lint && npm run test && npm run build",
-    "lint": "eslint --cache --ext .ts,.tsx ./",
+    "lint": "eslint --cache --ext .ts,.tsx ./ && tsc --noEmit",
     "test": "NODE_ENV=unittest jest",
     "coverage": "codecov"
   },
@@ -29,8 +29,15 @@
   "homepage": "https://github.com/ice-lab/icestark",
   "husky": {
     "hooks": {
+      "pre-commit": "tsc --noEmit && lint-staged",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "git add"
+    ]
   },
   "repository": {
     "type": "git",
@@ -62,6 +69,7 @@
     "jest": "^24.7.1",
     "jest-fetch-mock": "^2.1.2",
     "lerna": "^3.22.1",
+    "lint-staged": "^10.5.3",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
     "stylelint": "^10.1.0",

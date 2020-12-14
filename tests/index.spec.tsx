@@ -75,6 +75,12 @@ describe('AppRouter', () => {
 
   test('test for component update', () => {
     window.history.pushState({}, 'test', '/component-update');
+
+    const props = {
+      onAppEnter: jest.fn(),
+      onAppLeave: jest.fn(),
+    };
+
     const RenerComponent = (props) => {
       return (
         <div data-testid="icestarkTest">
@@ -82,9 +88,9 @@ describe('AppRouter', () => {
         </div>
       );
     };
-    
+
     const { container, unmount } = render(
-      <AppRouter>
+      <AppRouter {...props}>
         <AppRoute
           path="/component-update"
           title="component"
@@ -92,10 +98,13 @@ describe('AppRouter', () => {
         />
       </AppRouter>
     );
+    expect(props.onAppEnter).toHaveBeenCalledTimes(1);
     expect(container.innerHTML).toContain('test render a');
+
     window.history.pushState({}, 'test', '/component-update/b');
     expect(container.innerHTML).toContain('test render b');
     unmount();
+    expect(props.onAppLeave).toHaveBeenCalledTimes(1);
   });
 
   test('test for render update', () => {
@@ -171,6 +180,8 @@ describe('AppRouter', () => {
     const props = {
       onRouteChange: jest.fn(),
       LoadingComponent: <div>Loading</div>,
+      onAppEnter: jest.fn(),
+      onAppLeave: jest.fn(),
     };
 
     // Test for render
@@ -186,6 +197,7 @@ describe('AppRouter', () => {
     );
     expect(container.innerHTML).toContain('test');
     expect(props.onRouteChange).toHaveBeenCalledTimes(1);
+    expect(props.onAppEnter).toHaveBeenCalledTimes(1);
 
     rerender(
       <AppRouter {...props}>
@@ -218,15 +230,18 @@ describe('AppRouter', () => {
       </AppRouter>,
     );
 
+    expect(props.onAppLeave).toHaveBeenCalledTimes(1);
     expect(container.innerHTML).toContain('testRender');
     expect(props.onRouteChange).toHaveBeenCalledTimes(1);
-    
+    expect(props.onAppEnter).toHaveBeenCalledTimes(2);
+
     fireEvent.click(getByText(/Jump Hash/i));
     // url do not change, will not trigger onRouteChange
     expect(props.onRouteChange).toHaveBeenCalledTimes(2);
 
     fireEvent.click(getByText(/Jump 404/i));
     expect(props.onRouteChange).toHaveBeenCalledTimes(3);
+    expect(props.onAppLeave).toHaveBeenCalledTimes(2);
     expect(container.innerHTML).toContain('NotFound');
 
     // Test for HashType
@@ -251,17 +266,17 @@ describe('AppRouter', () => {
       LoadingComponent: <div>Loading</div>,
     };
 
-    const err = new Error('err');
-    (fetch as FetchMock).mockRejectOnce(err);
+    const err = 'err';
+    (fetch as FetchMock).mockRejectOnce(err as any as Error);
 
     const { unmount, container } = render(
       <AppRouter {...props}>
         <AppRoute path="/testerror" exact entry="//icestark.com" />
       </AppRouter>,
     );
-    
+
     setTimeout(function() {
-      expect(container.innerHTML).toContain('error');
+      expect(container.innerHTML).toContain('err');
       unmount();
       done();
     }, 100)
