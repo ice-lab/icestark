@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as urlParse from 'url-parse';
-import { AppRouteProps, AppRouteComponentProps } from './AppRoute';
+import { AppRouteProps, AppRouteComponentProps, CompatibleAppConfig } from './AppRoute';
 import appHistory from './appHistory';
 import renderComponent from './util/renderComponent';
 import { ICESTSRK_ERROR, ICESTSRK_NOT_FOUND } from './util/constant';
@@ -21,8 +21,8 @@ export interface AppRouterProps {
   ErrorComponent?: React.ComponentType | React.ReactElement;
   LoadingComponent?: React.ComponentType | React.ReactElement;
   NotFoundComponent?: React.ComponentType | React.ReactElement;
-  onAppEnter?: (appConfig: AppConfig) => void;
-  onAppLeave?: (appConfig: AppConfig) => void;
+  onAppEnter?: (appConfig: CompatibleAppConfig) => void;
+  onAppLeave?: (appConfig: CompatibleAppConfig) => void;
   shouldAssetsRemove?: (
     assetUrl?: string,
     element?: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement,
@@ -58,7 +58,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   static defaultProps = {
     onRouteChange: () => {},
     // eslint-disable-next-line react/jsx-filename-extension
-    ErrorComponent: ({ err }) => <div>error</div>,
+    ErrorComponent: ({ err }) => <div>{ err || 'Error' }</div>,
+    LoadingComponent: <div>Loading...</div>,
     NotFoundComponent: <div>NotFound</div>,
     shouldAssetsRemove: () => true,
     onAppEnter: () => {},
@@ -174,7 +175,15 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       return (
         <div>
           {appLoading === this.appKey ? renderComponent(LoadingComponent, {}) : null}
-          {React.cloneElement(element, { key: this.appKey, name: this.appKey, componentProps, cssLoading: appLoading === this.appKey, loadingApp: this.loadingApp })}
+          {React.cloneElement(element, {
+            key: this.appKey,
+            name: this.appKey,
+            componentProps,
+            cssLoading: appLoading === this.appKey,
+            loadingApp: this.loadingApp,
+            onAppEnter: this.props.onAppEnter,
+            onAppLeave: this.props.onAppLeave,
+          })}
         </div>
       );
     }
