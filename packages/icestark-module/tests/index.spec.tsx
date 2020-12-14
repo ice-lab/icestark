@@ -6,20 +6,38 @@ import * as fs from 'fs';
 import * as path from 'path';
 import Sandbox, { SandboxContructor } from '@ice/sandbox';
 
-import renderModules, {
+import {
   getModules,
   parseUrlAssets,
   appendCSS,
   clearModules,
-  MicroModule,
   mountModule,
   unmoutModule,
   removeCSS,
 } from '../src/modules';
+import MicroModule, { renderModules, renderComponent } from '../src/MicroModule';
+
+/**
+ * support react module render
+ */
+const defaultMount = (Component: any, targetNode: HTMLElement, props?: any) => {
+  console.warn('Please set mount, try run react mount function');
+  ReactDOM.render(renderComponent(Component, props), targetNode);
+};
+
+/**
+ * default unmount function
+ */
+const defaultUnmount = (targetNode: HTMLElement) => {
+  console.warn('Please set unmount, try run react unmount function');
+  ReactDOM.unmountComponentAtNode(targetNode);
+};
 
 const modules = [{
   name: 'selfComponent',
   url: 'http://127.0.0.1:3334/index.js',
+  mount: defaultMount,
+  unmount: defaultUnmount,
 }, {
   name: 'error',
   url: 'http://127.0.0.1:3334/error.js',
@@ -102,7 +120,7 @@ describe('render modules', () => {
   });
 
   test('mountModule with default sandbox', (next) => {
-    const moduleInfo = { name: 'defaultSandbox', url: '//localhost' };
+    const moduleInfo = { name: 'defaultSandbox', url: '//localhost', mount: defaultMount, unmount: defaultUnmount };
     const div = document.createElement('div');
     mountModule(moduleInfo, div, {}, true);
     setTimeout(() => {
@@ -114,7 +132,7 @@ describe('render modules', () => {
   });
 
   test('mountModule with custom sandbox', (next) => {
-    const moduleInfo = { name: 'customSandbox', url: '//localhost' };
+    const moduleInfo = { name: 'customSandbox', url: '//localhost', mount: defaultMount, unmount: defaultUnmount };
     const div = document.createElement('div');
     mountModule(moduleInfo, div, {}, (Sandbox as SandboxContructor));
     setTimeout(() => {
