@@ -17,9 +17,6 @@
   "files": [
     "lib"
   ],
-  "publishConfig": {
-    "registry": "http://registry.npmjs.com/"
-  },
   "keywords": [
     "modules",
     "icestark"
