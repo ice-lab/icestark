@@ -11,8 +11,25 @@ const cssStorage = {};
 const IS_CSS_REGEX = /\.css(\?((?!\.js$).)+)?$/;
 export const moduleLoader = new ModuleLoader();
 
+export const registerModule = (module: StarkModule) => {
+  if(!module.url && !module.render) {
+    console.error('[icestark module] url and render cannot both be empty. name: %s', module.name);
+    return;
+  }
+
+  removeModule(module.name);
+  globalModules.push(module);
+};
+
 export const registerModules = (modules: StarkModule[]) => {
-  globalModules = modules;
+  modules.forEach((m) => registerModule(m));
+};
+
+export const removeModule = (name?: string) => {
+  // remove module info
+  globalModules = globalModules.filter(m => m.name !== name);
+  delete importModules[name];
+  moduleLoader.remoteTask(name);
 };
 
 export const clearModules = () => {
@@ -150,9 +167,16 @@ export const getModules = function () {
  */
 
 export const loadModule = async(targetModule: StarkModule, sandbox?: ISandbox) => {
-  const { name, url } = targetModule;
+  const { name, url, render } = targetModule;
   let moduleSandbox = null;
-  if (!importModules[name]) {
+
+  if (render && typeof render === 'function') {
+    importModules[name] = {
+      moduleInfo: render,
+    };
+  }
+
+  if (!importModules[name] && url) {
     const { jsList, cssList } = parseUrlAssets(url);
     moduleSandbox = createSandbox(sandbox);
     const moduleInfo = await moduleLoader.execModule({ name, url: jsList }, moduleSandbox);
@@ -175,9 +199,11 @@ export const loadModule = async(targetModule: StarkModule, sandbox?: ISandbox) =
   const component = moduleInfo.default || moduleInfo;
 
   // append css before mount module
-  const cssList = filterAppendCSS(moduleCSS);
-  if (cssList.length) {
-    await Promise.all(cssList.map((css: string) => appendCSS(name, css)));
+  if (moduleCSS) {
+    const cssList = filterAppendCSS(moduleCSS);
+    if (cssList.length) {
+      await Promise.all(cssList.map((css: string) => appendCSS(name, css)));
+    }
   }
 
   return {

@@ -14,6 +14,8 @@ import {
   mountModule,
   unmoutModule,
   removeCSS,
+  registerModule,
+  registerModules,
 } from '../src/modules';
 import MicroModule, { renderModules, renderComponent } from '../src/MicroModule';
 
@@ -36,6 +38,11 @@ const defaultUnmount = (targetNode: HTMLElement) => {
 const modules = [{
   name: 'selfComponent',
   url: 'http://127.0.0.1:3334/index.js',
+  mount: defaultMount,
+  unmount: defaultUnmount,
+}, {
+  name: 'localComponent',
+  render: () => <div>hello</div>,
   mount: defaultMount,
   unmount: defaultUnmount,
 }, {
@@ -64,7 +71,6 @@ describe('render modules', () => {
     };
   });
 
-  
   test('fallback render', (next) => {
     const Component = renderModules(modules, null, {});
     const { container, unmount } = render(Component);
@@ -90,6 +96,14 @@ describe('render modules', () => {
     const { container } = render(<MicroModule moduleName="selfComponent" />);
     setTimeout(() => {
       expect(container.innerHTML).toBe('<div><div><h2>404</h2></div></div>');
+      next();
+    }, 0);
+  });
+
+  test('render local component with MicroModule', (next) => {
+    const { container } = render(<MicroModule moduleName="localComponent" />);
+    setTimeout(() => {
+      expect(container.innerHTML).toBe('<div><div>hello</div></div>');
       next();
     }, 0);
   });
@@ -187,5 +201,44 @@ describe('render modules', () => {
   test('clear module', () => {
     clearModules();
     expect(getModules()).toStrictEqual([]);
+  });
+
+  test('register mulitple moudles', () => {
+    clearModules();
+    registerModules(modules);
+    expect(getModules()).toEqual(modules);
+  });
+
+  test('register single moudles', () => {
+    clearModules();
+    registerModule(modules[0]);
+    expect(getModules()).toEqual([modules[0]]);
+  });
+
+  test('registration merging', () => {
+    clearModules();
+
+    const modules = [
+      {
+        name: 'module-a',
+        url: 'http://127.0.0.1:3334/index.js', 
+      },
+      {
+        name: 'module-a',
+        render: () => <div></div>,
+      }
+    ];
+
+    registerModules(modules);
+
+    expect(getModules()).toEqual([modules[1]]);
+  });
+
+  test('filter invalid modules', () => {
+    clearModules();
+    registerModule({
+      name: 'module-a',
+    });
+    expect(getModules()).toEqual([]);
   });
 });

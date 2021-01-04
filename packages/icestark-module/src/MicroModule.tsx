@@ -41,7 +41,7 @@ export default class MicroModule extends React.Component<any, { loading: boolean
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.moduleInfo !== this.props.moduleInfo || prevProps.moduleName !== this.props.moduleName) {
+    if (prevProps !== this.props) {
       this.mountModule();
     }
   }
