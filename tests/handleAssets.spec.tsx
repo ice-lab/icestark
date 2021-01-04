@@ -96,7 +96,7 @@ const tempHTML =
 describe('getComment', () => {
   test('getComment', () => {
     expect(getComment('script', 'inline', AssetCommentEnum.REPLACED)).toBe(
-      '<!--script inline replaced by @ice/stark-->',
+      'script inline replaced by @ice/stark',
     );
 
     expect(
@@ -105,10 +105,10 @@ describe('getComment', () => {
         'https://g.alicdn.com/platform/common/global.css',
         AssetCommentEnum.REPLACED,
       ),
-    ).toBe('<!--link https://g.alicdn.com/platform/common/global.css replaced by @ice/stark-->');
+    ).toBe('link https://g.alicdn.com/platform/common/global.css replaced by @ice/stark');
 
     expect(getComment('link', '/test.css', AssetCommentEnum.PROCESSED)).toBe(
-      '<!--link /test.css processed by @ice/stark-->',
+      'link /test.css processed by @ice/stark',
     );
   });
 });
@@ -210,6 +210,7 @@ describe('getEntryAssets', () => {
 
   const warnMockFn = jest.fn();
   (global as any).console = {
+    ...console,
     warn: warnMockFn,
   };
 
@@ -288,7 +289,7 @@ describe('getEntryAssets', () => {
       entry: '//icestark.com',
       assetsCacheKey: '/test',
     });
-    
+
     expect(assets).toStrictEqual({
       cssList: [
         {

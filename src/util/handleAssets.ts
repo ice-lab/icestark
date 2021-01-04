@@ -209,59 +209,76 @@ export function getUrl(entry: string, relativePath: string): string {
  * If script/link processed by @ice/stark, add comment for it
  */
 export function getComment(tag: string, from: string, type: AssetCommentEnum): string {
-  return `<!--${tag} ${from} ${type} by @ice/stark-->`;
+  return `${tag} ${from} ${type} by @ice/stark`;
 }
 
+// export function getComment(tag: string, from: string, type: AssetCommentEnum): string {
+//   return `<!--${tag} ${from} ${type} by @ice/stark-->`;
+// }
+
 /**
- * html -> { html: processedHtml, assets: processedAssets }
+ * check if link is absolute url
+ * @param url
  */
+export function isAbsoluteUrl(url: string): boolean {
+  return url.indexOf('//') >= 0;
+}
+
+export function removeNode(node: HTMLElement, { tag, from , type}: { tag: string; from: string; type: AssetCommentEnum }): void {
+  if (node && node.parentNode) {
+    const commentNode = document.createComment(getComment(tag, from, type));
+    node.parentNode.appendChild(commentNode);
+    node.parentNode.removeChild(node);
+  }
+}
+
 export function processHtml(html: string, entry?: string): ProcessedContent {
   if (!html) return { html: '', assets: { cssList:[], jsList: []} };
+  const EMPTY_STRING = '';
+  const STYLESHEET_LINK_TYPE = 'stylesheet';
+  const domContent = (new DOMParser()).parseFromString(html.replace(COMMENT_REGEX, ''), 'text/html');
 
-  const processedJSAssets = [];
-  const processedCSSAssets = [];
-  const processedHtml = html
-    .replace(COMMENT_REGEX, '')
-    .replace(SCRIPT_REGEX, (...args) => {
-      const [matchStr, matchContent] = args;
-      if (!matchStr.match(SCRIPT_SRC_REGEX)) {
-        processedJSAssets.push({
+  // process js assets
+  const scripts = Array.from(domContent.getElementsByTagName('script'));
+  const processedJSAssets = scripts.map(script => {
+    const inlineScript = script.src === EMPTY_STRING;
+
+    const externalSrc = !inlineScript && (isAbsoluteUrl(script.src) ? script.src : getUrl(entry, script.src));
+    const commentType = inlineScript ? AssetCommentEnum.PROCESSED : AssetCommentEnum.REPLACED;
+    removeNode(script, { tag: 'script', from: inlineScript ? 'inline' : script.src, type: commentType });
+
+    return {
+      type: inlineScript ? AssetTypeEnum.INLINE : AssetTypeEnum.EXTERNAL,
+      content: inlineScript ? script.text : externalSrc,
+    };
+  });
+
+  // process css assets
+  const inlineStyleSheets = Array.from(domContent.getElementsByTagName('style'));
+  const externalStyleSheets = Array.from(domContent.getElementsByTagName('link'))
+    .filter(link => !link.rel || link.rel.includes(STYLESHEET_LINK_TYPE));
+
+  const processedCSSAssets = [
+    ...inlineStyleSheets
+      .map(sheet => {
+        removeNode(sheet, { tag: 'style', from: 'inline', type: AssetCommentEnum.PROCESSED });
+        return {
           type: AssetTypeEnum.INLINE,
-          content: matchContent,
-        });
-
-        return getComment('script', 'inline', AssetCommentEnum.REPLACED);
-      } else {
-        return matchStr.replace(SCRIPT_SRC_REGEX, (_, argSrc2) => {
-          const url = argSrc2.indexOf('//') >= 0 ? argSrc2 : getUrl(entry, argSrc2);
-          processedJSAssets.push({
-            type: AssetTypeEnum.EXTERNAL,
-            content: url,
-          });
-
-          return getComment('script', argSrc2, AssetCommentEnum.REPLACED);
-        });
-      }
-    })
-    .replace(CSS_REGEX, (...args) => {
-      const [matchStr, matchStyle, matchLink] = args;
-      // not stylesheet, return as it is
-      if (matchStr.match(STYLE_SHEET_REGEX)) {
-        const url = matchLink.indexOf('//') >= 0 ? matchLink : getUrl(entry, matchLink);
-        processedCSSAssets.push({
+          content: sheet.innerText,
+        };
+      }),
+    ...externalStyleSheets
+      .map((sheet) => {
+        removeNode(sheet, { tag: 'link', from: sheet.href, type: AssetCommentEnum.REPLACED });
+        return {
           type: AssetTypeEnum.EXTERNAL,
-          content: url,
-        });
-        return `${getComment('link', matchLink, AssetCommentEnum.PROCESSED)}`;
-      } else if (matchStyle){
-        processedCSSAssets.push({
-          type: AssetTypeEnum.INLINE,
-          content: matchStyle,
-        });
-        return getComment('style', 'inline', AssetCommentEnum.REPLACED);
-      }
-      return matchStr;
-    });
+          content: isAbsoluteUrl(sheet.href) ? sheet.href : getUrl(entry, sheet.href),
+        };
+      }),
+  ];
+
+  const processedHtml = domContent.getElementsByTagName('html')[0].outerHTML;
+
   return {
     html: processedHtml,
     assets: {
@@ -270,6 +287,66 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
     },
   };
 }
+
+/**
+ * html -> { html: processedHtml, assets: processedAssets }
+ */
+// export function processHtml(html: string, entry?: string): ProcessedContent {
+//   if (!html) return { html: '', assets: { cssList:[], jsList: []} };
+
+//   const processedJSAssets = [];
+//   const processedCSSAssets = [];
+//   const processedHtml = html
+//     .replace(COMMENT_REGEX, '')
+//     .replace(SCRIPT_REGEX, (...args) => {
+//       const [matchStr, matchContent] = args;
+//       if (!matchStr.match(SCRIPT_SRC_REGEX)) {
+//         processedJSAssets.push({
+//           type: AssetTypeEnum.INLINE,
+//           content: matchContent,
+//         });
+
+//         return getComment('script', 'inline', AssetCommentEnum.REPLACED);
+//       } else {
+//         return matchStr.replace(SCRIPT_SRC_REGEX, (_, argSrc2) => {
+//           const url = argSrc2.indexOf('//') >= 0 ? argSrc2 : getUrl(entry, argSrc2);
+//           processedJSAssets.push({
+//             type: AssetTypeEnum.EXTERNAL,
+//             content: url,
+//           });
+
+//           return getComment('script', argSrc2, AssetCommentEnum.REPLACED);
+//         });
+//       }
+//     })
+//     .replace(CSS_REGEX, (...args) => {
+//       const [matchStr, matchStyle, matchLink] = args;
+//       // not stylesheet, return as it is
+//       if (matchStr.match(STYLE_SHEET_REGEX)) {
+//         const url = matchLink.indexOf('//') >= 0 ? matchLink : getUrl(entry, matchLink);
+//         processedCSSAssets.push({
+//           type: AssetTypeEnum.EXTERNAL,
+//           content: url,
+//         });
+//         return `${getComment('link', matchLink, AssetCommentEnum.PROCESSED)}`;
+//       } else if (matchStyle){
+//         processedCSSAssets.push({
+//           type: AssetTypeEnum.INLINE,
+//           content: matchStyle,
+//         });
+//         return getComment('style', 'inline', AssetCommentEnum.REPLACED);
+//       }
+//       return matchStr;
+//     });
+
+//   return {
+//     html: processedHtml,
+//     assets: {
+//       jsList: processedJSAssets,
+//       cssList: processedCSSAssets,
+//     },
+//   };
+// }
 
 const cachedProcessedContent: object = {};
 
