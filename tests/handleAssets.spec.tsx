@@ -89,6 +89,9 @@ const tempHTML =
   '    <!-- 组件依赖 & 页面入口 -->' +
   '    <!-- <script crossorigin="anonymous" src="./test/1.0.8/web.js?t=1f"></script> -->' +
   '    <script src="index.js"></script>' +
+  '    <script type="text/javascript">' +
+  `      document.write('<link type="stylesheet" href="./index.css" />');` +
+  '    </script>' +
   '    <div id="page_bottom"></div>' +
   '  </body>' +
   '</html>';
@@ -126,6 +129,7 @@ describe('processHtml', () => {
     expect(content).not.toContain('src="./');
     expect(content).not.toContain('src="/test.js"');
     expect(content).not.toContain('src="index.js"');
+    expect(content).not.toContain('<link type="stylesheet" href="./index.css" />');
 
     expect(content).toContain('<link rel="dns-prefetch" href="//g.alicdn.com">');
     expect(content).toContain('<link rel="dns-prefetch" href="//at.alicdn.com">');
@@ -136,7 +140,7 @@ describe('processHtml', () => {
     expect(content).not.toContain('href="/index.css"');
     expect(content).not.toContain('href="index.css"');
 
-    expect(jsList.length).toBe(7);
+    expect(jsList.length).toBe(8);
     expect(cssList.length).toBe(4);
 
     // script external assets
