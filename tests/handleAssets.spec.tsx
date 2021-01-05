@@ -115,23 +115,26 @@ describe('getComment', () => {
 
 describe('processHtml', () => {
   test('processHtml', () => {
-    expect(processHtml(undefined).html).toBe('');
+    expect(processHtml(undefined).html.innerHTML).toBe('');
 
     const { html, assets: {jsList, cssList} } = processHtml(tempHTML);
+    const div = document.createElement('div');
+    div.appendChild(html);
+    const content = div.innerHTML;
 
-    expect(html).not.toContain('<script src="//g.alicdn.com/p');
-    expect(html).not.toContain('src="./');
-    expect(html).not.toContain('src="/test.js"');
-    expect(html).not.toContain('src="index.js"');
+    expect(content).not.toContain('<script src="//g.alicdn.com/p');
+    expect(content).not.toContain('src="./');
+    expect(content).not.toContain('src="/test.js"');
+    expect(content).not.toContain('src="index.js"');
 
-    expect(html).toContain('<link rel="dns-prefetch" href="//g.alicdn.com" />');
-    expect(html).toContain('<link rel="dns-prefetch" href="//at.alicdn.com" />');
-    expect(html).toContain('<link rel="dns-prefetch" href="//img.alicdn.com" />');
+    expect(content).toContain('<link rel="dns-prefetch" href="//g.alicdn.com">');
+    expect(content).toContain('<link rel="dns-prefetch" href="//at.alicdn.com">');
+    expect(content).toContain('<link rel="dns-prefetch" href="//img.alicdn.com">');
 
-    expect(html).toContain('<!--link ./test.css processed by @ice/stark-->');
-    expect(html).toContain('<!--link /index.css processed by @ice/stark-->');
-    expect(html).not.toContain('href="/index.css"');
-    expect(html).not.toContain('href="index.css"');
+    expect(content).toContain('<!--link ./test.css processed by @ice/stark-->');
+    expect(content).toContain('<!--link /index.css processed by @ice/stark-->');
+    expect(content).not.toContain('href="/index.css"');
+    expect(content).not.toContain('href="index.css"');
 
     expect(jsList.length).toBe(7);
     expect(cssList.length).toBe(4);
