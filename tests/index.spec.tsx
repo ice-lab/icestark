@@ -5,6 +5,7 @@ import * as React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import { AppRouter, AppRoute, AppLink, appHistory } from '../src/index';
 import { IS_CSS_REGEX } from '../src/util/constant';
+import { getCache } from '../src/util/cache';
 
 describe('AppRouter', () => {
   beforeEach(() => {
@@ -39,6 +40,8 @@ describe('AppRouter', () => {
       <AppRoute {...defaultProps} path="/render-component" component={<div data-testid="icestarkTest">test component</div>} />,
     );
     expect(container.innerHTML).toContain('test component');
+    expect(getCache('loadMode')).toBe(null);
+
     unmount();
   });
 
@@ -48,6 +51,8 @@ describe('AppRouter', () => {
       <AppRoute {...defaultProps} path="/props-render" render={() => <div data-testid="icestarkTest">test render</div>} />,
     );
     expect(container.innerHTML).toContain('test render');
+    expect(getCache('loadMode')).toBe(null);
+
     unmount();
   });
 
@@ -164,6 +169,7 @@ describe('AppRouter', () => {
     setTimeout(function() {
       expect(container.innerHTML).toContain('<!--link /index.css processed by @ice/stark-->');
       expect(container.innerHTML).toContain('<!--script index.js replaced by @ice/stark-->');
+      expect(getCache('loadMode')).toBe('script');
 
       const scripts = container.getElementsByTagName('script');
       for (let i = 0; i < scripts.length; i++) {

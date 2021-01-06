@@ -2,6 +2,7 @@ import { registerMicroApps } from '../src';
 import start, { unload } from '../src/start';
 import { AppConfig, getMicroApps, mountMicroApp, removeMicroApp, removeMicroApps, unmountMicroApp, createMicroApp } from '../src/apps';
 import { LOADING_ASSETS, MOUNTED, NOT_LOADED, UNMOUNTED } from '../src/util/constant';
+import { getCache } from '../src/util/cache';
 
 describe('app start', () => {
   test('start hijack', () => {
@@ -22,17 +23,20 @@ describe('app start', () => {
       {
         name: 'app1',
         activePath: '/test',
+        sandbox: true,
         url: ['//icestark.com/index.js']
       },
       {
         name: 'app2',
         activePath: '/test2',
+        sandbox: true,
         hashType: true,
         url: ['//icestark.com/index.js']
       },
       {
         name: 'app3',
         activePath: '/',
+        sandbox: true,
         exact: true,
         url: ['//icestark.com/index.js']
       },
@@ -63,16 +67,25 @@ describe('app start', () => {
     expect(getMicroApps().length).toBe(6);
     expect(getMicroApps().find(item => item.name === 'app3').status).toBe(LOADING_ASSETS);
     expect(getMicroApps().find(item => item.name === 'app1').status).toBe(NOT_LOADED);
+    expect(getCache('loadMode')).toBe('sandbox');
     window.history.pushState({}, 'test', '/test');
     expect(getMicroApps().find(item => item.name === 'app1').status).toBe(LOADING_ASSETS);
     expect(getMicroApps().find(item => item.name === 'app5').status).toBe(LOADING_ASSETS);
+    expect(getCache('loadMode')).toBe('script');
     window.history.pushState({}, 'test', '/#/test2');
     expect(getMicroApps().find(item => item.name === 'app2').status).toBe(LOADING_ASSETS);
+    expect(getCache('loadMode')).toBe('sandbox');
     window.history.pushState({}, 'test', '/test4');
     expect(getMicroApps().find(item => item.name === 'app4').status).toBe(LOADING_ASSETS);
+    expect(getCache('loadMode')).toBe('script');
     window.history.pushState({}, 'test', '/test6/a');
     expect(getMicroApps().find(item => item.name === 'app6').status).toBe(NOT_LOADED);
     expect(activeApps).toStrictEqual([]);
+
+    setTimeout(() => {
+      expect(getCache('loadMode')).toBe(null);
+    }, 100);
+
     unload();
   });
 

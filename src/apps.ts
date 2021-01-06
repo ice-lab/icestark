@@ -198,14 +198,34 @@ export function getAppConfigForLoad (app: string | AppConfig, options?: AppLifec
   return getAppConfig(name);
 };
 
-export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppLifecylceOptions) {
-  const appConfig = getAppConfigForLoad(app, appLifecyle);
-  const appName = appConfig && appConfig.name;
-  // compatible with use inIcestark
-  const container = (app as AppConfig).container || appConfig?.container;
+// cache content
+export function cacheContent (app: AppConfig) {
+  const { container, umd, sandbox } = app;
+
+  // cache root
   if (container && !getCache('root')) {
     setCache('root', container);
   }
+
+  // cache loadMode
+  // eslint-disable-next-line no-nested-ternary
+  const loadMode = umd ? 'umd' : ( sandbox ? 'sandbox' : 'script' );
+  setCache('loadMode', loadMode);
+}
+
+export function removeContent () {
+  setCache('root', null);
+  setCache('loadMode', null);
+}
+
+export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppLifecylceOptions) {
+  const appConfig = getAppConfigForLoad(app, appLifecyle);
+  const appName = appConfig && appConfig.name;
+
+  if (appConfig) {
+    cacheContent(appConfig);
+  }
+
   if (appConfig && appName) {
     // check status of app
     if (appConfig.status === NOT_LOADED || appConfig.status === LOAD_ERROR ) {
@@ -278,6 +298,8 @@ export async function unloadMicroApp(appName: string) {
     delete appConfig.unmount;
     delete appConfig.appAssets;
     updateAppConfig(appName, { status: NOT_LOADED });
+
+    removeContent();
   } else {
     console.log(`[icestark] can not find app ${appName} when call unloadMicroApp`);
   }
