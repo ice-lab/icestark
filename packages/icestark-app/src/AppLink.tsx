@@ -8,7 +8,7 @@ export type AppLinkProps = {
   replace?: boolean;
   message?: string;
   children?: React.ReactNode;
-} & React.AnchorHTMLAttributes<any>;
+} & React.AnchorHTMLAttributes<Element>;
 
 const AppLink = (props: AppLinkProps) => {
   const { to, hashType, replace, message, children, ...rest } = props;
@@ -19,6 +19,7 @@ const AppLink = (props: AppLinkProps) => {
       href={linkTo}
       onClick={e => {
         e.preventDefault();
+        // eslint-disable-next-line no-alert
         if (message && window.confirm(message) === false) {
           return false;
         }
