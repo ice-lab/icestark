@@ -22,6 +22,7 @@ describe('app start', () => {
     registerMicroApps([
       {
         name: 'app1',
+        umd: true,
         activePath: '/test',
         sandbox: true,
         url: ['//icestark.com/index.js']

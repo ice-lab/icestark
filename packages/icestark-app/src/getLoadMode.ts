@@ -1,3 +1,5 @@
 import { getCache } from './cache';
 
-export default (): string => (getCache('loadMode') ? getCache('loadMode') : null);
+const getLoadMode = (): string | undefined => getCache('loadMode');
+
+export default getLoadMode;

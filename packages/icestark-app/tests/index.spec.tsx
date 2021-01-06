@@ -136,8 +136,6 @@ describe('isInIcestark', () => {
 
 describe('getLoadMode', () => {
   test('getLoadMode', () => {
-    expect(getLoadMode()).toBe(null);
-
     setCache('loadMode', 'umd');
 
     expect(getLoadMode()).toBe('umd');
