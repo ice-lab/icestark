@@ -214,11 +214,11 @@ export function getComment(tag: string, from: string, type: AssetCommentEnum): s
  * @param url
  */
 export function isAbsoluteUrl(url: string): boolean {
-  return url.indexOf('//') >= 0;
+  return (/^(https?:)?\/\/.+/).test(url);
 }
 
 
-export function removeNode(node: HTMLElement, comment: string): void {
+export function replaceNodeWithComment(node: HTMLElement, comment: string): void {
   if (node?.parentNode) {
     const commentNode = document.createComment(comment);
     node.parentNode.appendChild(commentNode);
@@ -241,7 +241,7 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
 
     const externalSrc = !inlineScript && (isAbsoluteUrl(script.src) ? script.src : getUrl(entry, script.src));
     const commentType = inlineScript ? AssetCommentEnum.PROCESSED : AssetCommentEnum.REPLACED;
-    removeNode(script, getComment('script', inlineScript ? 'inline' : script.src, commentType));
+    replaceNodeWithComment(script, getComment('script', inlineScript ? 'inline' : script.src, commentType));
 
     return {
       type: inlineScript ? AssetTypeEnum.INLINE : AssetTypeEnum.EXTERNAL,
@@ -257,7 +257,7 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
   const processedCSSAssets = [
     ...inlineStyleSheets
       .map(sheet => {
-        removeNode(sheet, getComment('style', 'inline', AssetCommentEnum.REPLACED));
+        replaceNodeWithComment(sheet, getComment('style', 'inline', AssetCommentEnum.REPLACED));
         return {
           type: AssetTypeEnum.INLINE,
           content: sheet.innerText,
@@ -265,7 +265,7 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
       }),
     ...externalStyleSheets
       .map((sheet) => {
-        removeNode(sheet, getComment('link', sheet.href, AssetCommentEnum.PROCESSED));
+        replaceNodeWithComment(sheet, getComment('link', sheet.href, AssetCommentEnum.PROCESSED));
         return {
           type: AssetTypeEnum.EXTERNAL,
           content: isAbsoluteUrl(sheet.href) ? sheet.href : getUrl(entry, sheet.href),
