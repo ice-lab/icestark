@@ -203,9 +203,10 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
   const appName = appConfig && appConfig.name;
   // compatible with use inIcestark
   const container = (app as AppConfig).container || appConfig?.container;
-  if (container && !getCache('root')) {
+  if (container) {
     setCache('root', container);
   }
+
   if (appConfig && appName) {
     // check status of app
     if (appConfig.status === NOT_LOADED || appConfig.status === LOAD_ERROR ) {

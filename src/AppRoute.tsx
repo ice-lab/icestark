@@ -166,7 +166,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       activePath: path,
       container: rootElement,
     };
-    setCache('root', rootElement);
     if (!getAppConfig(name)) {
       loadingApp({ name });
     }
