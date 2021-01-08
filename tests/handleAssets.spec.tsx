@@ -14,6 +14,7 @@ import {
   processHtml,
   appendExternalScript,
   getUrlAssets,
+  isAbsoluteUrl,
 } from '../src/util/handleAssets';
 import { setCache } from '../src/util/cache';
 
@@ -525,3 +526,17 @@ describe('appendCSS', () => {
     }
   });
 });
+
+
+describe('isAbsoluteUrl', () => {
+  test('isAbsoluteUrl', () => {
+    expect(isAbsoluteUrl('https://www.baidu.com/')).toBe(true);
+    expect(isAbsoluteUrl('//ice.alicdn.com/icestark/child-seller-react/index.css')).toBe(true);
+    expect(isAbsoluteUrl('http://ice.alicdn.com/icestark/child-seller-react/index.css')).toBe(true);
+
+    expect(isAbsoluteUrl('./index.css')).toBe(false);
+    expect(isAbsoluteUrl('/index.css')).toBe(false);
+    expect(isAbsoluteUrl('./icestark//index.js')).toBe(false);
+  })
+});
+
