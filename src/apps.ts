@@ -135,7 +135,7 @@ export function updateAppConfig(appName: string, config) {
 
 // load app js assets
 export async function loadAppModule(appConfig: AppConfig) {
-  const { onLoadingApp, onFinishLoading, fetch } = getAppConfig(appConfig.name)?.configuration ?? globalConfiguration;
+  const { onLoadingApp, onFinishLoading, fetch } = getAppConfig(appConfig.name)?.configuration || globalConfiguration;
 
   let lifecycle: ModuleLifeCycle = {};
   onLoadingApp(appConfig);
@@ -215,7 +215,10 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
   }
   if (appConfig && appName) {
     // add configuration to every micro app
-    const userConfiguration = { ...globalConfiguration, ...configuration };
+    const userConfiguration = globalConfiguration;
+    Object.keys(configuration || {}).forEach(key => {
+      userConfiguration[key] = configuration[key];
+    });
     updateAppConfig(appName, { configuration: userConfiguration });
 
     // check status of app
@@ -268,7 +271,7 @@ export async function unmountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   if (appConfig && (appConfig.status === MOUNTED || appConfig.status === LOADING_ASSETS || appConfig.status === NOT_MOUNTED)) {
     // remove assets if app is not cached
-    const { shouldAssetsRemove } = getAppConfig(appName)?.configuration  ?? globalConfiguration;
+    const { shouldAssetsRemove } = getAppConfig(appName)?.configuration  || globalConfiguration;
     emptyAssets(shouldAssetsRemove, !appConfig.cached && appConfig.name);
     updateAppConfig(appName, { status: UNMOUNTED });
     if (!appConfig.cached && appConfig.appSandbox) {
