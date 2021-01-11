@@ -39,6 +39,7 @@ describe('AppRouter', () => {
       <AppRoute {...defaultProps} path="/render-component" component={<div data-testid="icestarkTest">test component</div>} />,
     );
     expect(container.innerHTML).toContain('test component');
+
     unmount();
   });
 
@@ -48,6 +49,7 @@ describe('AppRouter', () => {
       <AppRoute {...defaultProps} path="/props-render" render={() => <div data-testid="icestarkTest">test render</div>} />,
     );
     expect(container.innerHTML).toContain('test render');
+
     unmount();
   });
 

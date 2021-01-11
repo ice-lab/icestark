@@ -143,6 +143,9 @@ export async function loadAppModule(appConfig: AppConfig) {
     assetsCacheKey: name,
   });
   updateAppConfig(appConfig.name, { appAssets, appSandbox });
+
+  cacheLoadMode(appConfig);
+
   if (appConfig.umd) {
     await loadAndAppendCssAssets(appAssets);
     lifecycle = await loadUmdModule(appAssets.jsList, appSandbox);
@@ -198,14 +201,26 @@ export function getAppConfigForLoad (app: string | AppConfig, options?: AppLifec
   return getAppConfig(name);
 };
 
+// cache loadMode
+export function cacheLoadMode (app: AppConfig) {
+  const { umd, sandbox } = app;
+  // cache loadMode
+  // eslint-disable-next-line no-nested-ternary
+  const loadMode = umd ? 'umd' : ( sandbox ? 'sandbox' : 'script' );
+  setCache('loadMode', loadMode);
+}
+
+
 export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppLifecylceOptions) {
   const appConfig = getAppConfigForLoad(app, appLifecyle);
   const appName = appConfig && appConfig.name;
+
   // compatible with use inIcestark
   const container = (app as AppConfig).container || appConfig?.container;
   if (container && !getCache('root')) {
     setCache('root', container);
   }
+
   if (appConfig && appName) {
     // check status of app
     if (appConfig.status === NOT_LOADED || appConfig.status === LOAD_ERROR ) {
