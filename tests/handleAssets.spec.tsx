@@ -14,6 +14,7 @@ import {
   processHtml,
   appendExternalScript,
   getUrlAssets,
+  isAbsoluteUrl,
 } from '../src/util/handleAssets';
 import { setCache } from '../src/util/cache';
 
@@ -89,6 +90,9 @@ const tempHTML =
   '    <!-- 组件依赖 & 页面入口 -->' +
   '    <!-- <script crossorigin="anonymous" src="./test/1.0.8/web.js?t=1f"></script> -->' +
   '    <script src="index.js"></script>' +
+  '    <script type="text/javascript">' +
+  `      document.write('<link type="stylesheet" href="./index.css" />');` +
+  '    </script>' +
   '    <div id="page_bottom"></div>' +
   '  </body>' +
   '</html>';
@@ -96,7 +100,7 @@ const tempHTML =
 describe('getComment', () => {
   test('getComment', () => {
     expect(getComment('script', 'inline', AssetCommentEnum.REPLACED)).toBe(
-      '<!--script inline replaced by @ice/stark-->',
+      'script inline replaced by @ice/stark',
     );
 
     expect(
@@ -105,35 +109,39 @@ describe('getComment', () => {
         'https://g.alicdn.com/platform/common/global.css',
         AssetCommentEnum.REPLACED,
       ),
-    ).toBe('<!--link https://g.alicdn.com/platform/common/global.css replaced by @ice/stark-->');
+    ).toBe('link https://g.alicdn.com/platform/common/global.css replaced by @ice/stark');
 
     expect(getComment('link', '/test.css', AssetCommentEnum.PROCESSED)).toBe(
-      '<!--link /test.css processed by @ice/stark-->',
+      'link /test.css processed by @ice/stark',
     );
   });
 });
 
 describe('processHtml', () => {
   test('processHtml', () => {
-    expect(processHtml(undefined).html).toBe('');
+    expect(processHtml(undefined).html.innerHTML).toBe('');
 
     const { html, assets: {jsList, cssList} } = processHtml(tempHTML);
+    const div = document.createElement('div');
+    div.appendChild(html);
+    const content = div.innerHTML;
 
-    expect(html).not.toContain('<script src="//g.alicdn.com/p');
-    expect(html).not.toContain('src="./');
-    expect(html).not.toContain('src="/test.js"');
-    expect(html).not.toContain('src="index.js"');
+    expect(content).not.toContain('<script src="//g.alicdn.com/p');
+    expect(content).not.toContain('src="./');
+    expect(content).not.toContain('src="/test.js"');
+    expect(content).not.toContain('src="index.js"');
+    expect(content).not.toContain('<link type="stylesheet" href="./index.css" />');
 
-    expect(html).toContain('<link rel="dns-prefetch" href="//g.alicdn.com" />');
-    expect(html).toContain('<link rel="dns-prefetch" href="//at.alicdn.com" />');
-    expect(html).toContain('<link rel="dns-prefetch" href="//img.alicdn.com" />');
+    expect(content).toContain('<link rel="dns-prefetch" href="//g.alicdn.com">');
+    expect(content).toContain('<link rel="dns-prefetch" href="//at.alicdn.com">');
+    expect(content).toContain('<link rel="dns-prefetch" href="//img.alicdn.com">');
 
-    expect(html).toContain('<!--link ./test.css processed by @ice/stark-->');
-    expect(html).toContain('<!--link /index.css processed by @ice/stark-->');
-    expect(html).not.toContain('href="/index.css"');
-    expect(html).not.toContain('href="index.css"');
+    expect(content).toContain('<!--link ./test.css processed by @ice/stark-->');
+    expect(content).toContain('<!--link /index.css processed by @ice/stark-->');
+    expect(content).not.toContain('href="/index.css"');
+    expect(content).not.toContain('href="index.css"');
 
-    expect(jsList.length).toBe(7);
+    expect(jsList.length).toBe(8);
     expect(cssList.length).toBe(4);
 
     // script external assets
@@ -210,6 +218,7 @@ describe('getEntryAssets', () => {
 
   const warnMockFn = jest.fn();
   (global as any).console = {
+    ...console,
     warn: warnMockFn,
   };
 
@@ -288,7 +297,7 @@ describe('getEntryAssets', () => {
       entry: '//icestark.com',
       assetsCacheKey: '/test',
     });
-    
+
     expect(assets).toStrictEqual({
       cssList: [
         {
@@ -517,3 +526,17 @@ describe('appendCSS', () => {
     }
   });
 });
+
+
+describe('isAbsoluteUrl', () => {
+  test('isAbsoluteUrl', () => {
+    expect(isAbsoluteUrl('https://www.baidu.com/')).toBe(true);
+    expect(isAbsoluteUrl('//ice.alicdn.com/icestark/child-seller-react/index.css')).toBe(true);
+    expect(isAbsoluteUrl('http://ice.alicdn.com/icestark/child-seller-react/index.css')).toBe(true);
+
+    expect(isAbsoluteUrl('./index.css')).toBe(false);
+    expect(isAbsoluteUrl('/index.css')).toBe(false);
+    expect(isAbsoluteUrl('./icestark//index.js')).toBe(false);
+  })
+});
+
