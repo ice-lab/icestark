@@ -69,12 +69,12 @@ const urlChange = (event: PopStateEvent | HashChangeEvent): void => {
 
 let lastUrl = null;
 
-export function reroute (url: string, type: RouteType | 'init' | 'popstate'| 'hashchange' ) {
+export async function reroute (url: string, type: RouteType | 'init' | 'popstate'| 'hashchange' ) {
   const { pathname, query, hash } = urlParse(url, true);
   // trigger onRouteChange when url is changed
   if (lastUrl !== url) {
     globalConfiguration.onRouteChange(url, pathname, query, hash, type);
-  
+
     const unmountApps = [];
     const activeApps = [];
     getMicroApps().forEach((microApp: AppConfig) => {
@@ -88,23 +88,40 @@ export function reroute (url: string, type: RouteType | 'init' | 'popstate'| 'ha
     // trigger onActiveApps when url is changed
     globalConfiguration.onActiveApps(activeApps);
 
-    // call captured event after app mounted
-    Promise.all(
-      // call unmount apps
-      unmountApps.map(async (unmountApp) => {
-        if (unmountApp.status === MOUNTED || unmountApp.status === LOADING_ASSETS) {
-          globalConfiguration.onAppLeave(unmountApp);
-        }
-        await unmountMicroApp(unmountApp.name);
-      }).concat(activeApps.map(async (activeApp) => {
+    await Promise.all(unmountApps.map(async (unmountApp) => {
+      if (unmountApp.status === MOUNTED || unmountApp.status === LOADING_ASSETS) {
+        globalConfiguration.onAppLeave(unmountApp);
+      }
+      await unmountMicroApp(unmountApp.name);
+    }));
+
+    await activeApps.reduce((pre, activeApp) => {
+      return pre.then(() => {
         if (activeApp.status !== MOUNTED) {
           globalConfiguration.onAppEnter(activeApp);
         }
-        await createMicroApp(activeApp);
-      }))
-    ).then(() => {
-      callCapturedEventListeners();
-    });
+        return createMicroApp(activeApp);
+      });
+    }, Promise.resolve());
+
+    callCapturedEventListeners();
+    // call captured event after app mounted
+    // Promise.all(
+    //   // call unmount apps
+    //   unmountApps.map(async (unmountApp) => {
+    //     if (unmountApp.status === MOUNTED || unmountApp.status === LOADING_ASSETS) {
+    //       globalConfiguration.onAppLeave(unmountApp);
+    //     }
+    //     await unmountMicroApp(unmountApp.name);
+    //   }).concat(activeApps.map(async (activeApp) => {
+    //     if (activeApp.status !== MOUNTED) {
+    //       globalConfiguration.onAppEnter(activeApp);
+    //     }
+    //     await createMicroApp(activeApp);
+    //   }))
+    // ).then(() => {
+    //   callCapturedEventListeners();
+    // });
   }
   lastUrl = url;
 };

@@ -213,11 +213,6 @@ export function cacheContent (app: AppConfig) {
   setCache('loadMode', loadMode);
 }
 
-export function removeContent () {
-  setCache('root', null);
-  setCache('loadMode', null);
-}
-
 export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppLifecylceOptions) {
   const appConfig = getAppConfigForLoad(app, appLifecyle);
   const appName = appConfig && appConfig.name;
@@ -298,8 +293,6 @@ export async function unloadMicroApp(appName: string) {
     delete appConfig.unmount;
     delete appConfig.appAssets;
     updateAppConfig(appName, { status: NOT_LOADED });
-
-    removeContent();
   } else {
     console.log(`[icestark] can not find app ${appName} when call unloadMicroApp`);
   }
