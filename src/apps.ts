@@ -217,7 +217,7 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
 
   // compatible with use inIcestark
   const container = (app as AppConfig).container || appConfig?.container;
-  if (container && !getCache('root')) {
+  if (container) {
     setCache('root', container);
   }
 
