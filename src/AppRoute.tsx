@@ -44,16 +44,17 @@ export interface AppRouteProps extends BaseConfig {
   loadingApp?: (appConfig: AppConfig) => void;
   onAppEnter?: (appConfig: CompatibleAppConfig) => void;
   onAppLeave?: (appConfig: CompatibleAppConfig) => void;
+  onUnloadingApp: (appName: string) => void;
 }
 
-export type CompatibleAppConfig = Omit<AppRouteProps, 'componentProps' | 'cssLoading' | 'loadingApp' | 'onAppEnter' | 'onAppLeave'>
+export type CompatibleAppConfig = Omit<AppRouteProps, 'componentProps' | 'cssLoading' | 'loadingApp' | 'onAppEnter' | 'onAppLeave' | 'onUnloadingApp'>
 
 /**
  * Gen compatible app config from AppRoute props
  */
 function genCompatibleAppConfig (appRouteProps: AppRouteProps): CompatibleAppConfig {
   const appConfig: CompatibleAppConfig = {};
-  const omitProperties = ['componentProps', 'cssLoading', 'loadingApp', 'onAppEnter', 'onAppLeave'];
+  const omitProperties = ['componentProps', 'cssLoading', 'loadingApp', 'onAppEnter', 'onAppLeave', 'onUnloadingApp'];
 
   Object.keys(appRouteProps).forEach(key => {
     if (omitProperties.indexOf(key) === -1) {
@@ -127,6 +128,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   }
 
   mountApp = () => {
+    console.log('mountapp');
+
     resetCapturedEventListeners();
     const { onAppEnter } = this.props;
 
@@ -142,8 +145,10 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     }
   }
 
-  unmountApp = () => {
-    const { name, onAppLeave } = this.props;
+  unmountApp = async () => {
+    console.log('unmount');
+    const { name, onAppLeave, onUnloadingApp } = this.props;
+    onUnloadingApp(name);
 
     // Trigger app leave
     if (typeof onAppLeave === 'function') {
@@ -151,8 +156,10 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     }
 
     if (!this.validateRender()) {
-      unloadMicroApp(name);
+      await unloadMicroApp(name);
     }
+
+    onUnloadingApp('');
   }
 
   renderChild = (): void => {

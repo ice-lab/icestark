@@ -217,6 +217,8 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
   const appConfig = getAppConfigForLoad(app, appLifecyle);
   const appName = appConfig && appConfig.name;
 
+  console.log('createMicroApp');
+
   if (appConfig) {
     cacheContent(appConfig);
   }
@@ -281,6 +283,7 @@ export async function unmountMicroApp(appName: string) {
     if (appConfig.unmount) {
       await appConfig.unmount({ container: appConfig.container, customProps: appConfig.props });
     }
+    console.log('unmountMicroApp');
   }
 }
 
@@ -288,7 +291,7 @@ export async function unmountMicroApp(appName: string) {
 export async function unloadMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   if (appConfig) {
-    unmountMicroApp(appName);
+    await unmountMicroApp(appName);
     delete appConfig.mount;
     delete appConfig.unmount;
     delete appConfig.appAssets;
@@ -299,11 +302,11 @@ export async function unloadMicroApp(appName: string) {
 }
 
 // remove app config from cache
-export function removeMicroApp(appName: string) {
+export async function removeMicroApp(appName: string) {
   const appIndex = getAppNames().indexOf(appName);
   if (appIndex > -1) {
     // unload micro app in case of app is mounted
-    unloadMicroApp(appName);
+    await unloadMicroApp(appName);
     microApps.splice(appIndex, 1);
   } else {
     console.log(`[icestark] can not find app ${appName} when call removeMicroApp`);

@@ -33,6 +33,7 @@ export interface AppRouterProps {
 interface AppRouterState {
   url: string;
   appLoading: string;
+  unloadingApp: string;
 }
 
 export function converArray2String(list: string | (string | PathData)[]) {
@@ -72,6 +73,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     this.state = {
       url: location.href,
       appLoading: '',
+      unloadingApp: '',
     };
   }
 
@@ -119,6 +121,9 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   handleRouteChange = (url: string, type: RouteType | 'init' | 'popstate'): void => {
     if (!this.unmounted && url !== this.state.url) {
       this.setState({ url });
+      if (this.appKey) {
+        this.setState({ unloadingApp: this.appKey });
+      }
     }
     const { pathname, query, hash } = urlParse(url, true);
     this.props.onRouteChange(pathname, query, hash, type);
@@ -137,6 +142,11 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     }
   }
 
+  onUnloadingApp = (appName: string) => {
+    if (this.unmounted) return;
+    this.setState({ unloadingApp: appName });
+  }
+
   render() {
     const {
       NotFoundComponent,
@@ -145,7 +155,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       children,
       basename: appBasename,
     } = this.props;
-    const { url, appLoading } = this.state;
+    const { url, appLoading, unloadingApp } = this.state;
 
     // directly render ErrorComponent
     if (url === ICESTSRK_NOT_FOUND) {
@@ -153,7 +163,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     } else if (url === ICESTSRK_ERROR) {
       return renderComponent(ErrorComponent, { err: this.err });
     }
-    
+
     let match = null;
     let element: React.ReactElement;
     React.Children.forEach(children, child => {
@@ -175,7 +185,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       return (
         <div>
           {appLoading === this.appKey ? renderComponent(LoadingComponent, {}) : null}
-          {React.cloneElement(element, {
+          {!unloadingApp && React.cloneElement(element, {
             key: this.appKey,
             name: this.appKey,
             componentProps,
@@ -183,9 +193,12 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
             loadingApp: this.loadingApp,
             onAppEnter: this.props.onAppEnter,
             onAppLeave: this.props.onAppLeave,
+            onUnloadingApp: this.onUnloadingApp,
           })}
         </div>
       );
+    } else {
+      this.appKey = '';
     }
     return renderComponent(NotFoundComponent, {});
   }
