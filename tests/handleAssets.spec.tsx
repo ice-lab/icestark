@@ -232,9 +232,7 @@ describe('getEntryAssets', () => {
       entry: htmlUrl,
       assetsCacheKey: '/test',
       fetch: (url) => (
-        new Promise(resolve => {
-          resolve(fetchMockFn(url));
-        })
+        Promise.resolve(fetchMockFn(url) as Response)
       ),
     })
       .then(() => {

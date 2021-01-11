@@ -2,8 +2,8 @@ import * as urlParse from 'url-parse';
 import Sandbox, { SandboxProps, SandboxContructor } from '@ice/sandbox';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { warn, error } from './message';
+import { Fetch, defaultFetch } from '../start';
 
-const winFetch = window.fetch;
 const COMMENT_REGEX = /<!--.*?-->/g;
 
 const EMPTY_STRING = '';
@@ -37,10 +37,6 @@ export interface Assets {
 export interface ParsedConfig {
   origin: string;
   pathname: string;
-}
-
-export interface Fetch {
-  (input: RequestInfo, init?: RequestInit): Promise<Response>;
 }
 
 // Lifecycle Props
@@ -151,7 +147,8 @@ export function getUrlAssets(url: string | string[]) {
 }
 
 const cachedScriptsContent: object = {};
-export function fetchScripts(jsList: Asset[], fetch: Fetch = winFetch) {
+
+export function fetchScripts(jsList: Asset[], fetch = defaultFetch ) {
   return Promise.all(jsList.map((asset) => {
     const { type, content } = asset;
     if (type === AssetTypeEnum.INLINE) {
@@ -162,9 +159,9 @@ export function fetchScripts(jsList: Asset[], fetch: Fetch = winFetch) {
     }
   }));
 }
-export async function appendAssets(assets: Assets, sandbox?: Sandbox) {
+export async function appendAssets(assets: Assets, sandbox?: Sandbox, fetch = defaultFetch) {
   await loadAndAppendCssAssets(assets);
-  await loadAndAppendJsAssets(assets, sandbox);
+  await loadAndAppendJsAssets(assets, sandbox, fetch);
 }
 
 export function parseUrl(entry: string): ParsedConfig {
@@ -290,7 +287,7 @@ export async function getEntryAssets({
   entryContent,
   assetsCacheKey,
   href,
-  fetch = winFetch,
+  fetch = defaultFetch,
 }: {
   root: HTMLElement | ShadowRoot;
   entry?: string;
@@ -436,14 +433,14 @@ export async function loadAndAppendCssAssets(assets: Assets) {
  * @param {Sandbox} [sandbox]
  * @returns
  */
-export async function loadAndAppendJsAssets(assets: Assets, sandbox?: Sandbox) {
+export async function loadAndAppendJsAssets(assets: Assets, sandbox?: Sandbox, fetch = defaultFetch) {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
 
   const { jsList } = assets;
 
   // handle scripts
   if (sandbox && !sandbox.sandboxDisabled) {
-    const jsContents = await fetchScripts(jsList);
+    const jsContents = await fetchScripts(jsList, fetch);
     // excute code by order
     jsContents.forEach(script => {
       sandbox.execScriptInSandbox(script);
