@@ -8,7 +8,6 @@ import {
   registerAppLeave,
   appHistory,
   isInIcestark,
-  getLoadMode,
 } from '../src/index';
 import { setCache, getCache } from '../src/cache';
 
@@ -131,13 +130,5 @@ describe('isInIcestark', () => {
     div.setAttribute('id', 'ice-container');
     window[namespace] = { root: div };
     expect(isInIcestark()).toBe(true);
-  });
-});
-
-describe('getLoadMode', () => {
-  test('getLoadMode', () => {
-    setCache('loadMode', 'umd');
-
-    expect(getLoadMode()).toBe('umd');
   });
 });

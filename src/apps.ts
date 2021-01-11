@@ -143,6 +143,9 @@ export async function loadAppModule(appConfig: AppConfig) {
     assetsCacheKey: name,
   });
   updateAppConfig(appConfig.name, { appAssets, appSandbox });
+
+  cacheLoadMode(appConfig);
+
   if (appConfig.umd) {
     await loadAndAppendCssAssets(appAssets);
     lifecycle = await loadUmdModule(appAssets.jsList, appSandbox);
@@ -198,32 +201,24 @@ export function getAppConfigForLoad (app: string | AppConfig, options?: AppLifec
   return getAppConfig(name);
 };
 
-// cache content
-export function cacheContent (app: AppConfig) {
-  const { container, umd, sandbox } = app;
-
-  // cache root
-  if (container && !getCache('root')) {
-    setCache('root', container);
-  }
-
+// cache loadMode
+export function cacheLoadMode (app: AppConfig) {
+  const { umd, sandbox } = app;
   // cache loadMode
   // eslint-disable-next-line no-nested-ternary
   const loadMode = umd ? 'umd' : ( sandbox ? 'sandbox' : 'script' );
   setCache('loadMode', loadMode);
 }
 
-export function removeContent () {
-  setCache('root', null);
-  setCache('loadMode', null);
-}
 
 export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppLifecylceOptions) {
   const appConfig = getAppConfigForLoad(app, appLifecyle);
   const appName = appConfig && appConfig.name;
 
-  if (appConfig) {
-    cacheContent(appConfig);
+  // compatible with use inIcestark
+  const container = (app as AppConfig).container || appConfig?.container;
+  if (container && !getCache('root')) {
+    setCache('root', container);
   }
 
   if (appConfig && appName) {
@@ -298,8 +293,6 @@ export async function unloadMicroApp(appName: string) {
     delete appConfig.unmount;
     delete appConfig.appAssets;
     updateAppConfig(appName, { status: NOT_LOADED });
-
-    removeContent();
   } else {
     console.log(`[icestark] can not find app ${appName} when call unloadMicroApp`);
   }
