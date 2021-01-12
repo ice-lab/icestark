@@ -75,12 +75,9 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       url: location.href,
       appLoading: '',
     };
-  }
 
-  componentDidMount() {
-    const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch } = this.props;
-    // render NotFoundComponent eventListener
-    window.addEventListener('icestark:not-found', this.triggerNotFound);
+    // make sure start invoked before createMicroApp
+    const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch } = props;
     start({
       shouldAssetsRemove,
       onAppLeave,
@@ -91,6 +88,11 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       reroute: this.handleRouteChange,
       fetch,
     });
+  }
+
+  componentDidMount() {
+    // render NotFoundComponent eventListener
+    window.addEventListener('icestark:not-found', this.triggerNotFound);
   }
 
   componentWillUnmount() {
@@ -183,7 +185,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
             name: this.appKey,
             componentProps,
             cssLoading: appLoading === this.appKey,
-            loadingApp: this.loadingApp,
             onAppEnter: this.props.onAppEnter,
             onAppLeave: this.props.onAppLeave,
           })}
