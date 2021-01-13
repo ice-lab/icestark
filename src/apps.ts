@@ -217,7 +217,6 @@ export function cacheLoadMode (app: AppConfig) {
   setCache('loadMode', loadMode);
 }
 
-
 export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppLifecylceOptions, configuration?: StartConfiguration) {
   const appConfig = getAppConfigForLoad(app, appLifecyle);
   const appName = appConfig && appConfig.name;
