@@ -12,6 +12,14 @@ import { AppConfig, getMicroApps, createMicroApp, unmountMicroApp, clearMicroApp
 import { emptyAssets, recordAssets } from './util/handleAssets';
 import { LOADING_ASSETS, MOUNTED } from './util/constant';
 
+if (!window?.fetch) {
+  throw new Error('[icestark] window.fetch not found, you need polyfill it');
+}
+
+export const defaultFetch = window?.fetch.bind(window);
+
+export type Fetch = typeof window.fetch | ((url: string) => Promise<Response>);
+
 export interface StartConfiguration {
   shouldAssetsRemove?: (
     assetUrl?: string,
@@ -31,6 +39,7 @@ export interface StartConfiguration {
   onError?: (err: Error) => void;
   onActiveApps?: (appConfigs: AppConfig[]) => void;
   reroute?: (url: string, type: RouteType | 'init' | 'popstate'| 'hashchange') => void;
+  fetch?: Fetch;
 }
 
 const globalConfiguration: StartConfiguration = {
@@ -43,6 +52,7 @@ const globalConfiguration: StartConfiguration = {
   onError: () => {},
   onActiveApps: () => {},
   reroute,
+  fetch: defaultFetch,
 };
 
 interface OriginalStateFunction {

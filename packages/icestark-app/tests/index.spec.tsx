@@ -10,6 +10,7 @@ import {
   isInIcestark,
 } from '../src/index';
 import { setCache, getCache } from '../src/cache';
+import formatUrl from '../src/util/formatUrl';
 
 const namespace = 'ICESTARK';
 
@@ -132,3 +133,13 @@ describe('isInIcestark', () => {
     expect(isInIcestark()).toBe(true);
   });
 });
+
+describe('formatUrl', () => {
+  test('formatUrl', () => {
+    expect(formatUrl('/seller')).toBe('/seller');
+
+    expect(formatUrl('#/seller')).toBe('#/seller');
+
+    expect(formatUrl('/seller', true)).toBe('#/seller');
+  })
+})

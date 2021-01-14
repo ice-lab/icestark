@@ -2,15 +2,12 @@ import * as urlParse from 'url-parse';
 import Sandbox, { SandboxProps, SandboxContructor } from '@ice/sandbox';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { warn, error } from './message';
+import { Fetch, defaultFetch } from '../start';
 
-const winFetch = window.fetch;
 const COMMENT_REGEX = /<!--.*?-->/g;
-const SCRIPT_REGEX = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
-const SCRIPT_SRC_REGEX = /<script\b[^>]*src=['"]?([^'"]*)['"]?\b[^>]*>/gi;
-const STYLE_REGEX = /<style\b[^>]*>([^<]*)<\/style>/gi;
-const LINK_HREF_REGEX = /<link\b[^>]*href=['"]?([^'"]*)['"]?\b[^>]*>/gi;
-const CSS_REGEX = new RegExp([STYLE_REGEX, LINK_HREF_REGEX].map((reg) => reg.source).join('|'), 'gi');
-const STYLE_SHEET_REGEX = /rel=['"]stylesheet['"]/gi;
+
+const EMPTY_STRING = '';
+const STYLESHEET_LINK_TYPE = 'stylesheet';
 
 export enum AssetTypeEnum {
   INLINE = 'inline',
@@ -28,7 +25,7 @@ export interface Asset {
 }
 
 export interface ProcessedContent {
-  html: string;
+  html: HTMLElement;
   assets: Assets;
 }
 
@@ -40,10 +37,6 @@ export interface Assets {
 export interface ParsedConfig {
   origin: string;
   pathname: string;
-}
-
-export interface Fetch {
-  (input: RequestInfo, init?: RequestInit): Promise<Response>;
 }
 
 // Lifecycle Props
@@ -154,7 +147,8 @@ export function getUrlAssets(url: string | string[]) {
 }
 
 const cachedScriptsContent: object = {};
-export function fetchScripts(jsList: Asset[], fetch: Fetch = winFetch) {
+
+export function fetchScripts(jsList: Asset[], fetch = defaultFetch ) {
   return Promise.all(jsList.map((asset) => {
     const { type, content } = asset;
     if (type === AssetTypeEnum.INLINE) {
@@ -165,9 +159,9 @@ export function fetchScripts(jsList: Asset[], fetch: Fetch = winFetch) {
     }
   }));
 }
-export async function appendAssets(assets: Assets, sandbox?: Sandbox) {
+export async function appendAssets(assets: Assets, sandbox?: Sandbox, fetch = defaultFetch) {
   await loadAndAppendCssAssets(assets);
-  await loadAndAppendJsAssets(assets, sandbox);
+  await loadAndAppendJsAssets(assets, sandbox, fetch);
 }
 
 export function parseUrl(entry: string): ParsedConfig {
@@ -209,61 +203,75 @@ export function getUrl(entry: string, relativePath: string): string {
  * If script/link processed by @ice/stark, add comment for it
  */
 export function getComment(tag: string, from: string, type: AssetCommentEnum): string {
-  return `<!--${tag} ${from} ${type} by @ice/stark-->`;
+  return `${tag} ${from} ${type} by @ice/stark`;
+}
+
+/**
+ * check if link is absolute url
+ * @param url
+ */
+export function isAbsoluteUrl(url: string): boolean {
+  return (/^(https?:)?\/\/.+/).test(url);
+}
+
+
+export function replaceNodeWithComment(node: HTMLElement, comment: string): void {
+  if (node?.parentNode) {
+    const commentNode = document.createComment(comment);
+    node.parentNode.appendChild(commentNode);
+    node.parentNode.removeChild(node);
+  }
 }
 
 /**
  * html -> { html: processedHtml, assets: processedAssets }
  */
 export function processHtml(html: string, entry?: string): ProcessedContent {
-  if (!html) return { html: '', assets: { cssList:[], jsList: []} };
+  if (!html) return { html: document.createElement('div'), assets: { cssList:[], jsList: []} };
 
-  const processedJSAssets = [];
-  const processedCSSAssets = [];
-  const processedHtml = html
-    .replace(COMMENT_REGEX, '')
-    .replace(SCRIPT_REGEX, (...args) => {
-      const [matchStr, matchContent] = args;
-      if (!matchStr.match(SCRIPT_SRC_REGEX)) {
-        processedJSAssets.push({
+  const domContent = (new DOMParser()).parseFromString(html.replace(COMMENT_REGEX, ''), 'text/html');
+
+  // process js assets
+  const scripts = Array.from(domContent.getElementsByTagName('script'));
+  const processedJSAssets = scripts.map(script => {
+    const inlineScript = script.src === EMPTY_STRING;
+
+    const externalSrc = !inlineScript && (isAbsoluteUrl(script.src) ? script.src : getUrl(entry, script.src));
+    const commentType = inlineScript ? AssetCommentEnum.PROCESSED : AssetCommentEnum.REPLACED;
+    replaceNodeWithComment(script, getComment('script', inlineScript ? 'inline' : script.src, commentType));
+
+    return {
+      type: inlineScript ? AssetTypeEnum.INLINE : AssetTypeEnum.EXTERNAL,
+      content: inlineScript ? script.text : externalSrc,
+    };
+  });
+
+  // process css assets
+  const inlineStyleSheets = Array.from(domContent.getElementsByTagName('style'));
+  const externalStyleSheets = Array.from(domContent.getElementsByTagName('link'))
+    .filter(link => !link.rel || link.rel.includes(STYLESHEET_LINK_TYPE));
+
+  const processedCSSAssets = [
+    ...inlineStyleSheets
+      .map(sheet => {
+        replaceNodeWithComment(sheet, getComment('style', 'inline', AssetCommentEnum.REPLACED));
+        return {
           type: AssetTypeEnum.INLINE,
-          content: matchContent,
-        });
-
-        return getComment('script', 'inline', AssetCommentEnum.REPLACED);
-      } else {
-        return matchStr.replace(SCRIPT_SRC_REGEX, (_, argSrc2) => {
-          const url = argSrc2.indexOf('//') >= 0 ? argSrc2 : getUrl(entry, argSrc2);
-          processedJSAssets.push({
-            type: AssetTypeEnum.EXTERNAL,
-            content: url,
-          });
-
-          return getComment('script', argSrc2, AssetCommentEnum.REPLACED);
-        });
-      }
-    })
-    .replace(CSS_REGEX, (...args) => {
-      const [matchStr, matchStyle, matchLink] = args;
-      // not stylesheet, return as it is
-      if (matchStr.match(STYLE_SHEET_REGEX)) {
-        const url = matchLink.indexOf('//') >= 0 ? matchLink : getUrl(entry, matchLink);
-        processedCSSAssets.push({
+          content: sheet.innerText,
+        };
+      }),
+    ...externalStyleSheets
+      .map((sheet) => {
+        replaceNodeWithComment(sheet, getComment('link', sheet.href, AssetCommentEnum.PROCESSED));
+        return {
           type: AssetTypeEnum.EXTERNAL,
-          content: url,
-        });
-        return `${getComment('link', matchLink, AssetCommentEnum.PROCESSED)}`;
-      } else if (matchStyle){
-        processedCSSAssets.push({
-          type: AssetTypeEnum.INLINE,
-          content: matchStyle,
-        });
-        return getComment('style', 'inline', AssetCommentEnum.REPLACED);
-      }
-      return matchStr;
-    });
+          content: isAbsoluteUrl(sheet.href) ? sheet.href : getUrl(entry, sheet.href),
+        };
+      }),
+  ];
+
   return {
-    html: processedHtml,
+    html: domContent.getElementsByTagName('html')[0],
     assets: {
       jsList: processedJSAssets,
       cssList: processedCSSAssets,
@@ -279,7 +287,7 @@ export async function getEntryAssets({
   entryContent,
   assetsCacheKey,
   href,
-  fetch = winFetch,
+  fetch = defaultFetch,
 }: {
   root: HTMLElement | ShadowRoot;
   entry?: string;
@@ -307,7 +315,9 @@ export async function getEntryAssets({
     cachedProcessedContent[assetsCacheKey] = cachedContent;
   }
 
-  root.innerHTML = cachedContent.html;
+  const { html } = cachedContent;
+  root.appendChild(html);
+
   return cachedContent.assets;
 }
 
@@ -423,14 +433,14 @@ export async function loadAndAppendCssAssets(assets: Assets) {
  * @param {Sandbox} [sandbox]
  * @returns
  */
-export async function loadAndAppendJsAssets(assets: Assets, sandbox?: Sandbox) {
+export async function loadAndAppendJsAssets(assets: Assets, sandbox?: Sandbox, fetch = defaultFetch) {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
 
   const { jsList } = assets;
 
   // handle scripts
   if (sandbox && !sandbox.sandboxDisabled) {
-    const jsContents = await fetchScripts(jsList);
+    const jsContents = await fetchScripts(jsList, fetch);
     // excute code by order
     jsContents.forEach(script => {
       sandbox.execScriptInSandbox(script);

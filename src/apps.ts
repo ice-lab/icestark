@@ -5,7 +5,7 @@ import { createSandbox, getUrlAssets, getEntryAssets, appendAssets, loadAndAppen
 import { getCache, setCache } from './util/cache';
 import { AppLifeCycleEnum } from './util/appLifeCycle';
 import { loadUmdModule } from './util/umdLoader';
-import { globalConfiguration } from './start';
+import { globalConfiguration, StartConfiguration } from './start';
 
 interface ActiveFn {
   (url: string): boolean;
@@ -58,11 +58,15 @@ export interface AppConfig extends BaseConfig {
   appSandbox?: Sandbox;
 }
 
-export type MicroApp = AppConfig & ModuleLifeCycle;
+export type MicroApp =
+  AppConfig
+  & ModuleLifeCycle
+  & { configuration?: StartConfiguration };
 
 // cache all microApp
 let microApps: MicroApp[] = [];
 (window as any).microApps = microApps;
+
 function getAppNames() {
   return microApps.map(app => app.name);
 }
@@ -77,7 +81,7 @@ export function getAppStatus(appName: string) {
 }
 
 export function registerMicroApp(appConfig: AppConfig, appLifecyle?: AppLifecylceOptions) {
-  // check appConfig.name 
+  // check appConfig.name
   if (getAppNames().includes(appConfig.name)) {
     throw Error(`name ${appConfig.name} already been regsitered`);
   }
@@ -131,8 +135,10 @@ export function updateAppConfig(appName: string, config) {
 
 // load app js assets
 export async function loadAppModule(appConfig: AppConfig) {
+  const { onLoadingApp, onFinishLoading, fetch } = getAppConfig(appConfig.name)?.configuration || globalConfiguration;
+
   let lifecycle: ModuleLifeCycle = {};
-  globalConfiguration.onLoadingApp(appConfig);
+  onLoadingApp(appConfig);
   const appSandbox = createSandbox(appConfig.sandbox);
   const { url, container, entry, entryContent, name } = appConfig;
   const appAssets = url ? getUrlAssets(url) : await getEntryAssets({
@@ -141,13 +147,17 @@ export async function loadAppModule(appConfig: AppConfig) {
     href: location.href,
     entryContent,
     assetsCacheKey: name,
+    fetch,
   });
   updateAppConfig(appConfig.name, { appAssets, appSandbox });
+
+  cacheLoadMode(appConfig);
+
   if (appConfig.umd) {
     await loadAndAppendCssAssets(appAssets);
     lifecycle = await loadUmdModule(appAssets.jsList, appSandbox);
   } else {
-    await appendAssets(appAssets, appSandbox);
+    await appendAssets(appAssets, appSandbox, fetch);
     lifecycle = {
       mount: getCache(AppLifeCycleEnum.AppEnter),
       unmount: getCache(AppLifeCycleEnum.AppLeave),
@@ -155,7 +165,7 @@ export async function loadAppModule(appConfig: AppConfig) {
     setCache(AppLifeCycleEnum.AppEnter, null);
     setCache(AppLifeCycleEnum.AppLeave, null);
   }
-  globalConfiguration.onFinishLoading(appConfig);
+  onFinishLoading(appConfig);
   return combineLifecyle(lifecycle, appConfig);
 }
 
@@ -198,15 +208,33 @@ export function getAppConfigForLoad (app: string | AppConfig, options?: AppLifec
   return getAppConfig(name);
 };
 
-export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppLifecylceOptions) {
+// cache loadMode
+export function cacheLoadMode (app: AppConfig) {
+  const { umd, sandbox } = app;
+  // cache loadMode
+  // eslint-disable-next-line no-nested-ternary
+  const loadMode = umd ? 'umd' : ( sandbox ? 'sandbox' : 'script' );
+  setCache('loadMode', loadMode);
+}
+
+export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppLifecylceOptions, configuration?: StartConfiguration) {
   const appConfig = getAppConfigForLoad(app, appLifecyle);
   const appName = appConfig && appConfig.name;
+
   // compatible with use inIcestark
   const container = (app as AppConfig).container || appConfig?.container;
-  if (container && !getCache('root')) {
+  if (container) {
     setCache('root', container);
   }
+
   if (appConfig && appName) {
+    // add configuration to every micro app
+    const userConfiguration = globalConfiguration;
+    Object.keys(configuration || {}).forEach(key => {
+      userConfiguration[key] = configuration[key];
+    });
+    updateAppConfig(appName, { configuration: userConfiguration });
+
     // check status of app
     if (appConfig.status === NOT_LOADED || appConfig.status === LOAD_ERROR ) {
       if (appConfig.title) document.title = appConfig.title;
@@ -219,7 +247,7 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
           updateAppConfig(appName, { ...lifeCycle, status: NOT_MOUNTED });
         }
       } catch (err){
-        globalConfiguration.onError(err);
+        userConfiguration.onError(err);
         updateAppConfig(appName, { status: LOAD_ERROR });
       }
       if (lifeCycle.mount) {
@@ -257,7 +285,8 @@ export async function unmountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   if (appConfig && (appConfig.status === MOUNTED || appConfig.status === LOADING_ASSETS || appConfig.status === NOT_MOUNTED)) {
     // remove assets if app is not cached
-    emptyAssets(globalConfiguration.shouldAssetsRemove, !appConfig.cached && appConfig.name);
+    const { shouldAssetsRemove } = getAppConfig(appName)?.configuration  || globalConfiguration;
+    emptyAssets(shouldAssetsRemove, !appConfig.cached && appConfig.name);
     updateAppConfig(appName, { status: UNMOUNTED });
     if (!appConfig.cached && appConfig.appSandbox) {
       appConfig.appSandbox.clear();

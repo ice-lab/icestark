@@ -73,6 +73,7 @@ describe('app start', () => {
     window.history.pushState({}, 'test', '/test6/a');
     expect(getMicroApps().find(item => item.name === 'app6').status).toBe(NOT_LOADED);
     expect(activeApps).toStrictEqual([]);
+
     unload();
   });
 

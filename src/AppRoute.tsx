@@ -1,10 +1,9 @@
 import * as React from 'react';
 import renderComponent from './util/renderComponent';
 import { AppHistory } from './appHistory';
-import { unloadMicroApp, BaseConfig, getAppConfig, createMicroApp, AppConfig } from './apps';
+import { unloadMicroApp, BaseConfig, createMicroApp } from './apps';
 import { converArray2String } from './AppRouter';
 import { PathData } from './util/matchPath';
-import { setCache } from './util/cache';
 import { callCapturedEventListeners, resetCapturedEventListeners } from './util/capturedListeners';
 // eslint-disable-next-line import/order
 import isEqual = require('lodash.isequal');
@@ -41,19 +40,18 @@ export interface AppRouteProps extends BaseConfig {
   basename?: string;
   render?: (componentProps: AppRouteComponentProps) => React.ReactElement;
   path?: string | string[] | PathData[];
-  loadingApp?: (appConfig: AppConfig) => void;
   onAppEnter?: (appConfig: CompatibleAppConfig) => void;
   onAppLeave?: (appConfig: CompatibleAppConfig) => void;
 }
 
-export type CompatibleAppConfig = Omit<AppRouteProps, 'componentProps' | 'cssLoading' | 'loadingApp' | 'onAppEnter' | 'onAppLeave'>
+export type CompatibleAppConfig = Omit<AppRouteProps, 'componentProps' | 'cssLoading' | 'onAppEnter' | 'onAppLeave'>
 
 /**
  * Gen compatible app config from AppRoute props
  */
 function genCompatibleAppConfig (appRouteProps: AppRouteProps): CompatibleAppConfig {
   const appConfig: CompatibleAppConfig = {};
-  const omitProperties = ['componentProps', 'cssLoading', 'loadingApp', 'onAppEnter', 'onAppLeave'];
+  const omitProperties = ['componentProps', 'cssLoading', 'onAppEnter', 'onAppLeave'];
 
   Object.keys(appRouteProps).forEach(key => {
     if (omitProperties.indexOf(key) === -1) {
@@ -156,7 +154,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   }
 
   renderChild = (): void => {
-    const { path, name, rootId, loadingApp, ...rest } = this.props;
+    const { path, name, rootId, ...rest } = this.props;
     // reCreate rootElement to remove sub-application instance,
     // rootElement is created for render sub-application
     const rootElement: HTMLElement = this.reCreateElementInBase(rootId);
@@ -166,10 +164,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       activePath: path,
       container: rootElement,
     };
-    setCache('root', rootElement);
-    if (!getAppConfig(name)) {
-      loadingApp({ name });
-    }
+
     createMicroApp(appConfig);
   }
 

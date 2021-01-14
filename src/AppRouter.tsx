@@ -5,7 +5,7 @@ import appHistory from './appHistory';
 import renderComponent from './util/renderComponent';
 import { ICESTSRK_ERROR, ICESTSRK_NOT_FOUND } from './util/constant';
 import { setCache } from './util/cache';
-import start, { unload } from './start';
+import start, { unload, Fetch, defaultFetch } from './start';
 import { matchActivePath, PathData } from './util/matchPath';
 import { AppConfig } from './apps';
 
@@ -28,6 +28,7 @@ export interface AppRouterProps {
     element?: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement,
   ) => boolean;
   basename?: string;
+  fetch?: Fetch;
 }
 
 interface AppRouterState {
@@ -65,6 +66,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     onAppEnter: () => {},
     onAppLeave: () => {},
     basename: '',
+    fetch: defaultFetch,
   };
 
   constructor(props: AppRouterProps) {
@@ -73,12 +75,9 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       url: location.href,
       appLoading: '',
     };
-  }
 
-  componentDidMount() {
-    const { shouldAssetsRemove, onAppEnter, onAppLeave } = this.props;
-    // render NotFoundComponent eventListener
-    window.addEventListener('icestark:not-found', this.triggerNotFound);
+    // make sure start invoked before createMicroApp
+    const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch } = props;
     start({
       shouldAssetsRemove,
       onAppLeave,
@@ -87,7 +86,13 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       onFinishLoading: this.finishLoading,
       onError: this.triggerError,
       reroute: this.handleRouteChange,
+      fetch,
     });
+  }
+
+  componentDidMount() {
+    // render NotFoundComponent eventListener
+    window.addEventListener('icestark:not-found', this.triggerNotFound);
   }
 
   componentWillUnmount() {
@@ -180,7 +185,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
             name: this.appKey,
             componentProps,
             cssLoading: appLoading === this.appKey,
-            loadingApp: this.loadingApp,
             onAppEnter: this.props.onAppEnter,
             onAppLeave: this.props.onAppLeave,
           })}
