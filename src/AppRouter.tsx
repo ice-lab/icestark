@@ -161,7 +161,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     const { url, appLoading, started } = this.state;
 
     if (!started) {
-      return renderComponent(NotFoundComponent, {});
+      return renderComponent(LoadingComponent, {});
     }
 
     // directly render ErrorComponent
