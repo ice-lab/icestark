@@ -34,6 +34,7 @@ export interface AppRouterProps {
 interface AppRouterState {
   url: string;
   appLoading: string;
+  started: boolean;
 }
 
 export function converArray2String(list: string | (string | PathData)[]) {
@@ -74,10 +75,20 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     this.state = {
       url: location.href,
       appLoading: '',
+      started: false,
     };
+  }
 
-    // make sure start invoked before createMicroApp
-    const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch } = props;
+  componentDidMount() {
+    // render NotFoundComponent eventListener
+    window.addEventListener('icestark:not-found', this.triggerNotFound);
+
+    /* lifecycle `componentWillUnmount` of pre-rendering executes later then
+     * `constructor` and `componentWilllMount` of next-rendering, whereas `start` should be invoked before `unload`.
+     * status `started` used to make sure parent's `componentDidMount` to be invoked eariler then child's,
+     * for mounting child component needs global configuration be settled.
+     */
+    const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch } = this.props;
     start({
       shouldAssetsRemove,
       onAppLeave,
@@ -88,17 +99,14 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       reroute: this.handleRouteChange,
       fetch,
     });
-  }
-
-  componentDidMount() {
-    // render NotFoundComponent eventListener
-    window.addEventListener('icestark:not-found', this.triggerNotFound);
+    this.setState({ started: true });
   }
 
   componentWillUnmount() {
     this.unmounted = true;
     window.removeEventListener('icestark:not-found', this.triggerNotFound);
     unload();
+    this.setState({ started: false });
   }
 
   /**
@@ -150,7 +158,11 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       children,
       basename: appBasename,
     } = this.props;
-    const { url, appLoading } = this.state;
+    const { url, appLoading, started } = this.state;
+
+    if (!started) {
+      return renderComponent(LoadingComponent, {});
+    }
 
     // directly render ErrorComponent
     if (url === ICESTSRK_NOT_FOUND) {
@@ -158,7 +170,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     } else if (url === ICESTSRK_ERROR) {
       return renderComponent(ErrorComponent, { err: this.err });
     }
-    
+
     let match = null;
     let element: React.ReactElement;
     React.Children.forEach(children, child => {
