@@ -83,10 +83,10 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     // render NotFoundComponent eventListener
     window.addEventListener('icestark:not-found', this.triggerNotFound);
 
-    /* lifeccyle `componentWillUnmount` of pre-rendering execute later then
-     * `constructor` and `componentWilllMount` of next-rendering. whereas `start` should be invoked before `unload`.
-     * status `started` used to make sure parent's `componentDidMount` to execute eariler
-     * for mounting child component needs global configuration settled.
+    /* lifecycle `componentWillUnmount` of pre-rendering executes later then
+     * `constructor` and `componentWilllMount` of next-rendering, whereas `start` should be invoked before `unload`.
+     * status `started` used to make sure parent's `componentDidMount` to be invoked eariler then child's,
+     * for mounting child component needs global configuration be settled.
      */
     const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch } = this.props;
     start({
