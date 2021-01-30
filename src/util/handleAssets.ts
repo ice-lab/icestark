@@ -147,6 +147,7 @@ export function getUrlAssets(url: string | string[]) {
 }
 
 const cachedScriptsContent: object = {};
+const cachedStyleContent: object = {};
 
 export function fetchScripts(jsList: Asset[], fetch = defaultFetch ) {
   return Promise.all(jsList.map((asset) => {
@@ -159,6 +160,20 @@ export function fetchScripts(jsList: Asset[], fetch = defaultFetch ) {
     }
   }));
 }
+
+// for prefetch
+export function fetchStyles(cssList: Asset[], fetch = defaultFetch) {
+  return Promise.all(
+    cssList.map((asset) => {
+      const { type, content} = asset;
+      if (type === AssetTypeEnum.INLINE) {
+        return content;
+      }
+      return cachedStyleContent[content] || (cachedStyleContent[content] = fetch(content).then(res => res.text()));
+    })
+  );
+}
+
 export async function appendAssets(assets: Assets, sandbox?: Sandbox, fetch = defaultFetch) {
   await loadAndAppendCssAssets(assets);
   await loadAndAppendJsAssets(assets, sandbox, fetch);

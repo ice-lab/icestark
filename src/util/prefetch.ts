@@ -1,17 +1,20 @@
 import { Prefetch, Fetch } from '../start';
-import { AppConfig } from '../apps';
+import { MicroApp } from '../apps';
+import { NOT_LOADED } from '../util/constant';
+import { fetchScripts, fetchStyles, getUrlAssets } from './handleAssets';
+import { __DEV__ } from './assist';
 
 /**
  * https://github.com/microsoft/TypeScript/issues/21309#issuecomment-376338415
  */
 type RequestIdleCallbackHandle = any;
-type RequestIdleCallbackOptions = {
+interface RequestIdleCallbackOptions {
   timeout: number;
-};
-type RequestIdleCallbackDeadline = {
+}
+interface RequestIdleCallbackDeadline {
   readonly didTimeout: boolean;
   timeRemaining: (() => number);
-};
+}
 
 declare global {
   interface Window {
@@ -30,28 +33,54 @@ declare global {
 window.requestIdleCallback =
   window.requestIdleCallback ||
   function(cb) {
-    var start = Date.now();
+    const start = Date.now();
     return setTimeout(function() {
-        cb({
-            didTimeout: false,
-            timeRemaining: function() {
-                return Math.max(0, 50 - (Date.now() - start));
-            },
-        });
+      cb({
+        didTimeout: false,
+        timeRemaining() {
+          return Math.max(0, 50 - (Date.now() - start));
+        },
+      });
     }, 1);
   };
 
 window.cancelIdleCallback =
   window.cancelIdleCallback ||
   function(id) {
-      clearTimeout(id);
+    clearTimeout(id);
   };
 
-export function prefetch() {
-  if ()
+function prefetch(fetch = window.fetch) {
+  return (app: MicroApp) => {
+    window.requestIdleCallback(() => {
+      const { jsList, cssList } = getUrlAssets(app.url);
+      window.requestIdleCallback(() => fetchScripts(jsList, fetch));
+      window.requestIdleCallback(() => fetchStyles(cssList, fetch));
+    });
+  };
 }
 
+const names2PrefetchingApps = (names: string[]) => (app: MicroApp) => names.includes(app.name) && app.status === NOT_LOADED;
 
-export function doPrefetch(apps: AppConfig[], prefetchStrategy: Prefetch, fetch: Fetch) {
+const getPrefetchingApps = (apps: MicroApp[]) => (strategy: (app: MicroApp) => boolean) => apps.filter(strategy);
 
+export function doPrefetch(
+  apps: MicroApp[],
+  prefetchStrategy: Prefetch,
+  fetch: Fetch,
+) {
+  if (Array.isArray(prefetchStrategy)) {
+    getPrefetchingApps(apps)(names2PrefetchingApps(prefetchStrategy))
+      .forEach(prefetch(fetch));
+    return;
+  }
+  if (typeof prefetchStrategy === 'function') {
+    getPrefetchingApps(apps)(prefetchStrategy)
+      .forEach(prefetch(fetch));
+    return;
+  }
+  if (prefetchStrategy) {
+    getPrefetchingApps(apps)((app) => app.status === NOT_LOADED)
+      .forEach(prefetch(fetch));
+  }
 }
