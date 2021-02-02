@@ -1,5 +1,14 @@
 import Sandbox, { SandboxProps, SandboxContructor } from '@ice/sandbox';
-import ModuleLoader, { StarkModule } from './loader';
+import ModuleLoader from './loader';
+import { Runtime, parseRuntime } from './runtime.helper';
+
+export interface StarkModule {
+  name: string;
+  url: string|string[];
+  runtime?: Runtime;
+  mount?: (Component: any, targetNode: HTMLElement, props?: any) => void;
+  unmount?: (targetNode: HTMLElement) => void;
+};
 
 export type ISandbox = boolean | SandboxProps | SandboxContructor;
 
@@ -148,14 +157,20 @@ export const getModules = function () {
 /**
  * load module source
  */
+export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) => {
+  const { name, url, runtime } = targetModule;
 
-export const loadModule = async(targetModule: StarkModule, sandbox?: ISandbox) => {
-  const { name, url } = targetModule;
+  let deps = null;
+  if (runtime) {
+    deps = await parseRuntime(runtime);
+    console.log('deps', deps);
+  }
+
   let moduleSandbox = null;
   if (!importModules[name]) {
     const { jsList, cssList } = parseUrlAssets(url);
     moduleSandbox = createSandbox(sandbox);
-    const moduleInfo = await moduleLoader.execModule({ name, url: jsList }, moduleSandbox);
+    const moduleInfo = await moduleLoader.execModule({ name, url: jsList }, moduleSandbox, deps);
     importModules[name] = {
       moduleInfo,
       moduleSandbox,

@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { unmoutModule, loadModule, getModules, registerModules, ISandbox } from './modules';
-import { StarkModule } from './loader';
+import { unmoutModule, loadModule, getModules, registerModules, ISandbox, StarkModule } from './modules';
 
 /**
  * Render Component, compatible with Component and <Component>

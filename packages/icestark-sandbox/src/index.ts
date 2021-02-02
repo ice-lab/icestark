@@ -56,14 +56,23 @@ export default class Sandbox {
     this.sandbox = null;
   }
 
-  createProxySandbox() {
+  createProxySandbox(global?: object) {
     const { propertyAdded, originalValues, multiMode } = this;
-    const proxyWindow = Object.create(null) as Window;
+    let proxyWindow = Object.create(null) as Window;
     const originalWindow = window;
     const originalAddEventListener = window.addEventListener;
     const originalRemoveEventListener = window.removeEventListener;
     const originalSetInerval = window.setInterval;
     const originalSetTimeout = window.setTimeout;
+
+    // 初始化
+    if (global) {
+      proxyWindow = {
+        ...proxyWindow,
+        ...global,
+      };
+    }
+    console.log('global', proxyWindow);
     // hijack addEventListener
     proxyWindow.addEventListener = (eventName, fn, ...rest) => {
       const listeners = this.eventListeners[eventName] || [];
@@ -148,6 +157,10 @@ export default class Sandbox {
     return this.sandbox;
   }
 
+  getAddedProperties () {
+    return this.propertyAdded;
+  }
+
   execScriptInSandbox(script: string): void {
     if (!this.sandboxDisabled) {
       // create sandbox before exec script
@@ -168,8 +181,8 @@ export default class Sandbox {
   }
 
   clear() {
-    if (!this.sandboxDisabled) { 
-      // remove event listeners 
+    if (!this.sandboxDisabled) {
+      // remove event listeners
       Object.keys(this.eventListeners).forEach((eventName) => {
         (this.eventListeners[eventName] || []).forEach(listener => {
           window.removeEventListener(eventName, listener);

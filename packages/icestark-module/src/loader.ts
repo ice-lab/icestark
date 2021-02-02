@@ -1,12 +1,6 @@
 import Sandbox from '@ice/sandbox';
 import { getGlobalProp, noteGlobalProps } from './global';
-
-export interface StarkModule {
-  name: string;
-  url: string|string[];
-  mount?: (Component: any, targetNode: HTMLElement, props?: any) => void;
-  unmount?: (targetNode: HTMLElement) => void;
-};
+import { StarkModule } from './modules';
 
 export interface ImportTask {
   [name: string]: Promise<string[]>;
@@ -38,14 +32,20 @@ export default class ModuleLoader {
     this.importTask = {};
   }
 
-  execModule(starkModule: StarkModule, sandbox?: Sandbox) {
+  execModule(starkModule: StarkModule, sandbox?: Sandbox, deps?: object) {
+    console.log('execModule', deps);
     return this.load(starkModule).then((sources) => {
       let globalWindow = null;
       if (sandbox?.getSandbox) {
-        sandbox.createProxySandbox();
+        console.log('getSandbox');
+        sandbox.createProxySandbox(deps);
         globalWindow = sandbox.getSandbox();
       } else {
-        globalWindow = window;
+        // globalWindow = window;
+        globalWindow = {
+          ...window,
+          ...deps,
+        };
       }
       const { name } = starkModule;
       let libraryExport = '';
@@ -61,8 +61,12 @@ export default class ModuleLoader {
             sandbox.execScriptInSandbox(source);
           } else {
             // https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/eval
+
+            // eslint-disable-next-line no-new-func
+            const code = new Function('window', source);
+            code(globalWindow);
             // eslint-disable-next-line no-eval
-            (0, eval)(source);
+            // (0, eval)(wrapSource(source));
           }
           if (lastScript) {
             libraryExport = getGlobalProp(globalWindow);
@@ -71,6 +75,7 @@ export default class ModuleLoader {
       } catch (err) {
         console.error(err);
       }
+      console.log('libraryExport', libraryExport);
       const moduleInfo = libraryExport ? (globalWindow as any)[libraryExport] : ((globalWindow as any)[name] || {});
       // remove moduleInfo from globalWindow in case of excute multi module in globalWindow
       if ((globalWindow as any)[libraryExport]) {
