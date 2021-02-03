@@ -1,11 +1,18 @@
 import Sandbox from '@ice/sandbox';
 import { any2AnyArray } from './utils';
 
-type RuntimeObj = Partial<Record<'id' | 'version' | 'url', string>>;
+const VERSION_REG = /^\d+$|^\d+(\.\d+){1,2}$/;
 
-type CombineRuntime = Pick<RuntimeObj, 'id' | 'version'> & { url?: string | string[] };
+export interface RuntimeInstance {
+  id: string;
+  version?: string;
+  url?: string;
+  strict?: boolean;
+}
 
-export type Runtime = boolean | string | RuntimeObj[];
+type CombineRuntime = Pick<RuntimeInstance, 'id' | 'version' | 'strict'> & { url?: string | string[] };
+
+export type Runtime = boolean | string | RuntimeInstance[];
 
 interface Json<T> {
   [id: string]: T;
@@ -26,12 +33,18 @@ export function execute (codes: string | string[], sandbox = new Sandbox({ multi
   return addedProperties;
 }
 
+export function createVersion (version: string, strict = false) {
+  if (strict) {
+    return version;
+  }
+  return version.split('.')[0];
+}
 /**
  * fetch, excute then cache runtime info.
  */
 export async function cache (runtime: CombineRuntime, fetch = window.fetch) {
-  const { id, url, version } = runtime;
-  const mark = `${id}@${version}`;
+  const { id, url, version, strict } = runtime;
+  const mark = `${id}@${createVersion(version, strict)}`;
 
   // FIXME: 需要根据不同的策略调整
   // 1. 如果 version 没有提供 2. 如果开启 strict 模式
@@ -50,7 +63,7 @@ export async function cache (runtime: CombineRuntime, fetch = window.fetch) {
 /**
  * runtime `react-dom` depends on `react`.
  */
-export function combineReact (runtimes: RuntimeObj[]): CombineRuntime[] {
+export function combineReact (runtimes: RuntimeInstance[]): CombineRuntime[] {
   const getIdx = (id: string) => runtimes.findIndex((runtime => runtime.id === id));
   const has = (id: string) => getIdx(id) > -1;
 
@@ -79,7 +92,7 @@ export function fetchRuntimeJson (url: string, fetch = window.fetch) {
   return fetch(url).then(res => res.json());
 }
 
-export function parseImmediately (runtimes: RuntimeObj[], fetch = window.fetch) {
+export function parseImmediately (runtimes: RuntimeInstance[], fetch = window.fetch) {
   return Promise.all(
     combineReact(runtimes)
       .map((ru) => cache(ru, fetch))

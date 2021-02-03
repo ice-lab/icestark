@@ -1,6 +1,6 @@
 import Sandbox, { SandboxProps, SandboxContructor } from '@ice/sandbox';
 import ModuleLoader from './loader';
-import { Runtime, parseRuntime } from './runtime.helper';
+import { Runtime, parseRuntime, RuntimeInstance } from './runtime.helper';
 
 export interface StarkModule {
   name: string;
@@ -22,6 +22,10 @@ export const moduleLoader = new ModuleLoader();
 
 export const registerModules = (modules: StarkModule[]) => {
   globalModules = modules;
+};
+
+export const registerRuntimes = (runtime: string | RuntimeInstance[]) => {
+  return parseRuntime(runtime);
 };
 
 export const clearModules = () => {
