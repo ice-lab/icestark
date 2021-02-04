@@ -47,6 +47,13 @@ export default class MicroModule extends React.Component<any, { loading: boolean
   }
 
   componentWillUnmount() {
+   const { loading } = this.state
+
+   // 如果在loading中this.mountNode为null，会导致报错
+    if (loading) {
+      return;
+    }
+    
     try {
       unmoutModule(this.moduleInfo, this.mountNode);
       this.unmout = true;
