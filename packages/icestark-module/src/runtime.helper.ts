@@ -1,5 +1,6 @@
 import Sandbox from '@ice/sandbox';
 import { any2AnyArray } from './utils';
+import { parseUrlAssets, appendCSS } from './modules';
 
 const VERSION_REG = /^\d+$|^\d+(\.\d+){1,2}$/;
 
@@ -23,8 +24,10 @@ const runtimeCache: Json<object> = {};
 /**
  * excute one or multi runtime in serial.
  */
-export function execute (codes: string | string[], sandbox = new Sandbox({ multiMode: true }) as Sandbox) {
-  sandbox.createProxySandbox();
+export function execute (codes: string | string[], deps: object, sandbox = new Sandbox({ multiMode: true }) as Sandbox) {
+
+  console.log('deps----', deps);
+  sandbox.createProxySandbox(deps);
 
   any2AnyArray(codes).forEach(code => sandbox.execScriptInSandbox(code));
 
@@ -39,10 +42,11 @@ export function createVersion (version: string, strict = false) {
   }
   return version.split('.')[0];
 }
+
 /**
  * fetch, excute then cache runtime info.
  */
-export async function cache (runtime: CombineRuntime, fetch = window.fetch) {
+export async function cache (runtime: CombineRuntime, deps: object, fetch = window.fetch) {
   const { id, url, version, strict } = runtime;
   const mark = `${id}@${createVersion(version, strict)}`;
 
@@ -52,12 +56,18 @@ export async function cache (runtime: CombineRuntime, fetch = window.fetch) {
     return runtimeCache[mark];
   }
 
+  const { cssList, jsList } = parseUrlAssets(url);
+
+  // append css
+  Promise.all(cssList.map((css: string) => appendCSS(`runtime-${id}`, css)));
+
+  // execute in sandbox
   return runtimeCache[mark] = await Promise.all(
-    any2AnyArray(url)
+    jsList
       .map(
         u => fetch(u).then(res => res.text())
       )
-  ).then(execute);
+  ).then(codes => execute(codes, deps));
 }
 
 /**
@@ -92,16 +102,15 @@ export function fetchRuntimeJson (url: string, fetch = window.fetch) {
   return fetch(url).then(res => res.json());
 }
 
-export function parseImmediately (runtimes: RuntimeInstance[], fetch = window.fetch) {
-  return Promise.all(
-    combineReact(runtimes)
-      .map((ru) => cache(ru, fetch))
-  ).then(
-    res => res.reduce((pre, next) => ({
-      ...pre,
-      ...next,
-    }), {})
-  );
+export async function parseImmediately (runtimes: RuntimeInstance[], fetch = window.fetch) {
+  return await runtimes.reduce(async (pre, next) => {
+    const preProps = await pre;
+    return {
+      ...preProps,
+      ...(await cache(next, preProps, fetch)),
+    }
+    ;
+  }, Promise.resolve({}));
 }
 
 export async function parseRuntime (runtime: Runtime, fetch = window.fetch) {
