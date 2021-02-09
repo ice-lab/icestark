@@ -51,7 +51,7 @@ function compilePath(path, options) {
 }
 
 
-function addLeadingSlash(path: string): string {
+export function addLeadingSlash(path: string): string {
   return path.charAt(0) === '/' ? path : `/${path}`;
 }
 

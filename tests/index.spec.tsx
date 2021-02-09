@@ -54,10 +54,10 @@ describe('AppRouter', () => {
   });
 
   test('test for app basename', () => {
-    window.history.pushState({}, 'test', '/icestark-basename');
+    window.history.pushState({}, 'test', '/icestark-basename/seller');
     const { container, unmount } = render(
       <AppRouter basename="icestark-basename">
-        <AppRoute path="/" render={() => <div data-testid="icestarkTest">test render</div>} />
+        <AppRoute path="/seller" render={() => <div data-testid="icestarkTest">test render</div>} />
       </AppRouter>,
     );
     expect(container.innerHTML).toContain('test render');
