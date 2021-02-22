@@ -12,6 +12,21 @@ export interface Fetch {
   (input: RequestInfo, init?: RequestInit): Promise<Response>;
 }
 
+function mergeWindowWithDeps (deps?: object) {
+  const localWindow = {};
+  Object.keys(window)
+    .forEach(key => {
+      /*
+      * Iterate window may cause error. https://stackoverflow.com/questions/36060329/window-webkitstorageinfo-is-deprecated-warning-while-iterating-window-object
+      * At the same time, it's not desirable to pollute the glboal window.
+      */
+      if (!/webkitStorageInfo|webkit/.test(key)) {
+        localWindow[key] = window[key];
+      }
+    });
+  return Object.assign(localWindow, { ...deps });
+}
+
 export default class ModuleLoader {
   private importTask: ImportTask = {};
 
@@ -39,11 +54,7 @@ export default class ModuleLoader {
         sandbox.createProxySandbox(deps);
         globalWindow = sandbox.getSandbox();
       } else {
-        // globalWindow = window;
-        globalWindow = {
-          ...window,
-          ...deps,
-        };
+        globalWindow = mergeWindowWithDeps(deps);
       }
       const { name } = starkModule;
       let libraryExport = '';
