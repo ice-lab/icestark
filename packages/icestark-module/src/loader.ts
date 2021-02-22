@@ -33,11 +33,9 @@ export default class ModuleLoader {
   }
 
   execModule(starkModule: StarkModule, sandbox?: Sandbox, deps?: object) {
-    console.log('execModule', deps);
     return this.load(starkModule).then((sources) => {
       let globalWindow = null;
       if (sandbox?.getSandbox) {
-        console.log('getSandbox');
         sandbox.createProxySandbox(deps);
         globalWindow = sandbox.getSandbox();
       } else {
@@ -75,7 +73,6 @@ export default class ModuleLoader {
       } catch (err) {
         console.error(err);
       }
-      console.log('libraryExport', libraryExport);
       const moduleInfo = libraryExport ? (globalWindow as any)[libraryExport] : ((globalWindow as any)[name] || {});
       // remove moduleInfo from globalWindow in case of excute multi module in globalWindow
       if ((globalWindow as any)[libraryExport]) {

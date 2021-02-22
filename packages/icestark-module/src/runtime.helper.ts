@@ -26,7 +26,6 @@ const runtimeCache: Json<object> = {};
  */
 export function execute (codes: string | string[], deps: object, sandbox = new Sandbox({ multiMode: true }) as Sandbox) {
 
-  console.log('deps----', deps);
   sandbox.createProxySandbox(deps);
 
   any2AnyArray(codes).forEach(code => sandbox.execScriptInSandbox(code));

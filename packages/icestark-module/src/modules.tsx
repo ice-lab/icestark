@@ -167,7 +167,6 @@ export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) 
   let deps = null;
   if (runtime) {
     deps = await parseRuntime(runtime);
-    console.log('deps', deps);
   }
 
   let moduleSandbox = null;
