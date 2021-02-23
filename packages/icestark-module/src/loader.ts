@@ -17,14 +17,16 @@ function mergeWindowWithDeps (deps?: object) {
   Object.keys(window)
     .forEach(key => {
       /*
-      * Iterate window may cause error. https://stackoverflow.com/questions/36060329/window-webkitstorageinfo-is-deprecated-warning-while-iterating-window-object
-      * At the same time, it's not desirable to pollute the glboal window.
+      * matchMedia is bound to the window scope intentionally as it is an illegal invocation to
+      * call it from a different scope. https://github.com/angular/components/blob/master/src/cdk/layout/media-matcher.ts
       */
-      if (!/webkitStorageInfo|webkit/.test(key)) {
+      if (key === 'matchMedia') {
+        window.matchMedia.bind(window);
+      } else {
         localWindow[key] = window[key];
       }
     });
-  return Object.assign(localWindow, { ...deps });
+  return Object.assign(localWindow, deps);
 }
 
 export default class ModuleLoader {
@@ -72,7 +74,7 @@ export default class ModuleLoader {
             // https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/eval
 
             // eslint-disable-next-line no-new-func
-            const code = new Function('window', source);
+            const code = new Function('window', source).bind(globalWindow);
             code(globalWindow);
             // eslint-disable-next-line no-eval
             // (0, eval)(wrapSource(source));
