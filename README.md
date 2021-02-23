@@ -8,11 +8,12 @@ English | [简体中文](https://ice.work/docs/icestark/about)
 
 ## Features 🎉
 
-- No framework constraint for main&sub applications, Support React/Vue/Angular/...
+- No framework constraint for main&sub applications, support React/Vue/Angular/...
 - Sub-application support multiple types of entry: js&css, html entry, html content
+- Compatible with [single-spa](https://single-spa.js.org/) sub-application and lifecycles
 - JavaScript sandbox by `Proxy` API
 
-## Showcase 🎃
+## Showcases 🎃
 
 ### Vue main-application
 
