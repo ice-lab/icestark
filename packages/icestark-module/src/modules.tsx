@@ -74,15 +74,20 @@ const defaultUnmount = () => {
   console.error('[icestark module] Please export unmount function');
 };
 
-function createSandbox(sandbox: ISandbox) {
+function createSandbox(sandbox: ISandbox, deps?: object) {
   let moduleSandbox = null;
-  if (sandbox) {
-    if (typeof sandbox === 'function') {
-      // eslint-disable-next-line new-cap
-      moduleSandbox = new sandbox();
+
+  if (deps || sandbox) {
+    if (sandbox) {
+      if (typeof sandbox === 'function') {
+        // eslint-disable-next-line new-cap
+        moduleSandbox = new sandbox();
+      } else {
+        const sandboxProps = typeof sandbox === 'boolean' ? {} : sandbox;
+        moduleSandbox = new Sandbox(sandboxProps);
+      }
     } else {
-      const sandboxProps = typeof sandbox === 'boolean' ? {} : sandbox;
-      moduleSandbox = new Sandbox(sandboxProps);
+      moduleSandbox = new Sandbox();
     }
   }
   return moduleSandbox;
@@ -172,7 +177,7 @@ export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) 
   let moduleSandbox = null;
   if (!importModules[name]) {
     const { jsList, cssList } = parseUrlAssets(url);
-    moduleSandbox = createSandbox(sandbox);
+    moduleSandbox = createSandbox(sandbox, deps);
     const moduleInfo = await moduleLoader.execModule({ name, url: jsList }, moduleSandbox, deps);
     importModules[name] = {
       moduleInfo,
