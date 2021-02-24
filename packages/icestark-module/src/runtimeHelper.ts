@@ -2,12 +2,11 @@ import Sandbox from '@ice/sandbox';
 import { any2AnyArray } from './utils';
 import { parseUrlAssets, appendCSS } from './modules';
 
-const VERSION_REG = /^\d+$|^\d+(\.\d+){1,2}$/;
-
 export interface RuntimeInstance {
   id: string;
+  // @Deprecated
   version?: string;
-  url?: string;
+  url: string;
   strict?: boolean;
 }
 
@@ -42,15 +41,22 @@ export function createVersion (version: string, strict = false) {
   return version.split('.')[0];
 }
 
+export function createMark (runtime: CombineRuntime) {
+  const { id, version, strict } = runtime;
+  if (!version) {
+    return id;
+  }
+  return `${id}@${createVersion(version, strict)}`;
+}
+
 /**
  * fetch, excute then cache runtime info.
  */
-export async function cache (runtime: CombineRuntime, deps: object, fetch = window.fetch) {
-  const { id, url, version, strict } = runtime;
-  const mark = `${id}@${createVersion(version, strict)}`;
+export async function cacheDeps (runtime: CombineRuntime, deps: object, fetch = window.fetch) {
+  const { id, url } = runtime;
+  const mark = createMark(runtime);
 
-  // FIXME: 需要根据不同的策略调整
-  // 1. 如果 version 没有提供 2. 如果开启 strict 模式
+
   if (runtimeCache[mark]) {
     return runtimeCache[mark];
   }
@@ -69,31 +75,6 @@ export async function cache (runtime: CombineRuntime, deps: object, fetch = wind
   ).then(codes => execute(codes, deps));
 }
 
-/**
- * runtime `react-dom` depends on `react`.
- */
-export function combineReact (runtimes: RuntimeInstance[]): CombineRuntime[] {
-  const getIdx = (id: string) => runtimes.findIndex((runtime => runtime.id === id));
-  const has = (id: string) => getIdx(id) > -1;
-
-  if (has('react') && has('react-dom')) {
-    const idxReact = getIdx('react');
-    const idxReactDom = getIdx('react-dom');
-
-    return [
-      ...runtimes.slice(0, idxReact),
-      {
-        id: 'react-bundle',
-        version: runtimes[idxReact].version,
-        url: [runtimes[idxReact].url].concat(runtimes[idxReactDom].url),
-      },
-      ...runtimes.slice(idxReact + 1, idxReactDom),
-      ...runtimes.slice(idxReactDom + 1),
-    ];
-  }
-  return runtimes;
-}
-
 export function fetchRuntimeJson (url: string, fetch = window.fetch) {
   if (!/.json/.test(url)) {
     console.warn('[icestark-module] runtime url should be a json file.');
@@ -106,9 +87,8 @@ export async function parseImmediately (runtimes: RuntimeInstance[], fetch = win
     const preProps = await pre;
     return {
       ...preProps,
-      ...(await cache(next, preProps, fetch)),
-    }
-    ;
+      ...(await cacheDeps(next, preProps, fetch)),
+    };
   }, Promise.resolve({}));
 }
 

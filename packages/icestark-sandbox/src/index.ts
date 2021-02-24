@@ -56,22 +56,15 @@ export default class Sandbox {
     this.sandbox = null;
   }
 
-  createProxySandbox(global?: object) {
+  createProxySandbox(injection?: object) {
     const { propertyAdded, originalValues, multiMode } = this;
-    let proxyWindow = Object.create(null) as Window;
+    const proxyWindow = Object.create(null) as Window;
     const originalWindow = window;
     const originalAddEventListener = window.addEventListener;
     const originalRemoveEventListener = window.removeEventListener;
     const originalSetInerval = window.setInterval;
     const originalSetTimeout = window.setTimeout;
 
-    // 初始化
-    if (global) {
-      proxyWindow = {
-        ...proxyWindow,
-        ...global,
-      };
-    }
     // hijack addEventListener
     proxyWindow.addEventListener = (eventName, fn, ...rest) => {
       const listeners = this.eventListeners[eventName] || [];
@@ -130,19 +123,26 @@ export default class Sandbox {
           // eslint-disable-next-line no-prototype-builtins
           return (key: PropertyKey) => !!target[key] || originalWindow.hasOwnProperty(key);
         }
+
         const targetValue = target[p];
         if (targetValue) {
           // case of addEventListener, removeEventListener, setTimeout, setInterval setted in sandbox
           return targetValue;
+        }
+
+        // search from injection
+        const injectionValue = injection && injection[p];
+        if (injectionValue) {
+          return injectionValue;
+        }
+
+        const value = originalWindow[p];
+        if (isWindowFunction(value)) {
+          // fix Illegal invocation
+          return value.bind(originalWindow);
         } else {
-          const value = originalWindow[p];
-          if (isWindowFunction(value)) {
-            // fix Illegal invocation
-            return value.bind(originalWindow);
-          } else {
-            // case of window.clientWidth、new window.Object()
-            return value;
-          }
+          // case of window.clientWidth、new window.Object()
+          return value;
         }
       },
       has(target: Window, p: PropertyKey): boolean {

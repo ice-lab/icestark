@@ -1,6 +1,6 @@
 import Sandbox, { SandboxProps, SandboxContructor } from '@ice/sandbox';
 import ModuleLoader from './loader';
-import { Runtime, parseRuntime, RuntimeInstance } from './runtime.helper';
+import { Runtime, parseRuntime, RuntimeInstance } from './runtimeHelper';
 
 export interface StarkModule {
   name: string;
@@ -169,6 +169,7 @@ export const getModules = function () {
 export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) => {
   const { name, url, runtime } = targetModule;
 
+  // FIXME: can use only one sanbox
   let deps = null;
   if (runtime) {
     deps = await parseRuntime(runtime);
