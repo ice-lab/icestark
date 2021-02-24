@@ -31,7 +31,13 @@ export interface BaseConfig extends PathOptions {
   sandbox?: boolean | SandboxProps | SandboxContructor;
   entry?: string;
   entryContent?: string;
+  /**
+   * 改字段将在未来的版本废弃，请谨慎使用。请使用 isUmdFetching
+   * @see isUmdFetching
+   * @deprecated
+   */
   umd?: boolean;
+  isUmdFetching?: boolean;
   checkActive?: (url: string) => boolean;
   appAssets?: Assets;
   props?: object;
@@ -133,6 +139,27 @@ export function updateAppConfig(appName: string, config) {
   });
 }
 
+export function getLifecycleFromScript () {
+  const libraryName = getCache('library');
+  const moduleInfo = window[libraryName] as ModuleLifeCycle;
+  let lifecycle: ModuleLifeCycle = {};
+  if (moduleInfo) {
+    if (moduleInfo.mount && moduleInfo.unmount) {
+      lifecycle = moduleInfo;
+      delete window[libraryName];
+      setCache('library', undefined);
+    }
+  } else {
+    lifecycle = {
+      mount: getCache(AppLifeCycleEnum.AppEnter),
+      unmount: getCache(AppLifeCycleEnum.AppLeave),
+    };
+    setCache(AppLifeCycleEnum.AppEnter, null);
+    setCache(AppLifeCycleEnum.AppLeave, null);
+  }
+  return lifecycle;
+}
+
 // load app js assets
 export async function loadAppModule(appConfig: AppConfig) {
   const { onLoadingApp, onFinishLoading, fetch } = getAppConfig(appConfig.name)?.configuration || globalConfiguration;
@@ -153,19 +180,18 @@ export async function loadAppModule(appConfig: AppConfig) {
 
   cacheLoadMode(appConfig);
 
-  if (appConfig.umd) {
+  if (appConfig.umd || appConfig.isUmdFetching) {
     await loadAndAppendCssAssets(appAssets);
     lifecycle = await loadUmdModule(appAssets.jsList, appSandbox);
   } else {
     await appendAssets(appAssets, appSandbox, fetch);
-    lifecycle = {
-      mount: getCache(AppLifeCycleEnum.AppEnter),
-      unmount: getCache(AppLifeCycleEnum.AppLeave),
-    };
-    setCache(AppLifeCycleEnum.AppEnter, null);
-    setCache(AppLifeCycleEnum.AppLeave, null);
+
+    lifecycle = getLifecycleFromScript();
   }
   onFinishLoading(appConfig);
+
+  // clear appSandbox
+  appSandbox?.clear();
   return combineLifecyle(lifecycle, appConfig);
 }
 
@@ -218,6 +244,7 @@ export function cacheLoadMode (app: AppConfig) {
 }
 
 export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppLifecylceOptions, configuration?: StartConfiguration) {
+  console.log('ccccccc');
   const appConfig = getAppConfigForLoad(app, appLifecyle);
   const appName = appConfig && appConfig.name;
 
