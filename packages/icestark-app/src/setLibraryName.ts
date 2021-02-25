@@ -1,8 +1,8 @@
 import { setCache } from './cache';
 
-const setLibraryName = (library: string) => {
-  if (library === undefined || library === null) {
-    console.warn('[@ice/stark-app] setLibraryName: params can not be undefined or null!');
+const setLibraryName = (library: string): void => {
+  if (!library) {
+    console.error('[@ice/stark-app] setLibraryName: params can not be empty!');
     return;
   };
   setCache('library', library);
