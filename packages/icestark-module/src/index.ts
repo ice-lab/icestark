@@ -1,4 +1,5 @@
 import {
+  StarkModule,
   registerModules,
   getModules,
   mountModule,
@@ -8,6 +9,7 @@ import {
 import MicroModule from './MicroModule';
 
 export {
+  StarkModule,
   MicroModule,
   registerModules,
   clearModules,
