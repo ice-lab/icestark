@@ -56,7 +56,7 @@ export default class Sandbox {
     this.sandbox = null;
   }
 
-  createProxySandbox(injection?: object) {
+  createProxySandbox() {
     const { propertyAdded, originalValues, multiMode } = this;
     const proxyWindow = Object.create(null) as Window;
     const originalWindow = window;
@@ -64,7 +64,6 @@ export default class Sandbox {
     const originalRemoveEventListener = window.removeEventListener;
     const originalSetInerval = window.setInterval;
     const originalSetTimeout = window.setTimeout;
-
     // hijack addEventListener
     proxyWindow.addEventListener = (eventName, fn, ...rest) => {
       const listeners = this.eventListeners[eventName] || [];
@@ -123,26 +122,19 @@ export default class Sandbox {
           // eslint-disable-next-line no-prototype-builtins
           return (key: PropertyKey) => !!target[key] || originalWindow.hasOwnProperty(key);
         }
-
         const targetValue = target[p];
         if (targetValue) {
           // case of addEventListener, removeEventListener, setTimeout, setInterval setted in sandbox
           return targetValue;
-        }
-
-        // search from injection
-        const injectionValue = injection && injection[p];
-        if (injectionValue) {
-          return injectionValue;
-        }
-
-        const value = originalWindow[p];
-        if (isWindowFunction(value)) {
-          // fix Illegal invocation
-          return value.bind(originalWindow);
         } else {
-          // case of window.clientWidth、new window.Object()
-          return value;
+          const value = originalWindow[p];
+          if (isWindowFunction(value)) {
+            // fix Illegal invocation
+            return value.bind(originalWindow);
+          } else {
+            // case of window.clientWidth、new window.Object()
+            return value;
+          }
         }
       },
       has(target: Window, p: PropertyKey): boolean {
@@ -154,10 +146,6 @@ export default class Sandbox {
 
   getSandbox() {
     return this.sandbox;
-  }
-
-  getAddedProperties () {
-    return this.propertyAdded;
   }
 
   execScriptInSandbox(script: string): void {
@@ -180,8 +168,8 @@ export default class Sandbox {
   }
 
   clear() {
-    if (!this.sandboxDisabled) {
-      // remove event listeners
+    if (!this.sandboxDisabled) { 
+      // remove event listeners 
       Object.keys(this.eventListeners).forEach((eventName) => {
         (this.eventListeners[eventName] || []).forEach(listener => {
           window.removeEventListener(eventName, listener);
