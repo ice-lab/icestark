@@ -1,12 +1,6 @@
 import Sandbox from '@ice/sandbox';
 import { getGlobalProp, noteGlobalProps } from './global';
-
-export interface StarkModule {
-  name: string;
-  url: string|string[];
-  mount?: (Component: any, targetNode: HTMLElement, props?: any) => void;
-  unmount?: (targetNode: HTMLElement) => void;
-};
+import { StarkModule } from './modules';
 
 export interface ImportTask {
   [name: string]: Promise<string[]>;
@@ -38,11 +32,11 @@ export default class ModuleLoader {
     this.importTask = {};
   }
 
-  execModule(starkModule: StarkModule, sandbox?: Sandbox) {
+  execModule(starkModule: StarkModule, sandbox?: Sandbox, deps?: object) {
     return this.load(starkModule).then((sources) => {
       let globalWindow = null;
       if (sandbox?.getSandbox) {
-        sandbox.createProxySandbox();
+        sandbox.createProxySandbox(deps);
         globalWindow = sandbox.getSandbox();
       } else {
         globalWindow = window;
