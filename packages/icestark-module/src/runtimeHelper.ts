@@ -4,13 +4,10 @@ import { parseUrlAssets, appendCSS } from './modules';
 
 export interface RuntimeInstance {
   id: string;
-  // @Deprecated
-  version?: string;
   url: string;
-  strict?: boolean;
 }
 
-type CombineRuntime = Pick<RuntimeInstance, 'id' | 'version' | 'strict'> & { url?: string | string[] };
+type CombineRuntime = Pick<RuntimeInstance, 'id'> & { url?: string | string[] };
 
 export type Runtime = boolean | string | RuntimeInstance[];
 
@@ -34,27 +31,12 @@ export function execute (codes: string | string[], deps: object, sandbox = new S
   return addedProperties;
 }
 
-export function createVersion (version: string, strict = false) {
-  if (strict) {
-    return version;
-  }
-  return version.split('.')[0];
-}
-
-export function createMark (runtime: CombineRuntime) {
-  const { id, version, strict } = runtime;
-  if (!version) {
-    return id;
-  }
-  return `${id}@${createVersion(version, strict)}`;
-}
-
 /**
  * fetch, excute then cache runtime info.
  */
 export async function cacheDeps (runtime: CombineRuntime, deps: object, fetch = window.fetch) {
   const { id, url } = runtime;
-  const mark = createMark(runtime);
+  const mark = id;
 
 
   if (runtimeCache[mark]) {
