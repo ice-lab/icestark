@@ -7,6 +7,8 @@ import { AppLifeCycleEnum } from './util/appLifeCycle';
 import { loadUmdModule } from './util/umdLoader';
 import { globalConfiguration, StartConfiguration } from './start';
 
+// eslint-disable-next-line import/order
+import isEmpty = require('lodash.isempty');
 interface ActiveFn {
   (url: string): boolean;
 }
@@ -143,19 +145,29 @@ export function getLifecycleFromScript () {
   const libraryName = getCache('library');
   const moduleInfo = window[libraryName] as ModuleLifeCycle;
   let lifecycle: ModuleLifeCycle = {};
-  if (moduleInfo) {
-    if (moduleInfo.mount && moduleInfo.unmount) {
-      lifecycle = moduleInfo;
-      delete window[libraryName];
-      setCache('library', undefined);
-    }
+
+  if (moduleInfo && moduleInfo.mount && moduleInfo.unmount) {
+    lifecycle = moduleInfo;
+
+    delete window[libraryName];
+    setCache('library', null);
   } else {
-    lifecycle = {
-      mount: getCache(AppLifeCycleEnum.AppEnter),
-      unmount: getCache(AppLifeCycleEnum.AppLeave),
-    };
-    setCache(AppLifeCycleEnum.AppEnter, null);
-    setCache(AppLifeCycleEnum.AppLeave, null);
+    const mount = getCache(AppLifeCycleEnum.AppEnter);
+    const unmount = getCache(AppLifeCycleEnum.AppLeave);
+
+    if (mount && unmount) {
+      lifecycle = {
+        mount,
+        unmount,
+      };
+
+      setCache(AppLifeCycleEnum.AppEnter, null);
+      setCache(AppLifeCycleEnum.AppLeave, null);
+    }
+  }
+
+  if (isEmpty(lifecycle)) {
+    console.error('[@ice/stark] microapp should export mount/unmout or register registerAppEnter/registerAppLeave.');
   }
   return lifecycle;
 }
@@ -233,7 +245,6 @@ export function getAppConfigForLoad (app: string | AppConfig, options?: AppLifec
 };
 
 export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppLifecylceOptions, configuration?: StartConfiguration) {
-  console.log('ccccccc');
   const appConfig = getAppConfigForLoad(app, appLifecyle);
   const appName = appConfig && appConfig.name;
 
