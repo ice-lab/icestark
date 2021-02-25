@@ -178,8 +178,6 @@ export async function loadAppModule(appConfig: AppConfig) {
   });
   updateAppConfig(appConfig.name, { appAssets, appSandbox });
 
-  cacheLoadMode(appConfig);
-
   if (appConfig.umd || appConfig.isUmdFetching) {
     await loadAndAppendCssAssets(appAssets);
     lifecycle = await loadUmdModule(appAssets.jsList, appSandbox);
@@ -233,15 +231,6 @@ export function getAppConfigForLoad (app: string | AppConfig, options?: AppLifec
   }
   return getAppConfig(name);
 };
-
-// cache loadMode
-export function cacheLoadMode (app: AppConfig) {
-  const { umd, sandbox } = app;
-  // cache loadMode
-  // eslint-disable-next-line no-nested-ternary
-  const loadMode = umd ? 'umd' : ( sandbox ? 'sandbox' : 'script' );
-  setCache('loadMode', loadMode);
-}
 
 export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppLifecylceOptions, configuration?: StartConfiguration) {
   console.log('ccccccc');
