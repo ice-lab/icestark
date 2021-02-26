@@ -1,14 +1,13 @@
 import Sandbox, { SandboxContructor, SandboxProps } from '@ice/sandbox';
+import * as isEmpty from 'lodash.isempty';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
 import { matchActivePath, MatchOptions, PathData, PathOptions } from './util/matchPath';
 import { createSandbox, getUrlAssets, getEntryAssets, appendAssets, loadAndAppendCssAssets, emptyAssets, Assets } from './util/handleAssets';
-import { getCache, setCache } from './util/cache';
-import { AppLifeCycleEnum } from './util/appLifeCycle';
-import { loadUmdModule } from './util/umdLoader';
+import { setCache } from './util/cache';
+import { loadBundle } from './util/loader';
 import { globalConfiguration, StartConfiguration } from './start';
+import { getLifecyleByLibrary, getLifecyleyRegister } from './util/getLifecycle';
 
-// eslint-disable-next-line import/order
-import isEmpty = require('lodash.isempty');
 interface ActiveFn {
   (url: string): boolean;
 }
@@ -34,12 +33,12 @@ export interface BaseConfig extends PathOptions {
   entry?: string;
   entryContent?: string;
   /**
-   * 改字段将在未来的版本废弃，请谨慎使用。请使用 isUmdFetching
-   * @see isUmdFetching
+   * will be deprecated in future version, use `loadScriptMode` instead.
+   * @see loadScriptMode
    * @deprecated
    */
   umd?: boolean;
-  isUmdFetching?: boolean;
+  loadScriptMode?: 'fetch' | 'script';
   checkActive?: (url: string) => boolean;
   appAssets?: Assets;
   props?: object;
@@ -141,37 +140,6 @@ export function updateAppConfig(appName: string, config) {
   });
 }
 
-export function getLifecycleFromScript () {
-  const libraryName = getCache('library');
-  const moduleInfo = window[libraryName] as ModuleLifeCycle;
-  let lifecycle: ModuleLifeCycle = {};
-
-  if (moduleInfo && moduleInfo.mount && moduleInfo.unmount) {
-    lifecycle = moduleInfo;
-
-    delete window[libraryName];
-    setCache('library', null);
-  } else {
-    const mount = getCache(AppLifeCycleEnum.AppEnter);
-    const unmount = getCache(AppLifeCycleEnum.AppLeave);
-
-    if (mount && unmount) {
-      lifecycle = {
-        mount,
-        unmount,
-      };
-
-      setCache(AppLifeCycleEnum.AppEnter, null);
-      setCache(AppLifeCycleEnum.AppLeave, null);
-    }
-  }
-
-  if (isEmpty(lifecycle)) {
-    console.error('[@ice/stark] microapp should export mount/unmout or register registerAppEnter/registerAppLeave.');
-  }
-  return lifecycle;
-}
-
 // load app js assets
 export async function loadAppModule(appConfig: AppConfig) {
   const { onLoadingApp, onFinishLoading, fetch } = getAppConfig(appConfig.name)?.configuration || globalConfiguration;
@@ -190,14 +158,26 @@ export async function loadAppModule(appConfig: AppConfig) {
   });
   updateAppConfig(appConfig.name, { appAssets, appSandbox });
 
-  if (appConfig.umd || appConfig.isUmdFetching) {
+  /*
+  * we support two ways to acquire javascript assets, `fetch` or `<script />` element.
+  * Whereas js assets may formated as `umd` or `self-executing js bundle`.
+  * `umd` is a deprecated field, which indicates "an umd javascript bundle, acquired by fetch".
+  */
+  if (appConfig.umd || appConfig.loadScriptMode === 'fetch') {
     await loadAndAppendCssAssets(appAssets);
-    lifecycle = await loadUmdModule(appAssets.jsList, appSandbox);
+    lifecycle = await loadBundle(appAssets.jsList, appSandbox);
   } else {
     await appendAssets(appAssets, appSandbox, fetch);
 
-    lifecycle = getLifecycleFromScript();
+    lifecycle =
+      getLifecyleByLibrary() ||
+      getLifecyleyRegister() ||
+      {};
   }
+  if (isEmpty(lifecycle)) {
+    console.error('[@ice/stark] microapp should export mount/unmout or register registerAppEnter/registerAppLeave.');
+  }
+
   onFinishLoading(appConfig);
 
   // clear appSandbox

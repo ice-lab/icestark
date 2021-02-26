@@ -1,14 +1,16 @@
 import Sandbox from '@ice/sandbox';
 import { getGlobalProp, noteGlobalProps } from './global';
 import { Asset, fetchScripts } from './handleAssets';
+import { getLifecyleByLibrary, getLifecyleyRegister } from './getLifecycle';
+import { ModuleLifeCycle } from '../apps';
 
 /**
- * load umd bundle
+ * load bundle
  *
  * @param {Asset[]} jsList
  * @param {Sandbox} [sandbox]
  */
-export function loadUmdModule(jsList: Asset[], sandbox?: Sandbox) {
+export function loadBundle(jsList: Asset[], sandbox?: Sandbox) {
   return fetchScripts(jsList)
     .then(scriptTexts => {
       const globalwindow = getGobalWindow(sandbox);
@@ -36,7 +38,11 @@ export function loadUmdModule(jsList: Asset[], sandbox?: Sandbox) {
         console.error(err);
       }
 
-      const moduleInfo = libraryExport ? globalwindow[libraryExport] : {};
+      const moduleInfo =
+        getLifecyleByLibrary() ||
+        getLifecyleyRegister() ||
+        (libraryExport ? globalwindow[libraryExport] : {}) as ModuleLifeCycle;
+
       if (globalwindow[libraryExport]) {
         delete globalwindow[libraryExport];
       }
