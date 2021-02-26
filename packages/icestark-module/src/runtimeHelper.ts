@@ -11,8 +11,13 @@ type CombineRuntime = Pick<RuntimeInstance, 'id'> & { url?: string | string[] };
 
 export type Runtime = boolean | string | RuntimeInstance[];
 
+export type AssetState = 'INIT' | 'LOADING' | 'LOAD_ERROR' | 'LOADED';
+
 interface Json<T> {
-  [id: string]: T;
+  [id: string]: {
+    deps: T;
+    state: AssetState;
+  };
 }
 
 const runtimeCache: Json<object> = {};
@@ -31,6 +36,10 @@ export function execute (codes: string | string[], deps: object, sandbox = new S
   return addedProperties;
 }
 
+export function updateRuntimeState (mark: string, state: AssetState) {
+  runtimeCache[mark].state = state;
+}
+
 /**
  * fetch, excute then cache runtime info.
  */
@@ -38,10 +47,16 @@ export async function cacheDeps (runtime: CombineRuntime, deps: object, fetch = 
   const { id, url } = runtime;
   const mark = id;
 
-
-  if (runtimeCache[mark]) {
-    return runtimeCache[mark];
+  if (runtimeCache[mark]?.state === 'LOADED') {
+    return runtimeCache[mark]?.deps;
   }
+
+  if (runtimeCache[mark].state === 'LOADING') {
+    // await util resource is loaded
+    await new Promise(resolve => window.addEventListener(mark, resolve));
+  }
+
+  updateRuntimeState(mark, 'LOADING');
 
   const { cssList, jsList } = parseUrlAssets(url);
 
@@ -49,12 +64,23 @@ export async function cacheDeps (runtime: CombineRuntime, deps: object, fetch = 
   Promise.all(cssList.map((css: string) => appendCSS(`runtime-${id}`, css)));
 
   // execute in sandbox
-  return runtimeCache[mark] = await Promise.all(
-    jsList
-      .map(
-        u => fetch(u).then(res => res.text())
-      )
-  ).then(codes => execute(codes, deps));
+  try {
+    runtimeCache[mark].deps = await Promise.all(
+      jsList
+        .map(
+          u => fetch(u).then(res => res.text())
+        )
+    ).then(codes => execute(codes, deps));
+
+    updateRuntimeState(mark, 'LOADED');
+
+    window.dispatchEvent(new CustomEvent(mark));
+
+    return runtimeCache[mark].deps;
+  } catch (e) {
+    updateRuntimeState(mark, 'LOAD_ERROR');
+    return Promise.reject(e);
+  }
 }
 
 export function fetchRuntimeJson (url: string, fetch = window.fetch) {
