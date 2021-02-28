@@ -2,6 +2,23 @@ import Sandbox from '@ice/sandbox';
 import { any2AnyArray } from './utils';
 import { parseUrlAssets, appendCSS } from './modules';
 
+/**
+ * CustomEvent Polyfill for IE.
+ * See https://gist.github.com/gt3/787767e8cbf0451716a189cdcb2a0d08.
+ */
+(function() {
+  if (typeof (window as any).CustomEvent === 'function') return false;
+
+  function CustomEvent(event, params) {
+    params = params || { bubbles: false, cancelable: false, detail: null };
+    const evt = document.createEvent('CustomEvent');
+    evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
+    return evt;
+  }
+
+  (window as any).CustomEvent = CustomEvent;
+})();
+
 export interface RuntimeInstance {
   id: string;
   url: string;
@@ -14,13 +31,15 @@ export type Runtime = boolean | string | RuntimeInstance[];
 export type AssetState = 'INIT' | 'LOADING' | 'LOAD_ERROR' | 'LOADED';
 
 interface Json<T> {
-  [id: string]: {
-    deps: T;
-    state: AssetState;
-  };
+  [id: string]: T;
 }
 
-const runtimeCache: Json<object> = {};
+interface RuntimeCache {
+  deps: object;
+  state: AssetState;
+}
+
+const runtimeCache: Json<RuntimeCache> = {};
 
 /**
  * excute one or multi runtime in serial.
@@ -37,6 +56,10 @@ export function execute (codes: string | string[], deps: object, sandbox = new S
 }
 
 export function updateRuntimeState (mark: string, state: AssetState) {
+  if (!runtimeCache[mark]) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    runtimeCache[mark] = {} as any;
+  }
   runtimeCache[mark].state = state;
 }
 
@@ -47,13 +70,13 @@ export async function cacheDeps (runtime: CombineRuntime, deps: object, fetch = 
   const { id, url } = runtime;
   const mark = id;
 
-  if (runtimeCache[mark]?.state === 'LOADED') {
-    return runtimeCache[mark]?.deps;
+  if (runtimeCache[mark]?.state === 'LOADING') {
+    // await util resource loaded or error
+    await new Promise(resolve => window.addEventListener(mark, resolve));
   }
 
-  if (runtimeCache[mark].state === 'LOADING') {
-    // await util resource is loaded
-    await new Promise(resolve => window.addEventListener(mark, resolve));
+  if (runtimeCache[mark]?.state === 'LOADED') {
+    return runtimeCache[mark]?.deps;
   }
 
   updateRuntimeState(mark, 'LOADING');
@@ -73,12 +96,13 @@ export async function cacheDeps (runtime: CombineRuntime, deps: object, fetch = 
     ).then(codes => execute(codes, deps));
 
     updateRuntimeState(mark, 'LOADED');
-
-    window.dispatchEvent(new CustomEvent(mark));
+    window.dispatchEvent(new CustomEvent(mark, { detail: { state: 'LOADED' }}));
 
     return runtimeCache[mark].deps;
   } catch (e) {
     updateRuntimeState(mark, 'LOAD_ERROR');
+    window.dispatchEvent(new CustomEvent(mark, { detail: { state: 'LOAD_ERROR' }}));
+
     return Promise.reject(e);
   }
 }
