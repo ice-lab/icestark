@@ -17,7 +17,7 @@ export function getLifecyleByLibrary () {
   return null;
 }
 
-export function getLifecyleyRegister () {
+export function getLifecyleByRegister () {
   const mount = getCache(AppLifeCycleEnum.AppEnter);
   const unmount = getCache(AppLifeCycleEnum.AppLeave);
 

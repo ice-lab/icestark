@@ -1,7 +1,7 @@
 import Sandbox from '@ice/sandbox';
 import { getGlobalProp, noteGlobalProps } from './global';
 import { Asset, fetchScripts } from './handleAssets';
-import { getLifecyleByLibrary, getLifecyleyRegister } from './getLifecycle';
+import { getLifecyleByLibrary, getLifecyleByRegister } from './getLifecycle';
 import { ModuleLifeCycle } from '../apps';
 
 /**
@@ -40,7 +40,7 @@ export function loadBundle(jsList: Asset[], sandbox?: Sandbox) {
 
       const moduleInfo =
         getLifecyleByLibrary() ||
-        getLifecyleyRegister() ||
+        getLifecyleByRegister() ||
         (libraryExport ? globalwindow[libraryExport] : {}) as ModuleLifeCycle;
 
       if (globalwindow[libraryExport]) {

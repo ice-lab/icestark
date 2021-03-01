@@ -6,7 +6,7 @@ import { createSandbox, getUrlAssets, getEntryAssets, appendAssets, loadAndAppen
 import { setCache } from './util/cache';
 import { loadBundle } from './util/loader';
 import { globalConfiguration, StartConfiguration } from './start';
-import { getLifecyleByLibrary, getLifecyleyRegister } from './util/getLifecycle';
+import { getLifecyleByLibrary, getLifecyleByRegister } from './util/getLifecycle';
 
 interface ActiveFn {
   (url: string): boolean;
@@ -171,7 +171,7 @@ export async function loadAppModule(appConfig: AppConfig) {
 
     lifecycle =
       getLifecyleByLibrary() ||
-      getLifecyleyRegister() ||
+      getLifecyleByRegister() ||
       {};
   }
   if (isEmpty(lifecycle)) {
