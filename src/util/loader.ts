@@ -38,14 +38,15 @@ export function loadBundle(jsList: Asset[], sandbox?: Sandbox) {
         console.error(err);
       }
 
-      const moduleInfo =
-        getLifecyleByLibrary() ||
-        getLifecyleByRegister() ||
-        (libraryExport ? globalwindow[libraryExport] : {}) as ModuleLifeCycle;
+      let moduleInfo = getLifecyleByLibrary() || getLifecyleByRegister();
+      if (!moduleInfo) {
+        moduleInfo = (libraryExport ? globalwindow[libraryExport] : {}) as ModuleLifeCycle;
 
-      if (globalwindow[libraryExport]) {
-        delete globalwindow[libraryExport];
+        if (globalwindow[libraryExport]) {
+          delete globalwindow[libraryExport];
+        }
       }
+
       return moduleInfo;
     });
 }
