@@ -3,6 +3,7 @@
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
 ## 2.2.1
+
 - [fix] css assets are unable to load when remove `umd` from sub-application.
 ## 2.2.0
 
