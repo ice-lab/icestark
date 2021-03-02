@@ -261,8 +261,15 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
         await mountMicroApp(appConfig.name);
       }
     } else if (appConfig.status === UNMOUNTED) {
-      if (!appConfig.cached && appConfig.umd) {
-        await loadAndAppendCssAssets(appConfig.appAssets || { cssList: [], jsList: []});
+      if (!appConfig.cached) {
+        /*
+        * content will cached in memory using fetch, while `<script />` may not
+         */
+        if (appConfig.umd || appConfig.loadScriptMode === 'fetch' || appConfig.sandbox) {
+          await loadAndAppendCssAssets(appConfig.appAssets || { cssList: [], jsList: []});
+        } else {
+          await loadAppModule(appConfig);
+        }
       }
       await mountMicroApp(appConfig.name);
     } else if (appConfig.status === NOT_MOUNTED) {
