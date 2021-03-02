@@ -261,7 +261,7 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
         await mountMicroApp(appConfig.name);
       }
     } else if (appConfig.status === UNMOUNTED) {
-      if (!appConfig.cached && appConfig.umd) {
+      if (!appConfig.cached) {
         await loadAndAppendCssAssets(appConfig.appAssets || { cssList: [], jsList: []});
       }
       await mountMicroApp(appConfig.name);
