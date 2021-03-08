@@ -169,8 +169,6 @@ export const getModules = function () {
 export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) => {
   const { name, url, runtime } = targetModule;
 
-  // FIXME: can use only one sanbox
-
   let moduleSandbox = null;
   if (!importModules[name]) {
     let deps = null;
