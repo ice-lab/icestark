@@ -170,13 +170,14 @@ export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) 
   const { name, url, runtime } = targetModule;
 
   // FIXME: can use only one sanbox
-  let deps = null;
-  if (runtime) {
-    deps = await parseRuntime(runtime);
-  }
 
   let moduleSandbox = null;
   if (!importModules[name]) {
+    let deps = null;
+    if (runtime) {
+      deps = await parseRuntime(runtime);
+    }
+
     const { jsList, cssList } = parseUrlAssets(url);
     moduleSandbox = createSandbox(sandbox, deps);
     const moduleInfo = await moduleLoader.execModule({ name, url: jsList }, moduleSandbox, deps);
