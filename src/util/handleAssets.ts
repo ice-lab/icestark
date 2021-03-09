@@ -278,6 +278,12 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
       }),
   ];
 
+  if (entry) {
+    // remove base node
+    const baseNode = domContent.getElementsByTagName('base')[0];
+    baseNode?.parentNode.removeChild(baseNode);
+  }
+
   return {
     html: domContent.getElementsByTagName('html')[0],
     assets: {
