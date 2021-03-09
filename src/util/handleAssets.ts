@@ -243,7 +243,8 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
   const processedJSAssets = scripts.map(script => {
     const inlineScript = script.src === EMPTY_STRING;
 
-    const externalSrc = !inlineScript ? script.src : '';
+    const externalSrc = !inlineScript && (isAbsoluteUrl(script.src) ? script.src : getUrl(entry, script.src));
+
     const commentType = inlineScript ? AssetCommentEnum.PROCESSED : AssetCommentEnum.REPLACED;
     replaceNodeWithComment(script, getComment('script', inlineScript ? 'inline' : script.src, commentType));
 
@@ -272,7 +273,7 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
         replaceNodeWithComment(sheet, getComment('link', sheet.href, AssetCommentEnum.PROCESSED));
         return {
           type: AssetTypeEnum.EXTERNAL,
-          content: sheet.href,
+          content: isAbsoluteUrl(sheet.href) ? sheet.href : getUrl(entry, sheet.href),
         };
       }),
   ];
