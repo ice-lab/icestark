@@ -125,7 +125,9 @@ const ModuleComponent = () => {
   const renderNode = useRef(null);
   useEffect(() => {
     mountModule(moduleInfo, renderNode, {});
-    return unmoutModule(moduleInfo, renderNode);
+    return () => {
+      unmoutModule(moduleInfo, renderNode);
+    }
   }, []);
   return (<div ref={renderNode}></div>);
 };
