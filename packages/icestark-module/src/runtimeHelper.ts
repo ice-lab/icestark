@@ -2,6 +2,23 @@ import Sandbox from '@ice/sandbox';
 import { any2AnyArray } from './utils';
 import { parseUrlAssets, appendCSS } from './modules';
 
+/**
+ * CustomEvent Polyfill for IE.
+ * See https://gist.github.com/gt3/787767e8cbf0451716a189cdcb2a0d08.
+ */
+(function() {
+  if (typeof (window as any).CustomEvent === 'function') return false;
+
+  function CustomEvent(event, params) {
+    params = params || { bubbles: false, cancelable: false, detail: null };
+    const evt = document.createEvent('CustomEvent');
+    evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
+    return evt;
+  }
+
+  (window as any).CustomEvent = CustomEvent;
+})();
+
 export interface RuntimeInstance {
   id: string;
   url: string;
@@ -11,11 +28,18 @@ type CombineRuntime = Pick<RuntimeInstance, 'id'> & { url?: string | string[] };
 
 export type Runtime = boolean | string | RuntimeInstance[];
 
+export type AssetState = 'INIT' | 'LOADING' | 'LOAD_ERROR' | 'LOADED';
+
 interface Json<T> {
   [id: string]: T;
 }
 
-const runtimeCache: Json<object> = {};
+interface RuntimeCache {
+  deps: object;
+  state: AssetState;
+}
+
+const runtimeCache: Json<RuntimeCache> = {};
 
 /**
  * excute one or multi runtime in serial.
@@ -31,6 +55,14 @@ export function execute (codes: string | string[], deps: object, sandbox = new S
   return addedProperties;
 }
 
+export function updateRuntimeState (mark: string, state: AssetState) {
+  if (!runtimeCache[mark]) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    runtimeCache[mark] = {} as any;
+  }
+  runtimeCache[mark].state = state;
+}
+
 /**
  * fetch, excute then cache runtime info.
  */
@@ -38,10 +70,16 @@ export async function cacheDeps (runtime: CombineRuntime, deps: object, fetch = 
   const { id, url } = runtime;
   const mark = id;
 
-
-  if (runtimeCache[mark]) {
-    return runtimeCache[mark];
+  if (runtimeCache[mark]?.state === 'LOADING') {
+    // await util resource loaded or error
+    await new Promise(resolve => window.addEventListener(mark, resolve));
   }
+
+  if (runtimeCache[mark]?.state === 'LOADED') {
+    return runtimeCache[mark]?.deps;
+  }
+
+  updateRuntimeState(mark, 'LOADING');
 
   const { cssList, jsList } = parseUrlAssets(url);
 
@@ -49,12 +87,24 @@ export async function cacheDeps (runtime: CombineRuntime, deps: object, fetch = 
   Promise.all(cssList.map((css: string) => appendCSS(`runtime-${id}`, css)));
 
   // execute in sandbox
-  return runtimeCache[mark] = await Promise.all(
-    jsList
-      .map(
-        u => fetch(u).then(res => res.text())
-      )
-  ).then(codes => execute(codes, deps));
+  try {
+    runtimeCache[mark].deps = await Promise.all(
+      jsList
+        .map(
+          u => fetch(u).then(res => res.text())
+        )
+    ).then(codes => execute(codes, deps));
+
+    updateRuntimeState(mark, 'LOADED');
+    window.dispatchEvent(new CustomEvent(mark, { detail: { state: 'LOADED' }}));
+
+    return runtimeCache[mark].deps;
+  } catch (e) {
+    updateRuntimeState(mark, 'LOAD_ERROR');
+    window.dispatchEvent(new CustomEvent(mark, { detail: { state: 'LOAD_ERROR' }}));
+
+    return Promise.reject(e);
+  }
 }
 
 export function fetchRuntimeJson (url: string, fetch = window.fetch) {
