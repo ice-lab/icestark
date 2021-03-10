@@ -1,6 +1,6 @@
 {
   "name": "@ice/stark",
-  "version": "2.1.1",
+  "version": "2.2.1",
   "description": "Icestark is a JavaScript library for multiple projects, Ice workbench solution.",
   "scripts": {
     "install:deps": "rm -rf node_modules && rm -rf ./packages/*/node_modules && yarn install && lerna exec -- npm install",
@@ -48,6 +48,7 @@
   },
   "dependencies": {
     "@ice/sandbox": "^1.0.4",
+    "lodash.isempty": "^4.4.0",
     "lodash.isequal": "^4.5.0",
     "path-to-regexp": "^1.7.0",
     "url-parse": "^1.1.9"

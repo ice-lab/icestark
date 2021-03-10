@@ -1,11 +1,12 @@
 import Sandbox, { SandboxContructor, SandboxProps } from '@ice/sandbox';
+import * as isEmpty from 'lodash.isempty';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
 import { matchActivePath, MatchOptions, PathData, PathOptions } from './util/matchPath';
 import { createSandbox, getUrlAssets, getEntryAssets, appendAssets, loadAndAppendCssAssets, emptyAssets, Assets } from './util/handleAssets';
-import { getCache, setCache } from './util/cache';
-import { AppLifeCycleEnum } from './util/appLifeCycle';
-import { loadUmdModule } from './util/umdLoader';
+import { setCache } from './util/cache';
+import { loadBundle } from './util/loader';
 import { globalConfiguration, StartConfiguration } from './start';
+import { getLifecyleByLibrary, getLifecyleByRegister } from './util/getLifecycle';
 
 interface ActiveFn {
   (url: string): boolean;
@@ -31,7 +32,13 @@ export interface BaseConfig extends PathOptions {
   sandbox?: boolean | SandboxProps | SandboxContructor;
   entry?: string;
   entryContent?: string;
+  /**
+   * will be deprecated in future version, use `loadScriptMode` instead.
+   * @see loadScriptMode
+   * @deprecated
+   */
   umd?: boolean;
+  loadScriptMode?: 'fetch' | 'script';
   checkActive?: (url: string) => boolean;
   appAssets?: Assets;
   props?: object;
@@ -151,21 +158,30 @@ export async function loadAppModule(appConfig: AppConfig) {
   });
   updateAppConfig(appConfig.name, { appAssets, appSandbox });
 
-  cacheLoadMode(appConfig);
-
-  if (appConfig.umd) {
+  /*
+  * we support two ways to acquire javascript assets, `fetch` or `<script />` element.
+  * Whereas js assets may formated as `umd` or `self-executing js bundle`.
+  * `umd` is a deprecated field, which indicates "an umd javascript bundle, acquired by fetch".
+  */
+  if (appConfig.umd || appConfig.loadScriptMode === 'fetch') {
     await loadAndAppendCssAssets(appAssets);
-    lifecycle = await loadUmdModule(appAssets.jsList, appSandbox);
+    lifecycle = await loadBundle(appAssets.jsList, appSandbox);
   } else {
     await appendAssets(appAssets, appSandbox, fetch);
-    lifecycle = {
-      mount: getCache(AppLifeCycleEnum.AppEnter),
-      unmount: getCache(AppLifeCycleEnum.AppLeave),
-    };
-    setCache(AppLifeCycleEnum.AppEnter, null);
-    setCache(AppLifeCycleEnum.AppLeave, null);
+
+    lifecycle =
+      getLifecyleByLibrary() ||
+      getLifecyleByRegister() ||
+      {};
   }
+  if (isEmpty(lifecycle)) {
+    console.error('[@ice/stark] microapp should export mount/unmout or register registerAppEnter/registerAppLeave.');
+  }
+
   onFinishLoading(appConfig);
+
+  // clear appSandbox
+  appSandbox?.clear();
   return combineLifecyle(lifecycle, appConfig);
 }
 
@@ -208,15 +224,6 @@ export function getAppConfigForLoad (app: string | AppConfig, options?: AppLifec
   return getAppConfig(name);
 };
 
-// cache loadMode
-export function cacheLoadMode (app: AppConfig) {
-  const { umd, sandbox } = app;
-  // cache loadMode
-  // eslint-disable-next-line no-nested-ternary
-  const loadMode = umd ? 'umd' : ( sandbox ? 'sandbox' : 'script' );
-  setCache('loadMode', loadMode);
-}
-
 export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppLifecylceOptions, configuration?: StartConfiguration) {
   const appConfig = getAppConfigForLoad(app, appLifecyle);
   const appName = appConfig && appConfig.name;
@@ -254,7 +261,7 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
         await mountMicroApp(appConfig.name);
       }
     } else if (appConfig.status === UNMOUNTED) {
-      if (!appConfig.cached && appConfig.umd) {
+      if (!appConfig.cached) {
         await loadAndAppendCssAssets(appConfig.appAssets || { cssList: [], jsList: []});
       }
       await mountMicroApp(appConfig.name);

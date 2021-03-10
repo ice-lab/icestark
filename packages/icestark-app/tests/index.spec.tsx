@@ -8,6 +8,7 @@ import {
   registerAppLeave,
   appHistory,
   isInIcestark,
+  setBasename,
 } from '../src/index';
 import { setCache, getCache } from '../src/cache';
 import formatUrl from '../src/util/formatUrl';
@@ -23,13 +24,16 @@ describe('cache', () => {
   });
 });
 
-describe('getBasename', () => {
+describe('getBasename&setBasename', () => {
   test('getBasename', () => {
     expect(getBasename()).toBe('/');
 
     setCache('basename', '/test');
 
     expect(getBasename()).toBe('/test');
+
+    setBasename('/test1');
+    expect(getBasename()).toBe('/test1');
   });
 });
 

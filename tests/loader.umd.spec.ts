@@ -3,29 +3,33 @@ import * as path from 'path';
 import { FetchMock } from 'jest-fetch-mock';
 import Sandbox from '@ice/sandbox';
 import { AssetTypeEnum } from '../src/util/handleAssets';
-import { loadUmdModule } from '../src/util/umdLoader';
+import { loadBundle } from '../src/util/loader';
+import { setCache } from '../src/util/cache';
 
-describe('umd loader', () => {
-  const umdSource = fs.readFileSync(path.resolve(__dirname, './umd-sample.js'));
+describe('loader', () => {
+  const umdSource = fs.readFileSync(path.resolve(__dirname, './umd-not-setlibrary-sample.js'));
   beforeEach(() => {
     (fetch as FetchMock).resetMocks();
+    setCache('root', true);
   });
 
-  test('load umd module', async () => {
+  test('load normal umd module', async () => {
     (fetch as FetchMock).mockResponseOnce(umdSource.toString());
-    const umdModule: any = await loadUmdModule([{
+    const lifecycle: any = await loadBundle([{
       content: '//icestark.com/index.js',
       type: AssetTypeEnum.EXTERNAL,
     }]);
-    expect(!!umdModule.default).toBe(true);
+
+    expect(!!lifecycle.mount && !!lifecycle.unmount).toBe(true);
   });
-  
-  test('load umd module with sandbox', async () => {
+
+  test('load normal umd module with sandbox', async () => {
     (fetch as FetchMock).mockResponseOnce(umdSource.toString());
-    const umdModule: any = await loadUmdModule([{
+    const lifecycle: any = await loadBundle([{
       content: '//icestark.com/index.js',
       type: AssetTypeEnum.EXTERNAL,
     }], new Sandbox());
-    expect(!!umdModule.default).toBe(true);
+
+    expect(!!lifecycle.mount && !!lifecycle.unmount).toBe(true);
   });
-})
+});
