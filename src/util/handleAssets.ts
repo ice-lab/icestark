@@ -231,12 +231,20 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
 
   const domContent = (new DOMParser()).parseFromString(html.replace(COMMENT_REGEX, ''), 'text/html');
 
+  if (entry) {
+    // add base URI for absolute resource. see more https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+    const base = document.createElement('base');
+    base.href = entry;
+    domContent.getElementsByTagName('head')[0].appendChild(base);
+  }
+
   // process js assets
   const scripts = Array.from(domContent.getElementsByTagName('script'));
   const processedJSAssets = scripts.map(script => {
     const inlineScript = script.src === EMPTY_STRING;
 
     const externalSrc = !inlineScript && (isAbsoluteUrl(script.src) ? script.src : getUrl(entry, script.src));
+
     const commentType = inlineScript ? AssetCommentEnum.PROCESSED : AssetCommentEnum.REPLACED;
     replaceNodeWithComment(script, getComment('script', inlineScript ? 'inline' : script.src, commentType));
 
@@ -269,6 +277,12 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
         };
       }),
   ];
+
+  if (entry) {
+    // remove base node
+    const baseNode = domContent.getElementsByTagName('base')[0];
+    baseNode?.parentNode.removeChild(baseNode);
+  }
 
   return {
     html: domContent.getElementsByTagName('html')[0],
