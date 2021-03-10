@@ -5,7 +5,7 @@
   "scripts": {
     "install:deps": "rm -rf node_modules && rm -rf ./packages/*/node_modules && yarn install && lerna exec -- npm install",
     "publish:packages": "ts-node ./scripts/publish.ts",
-    "build": "rm -rf lib && stsc",
+    "build": "rm -rf lib && tsc",
     "watch": "tsc -w",
     "prepublishOnly": "npm run lint && npm run test && npm run build",
     "lint": "eslint --cache --ext .ts,.tsx ./ && tsc --noEmit",
