@@ -6,7 +6,7 @@ import renderComponent from './util/renderComponent';
 import { ICESTSRK_ERROR, ICESTSRK_NOT_FOUND } from './util/constant';
 import { setCache } from './util/cache';
 import start, { unload, Fetch, defaultFetch } from './start';
-import { matchActivePath, PathData } from './util/matchPath';
+import { matchActivePath, PathData, addLeadingSlash } from './util/matchPath';
 import { AppConfig } from './apps';
 
 type RouteType = 'pushState' | 'replaceState';
@@ -173,12 +173,21 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
     let match = null;
     let element: React.ReactElement;
+    let routerPath = null;
     React.Children.forEach(children, child => {
       if (match == null && React.isValidElement(child)) {
+        const { path } = child.props;
+        routerPath = appBasename
+          ? [].concat(path).map((pathStr: string | PathData) => `${addLeadingSlash(appBasename)}${(pathStr as PathData).value || pathStr}`)
+          : path;
         element = child;
-        match = matchActivePath(url, child.props);
+        match = matchActivePath(url, {
+          ...child.props,
+          path: routerPath,
+        });
       }
     });
+
 
     if (match) {
       const { path, basename, name } = element.props as AppRouteProps;
@@ -199,6 +208,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
             cssLoading: appLoading === this.appKey,
             onAppEnter: this.props.onAppEnter,
             onAppLeave: this.props.onAppLeave,
+            path: routerPath,
           })}
         </div>
       );
