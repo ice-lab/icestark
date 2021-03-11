@@ -163,6 +163,8 @@ export const getModules = function () {
   return globalModules || [];
 };
 
+export const getImportedModules = () => importModules;
+
 /**
  * load module source
  */
