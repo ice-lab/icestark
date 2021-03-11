@@ -2,6 +2,11 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
+## 2.2.2
+
+- [fix] `basename` of `AppRouter` makes effect. ([#241](https://github.com/ice-lab/icestark/issues/241))
+- [fix] alter baseURI when using `DOMParser`. ([#233](https://github.com/ice-lab/icestark/issues/233), [#4040](https://github.com/alibaba/ice/issues/4040))
+
 ## 2.2.1
 
 - [fix] css assets are unable to load when remove `umd` from sub-application.
