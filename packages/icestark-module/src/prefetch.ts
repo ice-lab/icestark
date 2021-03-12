@@ -1,4 +1,4 @@
-import { StarkModule, loadModule, getModules, ISandbox, getImportedModules } from './modules';
+import { StarkModule, execModule, getModules, ISandbox, getImportedModules } from './modules';
 
 
 /**
@@ -60,7 +60,7 @@ export function preloadModules (modules: StarkModule[] | string[], sandbox?: ISa
     }
     const notImported = !Object.keys(getImportedModules()).includes(moduleInfo.name);
     if (notImported) {
-      window.requestIdleCallback(() => loadModule(moduleInfo, sandbox));
+      window.requestIdleCallback(() => execModule(moduleInfo, sandbox));
     }
   });
 }

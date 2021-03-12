@@ -1,6 +1,7 @@
 import Sandbox, { SandboxProps, SandboxContructor } from '@ice/sandbox';
 import ModuleLoader from './loader';
 import { Runtime, parseRuntime, RuntimeInstance } from './runtimeHelper';
+import { resolveEvent, dispatchEvent } from './eventHelper';
 
 export interface StarkModule {
   name: string;
@@ -165,30 +166,51 @@ export const getModules = function () {
 
 export const getImportedModules = () => importModules;
 
+export const execModule = async (targetModule: StarkModule, sandbox?: ISandbox) => {
+  const { name, url, runtime } = targetModule;
+  if (importModules[name]?.state === 'LOADING') {
+    await resolveEvent(name);
+  }
+
+  if (importModules[name]?.state === 'LOADED') {
+    return importModules[name];
+  }
+
+  importModules[name] = {
+    state: 'LOADING',
+  };
+
+  let moduleSandbox = null;
+  let deps = null;
+  if (runtime) {
+    deps = await parseRuntime(runtime);
+  }
+  try {
+    const { jsList, cssList } = parseUrlAssets(url);
+    moduleSandbox = createSandbox(sandbox, deps);
+    const moduleInfo = await moduleLoader.execModule({ name, url: jsList }, moduleSandbox, deps);
+
+    dispatchEvent(name, { detail: { state: 'LOADED' }});
+
+    return importModules[name] = {
+      moduleInfo,
+      moduleSandbox,
+      moduleCSS: cssList,
+      state: 'LOADED',
+    };
+  } catch (e) {
+    dispatchEvent(name, { detail: { state: 'LOAD_ERROR' }});
+    return importModules[name] = {};
+  }
+};
+
 /**
  * load module source
  */
 export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) => {
-  const { name, url, runtime } = targetModule;
+  const { name } = targetModule;
 
-  let moduleSandbox = null;
-  if (!importModules[name]) {
-    let deps = null;
-    if (runtime) {
-      deps = await parseRuntime(runtime);
-    }
-
-    const { jsList, cssList } = parseUrlAssets(url);
-    moduleSandbox = createSandbox(sandbox, deps);
-    const moduleInfo = await moduleLoader.execModule({ name, url: jsList }, moduleSandbox, deps);
-    importModules[name] = {
-      moduleInfo,
-      moduleSandbox,
-      moduleCSS: cssList,
-    };
-  }
-
-  const { moduleInfo, moduleCSS } = importModules[name];
+  const { moduleInfo, moduleCSS } = await execModule(targetModule, sandbox) as any;
 
   if (!moduleInfo) {
     const errMsg = 'load or exec module faild';
