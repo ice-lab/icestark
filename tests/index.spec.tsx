@@ -54,13 +54,30 @@ describe('AppRouter', () => {
   });
 
   test('test for app basename', () => {
+    window.history.pushState({}, 'test', '/');
+    const { container, unmount, rerender } = render(
+      <AppRouter basename="icestark-basename" NotFoundComponent={(<div>not found</div>)}>
+        <AppRoute path='/' render={() => <div data-testid="icestarkTest">test render</div>} />
+      </AppRouter>,
+    );
+    expect(container.innerHTML).toContain('not found');
+
     window.history.pushState({}, 'test', '/icestark-basename');
-    const { container, unmount } = render(
+    rerender(
+     <AppRouter basename="icestark-basename">
+       <AppRoute path="/" render={() => <div data-testid="icestarkTest">test render</div>} />
+     </AppRouter>,
+   );
+   expect(container.innerHTML).toContain('test render');
+
+    window.history.pushState({}, 'test', '/icestark-basename/seller');
+     rerender(
       <AppRouter basename="icestark-basename">
-        <AppRoute path="/" render={() => <div data-testid="icestarkTest">test render</div>} />
+        <AppRoute path="/seller" render={() => <div data-testid="icestarkTest">test render</div>} />
       </AppRouter>,
     );
     expect(container.innerHTML).toContain('test render');
+
     unmount();
   });
 

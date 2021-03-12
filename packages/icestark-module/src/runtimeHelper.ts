@@ -102,7 +102,7 @@ export async function cacheDeps (runtime: CombineRuntime, deps: object, fetch = 
   } catch (e) {
     updateRuntimeState(mark, 'LOAD_ERROR');
     window.dispatchEvent(new CustomEvent(mark, { detail: { state: 'LOAD_ERROR' }}));
-
+    console.error(`[icestark module] ${id} fetch or excute js assets error`, e);
     return Promise.reject(e);
   }
 }
