@@ -1,7 +1,8 @@
 import Sandbox from '@ice/sandbox';
 import * as urlParse from 'url-parse';
+import * as isEmpty from 'lodash.isempty';
 import { AppLifeCycleEnum } from './appLifeCycle';
-import { setCache } from './cache';
+import { setCache, getCache } from './cache';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { warn, error } from './message';
 import ModuleLoader from './umdLoader';
@@ -162,7 +163,30 @@ export function fetchScripts(jsList: Asset[], fetch: Fetch = winFetch) {
     }
   }));
 }
-export async function appendAssets(assets: Assets, cacheKey: string, umd: boolean, sandbox?: Sandbox) {
+
+export function registerLifecycleHelper (module?: any) {
+  let moduleInfo = null;
+  let libraryName = null;
+  if (!module || isEmpty(module)) {
+    moduleInfo = module;
+  } else {
+    libraryName = getCache('library');
+    moduleInfo = window[libraryName] as any;
+  }
+
+  if (moduleInfo) {
+    // set app lifecycle after exec umd module
+    setCache(AppLifeCycleEnum.AppEnter, moduleInfo?.mount);
+    setCache(AppLifeCycleEnum.AppLeave, moduleInfo?.unmount);
+
+    if (libraryName) {
+      delete window[libraryName];
+      setCache('library', null);
+    }
+  }
+}
+
+export async function appendAssets(assets: Assets, cacheKey: string, umd: boolean, sandbox?: Sandbox, loadScriptMode?: 'fetch' | 'script') {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
   const cssRoot: HTMLElement = document.getElementsByTagName('head')[0];
 
@@ -173,17 +197,18 @@ export async function appendAssets(assets: Assets, cacheKey: string, umd: boolea
     cssList.map((asset, index) => appendCSS(cssRoot, asset, `${PREFIX}-css-${index}`)),
   );
 
-  if (umd) {
+  if (umd || loadScriptMode === 'fetch') {
     const moduleInfo = await moduleLoader.execModule({ jsList, cacheKey }, sandbox);
     // set app lifecycle after exec umd module
-    setCache(AppLifeCycleEnum.AppEnter, moduleInfo?.mount);
-    setCache(AppLifeCycleEnum.AppLeave, moduleInfo?.unmount);
+    registerLifecycleHelper(moduleInfo);
   } else if (sandbox && !sandbox.sandboxDisabled) {
     const jsContents = await fetchScripts(jsList);
     // excute code by order
     jsContents.forEach(script => {
       sandbox.execScriptInSandbox(script);
     });
+
+    registerLifecycleHelper();
   } else {
     const hasInlineScript = jsList.find((asset) => asset.type === AssetTypeEnum.INLINE);
     if (hasInlineScript) {
@@ -196,6 +221,7 @@ export async function appendAssets(assets: Assets, cacheKey: string, umd: boolea
         jsList.map((asset, index) => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`)),
       );
     }
+    registerLifecycleHelper();
   }
 }
 

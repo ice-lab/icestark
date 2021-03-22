@@ -63,7 +63,11 @@ export interface AppConfig {
   component?: React.ReactElement;
   render?: (props?: AppRouteComponentProps) => React.ReactElement;
   cache?: boolean;
+  /**
+   * @deprecated
+   */
   umd?: boolean; // mark if sub-application is an umd module
+  loadScriptMode?: 'fetch' | 'script';
   name?: string; // used to mark a umd module, recommaded config it as same as webpack.output.library
   customProps?: object; // custom props passed from framework app to sub app
 }
@@ -250,6 +254,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       umd,
       name,
       customProps,
+      loadScriptMode,
     } = this.props;
     // set loadMode when load micro app
     if (umd) {
@@ -312,7 +317,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
         appAssets = getUrlAssets(urls);
       }
       if (appAssets && !cached) {
-        await appendAssets(appAssets, name || assetsCacheKey, umd, this.appSandbox);
+        await appendAssets(appAssets, name || assetsCacheKey, umd, this.appSandbox, loadScriptMode);
       }
       // if AppRoute is unmounted, or current app is not the latest app, cancel all operations
       if (this.unmounted || this.prevAppConfig !== currentAppConfig) return;
