@@ -1,4 +1,4 @@
-import Sandbox, { SandboxProps, SandboxContructor } from '@ice/sandbox';
+import Sandbox, { SandboxProps, SandboxConstructor } from '@ice/sandbox';
 import ModuleLoader from './loader';
 import { Runtime, parseRuntime, RuntimeInstance } from './runtimeHelper';
 
@@ -10,7 +10,7 @@ export interface StarkModule {
   unmount?: (targetNode: HTMLElement) => void;
 };
 
-export type ISandbox = boolean | SandboxProps | SandboxContructor;
+export type ISandbox = boolean | SandboxProps | SandboxConstructor;
 
 let globalModules = [];
 let importModules = {};
