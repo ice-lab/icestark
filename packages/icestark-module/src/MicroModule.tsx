@@ -69,6 +69,7 @@ export default class MicroModule extends React.Component<any, State> {
       return;
     }
     this.setState({ loading: true });
+
     const { render, component: selfComponent } = moduleInfo;
     if (render && typeof render === 'function' || selfComponent) {
       this.setState({ showComponent: true });
@@ -93,14 +94,16 @@ export default class MicroModule extends React.Component<any, State> {
 
   render() {
     const { loading, showComponent } = this.state;
-    const { component, render } = this.moduleInfo;
+    if (this.moduleInfo) {
+      const { component, render } = this.moduleInfo;
 
-    if (component) {
-      return showComponent ? renderComponent(component) : null;
-    }
+      if (component) {
+        return showComponent ? renderComponent(component) : null;
+      }
 
-    if (render && typeof render === 'function') {
-      return showComponent ? render(): null;
+      if (render && typeof render === 'function') {
+        return showComponent ? render(): null;
+      }
     }
 
     const { wrapperClassName, wrapperStyle, loadingComponent } = this.props;
