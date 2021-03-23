@@ -28,7 +28,7 @@ export default class ModuleLoader {
     return task;
   }
 
-  remoteTask(name: string) {
+  removeTask(name: string) {
     delete this.importTask[name];
   }
 

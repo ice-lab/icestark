@@ -13,10 +13,15 @@ export function renderComponent(Component: any, props = {}): React.ReactElement 
   );
 }
 
+export interface State {
+  loading: boolean;
+  showComponent: boolean;
+}
+
 /**
  * default render compoent, mount all modules
  */
-export default class MicroModule extends React.Component<any, { loading: boolean }> {
+export default class MicroModule extends React.Component<any, State> {
   private moduleInfo = null;
 
   private mountNode = null;
@@ -32,6 +37,7 @@ export default class MicroModule extends React.Component<any, { loading: boolean
     super(props);
     this.state = {
       loading: false,
+      showComponent: false,
     };
   }
 
@@ -63,25 +69,40 @@ export default class MicroModule extends React.Component<any, { loading: boolean
       return;
     }
     this.setState({ loading: true });
-    try {
-      const { mount, component } =  await loadModule(this.moduleInfo, sandbox);
-      const lifecycleMount = mount;
-      this.setState({ loading: false });
-      if (lifecycleMount && component) {
-        if (this.unmout) {
-          unmoutModule(this.moduleInfo, this.mountNode);
-        } else {
-          lifecycleMount(component, this.mountNode, rest);
+    const { render, component: selfComponent } = moduleInfo;
+    if (render && typeof render === 'function' || selfComponent) {
+      this.setState({ showComponent: true });
+    } else {
+      try {
+        const { mount, component } =  await loadModule(this.moduleInfo, sandbox);
+        const lifecycleMount = mount;
+        this.setState({ loading: false });
+        if (lifecycleMount && component) {
+          if (this.unmout) {
+            unmoutModule(this.moduleInfo, this.mountNode);
+          } else {
+            lifecycleMount(component, this.mountNode, rest);
+          }
         }
+      } catch (err) {
+        this.setState({ loading: false });
+        handleError(err);
       }
-    } catch (err) {
-      this.setState({ loading: false });
-      handleError(err);
     }
   }
 
   render() {
-    const { loading } = this.state;
+    const { loading, showComponent } = this.state;
+    const { component, render } = this.moduleInfo;
+
+    if (component) {
+      return showComponent ? renderComponent(component) : null;
+    }
+
+    if (render && typeof render === 'function') {
+      return showComponent ? render(): null;
+    }
+
     const { wrapperClassName, wrapperStyle, loadingComponent } = this.props;
     return loading ? loadingComponent
       : <div className={wrapperClassName} style={wrapperStyle} ref={ref => this.mountNode = ref} />;

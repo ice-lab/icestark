@@ -5,7 +5,14 @@ import { Runtime, parseRuntime, RuntimeInstance } from './runtimeHelper';
 export interface StarkModule {
   name: string;
   url: string|string[];
-  render?: (...props: any) => any;
+  /**
+   * you are not expected to use it without the wrapper `<MicroModule />`
+   */
+  render?: (props: StarkModule) => any;
+  /**
+   * you are not expected to use it without the wrapper `<MicroModule />`
+   */
+  component?: any;
   runtime?: Runtime;
   mount?: (Component: any, targetNode: HTMLElement, props?: any) => void;
   unmount?: (targetNode: HTMLElement) => void;
@@ -21,25 +28,10 @@ const cssStorage = {};
 const IS_CSS_REGEX = /\.css(\?((?!\.js$).)+)?$/;
 export const moduleLoader = new ModuleLoader();
 
-export const registerModule = (module: StarkModule) => {
-  if(!module.url && !module.render) {
-    console.error('[icestark module] url and render cannot both be empty. name: %s', module.name);
-    return;
-  }
-
-  removeModule(module.name);
-  globalModules.push(module);
-};
-
-export const registerModules = (modules: StarkModule[]) => {
-  modules.forEach((m) => registerModule(m));
-};
-
-export const removeModule = (name?: string) => {
-  // remove module info
+export const removeModuleCache = (name?: string) => {
   globalModules = globalModules.filter(m => m.name !== name);
   delete importModules[name];
-  moduleLoader.remoteTask(name);
+  moduleLoader.removeTask(name);
 };
 
 export const registerRuntimes = (runtime: string | RuntimeInstance[]) => {
@@ -51,6 +43,26 @@ export const clearModules = () => {
   globalModules = [];
   importModules = {};
   moduleLoader.clearTask();
+};
+
+export const registerModule = (module: StarkModule) => {
+  if(!module.url && !module.render && !module.component) {
+    console.error('[icestark module] url and render cannot both be empty. name: %s', module.name);
+    return;
+  }
+  const hasRegistered = globalModules.filter(m => m. name === module.name).length;
+
+  /*
+  * If a module registers many times, the former registration will be removed.
+  */
+  if (hasRegistered) {
+    removeModuleCache(module.name);
+  }
+  globalModules.push(module);
+};
+
+export const registerModules = (modules: StarkModule[]) => {
+  modules.forEach((m) => registerModule(m));
 };
 
 // if css link already loaded, record load count
@@ -185,15 +197,9 @@ export const getModules = function () {
  * load module source
  */
 export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) => {
-  const { name, url, runtime, render } = targetModule;
+  const { name, url, runtime } = targetModule;
 
   let moduleSandbox = null;
-
-  if (render && typeof render === 'function') {
-    importModules[name] = {
-      moduleInfo: render,
-    };
-  }
 
   if (!importModules[name] && url) {
     let deps = null;
