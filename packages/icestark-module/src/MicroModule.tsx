@@ -53,11 +53,18 @@ export default class MicroModule extends React.Component<any, State> {
 
   componentWillUnmount() {
     try {
-      unmoutModule(this.moduleInfo, this.mountNode);
+      if (!this.validateRender()) {
+        unmoutModule(this.moduleInfo, this.mountNode);
+      }
       this.unmout = true;
     } catch (error) {
-      console.log('[icestark] error occurred when unmount module');
+      console.log('[icestark] error occurred when unmount module', error);
     }
+  }
+
+  validateRender() {
+    const { render, component } = this.moduleInfo || {};
+    return render && typeof render === 'function' || component;
   }
 
   async mountModule() {
@@ -70,8 +77,10 @@ export default class MicroModule extends React.Component<any, State> {
     }
     this.setState({ loading: true });
 
-    const { render, component: selfComponent } = moduleInfo;
-    if (render && typeof render === 'function' || selfComponent) {
+    /**
+     * if render or component was provided, render immediately
+    */
+    if (this.validateRender()) {
       this.setState({ showComponent: true });
     } else {
       try {

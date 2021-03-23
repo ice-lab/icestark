@@ -4,7 +4,7 @@ import { Runtime, parseRuntime, RuntimeInstance } from './runtimeHelper';
 
 export interface StarkModule {
   name: string;
-  url: string|string[];
+  url?: string|string[];
   /**
    * you are not expected to use it without the wrapper `<MicroModule />`
    */
