@@ -1,4 +1,4 @@
-import Sandbox, { SandboxContructor, SandboxProps } from '@ice/sandbox';
+import Sandbox, { SandboxConstructor, SandboxProps } from '@ice/sandbox';
 import * as isEmpty from 'lodash.isempty';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
 import { matchActivePath, MatchOptions, PathData, PathOptions } from './util/matchPath';
@@ -29,7 +29,7 @@ export interface BaseConfig extends PathOptions {
   url?: string | string[];
   container?: HTMLElement;
   status?: string;
-  sandbox?: boolean | SandboxProps | SandboxContructor;
+  sandbox?: boolean | SandboxProps | SandboxConstructor;
   entry?: string;
   entryContent?: string;
   /**
