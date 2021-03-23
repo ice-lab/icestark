@@ -5,6 +5,7 @@ import { Runtime, parseRuntime, RuntimeInstance } from './runtimeHelper';
 export interface StarkModule {
   name: string;
   url: string|string[];
+  render?: (...props: any) => any;
   runtime?: Runtime;
   mount?: (Component: any, targetNode: HTMLElement, props?: any) => void;
   unmount?: (targetNode: HTMLElement) => void;
@@ -20,8 +21,25 @@ const cssStorage = {};
 const IS_CSS_REGEX = /\.css(\?((?!\.js$).)+)?$/;
 export const moduleLoader = new ModuleLoader();
 
+export const registerModule = (module: StarkModule) => {
+  if(!module.url && !module.render) {
+    console.error('[icestark module] url and render cannot both be empty. name: %s', module.name);
+    return;
+  }
+
+  removeModule(module.name);
+  globalModules.push(module);
+};
+
 export const registerModules = (modules: StarkModule[]) => {
-  globalModules = modules;
+  modules.forEach((m) => registerModule(m));
+};
+
+export const removeModule = (name?: string) => {
+  // remove module info
+  globalModules = globalModules.filter(m => m.name !== name);
+  delete importModules[name];
+  moduleLoader.remoteTask(name);
 };
 
 export const registerRuntimes = (runtime: string | RuntimeInstance[]) => {
@@ -167,10 +185,17 @@ export const getModules = function () {
  * load module source
  */
 export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) => {
-  const { name, url, runtime } = targetModule;
+  const { name, url, runtime, render } = targetModule;
 
   let moduleSandbox = null;
-  if (!importModules[name]) {
+
+  if (render && typeof render === 'function') {
+    importModules[name] = {
+      moduleInfo: render,
+    };
+  }
+
+  if (!importModules[name] && url) {
     let deps = null;
     if (runtime) {
       deps = await parseRuntime(runtime);
@@ -198,9 +223,11 @@ export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) 
   const component = moduleInfo.default || moduleInfo;
 
   // append css before mount module
-  const cssList = filterAppendCSS(moduleCSS);
-  if (cssList.length) {
-    await Promise.all(cssList.map((css: string) => appendCSS(name, css)));
+  if (moduleCSS) {
+    const cssList = filterAppendCSS(moduleCSS);
+    if (cssList.length) {
+      await Promise.all(cssList.map((css: string) => appendCSS(name, css)));
+    }
   }
 
   return {
