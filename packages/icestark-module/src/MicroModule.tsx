@@ -14,7 +14,7 @@ export function renderComponent(Component: any, props = {}): React.ReactElement 
 }
 
 /**
- * default render compoent, mount all modules
+ * default render component, mount all modules
  */
 export default class MicroModule extends React.Component<any, { loading: boolean }> {
   private moduleInfo = null;

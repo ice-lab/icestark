@@ -4,7 +4,7 @@ import '@testing-library/jest-dom/extend-expect';
 import { render } from '@testing-library/react';
 import * as fs from 'fs';
 import * as path from 'path';
-import Sandbox, { SandboxContructor } from '@ice/sandbox';
+import Sandbox, { SandboxConstructor } from '@ice/sandbox';
 
 import {
   getModules,
@@ -134,7 +134,7 @@ describe('render modules', () => {
   test('mountModule with custom sandbox', (next) => {
     const moduleInfo = { name: 'customSandbox', url: '//localhost', mount: defaultMount, unmount: defaultUnmount };
     const div = document.createElement('div');
-    mountModule(moduleInfo, div, {}, (Sandbox as SandboxContructor));
+    mountModule(moduleInfo, div, {}, (Sandbox as SandboxConstructor));
     setTimeout(() => {
       expect(div.innerHTML).toBe('<div><h2>404</h2></div>');
       unmoutModule(moduleInfo, div);
