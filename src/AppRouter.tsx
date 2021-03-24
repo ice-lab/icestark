@@ -5,9 +5,10 @@ import appHistory from './appHistory';
 import renderComponent from './util/renderComponent';
 import { ICESTSRK_ERROR, ICESTSRK_NOT_FOUND } from './util/constant';
 import { setCache } from './util/cache';
-import start, { unload, Fetch, defaultFetch } from './start';
+import start, { unload, Fetch, defaultFetch, Prefetch } from './start';
 import { matchActivePath, PathData } from './util/matchPath';
 import { AppConfig } from './apps';
+import { prefetchApps } from './util/prefetch';
 
 type RouteType = 'pushState' | 'replaceState';
 
@@ -29,6 +30,7 @@ export interface AppRouterProps {
   ) => boolean;
   basename?: string;
   fetch?: Fetch;
+  prefetch?: Prefetch;
 }
 
 interface AppRouterState {
@@ -67,9 +69,10 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     onAppLeave: () => {},
     basename: '',
     fetch: defaultFetch,
+    prefetch: false,
   };
 
-  constructor(props: AppRouterProps) {
+  constructor(props) {
     super(props);
     this.state = {
       url: location.href,
@@ -77,7 +80,10 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     };
 
     // make sure start invoked before createMicroApp
-    const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch } = props;
+    const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch, prefetch, children } = props;
+
+    this.prefetch(prefetch, children, fetch);
+
     start({
       shouldAssetsRemove,
       onAppLeave,
@@ -99,6 +105,23 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     this.unmounted = true;
     window.removeEventListener('icestark:not-found', this.triggerNotFound);
     unload();
+  }
+
+  prefetch = (prefetch: Prefetch, children: React.ReactNode, fetch = window.fetch) => {
+    if (!prefetch) {
+      return;
+    }
+    const apps = React.Children.map(children, ch =>  React.isValidElement(ch) ? ch.props : {});
+    if (typeof prefetch === 'boolean' && prefetch) {
+      prefetchApps(apps, fetch);
+    }
+
+    if (Array.isArray(prefetch)) {
+      prefetchApps(
+        apps.filter(app => prefetch.includes(app.name)),
+        fetch
+      );
+    }
   }
 
   /**

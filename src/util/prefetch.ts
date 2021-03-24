@@ -1,8 +1,8 @@
 import { Prefetch, Fetch } from '../start';
-import { MicroApp } from '../apps';
+import { MicroApp, AppConfig } from '../apps';
 import { NOT_LOADED } from '../util/constant';
 import { fetchScripts, fetchStyles, getUrlAssets } from './handleAssets';
-import { __DEV__ } from './assist';
+// import { __DEV__ } from './assist';
 
 /**
  * https://github.com/microsoft/TypeScript/issues/21309#issuecomment-376338415
@@ -81,6 +81,13 @@ export function doPrefetch(
   }
   if (prefetchStrategy) {
     getPrefetchingApps(apps)((app) => app.status === NOT_LOADED)
+      .forEach(prefetch(fetch));
+  }
+}
+
+export function prefetchApps (apps: AppConfig[], fetch: Fetch) {
+  if (apps && Array.isArray(apps)) {
+    apps
       .forEach(prefetch(fetch));
   }
 }
