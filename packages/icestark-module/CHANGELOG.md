@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.0
+
+- [feat] support local component when using `<MicroModule />`. ([#205](https://github.com/ice-lab/icestark/issues/205))
+- [feat] moudles can be registerd more then once, but only the last will be kept.
 ## 1.3.1
 
 - [fix] eliminate race condition when using `parseRuntime`. ([#257](https://github.com/ice-lab/icestark/issues/257))
