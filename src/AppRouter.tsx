@@ -8,7 +8,7 @@ import { setCache } from './util/cache';
 import start, { unload, Fetch, defaultFetch, Prefetch } from './start';
 import { matchActivePath, PathData, addLeadingSlash } from './util/matchPath';
 import { AppConfig } from './apps';
-import { prefetchApps } from './util/prefetch';
+import { doPrefetch } from './util/prefetch';
 
 type RouteType = 'pushState' | 'replaceState';
 
@@ -115,21 +115,26 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     this.setState({ started: false });
   }
 
+  /**
+   * prefetch for resources.
+   * no worry to excute `prefetch` many times, for all prefetched resources have been cached, and never request twice.
+   */
   prefetch = (prefetch: Prefetch, children: React.ReactNode, fetch = window.fetch) => {
     if (!prefetch) {
       return;
     }
-    const apps = React.Children.map(children, ch =>  React.isValidElement(ch) ? ch.props : {});
-    if (typeof prefetch === 'boolean' && prefetch) {
-      prefetchApps(apps, fetch);
-    }
+    const apps = React.Children
+      /**
+       * we can do prefetch for url, entry and entryContent.
+       */
+      .map(children, ch =>  React.isValidElement(ch) && (ch.props.url || ch.props.entry || ch.props.content ) ? ch.props : false)
+      .filter(Boolean)
+      /**
+       * name of AppRoute may be not provided, use `path` instead.
+      */
+      .map(ch => ({ ...ch, name: ch.name || converArray2String(ch.path) }));
 
-    if (Array.isArray(prefetch)) {
-      prefetchApps(
-        apps.filter(app => prefetch.includes(app.name)),
-        fetch
-      );
-    }
+    doPrefetch(apps, prefetch, fetch);
   }
 
   /**

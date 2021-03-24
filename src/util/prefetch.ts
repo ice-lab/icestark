@@ -1,7 +1,7 @@
 import { Prefetch, Fetch } from '../start';
 import { MicroApp, AppConfig } from '../apps';
 import { NOT_LOADED } from '../util/constant';
-import { fetchScripts, fetchStyles, getUrlAssets } from './handleAssets';
+import { fetchScripts, fetchStyles, getUrlAssets, getEntryAssets } from './handleAssets';
 // import { __DEV__ } from './assist';
 
 /**
@@ -52,15 +52,21 @@ window.cancelIdleCallback =
 
 function prefetch(fetch = window.fetch) {
   return (app: MicroApp) => {
-    window.requestIdleCallback(() => {
-      const { jsList, cssList } = getUrlAssets(app.url);
+    window.requestIdleCallback(async () => {
+      const { url, entry, entryContent, name } = app;
+      const { jsList, cssList } = url ? getUrlAssets(url) : await getEntryAssets({
+        entry,
+        entryContent,
+        assetsCacheKey: name,
+        fetch,
+      });
       window.requestIdleCallback(() => fetchScripts(jsList, fetch));
       window.requestIdleCallback(() => fetchStyles(cssList, fetch));
     });
   };
 }
 
-const names2PrefetchingApps = (names: string[]) => (app: MicroApp) => names.includes(app.name) && app.status === NOT_LOADED;
+const names2PrefetchingApps = (names: string[]) => (app: MicroApp) => names.includes(app.name) && (app.status === NOT_LOADED || !app.status);
 
 const getPrefetchingApps = (apps: MicroApp[]) => (strategy: (app: MicroApp) => boolean) => apps.filter(strategy);
 
@@ -80,7 +86,7 @@ export function doPrefetch(
     return;
   }
   if (prefetchStrategy) {
-    getPrefetchingApps(apps)((app) => app.status === NOT_LOADED)
+    getPrefetchingApps(apps)((app) => app.status === NOT_LOADED || !app.status)
       .forEach(prefetch(fetch));
   }
 }

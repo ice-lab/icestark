@@ -315,10 +315,10 @@ export async function getEntryAssets({
   entry,
   entryContent,
   assetsCacheKey,
-  href,
+  href = location.href,
   fetch = defaultFetch,
 }: {
-  root: HTMLElement | ShadowRoot;
+  root?: HTMLElement | ShadowRoot;
   entry?: string;
   entryContent?: string;
   assetsCacheKey: string;
@@ -345,7 +345,10 @@ export async function getEntryAssets({
   }
 
   const { html } = cachedContent;
-  root.appendChild(html);
+
+  if (root) {
+    root.appendChild(html);
+  }
 
   return cachedContent.assets;
 }
