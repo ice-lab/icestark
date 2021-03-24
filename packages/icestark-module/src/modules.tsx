@@ -213,7 +213,7 @@ export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) 
 
   let moduleSandbox = null;
 
-  if (!importModules[name] && url) {
+  if (!importModules[name]) {
     let deps = null;
     if (runtime) {
       deps = await parseRuntime(runtime);
@@ -241,11 +241,9 @@ export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) 
   const component = moduleInfo.default || moduleInfo;
 
   // append css before mount module
-  if (moduleCSS) {
-    const cssList = filterAppendCSS(moduleCSS);
-    if (cssList.length) {
-      await Promise.all(cssList.map((css: string) => appendCSS(name, css)));
-    }
+  const cssList = filterAppendCSS(moduleCSS);
+  if (cssList.length) {
+    await Promise.all(cssList.map((css: string) => appendCSS(name, css)));
   }
 
   return {

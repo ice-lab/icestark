@@ -87,7 +87,6 @@ describe('render modules', () => {
 
   test('render MicroModule with name', (next) => {
     const { container } = render(<MicroModule moduleName="selfComponent" />);
-    console.log('aaaaaaaa', container);
     setTimeout(() => {
       expect(container.innerHTML).toBe('<div><div><h2>404</h2></div></div>');
       next();
