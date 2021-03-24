@@ -129,7 +129,7 @@ const modules = getModules();
 ### Clear Modules
 
 ```js
-import { registerModules,  removeModule, clearModules } from '@ice/stark-module';
+import { registerModules, clearModules } from '@ice/stark-module';
 
 registerModules([
   {
@@ -141,9 +141,6 @@ registerModules([
     name: 'module-b',
   },
 ]);
-
-// clear module information and content cache by name.
-removeModule('module-a');
 
 // clear all modules information and content cache.
 clearModules();
@@ -191,18 +188,14 @@ const ModuleComponent = () => {
 
 ### Register Local Modules
 
-In some scenarios, it is necessary to support the built-in components to be customized by the second and third parties. In this case, the local module feature can be used
+In some scenarios, it is necessary to support the built-in components. In this case, one can use `render` property to render a local module.
 
 ```jsx
-import { mountModule, unmoutModule } from '@ice/stark-module';
 import LocalComponent from './localComponent';
 
 registerModules([{
   name: 'moduleName',
   render: LocalComponent,
-  mount: (ModuleComponent, mountNode, props) => {
-    ReactDOM.render(<ModuleComponent />, mountNode, props);
-  },
 }]);
 
 const App = () => {

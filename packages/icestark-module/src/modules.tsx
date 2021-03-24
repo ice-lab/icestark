@@ -28,16 +28,23 @@ const cssStorage = {};
 const IS_CSS_REGEX = /\.css(\?((?!\.js$).)+)?$/;
 export const moduleLoader = new ModuleLoader();
 
-export const removeModuleCache = (name?: string) => {
+export const registerRuntimes = (runtime: string | RuntimeInstance[]) => {
+  return parseRuntime(runtime);
+};
+
+/**
+ * remove module
+ * @param name
+ */
+export const removeModule = (name?: string) => {
   globalModules = globalModules.filter(m => m.name !== name);
   delete importModules[name];
   moduleLoader.removeTask(name);
 };
 
-export const registerRuntimes = (runtime: string | RuntimeInstance[]) => {
-  return parseRuntime(runtime);
-};
-
+/**
+ * clear modules
+ */
 export const clearModules = () => {
   // reset module info
   globalModules = [];
@@ -45,6 +52,11 @@ export const clearModules = () => {
   moduleLoader.clearTask();
 };
 
+/**
+ * registerModule
+ * @param module
+ * @returns
+ */
 export const registerModule = (module: StarkModule) => {
   if(!module.url && !module.render && !module.component) {
     console.error('[icestark module] url and render cannot both be empty. name: %s', module.name);
@@ -56,7 +68,7 @@ export const registerModule = (module: StarkModule) => {
   * If a module registers many times, the former registration will be removed.
   */
   if (hasRegistered) {
-    removeModuleCache(module.name);
+    removeModule(module.name);
   }
   globalModules.push(module);
 };
