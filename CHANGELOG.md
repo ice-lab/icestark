@@ -2,6 +2,10 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
+## 2.3.0
+
+- [feat] support `prefetch` sub-application, which let your micro application fly. ([#188](https://github.com/ice-lab/icestark/issues/188))
+
 ## 2.2.2
 
 - [fix] `basename` of `AppRouter` makes effect. ([#241](https://github.com/ice-lab/icestark/issues/241))
