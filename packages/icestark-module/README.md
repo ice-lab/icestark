@@ -195,7 +195,7 @@ import LocalComponent from './localComponent';
 
 registerModules([{
   name: 'moduleName',
-  render: LocalComponent,
+  render: () => LocalComponent,
 }]);
 
 const App = () => {

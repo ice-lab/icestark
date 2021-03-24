@@ -9,10 +9,6 @@ export interface StarkModule {
    * you are not expected to use it without the wrapper `<MicroModule />`
    */
   render?: (props: StarkModule) => any;
-  /**
-   * you are not expected to use it without the wrapper `<MicroModule />`
-   */
-  component?: any;
   runtime?: Runtime;
   mount?: (Component: any, targetNode: HTMLElement, props?: any) => void;
   unmount?: (targetNode: HTMLElement) => void;
@@ -58,7 +54,7 @@ export const clearModules = () => {
  * @returns
  */
 export const registerModule = (module: StarkModule) => {
-  if(!module.url && !module.render && !module.component) {
+  if(!module.url && !module.render) {
     console.error('[icestark module] url and render cannot both be empty. name: %s', module.name);
     return;
   }

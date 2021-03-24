@@ -63,8 +63,12 @@ export default class MicroModule extends React.Component<any, State> {
   }
 
   validateRender() {
-    const { render, component } = this.moduleInfo || {};
-    return render && typeof render === 'function' || component;
+    const { render } = this.moduleInfo || {};
+
+    if (render && typeof render !== 'function') {
+      console.error('[icestark]: render should be funtion');
+    }
+    return render && typeof render === 'function';
   }
 
   async mountModule() {
@@ -104,14 +108,10 @@ export default class MicroModule extends React.Component<any, State> {
   render() {
     const { loading, showComponent } = this.state;
     if (this.moduleInfo) {
-      const { component, render } = this.moduleInfo;
+      const { render } = this.moduleInfo;
 
-      if (component) {
-        return showComponent ? renderComponent(component) : null;
-      }
-
-      if (render && typeof render === 'function') {
-        return showComponent ? render(): null;
+      if (this.validateRender()) {
+        return showComponent ? render() : null;
       }
     }
 
