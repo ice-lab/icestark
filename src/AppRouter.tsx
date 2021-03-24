@@ -6,7 +6,7 @@ import renderComponent from './util/renderComponent';
 import { ICESTSRK_ERROR, ICESTSRK_NOT_FOUND } from './util/constant';
 import { setCache } from './util/cache';
 import start, { unload, Fetch, defaultFetch, Prefetch } from './start';
-import { matchActivePath, PathData } from './util/matchPath';
+import { matchActivePath, PathData, addLeadingSlash } from './util/matchPath';
 import { AppConfig } from './apps';
 import { prefetchApps } from './util/prefetch';
 
@@ -36,6 +36,7 @@ export interface AppRouterProps {
 interface AppRouterState {
   url: string;
   appLoading: string;
+  started: boolean;
 }
 
 export function converArray2String(list: string | (string | PathData)[]) {
@@ -77,13 +78,23 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     this.state = {
       url: location.href,
       appLoading: '',
+      started: false,
     };
 
-    // make sure start invoked before createMicroApp
-    const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch, prefetch, children } = props;
-
+    const { fetch, prefetch, children } = props;
     this.prefetch(prefetch, children, fetch);
+  }
 
+  componentDidMount() {
+    // render NotFoundComponent eventListener
+    window.addEventListener('icestark:not-found', this.triggerNotFound);
+
+    /* lifecycle `componentWillUnmount` of pre-rendering executes later then
+     * `constructor` and `componentWilllMount` of next-rendering, whereas `start` should be invoked before `unload`.
+     * status `started` used to make sure parent's `componentDidMount` to be invoked eariler then child's,
+     * for mounting child component needs global configuration be settled.
+     */
+    const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch } = this.props;
     start({
       shouldAssetsRemove,
       onAppLeave,
@@ -94,17 +105,14 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       reroute: this.handleRouteChange,
       fetch,
     });
-  }
-
-  componentDidMount() {
-    // render NotFoundComponent eventListener
-    window.addEventListener('icestark:not-found', this.triggerNotFound);
+    this.setState({ started: true });
   }
 
   componentWillUnmount() {
     this.unmounted = true;
     window.removeEventListener('icestark:not-found', this.triggerNotFound);
     unload();
+    this.setState({ started: false });
   }
 
   prefetch = (prefetch: Prefetch, children: React.ReactNode, fetch = window.fetch) => {
@@ -173,7 +181,11 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       children,
       basename: appBasename,
     } = this.props;
-    const { url, appLoading } = this.state;
+    const { url, appLoading, started } = this.state;
+
+    if (!started) {
+      return renderComponent(LoadingComponent, {});
+    }
 
     // directly render ErrorComponent
     if (url === ICESTSRK_NOT_FOUND) {
@@ -181,15 +193,24 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     } else if (url === ICESTSRK_ERROR) {
       return renderComponent(ErrorComponent, { err: this.err });
     }
-    
+
     let match = null;
     let element: React.ReactElement;
+    let routerPath = null;
     React.Children.forEach(children, child => {
       if (match == null && React.isValidElement(child)) {
+        const { path } = child.props;
+        routerPath = appBasename
+          ? [].concat(path).map((pathStr: string | PathData) => `${addLeadingSlash(appBasename)}${(pathStr as PathData).value || pathStr}`)
+          : path;
         element = child;
-        match = matchActivePath(url, child.props);
+        match = matchActivePath(url, {
+          ...child.props,
+          path: routerPath,
+        });
       }
     });
+
 
     if (match) {
       const { path, basename, name } = element.props as AppRouteProps;
@@ -210,6 +231,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
             cssLoading: appLoading === this.appKey,
             onAppEnter: this.props.onAppEnter,
             onAppLeave: this.props.onAppLeave,
+            path: routerPath,
           })}
         </div>
       );

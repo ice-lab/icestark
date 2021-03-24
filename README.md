@@ -2,47 +2,74 @@ English | [简体中文](https://ice.work/docs/icestark/about)
 
 # icestark
 
-> Micro Frontends solution for large application. [Website docs](https://ice.work/docs/icestark/about).
+> Micro Frontends solution for large application. [Website Chinese docs](https://ice.work/docs/icestark/about).
 
 [![NPM version](https://img.shields.io/npm/v/@ice/stark.svg?style=flat)](https://npmjs.org/package/@ice/stark) [![Package Quality](https://npm.packagequality.com/shield/@ice%2Fstark.svg)](https://packagequality.com/#?package=@ice%2Fstark) [![build status](https://img.shields.io/travis/ice-lab/icestark.svg?style=flat-square)](https://travis-ci.org/ice-lab/icestark) [![Test coverage](https://img.shields.io/codecov/c/github/ice-lab/icestark.svg?style=flat-square)](https://codecov.io/gh/ice-lab/icestark) [![NPM downloads](http://img.shields.io/npm/dm/@ice/stark.svg?style=flat)](https://npmjs.org/package/@ice/stark) [![David deps](https://img.shields.io/david/ice-lab/icestark.svg?style=flat-square)](https://david-dm.org/ice-lab/icestark)
 
-## Installation
+## Features 🎉
 
-```bash
-npm install @ice/stark --save
-```
+- No framework constraint for main&sub applications, support React/Vue/Angular/...
+- Sub-application support multiple types of entry: js&css, html entry, html content
+- Compatible with [single-spa](https://single-spa.js.org/) sub-application and lifecycles
+- JavaScript sandbox by `Proxy` API
 
-## Documentation
+## Showcases 🎃
 
-[https://ice.work/docs/icestark/about](https://ice.work/docs/icestark/about)
+### Vue main-application
 
-## Introduction
+https://icestark-vue.surge.sh/
 
-`icestark` is a micro frontends solution for large application, contains:
+Main-application based on Vue, And sub-applications based on React, Vue respectively.
 
-- Modular management of multiple independent applications based on route
-- Independent application independent warehouse, independent development and deployment
-- Unified management page public content (Common Header, Common Sidebar, etc.)
-- Support for low-cost migration
-- SPA user experience
+### React main-application
 
-### Application architecture
+https://icestark-react.surge.sh/
 
-![Application architecture](https://img.alicdn.com/tfs/TB167fiexD1gK0jSZFsXXbldVXa-1421-1416.png)
+Main-application based on React, And sub-applications based on React, Vue, Angular respectively.
 
-- Framework application and sub-application split according to UI structure
-- Framework application: responsible for sub-applications registration, loading, common content display (Common Header, Common Sidebar, Common Footer, etc.)
+## Architecture&Concepts 🚁
+
+<a href="https://img.alicdn.com/tfs/TB167fiexD1gK0jSZFsXXbldVXa-1421-1416.png" target="_blank"><img src="https://img.alicdn.com/tfs/TB167fiexD1gK0jSZFsXXbldVXa-1421-1416.png" height="600" /></a>
+
+Concepts:
+
+- Main-application: also named framework application, responsible for sub-applications registration&load&render, layout display (Header, Sidebar, Footer, etc.)
 - Sub-application: responsible for content display related to its own business
 
-### Compatibility
+## Getting Started 🥢🍚
 
-`icestark` requires the framework application to use react version 15+, which has no restrictions on the technology stack of the sub-application, supports different technology stacks such as react, vue, angular, etc., and supports multi-version coexistence of the same technology stack.
+### Use Scaffold
 
-## Getting Started
+Main-application:
 
-### Framework Application
+```bash
+# Based on React
+$ npm init ice icestark-layout @icedesign/stark-layout-scaffold
+# Based on Vue
+$ npm init ice icestark-layout @vue-materials/icestark-layout-app
+
+$ cd icestark-layout
+$ npm install
+$ npm start
+```
+
+Sub-application:
+
+```bash
+# Based on React
+$ npm init ice icestark-child @icedesign/stark-child-scaffold
+# Based on Vue
+$ npm init ice icestark-child @vue-materials/icestark-child-app
+
+$ cd icestark-child
+$ npm install
+$ npm run start
+```
+
+### Main-application
 
 #### setup in react app
+
 ```javascript
 // src/App.jsx
 import React from 'react';
@@ -65,15 +92,12 @@ class App extends React.Component {
         >
           <AppRoute
             path={['/', '/message', '/about']}
-            basename="/"
             exact
             title="通用页面"
             url={['//unpkg.com/icestark-child-common/build/js/index.js']}
           />
           <AppRoute
             path="/seller"
-            basename="/seller"
-            title="商家平台"
             url={[
               '//unpkg.com/icestark-child-seller/build/js/index.js',
               '//unpkg.com/icestark-child-seller/build/css/index.css',
@@ -128,9 +152,9 @@ after sub-application is registered, icestark will load app according to the `ac
 
 ### Sub-application
 
-sub-application can expose lifecycles in both register lifecycles and export lifecycles ways.
+sub-application can expose lifecycles in both register lifecycles and export lifecycles(umd) ways.
 
-#### regsiter lifecycles
+#### 1. regsiter lifecycles
 
 ```javascript
 // src/index.js
@@ -152,7 +176,6 @@ if (isInIcestark()) {
 } else {
   ReactDOM.render(router(), document.getElementById('ice-container'));
 }
-
 ```
 
 - Get the render `DOM Node` via `getMountNode`
@@ -196,7 +219,7 @@ export default class App extends React.Component {
 - Get the `basename` configuration in the framework application via `getBasename`
 - `renderNotFound` triggers the framework application rendering global NotFound
 
-#### exports lifecycles
+#### 2. exports lifecycles(umd)
 
 exports lifecycles in sub-application: 
 
@@ -211,7 +234,6 @@ export function mount(props) {
 export function unmount() {
   ReactDOM.unmountComponentAtNode(document.getElementById('icestarkNode'));
 }
-
 ```
 
 sub-application should be bundled as an UMD module, add the following configuration of webpack: 
@@ -225,7 +247,11 @@ module.exports = {
 };
 ```
 
-## Ecosystem
+## Documentation 📝
+
+[https://ice.work/docs/icestark/about](https://ice.work/docs/icestark/about)
+
+## Ecosystem 🧼
 
 |    Project         |    Version                                 |     Docs    |   Description       |
 |----------------|-----------------------------------------|--------------|-----------|
