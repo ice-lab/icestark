@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { unmoutModule, loadModule, getModules, registerModules, ISandbox, StarkModule } from './modules';
+import { deepCompare } from './assist';
 
 /**
  * Render Component, compatible with Component and <Component>
@@ -13,9 +14,8 @@ export function renderComponent(Component: any, props = {}): React.ReactElement 
   );
 }
 
-export interface State {
+interface State {
   loading: boolean;
-  showComponent: boolean;
 }
 
 /**
@@ -37,7 +37,6 @@ export default class MicroModule extends React.Component<any, State> {
     super(props);
     this.state = {
       loading: false,
-      showComponent: false,
     };
   }
 
@@ -46,7 +45,7 @@ export default class MicroModule extends React.Component<any, State> {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps !== this.props) {
+    if (!deepCompare(prevProps.moduleInfo || {}, this.props.moduleInfo || {})) {
       this.mountModule();
     }
   }
@@ -62,7 +61,7 @@ export default class MicroModule extends React.Component<any, State> {
     }
   }
 
-  validateRender() {
+  validateRender () {
     const { render } = this.moduleInfo || {};
 
     if (render && typeof render !== 'function') {
@@ -70,6 +69,7 @@ export default class MicroModule extends React.Component<any, State> {
     }
     return render && typeof render === 'function';
   }
+
 
   async mountModule() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -79,14 +79,12 @@ export default class MicroModule extends React.Component<any, State> {
       console.error(`Can't find ${this.props.moduleName} module in modules config`);
       return;
     }
-    this.setState({ loading: true });
-
     /**
-     * if render or component was provided, render immediately
+     * if `render` was provided, render immediately
     */
-    if (this.validateRender()) {
-      this.setState({ showComponent: true });
-    } else {
+    if (!this.validateRender()) {
+      this.setState({ loading: true });
+
       try {
         const { mount, component } =  await loadModule(this.moduleInfo, sandbox);
         const lifecycleMount = mount;
@@ -106,18 +104,16 @@ export default class MicroModule extends React.Component<any, State> {
   }
 
   render() {
-    const { loading, showComponent } = this.state;
-    if (this.moduleInfo) {
-      const { render } = this.moduleInfo;
-
-      if (this.validateRender()) {
-        return showComponent ? render() : null;
-      }
-    }
+    const { loading } = this.state;
+    const { render } = this.moduleInfo || {};
 
     const { wrapperClassName, wrapperStyle, loadingComponent } = this.props;
     return loading ? loadingComponent
-      : <div className={wrapperClassName} style={wrapperStyle} ref={ref => this.mountNode = ref} />;
+      : (<div className={wrapperClassName} style={wrapperStyle} ref={ref => this.mountNode = ref} >
+        {
+          this.moduleInfo && this.validateRender() && render()
+        }
+      </div>);
   }
 };
 
