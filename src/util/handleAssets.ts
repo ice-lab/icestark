@@ -183,7 +183,6 @@ export function fetchScripts(jsList: Asset[], fetch = defaultFetch ) {
 
 // for prefetch
 export function fetchStyles(cssList: Asset[], fetch = defaultFetch) {
-  console.log('bbb');
   return Promise.all(
     cssList.map((asset) => {
       const { type, content} = asset;
