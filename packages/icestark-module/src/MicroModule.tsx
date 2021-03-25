@@ -61,6 +61,14 @@ export default class MicroModule extends React.Component<any, State> {
     }
   }
 
+  setRenderModuleInfo () {
+    const { moduleInfo } = this.props;
+    this.moduleInfo = moduleInfo || getModules().filter(m => m.name === this.props.moduleName)[0];
+    if (!this.moduleInfo) {
+      console.error(`[icestark] Can't find ${this.props.moduleName} module in modules config`);
+    }
+  }
+
   validateRender () {
     const { render } = this.moduleInfo || {};
 
@@ -74,7 +82,9 @@ export default class MicroModule extends React.Component<any, State> {
   async mountModule() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { sandbox, moduleInfo, wrapperClassName, wrapperStyle, loadingComponent, handleError, ...rest } = this.props;
-    this.moduleInfo = moduleInfo || getModules().filter(m => m.name === this.props.moduleName)[0];
+
+    this.setRenderModuleInfo();
+
     if (!this.moduleInfo) {
       console.error(`Can't find ${this.props.moduleName} module in modules config`);
       return;
@@ -104,6 +114,11 @@ export default class MicroModule extends React.Component<any, State> {
   }
 
   render() {
+    // eslint-disable-next-line no-unused-expressions
+    if (!this.moduleInfo) {
+      this.setRenderModuleInfo();
+    }
+
     const { loading } = this.state;
     const { render } = this.moduleInfo || {};
 
