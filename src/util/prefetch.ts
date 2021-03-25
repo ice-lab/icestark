@@ -2,7 +2,6 @@ import { Prefetch, Fetch } from '../start';
 import { MicroApp, AppConfig } from '../apps';
 import { NOT_LOADED } from '../util/constant';
 import { fetchScripts, fetchStyles, getUrlAssets, getEntryAssets } from './handleAssets';
-// import { __DEV__ } from './assist';
 
 /**
  * https://github.com/microsoft/TypeScript/issues/21309#issuecomment-376338415
@@ -68,6 +67,11 @@ function prefetch(fetch = window.fetch) {
 
 const names2PrefetchingApps = (names: string[]) => (app: MicroApp) => names.includes(app.name) && (app.status === NOT_LOADED || !app.status);
 
+/**
+ * get prefetching apps by strategy
+ * @param apps
+ * @returns
+ */
 const getPrefetchingApps = (apps: MicroApp[]) => (strategy: (app: MicroApp) => boolean) => apps.filter(strategy);
 
 export function doPrefetch(
@@ -75,25 +79,26 @@ export function doPrefetch(
   prefetchStrategy: Prefetch,
   fetch: Fetch,
 ) {
-  if (Array.isArray(prefetchStrategy)) {
-    getPrefetchingApps(apps)(names2PrefetchingApps(prefetchStrategy))
+  const traverse = (strategy: (app: MicroApp) => boolean) => {
+    getPrefetchingApps(apps)(strategy)
       .forEach(prefetch(fetch));
+  };
+
+  if (Array.isArray(prefetchStrategy)) {
+    traverse(names2PrefetchingApps(prefetchStrategy));
     return;
   }
   if (typeof prefetchStrategy === 'function') {
-    getPrefetchingApps(apps)(prefetchStrategy)
-      .forEach(prefetch(fetch));
+    traverse(prefetchStrategy);
     return;
   }
   if (prefetchStrategy) {
-    getPrefetchingApps(apps)((app) => app.status === NOT_LOADED || !app.status)
-      .forEach(prefetch(fetch));
+    traverse((app) => app.status === NOT_LOADED || !app.status);
   }
 }
 
 export function prefetchApps (apps: AppConfig[], fetch: Fetch) {
   if (apps && Array.isArray(apps)) {
-    apps
-      .forEach(prefetch(fetch));
+    apps.forEach(prefetch(fetch));
   }
 }

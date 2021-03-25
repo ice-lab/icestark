@@ -9,6 +9,9 @@ const COMMENT_REGEX = /<!--.*?-->/g;
 const EMPTY_STRING = '';
 const STYLESHEET_LINK_TYPE = 'stylesheet';
 
+const cachedScriptsContent: object = {};
+const cachedStyleContent: object = {};
+
 export enum AssetTypeEnum {
   INLINE = 'inline',
   EXTERNAL = 'external',
@@ -60,6 +63,17 @@ export function appendCSS(
     if (type && type === AssetTypeEnum.INLINE) {
       const styleElement: HTMLStyleElement = document.createElement('style');
       styleElement.innerHTML = content;
+      root.appendChild(styleElement);
+      resolve();
+      return;
+    }
+
+    /**
+     * if external resource is cached by prefetch, use cached content instead.
+     */
+    if (type && type === AssetTypeEnum.EXTERNAL && cachedStyleContent[content]) {
+      const styleElement: HTMLStyleElement = document.createElement('style');
+      styleElement.innerHTML = cachedStyleContent[content];
       root.appendChild(styleElement);
       resolve();
       return;
@@ -145,9 +159,6 @@ export function getUrlAssets(url: string | string[]) {
 
   return { jsList, cssList };
 }
-
-const cachedScriptsContent: object = {};
-const cachedStyleContent: object = {};
 
 export function fetchScripts(jsList: Asset[], fetch = defaultFetch ) {
   return Promise.all(jsList.map((asset) => {

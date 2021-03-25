@@ -82,7 +82,10 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     };
 
     const { fetch, prefetch, children } = props;
-    this.prefetch(prefetch, children, fetch);
+
+    if (prefetch) {
+      this.prefetchChildren(prefetch, children, fetch);
+    }
   }
 
   componentDidMount() {
@@ -119,20 +122,28 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    * prefetch for resources.
    * no worry to excute `prefetch` many times, for all prefetched resources have been cached, and never request twice.
    */
-  prefetch = (prefetch: Prefetch, children: React.ReactNode, fetch = window.fetch) => {
-    if (!prefetch) {
-      return;
-    }
-    const apps = React.Children
+  prefetchChildren = (prefetch: Prefetch, children: React.ReactNode, fetch = window.fetch) => {
+    const apps: AppConfig[] = React.Children
       /**
        * we can do prefetch for url, entry and entryContent.
        */
-      .map(children, ch =>  React.isValidElement(ch) && (ch.props.url || ch.props.entry || ch.props.content ) ? ch.props : false)
-      .filter(Boolean)
-      /**
-       * name of AppRoute may be not provided, use `path` instead.
-      */
-      .map(ch => ({ ...ch, name: ch.name || converArray2String(ch.path) }));
+      .map(children, childElement =>  {
+        if (React.isValidElement(childElement)) {
+          const { url, entry, entryContent, name, path } = childElement.props as AppRouteProps;
+          if (url || entry || entryContent) {
+            return {
+              ...childElement.props,
+              /**
+               * name of AppRoute may be not provided, use `path` instead.
+              */
+              name: name || converArray2String(path),
+            };
+          }
+
+        }
+        return false;
+      })
+      .filter(Boolean);
 
     doPrefetch(apps, prefetch, fetch);
   }
