@@ -101,7 +101,7 @@ export function appendCSS(
         false,
       );
       element.addEventListener('load', () => resolve(), false);
-  
+
       root.appendChild(element);
     }
 
