@@ -1,5 +1,6 @@
 import {
   StarkModule,
+  registerModule,
   registerModules,
   getModules,
   mountModule,
@@ -11,6 +12,7 @@ import MicroModule from './MicroModule';
 export {
   StarkModule,
   MicroModule,
+  registerModule,
   registerModules,
   clearModules,
   getModules,

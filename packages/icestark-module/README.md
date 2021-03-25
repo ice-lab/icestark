@@ -51,16 +51,23 @@ const App = () => {
 ### Register Modules
 
 ```jsx
-import { MicroModule, registerModules, getModules } from '@ice/stark-module';
+import { MicroModule, registerModule, registerModules, getModules } from '@ice/stark-module';
 
+// register single module
+registerModule({
+  url: 'https://localhost/module-a.js',
+  name: 'module-a',
+});
+
+// register multiple modules at once
 registerModules([
-  {
-    url: 'https://localhost/module-a.js',
-    name: 'module-a',
-  },
   {
     url: 'https://localhost/module-b.js',
     name: 'module-b',
+  },
+  {
+    url: 'https://localhost/module-c.js',
+    name: 'module-c',
   },
 ]);
 
@@ -73,23 +80,69 @@ const App = () => {
     <div>
       <MicroModule moduleName="module-a" />
       <MicroModule moduleName="module-b" />
+      <MicroModule moduleName="module-c" />
     </div>
   );
 }
 ```
 
-### Clear Modules
+### Registration Merging
 
-```js
-import { registerModules, getModules } from '@ice/stark-module';
+If more than one modules are registered with the same name, only the last one will be kept.
+
+```jsx
+import { registerModule, registerModules, getModules } from '@ice/stark-module';
 
 registerModules([
   {
     url: 'https://localhost/module-a.js',
     name: 'module-a',
   },
+  {
+    url: 'https://localhost/module-b.js',
+    name: 'module-a',
+  },
 ]);
-// clear module information registered by API registerModules including content cache
+
+const modules = getModules();
+/** the modules will be:
+[{
+  url: 'https://localhost/module-b.js',
+  name: 'module-a',
+}]
+*/
+
+registerModule({
+  url: 'https://localhost/module-c.js',
+  name: 'module-a',
+});
+
+const modules = getModules();
+/** the modules will be:
+[{
+  url: 'https://localhost/module-c.js',
+  name: 'module-a',
+}]
+*/
+```
+
+### Clear Modules
+
+```js
+import { registerModules, clearModules } from '@ice/stark-module';
+
+registerModules([
+  {
+    url: 'https://localhost/module-a.js',
+    name: 'module-a',
+  },
+  {
+    url: 'https://localhost/module-b.js',
+    name: 'module-b',
+  },
+]);
+
+// clear all modules information and content cache.
 clearModules();
 ```
 
@@ -131,6 +184,27 @@ const ModuleComponent = () => {
   }, []);
   return (<div ref={renderNode}></div>);
 };
+```
+
+### Register Local Modules
+
+In some scenarios, it is necessary to support the built-in components. In this case, one can use `render` property to render a local module.
+
+```jsx
+import LocalComponent from './localComponent';
+
+registerModules([{
+  name: 'moduleName',
+  render: () => LocalComponent,
+}]);
+
+const App = () => {
+  return (
+    <div>
+      <MicroModule moduleName="moduleName" />
+    </div>
+  );
+}
 ```
 
 ## Contributors

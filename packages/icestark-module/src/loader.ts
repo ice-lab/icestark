@@ -28,6 +28,10 @@ export default class ModuleLoader {
     return task;
   }
 
+  removeTask(name: string) {
+    delete this.importTask[name];
+  }
+
   clearTask() {
     this.importTask = {};
   }

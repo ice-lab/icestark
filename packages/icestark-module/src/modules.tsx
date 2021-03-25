@@ -4,7 +4,11 @@ import { Runtime, parseRuntime, RuntimeInstance } from './runtimeHelper';
 
 export interface StarkModule {
   name: string;
-  url: string|string[];
+  url?: string|string[];
+  /**
+   * you are not expected to use it without the wrapper `<MicroModule />`
+   */
+  render?: (props: StarkModule) => any;
   runtime?: Runtime;
   mount?: (Component: any, targetNode: HTMLElement, props?: any) => void;
   unmount?: (targetNode: HTMLElement) => void;
@@ -20,19 +24,53 @@ const cssStorage = {};
 const IS_CSS_REGEX = /\.css(\?((?!\.js$).)+)?$/;
 export const moduleLoader = new ModuleLoader();
 
-export const registerModules = (modules: StarkModule[]) => {
-  globalModules = modules;
-};
-
 export const registerRuntimes = (runtime: string | RuntimeInstance[]) => {
   return parseRuntime(runtime);
 };
 
+/**
+ * remove module
+ * @param name
+ */
+export const removeModule = (name?: string) => {
+  globalModules = globalModules.filter(m => m.name !== name);
+  delete importModules[name];
+  moduleLoader.removeTask(name);
+};
+
+/**
+ * clear modules
+ */
 export const clearModules = () => {
   // reset module info
   globalModules = [];
   importModules = {};
   moduleLoader.clearTask();
+};
+
+/**
+ * registerModule
+ * @param module
+ * @returns
+ */
+export const registerModule = (module: StarkModule) => {
+  if(!module.url && !module.render) {
+    console.error('[icestark module] url and render cannot both be empty. name: %s', module.name);
+    return;
+  }
+  const hasRegistered = globalModules.filter(m => m. name === module.name).length;
+
+  /*
+  * If a module registers many times, the former registration will be removed.
+  */
+  if (hasRegistered) {
+    removeModule(module.name);
+  }
+  globalModules.push(module);
+};
+
+export const registerModules = (modules: StarkModule[]) => {
+  modules.forEach((m) => registerModule(m));
 };
 
 // if css link already loaded, record load count
@@ -170,6 +208,7 @@ export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) 
   const { name, url, runtime } = targetModule;
 
   let moduleSandbox = null;
+
   if (!importModules[name]) {
     let deps = null;
     if (runtime) {
