@@ -56,7 +56,7 @@ export function appendCSS(
   asset: string | Asset,
   id: string,
 ): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
+  return new Promise<string>(async (resolve, reject) => {
     const { type, content } = (asset as Asset);
     if (!root) reject(new Error(`no root element for css assert: ${content || asset}`));
 
@@ -70,32 +70,41 @@ export function appendCSS(
 
     /**
      * if external resource is cached by prefetch, use cached content instead.
+     * For cachedStyleContent may fail to fetch (cors, and so on)，recover to original way
      */
+    let useExternalLink = true;
     if (type && type === AssetTypeEnum.EXTERNAL && cachedStyleContent[content]) {
-      const styleElement: HTMLStyleElement = document.createElement('style');
-      styleElement.innerHTML = cachedStyleContent[content];
-      root.appendChild(styleElement);
-      resolve();
-      return;
+      try {
+        const styleElement: HTMLStyleElement = document.createElement('style');
+        styleElement.innerHTML = await cachedStyleContent[content];
+        root.appendChild(styleElement);
+        useExternalLink = false;
+        resolve();
+      } catch (e) {
+        useExternalLink = true;
+      }
     }
 
-    const element: HTMLLinkElement = document.createElement('link');
-    element.setAttribute(PREFIX, DYNAMIC);
-    element.id = id;
-    element.rel = 'stylesheet';
-    element.href = content || (asset as string);
+    if (useExternalLink) {
+      const element: HTMLLinkElement = document.createElement('link');
+      element.setAttribute(PREFIX, DYNAMIC);
+      element.id = id;
+      element.rel = 'stylesheet';
+      element.href = content || (asset as string);
 
-    element.addEventListener(
-      'error',
-      () => {
-        error(`css asset loaded error: ${content || asset}`);
-        return resolve();
-      },
-      false,
-    );
-    element.addEventListener('load', () => resolve(), false);
+      element.addEventListener(
+        'error',
+        () => {
+          error(`css asset loaded error: ${content || asset}`);
+          return resolve();
+        },
+        false,
+      );
+      element.addEventListener('load', () => resolve(), false);
+  
+      root.appendChild(element);
+    }
 
-    root.appendChild(element);
   });
 }
 
@@ -174,6 +183,7 @@ export function fetchScripts(jsList: Asset[], fetch = defaultFetch ) {
 
 // for prefetch
 export function fetchStyles(cssList: Asset[], fetch = defaultFetch) {
+  console.log('bbb');
   return Promise.all(
     cssList.map((asset) => {
       const { type, content} = asset;
