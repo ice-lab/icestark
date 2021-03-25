@@ -84,7 +84,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     const { fetch, prefetch, children } = props;
 
     if (prefetch) {
-      this.prefetchChildren(prefetch, children, fetch);
+      this.prefetchApps(prefetch, children, fetch);
     }
   }
 
@@ -122,7 +122,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    * prefetch for resources.
    * no worry to excute `prefetch` many times, for all prefetched resources have been cached, and never request twice.
    */
-  prefetchChildren = (prefetch: Prefetch, children: React.ReactNode, fetch = window.fetch) => {
+  prefetchApps = (prefetch: Prefetch, children: React.ReactNode, fetch = window.fetch) => {
     const apps: AppConfig[] = React.Children
       /**
        * we can do prefetch for url, entry and entryContent.

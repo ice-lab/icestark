@@ -49,7 +49,7 @@ window.cancelIdleCallback =
     clearTimeout(id);
   };
 
-function prefetch(fetch = window.fetch) {
+function prefetchIdleTask(fetch = window.fetch) {
   return (app: MicroApp) => {
     window.requestIdleCallback(async () => {
       const { url, entry, entryContent, name } = app;
@@ -79,26 +79,26 @@ export function doPrefetch(
   prefetchStrategy: Prefetch,
   fetch: Fetch,
 ) {
-  const traverse = (strategy: (app: MicroApp) => boolean) => {
+  const executeAllPrefetchTasks = (strategy: (app: MicroApp) => boolean) => {
     getPrefetchingApps(apps)(strategy)
-      .forEach(prefetch(fetch));
+      .forEach(prefetchIdleTask(fetch));
   };
 
   if (Array.isArray(prefetchStrategy)) {
-    traverse(names2PrefetchingApps(prefetchStrategy));
+    executeAllPrefetchTasks(names2PrefetchingApps(prefetchStrategy));
     return;
   }
   if (typeof prefetchStrategy === 'function') {
-    traverse(prefetchStrategy);
+    executeAllPrefetchTasks(prefetchStrategy);
     return;
   }
   if (prefetchStrategy) {
-    traverse((app) => app.status === NOT_LOADED || !app.status);
+    executeAllPrefetchTasks((app) => app.status === NOT_LOADED || !app.status);
   }
 }
 
 export function prefetchApps (apps: AppConfig[], fetch: Fetch) {
   if (apps && Array.isArray(apps)) {
-    apps.forEach(prefetch(fetch));
+    apps.forEach(prefetchIdleTask(fetch));
   }
 }
