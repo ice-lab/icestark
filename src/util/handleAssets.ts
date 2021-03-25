@@ -86,11 +86,22 @@ export function appendCSS(
 }
 
 /**
+ * append custom attribute for element
+ */
+function setAttributeForElement (attributes: string[], element: HTMLElement) {
+  attributes.forEach(attr => {
+    const pair = attr?.split('=');
+    element.setAttribute(pair[0], pair[1] || '');
+  });
+}
+
+/**
  * Create script element (without inline) and append to root
  */
 export function appendExternalScript(
   root: HTMLElement | ShadowRoot,
   asset: string | Asset,
+  scriptAttributes: string[],
   id: string,
 ): Promise<string> {
   return new Promise<string>((resolve, reject) => {
@@ -98,13 +109,14 @@ export function appendExternalScript(
     if (!root) reject(new Error(`no root element for js assert: ${content || asset}`));
 
     const element: HTMLScriptElement = document.createElement('script');
-    // inline script    
+    // inline script
     if (type && type  === AssetTypeEnum.INLINE) {
       element.innerHTML = content;
       root.appendChild(element);
       resolve();
       return;
     }
+    setAttributeForElement(scriptAttributes, element);
     element.setAttribute(PREFIX, DYNAMIC);
     element.id = id;
     element.type = 'text/javascript';
@@ -158,10 +170,6 @@ export function fetchScripts(jsList: Asset[], fetch = defaultFetch ) {
       return cachedScriptsContent[content] || (cachedScriptsContent[content] = fetch(content).then(res => res.text()));
     }
   }));
-}
-export async function appendAssets(assets: Assets, sandbox?: Sandbox, fetch = defaultFetch) {
-  await loadAndAppendCssAssets(assets);
-  await loadAndAppendJsAssets(assets, sandbox, fetch);
 }
 
 export function parseUrl(entry: string): ParsedConfig {
@@ -447,7 +455,17 @@ export async function loadAndAppendCssAssets(assets: Assets) {
  * @param {Sandbox} [sandbox]
  * @returns
  */
-export async function loadAndAppendJsAssets(assets: Assets, sandbox?: Sandbox, fetch = defaultFetch) {
+export async function loadAndAppendJsAssets(
+  assets: Assets,
+  {
+    sandbox,
+    fetch = defaultFetch,
+    scriptAttributes = [],
+  }: {
+    sandbox?: Sandbox;
+    fetch?: Fetch;
+    scriptAttributes?: string[];
+  }) {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
 
   const { jsList } = assets;
@@ -467,13 +485,13 @@ export async function loadAndAppendJsAssets(assets: Assets, sandbox?: Sandbox, f
   if (hasInlineScript) {
     // make sure js assets loaded in order if has inline scripts
     await jsList.reduce((chain, asset, index) => {
-      return chain.then(() => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`));
+      return chain.then(() => appendExternalScript(jsRoot, asset, scriptAttributes, `${PREFIX}-js-${index}`));
     }, Promise.resolve());
     return;
   }
 
   await Promise.all(
-    jsList.map((asset, index) => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`)),
+    jsList.map((asset, index) => appendExternalScript(jsRoot, asset, scriptAttributes, `${PREFIX}-js-${index}`)),
   );
 }
 

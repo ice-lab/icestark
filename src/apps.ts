@@ -2,7 +2,15 @@ import Sandbox, { SandboxContructor, SandboxProps } from '@ice/sandbox';
 import * as isEmpty from 'lodash.isempty';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
 import { matchActivePath, MatchOptions, PathData, PathOptions } from './util/matchPath';
-import { createSandbox, getUrlAssets, getEntryAssets, appendAssets, loadAndAppendCssAssets, emptyAssets, Assets } from './util/handleAssets';
+import {
+  createSandbox,
+  getUrlAssets,
+  getEntryAssets,
+  loadAndAppendCssAssets,
+  loadAndAppendJsAssets,
+  emptyAssets,
+  Assets,
+} from './util/handleAssets';
 import { setCache } from './util/cache';
 import { loadBundle } from './util/loader';
 import { globalConfiguration, StartConfiguration } from './start';
@@ -44,6 +52,10 @@ export interface BaseConfig extends PathOptions {
   props?: object;
   cached?: boolean;
   title?: string;
+  /**
+   * custom script attributes，only effective when scripts load by `<scrpit />`
+   */
+  scriptAttributes?: string[];
 }
 
 interface LifeCycleFn {
@@ -146,8 +158,8 @@ export async function loadAppModule(appConfig: AppConfig) {
 
   let lifecycle: ModuleLifeCycle = {};
   onLoadingApp(appConfig);
-  const appSandbox = createSandbox(appConfig.sandbox);
-  const { url, container, entry, entryContent, name } = appConfig;
+  const appSandbox = createSandbox(appConfig.sandbox) as Sandbox;
+  const { url, container, entry, entryContent, name, scriptAttributes = [] } = appConfig;
   const appAssets = url ? getUrlAssets(url) : await getEntryAssets({
     root: container,
     entry,
@@ -167,7 +179,8 @@ export async function loadAppModule(appConfig: AppConfig) {
     await loadAndAppendCssAssets(appAssets);
     lifecycle = await loadBundle(appAssets.jsList, appSandbox);
   } else {
-    await appendAssets(appAssets, appSandbox, fetch);
+    await loadAndAppendCssAssets(appAssets);
+    await loadAndAppendJsAssets(appAssets, { sandbox: appSandbox, fetch, scriptAttributes });
 
     lifecycle =
       getLifecyleByLibrary() ||
