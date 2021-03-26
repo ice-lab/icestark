@@ -5,9 +5,10 @@ import appHistory from './appHistory';
 import renderComponent from './util/renderComponent';
 import { ICESTSRK_ERROR, ICESTSRK_NOT_FOUND } from './util/constant';
 import { setCache } from './util/cache';
-import start, { unload, Fetch, defaultFetch } from './start';
+import start, { unload, Fetch, defaultFetch, Prefetch } from './start';
 import { matchActivePath, PathData, addLeadingSlash } from './util/matchPath';
 import { AppConfig } from './apps';
+import { doPrefetch } from './util/prefetch';
 
 type RouteType = 'pushState' | 'replaceState';
 
@@ -29,6 +30,7 @@ export interface AppRouterProps {
   ) => boolean;
   basename?: string;
   fetch?: Fetch;
+  prefetch?: Prefetch;
 }
 
 interface AppRouterState {
@@ -68,15 +70,22 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     onAppLeave: () => {},
     basename: '',
     fetch: defaultFetch,
+    prefetch: false,
   };
 
-  constructor(props: AppRouterProps) {
+  constructor(props) {
     super(props);
     this.state = {
       url: location.href,
       appLoading: '',
       started: false,
     };
+
+    const { fetch, prefetch: strategy, children } = props;
+
+    if (strategy) {
+      this.prefetch(strategy, children, fetch);
+    }
   }
 
   componentDidMount() {
@@ -107,6 +116,36 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     window.removeEventListener('icestark:not-found', this.triggerNotFound);
     unload();
     this.setState({ started: false });
+  }
+
+  /**
+   * prefetch for resources.
+   * no worry to excute `prefetch` many times, for all prefetched resources have been cached, and never request twice.
+   */
+  prefetch = (strategy: Prefetch, children: React.ReactNode, fetch = window.fetch) => {
+    const apps: AppConfig[] = React.Children
+      /**
+       * we can do prefetch for url, entry and entryContent.
+       */
+      .map(children, childElement =>  {
+        if (React.isValidElement(childElement)) {
+          const { url, entry, entryContent, name, path } = childElement.props as AppRouteProps;
+          if (url || entry || entryContent) {
+            return {
+              ...childElement.props,
+              /**
+               * name of AppRoute may be not provided, use `path` instead.
+              */
+              name: name || converArray2String(path),
+            };
+          }
+
+        }
+        return false;
+      })
+      .filter(Boolean);
+
+    doPrefetch(apps, strategy, fetch);
   }
 
   /**
