@@ -164,10 +164,11 @@ export function fetchScripts(jsList: Asset[], fetch: Fetch = winFetch) {
   }));
 }
 
-export function registerLifecycleHelper (module?: any) {
+export function registerLifecycles (module?: any) {
   let moduleInfo = null;
   let libraryName = null;
-  if (!module || isEmpty(module)) {
+
+  if (module && !isEmpty(module)) {
     moduleInfo = module;
   } else {
     libraryName = getCache('library');
@@ -200,7 +201,7 @@ export async function appendAssets(assets: Assets, cacheKey: string, umd: boolea
   if (umd || loadScriptMode === 'fetch') {
     const moduleInfo = await moduleLoader.execModule({ jsList, cacheKey }, sandbox);
     // set app lifecycle after exec umd module
-    registerLifecycleHelper(moduleInfo);
+    registerLifecycles(moduleInfo);
   } else if (sandbox && !sandbox.sandboxDisabled) {
     const jsContents = await fetchScripts(jsList);
     // excute code by order
@@ -208,7 +209,7 @@ export async function appendAssets(assets: Assets, cacheKey: string, umd: boolea
       sandbox.execScriptInSandbox(script);
     });
 
-    registerLifecycleHelper();
+    registerLifecycles();
   } else {
     const hasInlineScript = jsList.find((asset) => asset.type === AssetTypeEnum.INLINE);
     if (hasInlineScript) {
@@ -221,7 +222,7 @@ export async function appendAssets(assets: Assets, cacheKey: string, umd: boolea
         jsList.map((asset, index) => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`)),
       );
     }
-    registerLifecycleHelper();
+    registerLifecycles();
   }
 }
 
