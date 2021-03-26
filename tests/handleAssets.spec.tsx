@@ -2,7 +2,8 @@ import '@testing-library/jest-dom/extend-expect';
 import { FetchMock } from 'jest-fetch-mock';
 import {
   getEntryAssets,
-  appendAssets,
+  loadAndAppendCssAssets,
+  loadAndAppendJsAssets,
   appendCSS,
   emptyAssets,
   recordAssets,
@@ -170,14 +171,14 @@ describe('appendExternalScript', () => {
 
     expect.assertions(1);
     return expect(
-      appendExternalScript(div, { type: AssetTypeEnum.INLINE, content: 'console.log()' }, 'js-id'),
+      appendExternalScript(div, { type: AssetTypeEnum.INLINE, content: 'console.log()' }, [], 'js-id'),
     ).resolves.toBeUndefined();
   });
 
   test('appendExternalScript -> url', () => {
     const div = document.createElement('div');
 
-    appendExternalScript(div, '/test.js', 'js-id')
+    appendExternalScript(div, '/test.js', [], 'js-id')
       .then(() => expect(div.innerHTML).toContain('/test.js'))
       .catch(() => {});
     const scripts = div.getElementsByTagName('script');
@@ -189,7 +190,7 @@ describe('appendExternalScript', () => {
   test('appendExternalScript -> EXTERNAL success', () => {
     const div = document.createElement('div');
 
-    appendExternalScript(div, { type: AssetTypeEnum.EXTERNAL, content: '/test.js' }, 'js-id')
+    appendExternalScript(div, { type: AssetTypeEnum.EXTERNAL, content: '/test.js' }, [], 'js-id')
       .then(() => expect(div.innerHTML).toContain('/test.js'))
       .catch(() => {});
 
@@ -202,7 +203,7 @@ describe('appendExternalScript', () => {
   test('appendExternalScript -> EXTERNAL error', () => {
     const div = document.createElement('div');
 
-    appendExternalScript(div, { type: AssetTypeEnum.EXTERNAL, content: '/test.js' }, 'js-id').catch(err =>
+    appendExternalScript(div, { type: AssetTypeEnum.EXTERNAL, content: '/test.js' }, [], 'js-id').catch(err =>
       expect(err.message).toContain('js asset loaded error: '),
     );
 
@@ -375,25 +376,29 @@ describe('appendAssets', () => {
       'http://icestark.com/css/index.css',
       'http://icestark.com/js/test1.js',
     ]);
-    appendAssets(
-      assets,
-    ).then(() => {
-      const jsElement0 = document.getElementById('icestark-js-0');
-      const jsElement1 = document.getElementById('icestark-js-1');
+    Promise.all([loadAndAppendCssAssets(assets), loadAndAppendJsAssets(assets, {
+      scriptAttributes: ['crossorigin=anonymous', 'nomodule', 'src=http://xxxx.js']
+    })])
+      .then(() => {
+        const jsElement0 = document.getElementById('icestark-js-0');
+        const jsElement1 = document.getElementById('icestark-js-1');
 
-      expect((jsElement0 as HTMLScriptElement).src).toEqual('http://icestark.com/js/index.js');
-      expect((jsElement0 as HTMLScriptElement).async).toEqual(false);
-      expect((jsElement1 as HTMLScriptElement).src).toEqual('http://icestark.com/js/test1.js');
-      expect((jsElement1 as HTMLScriptElement).async).toEqual(false);
-      expect(jsElement0.getAttribute('icestark')).toEqual('dynamic');
-      expect(jsElement1.getAttribute('icestark')).toEqual('dynamic');
+        expect((jsElement0 as HTMLScriptElement).src).toEqual('http://icestark.com/js/index.js');
+        expect((jsElement0 as HTMLScriptElement).async).toEqual(false);
+        expect((jsElement1 as HTMLScriptElement).src).toEqual('http://icestark.com/js/test1.js');
+        expect((jsElement1 as HTMLScriptElement).async).toEqual(false);
+        expect(jsElement0.getAttribute('icestark')).toEqual('dynamic');
+        expect(jsElement1.getAttribute('icestark')).toEqual('dynamic');
+        expect(jsElement0.getAttribute('crossorigin')).toEqual('anonymous');
+        expect(jsElement0.getAttribute('nomodule')).toEqual('');
+        expect(jsElement0.getAttribute('src')).toEqual('http://icestark.com/js/index.js');
 
-      recordAssets();
+        recordAssets();
 
-      expect(jsElement0.getAttribute('icestark')).toEqual('dynamic');
-      expect(jsElement1.getAttribute('icestark')).toEqual('dynamic');
+        expect(jsElement0.getAttribute('icestark')).toEqual('dynamic');
+        expect(jsElement1.getAttribute('icestark')).toEqual('dynamic');
 
-      emptyAssets(() => true, true);
+        emptyAssets(() => true, true);
     });
   });
 
@@ -404,9 +409,7 @@ describe('appendAssets', () => {
       'http://icestark.com/css/index.css',
       'http://icestark.com/js/test1.js',
     ]);
-    appendAssets(
-      assets,
-    );
+    Promise.all([loadAndAppendCssAssets(assets), loadAndAppendJsAssets(assets, {})])
   });
 
   test('recordAssets', () => {
