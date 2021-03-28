@@ -17,6 +17,17 @@ const CSS_REGEX = new RegExp([STYLE_REGEX, LINK_HREF_REGEX].map((reg) => reg.sou
 const STYLE_SHEET_REGEX = /rel=['"]stylesheet['"]/gi;
 const moduleLoader = new ModuleLoader();
 
+interface LifecycleProps {
+  container: HTMLElement | string;
+  customProps?: object;
+}
+
+export interface ModuleLifeCycle {
+  mount?: (props: LifecycleProps) => Promise<void> | void;
+  unmount?: (props: LifecycleProps) => Promise<void> | void;
+  bootstrap?: (props: LifecycleProps) => Promise<void> | void;
+}
+
 export enum AssetTypeEnum {
   INLINE = 'inline',
   EXTERNAL = 'external',
@@ -164,15 +175,18 @@ export function fetchScripts(jsList: Asset[], fetch: Fetch = winFetch) {
   }));
 }
 
-export function registerLifecycles (module?: any) {
-  let moduleInfo = null;
+/**
+ * For some reason, we cache `unmount`/`mount` lifecycles by `registerAppEnter/registerAppLeave`.
+ */
+export function  cacheLifecyclesByRegister (module?: ModuleLifeCycle) {
+  let moduleInfo: ModuleLifeCycle | null = null;
   let libraryName = null;
 
   if (module && !isEmpty(module)) {
     moduleInfo = module;
   } else {
     libraryName = getCache('library');
-    moduleInfo = window[libraryName] as any;
+    moduleInfo = libraryName && window[libraryName] as ModuleLifeCycle;
   }
 
   if (moduleInfo) {
@@ -201,7 +215,7 @@ export async function appendAssets(assets: Assets, cacheKey: string, umd: boolea
   if (umd || loadScriptMode === 'fetch') {
     const moduleInfo = await moduleLoader.execModule({ jsList, cacheKey }, sandbox);
     // set app lifecycle after exec umd module
-    registerLifecycles(moduleInfo);
+    cacheLifecyclesByRegister(moduleInfo);
   } else if (sandbox && !sandbox.sandboxDisabled) {
     const jsContents = await fetchScripts(jsList);
     // excute code by order
@@ -209,7 +223,7 @@ export async function appendAssets(assets: Assets, cacheKey: string, umd: boolea
       sandbox.execScriptInSandbox(script);
     });
 
-    registerLifecycles();
+    cacheLifecyclesByRegister();
   } else {
     const hasInlineScript = jsList.find((asset) => asset.type === AssetTypeEnum.INLINE);
     if (hasInlineScript) {
@@ -222,7 +236,7 @@ export async function appendAssets(assets: Assets, cacheKey: string, umd: boolea
         jsList.map((asset, index) => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`)),
       );
     }
-    registerLifecycles();
+    cacheLifecyclesByRegister();
   }
 }
 
