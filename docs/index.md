@@ -17,7 +17,7 @@ footer: Open-source MIT Licensed | Copyright © 2021<br />
       简单、可用于生产的微前端解决方案
     </div>
     <div class="homepage-subtitle" >
-      简单，高性能，易上手的微前端解决方案
+       icestark 为大型前端应用提供了简单、易迁移的解耦方案。完备的沙箱能力，性能优化方案也让应用更安全，更快速。
     </div>
     <div class="quick-start" >
       <a class="quick-start-btn" href="/guide" style="display: flex">
@@ -38,15 +38,15 @@ footer: Open-source MIT Licensed | Copyright © 2021<br />
     <ul class="features">
       <li class="features-item">
         <div class="features-header" style="font-size: 24px;font-weight: 500;">框架无关</div>
-        <p>不少于佛山房双方三房按时分身乏术发发防辐射法法师发发生发顺丰是 </p>
+        <p>支持市面上所有的前端框架，比如 React、Vue 、Angular 等构建主应用和微应用</p>
+      </li>
+      <li class="features-item">
+        <div class="features-header" style="font-size: 24px;font-weight: 500;">快速迁移</div>
+        <p>支持 url、html entry、html content、甚至 iframe 等多种接入方式，可以快速、低成本地迁移老项目</p>
       </li>
       <li class="features-item">
         <div class="features-header" style="font-size: 24px;font-weight: 500;">简单易用</div>
-        <p>不少于佛山房双方三房按时分身乏术发发防辐射法法师发发生发顺丰是 </p>
-      </li>
-      <li class="features-item">
-        <div class="features-header" style="font-size: 24px;font-weight: 500;">生产可用</div>
-        <p>不少于佛山房双方三房按时分身乏术发发防辐射法法师发发生发顺丰是 </p>
+        <p>icestark 提供多种开箱即用的能力，让你在接入和使用过程中没有障碍</p>
       </li>
     </ul>
   </div>

@@ -238,3 +238,48 @@ const navItem = <AppLink to="/seller" hashType>{item.name}</AppLink>);
 // 示例2
 appHistory.push('/seller', true);
 ```
+
+## 兼容 IE 浏览器
+
+要使得 icestark 可以在 IE 浏览器环境下正常运行，强烈建议完成以下 3 个步骤：
+
+1. 使用 [`@babel/preset-env`](https://babeljs.io/docs/en/babel-preset-env) 为 IE 浏览器添加 `Symbol`、`Promise` 等不兼容的高级 JavaScript 属性
+
+```js
+// .babelrc 或 babel-loader 配置
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "useBuiltIns": "entry",
+        "targets": {
+          "ie": "11"
+        },
+        "modules": false,
+        "corejs": 3
+      }
+    ]
+  ]
+}
+```
+
+[ice 工程体系](https://ice.work/docs/guide/about)中，已自动添加环境所依赖的 polyfill。请参考 [ice 工程构建配置](https://ice.work/docs/guide/basic/build#polyfill)。
+
+2. 添加 `fetch` polyfill
+
+当 [`loadScriptMode`](/api/wrapper#loadscriptmode) 为 `fetch` 时，icestark 会使用 `window.fetch` 获取微应用静态资源，因此还需要对 `fetch` 进行 polyfill。这里，我们推荐 [whatwg-fetch](https://github.com/github/fetch)。请确保在 icestark 之前引入该资源。
+
+```js
+// 入口文件
+import "whatwg-fetch"; // 确保在 icestark 之前引入
+
+import { AppRouter, AppRoute } from '@ice/stark';
+
+console.log(window.fetch);
+```
+
+## IE 浏览器环境下支持沙箱吗
+
+不支持。
+

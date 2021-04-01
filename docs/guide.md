@@ -46,4 +46,8 @@ $ npm run start
 
 ## 兼容性
 
-+ 现代浏览器和 IE11 以下。
++ 现代浏览器和 IE11。
+
+<Alert>
+对于 IE 系列浏览器，需要提供相应的 polyfill 支持。详细介绍，请参考 <a href="/faq#兼容-ie-浏览器"> 常见问题 -> 兼容 IE 浏览器 </a>
+</Alert>
