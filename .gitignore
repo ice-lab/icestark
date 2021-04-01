@@ -17,3 +17,4 @@ lib/
 build/
 
 src/.umi
+dist/
