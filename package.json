@@ -10,7 +10,10 @@
     "prepublishOnly": "npm run lint && npm run test && npm run build",
     "lint": "eslint --cache --ext .ts,.tsx ./ && tsc --noEmit",
     "test": "NODE_ENV=unittest jest",
-    "coverage": "codecov"
+    "coverage": "codecov",
+    "docs:start": "dumi dev",
+    "docs:build": "dumi build",
+    "deploy": "gh-pages -d dist"
   },
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -77,7 +80,14 @@
     "ts-jest": "^24.0.2",
     "ts-node": "^9.0.0",
     "typescript": "^3.4.4",
-    "urllib": "^2.36.1"
+    "urllib": "^2.36.1",
+    "prism-react-renderer": "^1.2.0",
+    "slash": "^3.0.0",
+    "dumi": "^1.1.11-rc.0",
+    "gh-pages": "^3.1.0",
+    "dumi-theme-default": "^1.0.9",
+    "prettier": "^1.19.1",
+    "yorkie": "^2.0.0"
   },
   "resolutions": {
     "eslint-plugin-import": "2.20.2",
