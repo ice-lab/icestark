@@ -2,6 +2,8 @@ export default {
   mode: 'site',
   locales: [['zh-CN', '中文']],
   title: 'icestark',
+  base: '/icestark',
+  publicPath: '/icestark/',
   logo: ' ',
   favicon:
     '/assets/favicon.png',
@@ -67,7 +69,7 @@ export default {
     {
       src: 'https://s9.cnzz.com/z_stat.php?id=1279786237&web_id=1279786237',
       defer: true,
-    }
+    },
   ],
   navs: [
     {
@@ -84,7 +86,7 @@ export default {
     },
     {
       title: 'Changelog',
-      path: 'https://github.com/ice-lab/icestark/releases'
+      path: 'https://github.com/ice-lab/icestark/releases',
     },
     {
       title: 'GitHub',
@@ -99,7 +101,7 @@ export default {
       },
       {
         title: '升级指南',
-        path: '/guide/upgrade'
+        path: '/guide/upgrade',
       },
       {
         title: '概念',
@@ -107,13 +109,13 @@ export default {
         children: [
           {
             title: '生命周期',
-            path: '/guide/concept/lifecycle'
+            path: '/guide/concept/lifecycle',
           },
           {
             title: '微应用入口',
-            path: '/guide/concept/entry'
-          }
-        ]
+            path: '/guide/concept/entry',
+          },
+        ],
       },
       {
         title: '使用',
@@ -121,16 +123,16 @@ export default {
         children: [
           {
             title: '微应用打包',
-            path: '/guide/use/bundler'
+            path: '/guide/use/bundler',
           },
           {
             title: '使用 API 接入',
-            path: '/guide/use/api'
+            path: '/guide/use/api',
           },
           {
             title: '使用 React Component 接入',
-            path: '/guide/use/wrapper'
-          }
+            path: '/guide/use/wrapper',
+          },
         ],
       },
       {
@@ -148,7 +150,7 @@ export default {
           {
             title: '性能优化',
             path: '/guide/advanced/performance',
-          }
+          },
         ],
       },
       {
@@ -157,17 +159,17 @@ export default {
         children: [
           {
             title: 'CRA 应用',
-            path: '/guide/access/cra'
+            path: '/guide/access/cra',
           },
           {
             title: 'Umi 应用',
-            path: '/guide/access/umi'
-          }
-        ]
+            path: '/guide/access/umi',
+          },
+        ],
       },
       {
         title: '贡献代码',
-        path: '/guide/contribute'
+        path: '/guide/contribute',
       },
     ],
     '/api': [
@@ -182,7 +184,7 @@ export default {
       {
         title: 'utils',
         path: '/api/utils',
-      }
-    ]
+      },
+    ],
   },
 };

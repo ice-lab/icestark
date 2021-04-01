@@ -13,7 +13,7 @@
     "coverage": "codecov",
     "docs:start": "dumi dev",
     "docs:build": "dumi build",
-    "deploy": "gh-pages -d dist"
+    "docs:deploy": "gh-pages -d dist"
   },
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
