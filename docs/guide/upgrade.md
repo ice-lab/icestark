@@ -2,7 +2,7 @@
 
 ## 1.x -> 2.x
 
-> icestark@2.0.0 于 2020 年 12 月发布，[Changelog](https://github.com/ice-lab/icestark/releases/tag/v2.0.0)
+> icestark 2.x 于 2020 年 12 月发布，[Changelog](https://github.com/ice-lab/icestark/releases/tag/v2.0.0)
 
 - 支持以 API 的方式初始化主应用，主应用不再限制 React/Vue/Angular 等不同框架
 - 支持加载 UMD 格式的微应用产物
@@ -25,7 +25,7 @@
 
 ## 0.x -> 1.x
 
-> icestark@1.0.0 于 2019 年 10 月发布，[Changelog](https://github.com/ice-lab/icestark/releases/tag/v1.0.0(2019-10-14))
+> icestark 1.x 于 2019 年 10 月发布，[Changelog](https://github.com/ice-lab/icestark/releases/tag/v1.0.0(2019-10-14))
 
 - 将微应用相关 API 拆成独立的包 `@ice/stark-app`，保证兼容不同框架的微应用
 - 支持 `onAppEnter/onAppLeave` 相关 API

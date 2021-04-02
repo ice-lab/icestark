@@ -2,42 +2,6 @@
 
 本文介绍如何从零开发一个微应用，同时已有应用迁移也可以参考本文档。
 
-## 微应用格式
-
-icestark 支持渲染两种格式的微应用，通过 registerAppEnter 注册或者 UMD 格式导出 mount 方法，UMD 格式跟社区的 single-spa 更好兼容，因此增量的微应用我们推荐使用 UMD 格式。
-
-### 1. registerAppEnter/registerAppLeave
-
-```js
-import ReactDOM from 'react-dom';
-import { getMountNode, registerAppEnter, registerAppLeave } from '@ice/stark-app';
-import App from './App';
-
-registerAppEnter(() => {
-  ReactDOM.render(<App />, getMountNode());
-});
-registerAppLeave(() => {
-  ReactDOM.unmountComponentAtNode(getMountNode());
-});
-```
-
-### 2. UMD(mount/unmount)
-
-> @ice/stark 版本大于 1.6.0
-
-```js
-import ReactDOM from 'react-dom';
-import App from './App';
-
-export function mount(props) {
-  ReactDOM.render(<App />, props.container);
-}
-
-export function unmount(props) {
-  ReactDOM.unmountComponentAtNode(props.container);
-}
-```
-
 ## 通过脚手架创建
 
 React 项目（基于 icejs）：
@@ -56,7 +20,7 @@ $ npm init ice icestark-child @vue-materials/icestark-child-app
 
 ## 已有 React 项目改造为微应用
 
-如果你的项目基于 icejs，请参考文档 [icejs 接入微前端](/docs/guide/advance/icestark.md)，接入步骤非常简单。如果不是 icejs 的项目那么请参考下面的流程。
+如果你的项目基于 icejs，请参考文档 [icejs 接入微前端](https://ice.work/docs/guide/advance/icestark)，接入步骤非常简单。如果不是 icejs 的项目那么请参考下面的流程。
 
 ### 1. 应用入口适配
 

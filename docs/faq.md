@@ -241,9 +241,9 @@ appHistory.push('/seller', true);
 
 ## 兼容 IE 浏览器
 
-要使得 icestark 可以在 IE 浏览器环境下正常运行，强烈建议完成以下 3 个步骤：
+要使得 icestark 可以在 IE 浏览器环境下正常运行，强烈建议完成以下 2 个步骤：
 
-1. 使用 [`@babel/preset-env`](https://babeljs.io/docs/en/babel-preset-env) 为 IE 浏览器添加 `Symbol`、`Promise` 等不兼容的高级 JavaScript 属性
+1. 使用 [`@babel/preset-env`](https://babeljs.io/docs/en/babel-preset-env) 为 IE 浏览器添加 `Symbol`、`Promise` 等不兼容的高级语法特性
 
 ```js
 // .babelrc 或 babel-loader 配置
@@ -281,5 +281,14 @@ console.log(window.fetch);
 
 ## IE 浏览器环境下支持沙箱吗
 
-不支持。
+**不支持**。在不支持 `Proxy` 语法的浏览器环境（比如 IE 浏览器），icestark 会有如下提示：
 
+```text
+proxy sandbox is not support by current browser
+```
+
+并回退到无沙箱模式执行。
+
+<Alert>
+此外，我们并不推荐添加诸如 <a href="https://github.com/GoogleChrome/proxy-polyfill">proxy-polyfill</a> 等 polyfill 方法来支持 icestark 沙箱。因为目前实现 Proxy 的 polyfill 都不是完备的（有缺陷的），icestark 沙箱在实现上使用了 <code>has</code> trap，而这个 trap 目前无法在 polyfill 中实现。更多有关 Proxy 的内容，可参考 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy</a>。
+</Alert>

@@ -4,6 +4,14 @@ toc: menu
 
 # Wrapper
 
+对于 React 用户，我们封装了 [core 能力](./core) 以便通过 React 组件的方式快速接入 icestark。了解更多请移步 [使用 React Component 接入](/guide/use/wrapper)。
+
+以下 api 均从 `@ice/stark` 导出。
+
+```js
+import { AppRouter, AppRoute } from '@ice/stark';
+```
+
 ## AppRouter
 
 定位微应用渲染节点，包含如下 props 属性
@@ -74,6 +82,12 @@ toc: menu
 
 - 类型：`Function(assetUrl)`
 - 默认值：`window.fetch`
+
+#### prefetch
+预加载微应用资源（选填）。
+
+- 类型：Boolean | string[] | Function(app)
+- 默认值：undefined
 
 ## AppRoute
 

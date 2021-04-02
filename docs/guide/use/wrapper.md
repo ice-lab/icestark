@@ -1,6 +1,6 @@
 # 使用 React Component 接入
 
-对于 React 主应用，推荐使用 AppRouter/AppRoute 这种 React Component 的方式使用。
+对于 React 主应用，推荐使用 AppRouter/AppRoute 这种 React Component 的方式。
 
 ## 通过官方脚手架创建
 
@@ -68,7 +68,7 @@ ReactDOM.render(<App />, document.getElementById('root'));
 - LoadingComponent：微应用加载过程渲染的组件
 - basename：整个主应用部署在某个基础路由下
 
-更多参数请参考 [API 介绍之 AppRouter](/docs/icestark/reference/api#AppRouter)。
+更多参数请参考 [API 介绍 AppRouter](/api/wrapper#approuter)。
 
 ### AppRoute 配置项
 
@@ -104,7 +104,7 @@ ReactDOM.render(<App />, document.getElementById('root'));
 
 #### 微应用入口 entry/entryContent/url
 
-对于 entry/entryContent/url 方式的使用请参考文档[微应用入口](/docs/icestark/guide/app-entry)。在此基础上，结合 React 的能力 AppRoute 还支持了更为灵活的 component 和 render 方式配置微应用入口：
+对于 entry/entryContent/url 方式的使用请参考文档[微应用入口](/guide/concept/entry)。在此基础上，结合 React 的能力 AppRoute 还支持了更为灵活的 component 和 render 方式配置微应用入口：
 
 ```js
 <AppRoute
@@ -126,9 +126,7 @@ ReactDOM.render(<App />, document.getElementById('root'));
 - cache：默认 `false`，切换后是否缓存微应用，可能会引起内存占用过大问题，不建议开启
 - hashType：默认 `false`，标识微应用的路由是否为 hash 模式
 
-更多参数请参考 [API 介绍之 AppRoute](/docs/icestark/reference/api#AppRoute)。
-
-
+更多参数请参考 [API 介绍 AppRoute](/api/wrapper#approute)。
 
 
 ## 进阶指南

@@ -2,15 +2,29 @@
 toc: menu
 ---
 
-# core
+# Core
 
 icestark 底层能力已完全与框架解耦。这些能力使得您可以使用 [api 的方式](/guide/use/api) 接入 icestark。可以按照下面的方式导入这些函数：
 
 ```js
-import { start, registerMicroApps } from '@ice/stark-app';
+import { start, registerMicroApps } from '@ice/stark';
 
 // or
-import * as icestark from '@ice/stark-app';
+import * as icestark from '@ice/stark';
+```
+
+对于使用非 React 的用户，我们建议您直接从 `lib` 目录下导入这些方法。
+
+```js
+// 对于使用 Vue、Angular 的用户
+import { start } from '@ice/stark/lib/start';
+import {
+  registerMicroApps,
+  removeMicroApps,
+  createMicroApp,
+  unmountMicroApp,
+  unloadMicroApp,
+} from '@iice/stark/lib/apps';
 ```
 
 ## registerMicroApps
@@ -236,6 +250,13 @@ removeMicroApps(['app1', 'app2']);
 
 - 类型：`Function(assetUrl)`
 - 默认值：`window.fetch`
+
+#### prefetch
+
+预加载微应用资源（选填）。
+
+- 类型：`Boolean | string[] | Function(app)`
+- 默认值：`undefined`
 
 ## createMicroApp
 

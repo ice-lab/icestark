@@ -4,6 +4,12 @@ toc: menu
 
 # Utils
 
+以下 api 均从 `@ice/stark-app` 导出。
+
+```js
+import { isInIcestark } from '@ice/stark-app';
+```
+
 ## isInIcestark
 
 判断当前运行环境，是否运行在 icestark 环境中，返回值类型：boolean

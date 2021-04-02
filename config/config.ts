@@ -1,3 +1,4 @@
+/* eslint-disable no-multi-str */
 export default {
   mode: 'site',
   locales: [['zh-CN', '中文']],
@@ -66,10 +67,10 @@ export default {
   ],
   scripts: [
     // 数据统计
-    {
-      src: 'https://s9.cnzz.com/z_stat.php?id=1279786237&web_id=1279786237',
-      defer: true,
-    },
+    // {
+    //   src: 'https://s9.cnzz.com/z_stat.php?id=1279786237&web_id=1279786237',
+    //   defer: true,
+    // },
   ],
   navs: [
     {
@@ -108,9 +109,17 @@ export default {
         path: '/guide/concept',
         children: [
           {
-            title: '生命周期',
-            path: '/guide/concept/lifecycle',
+            title: '主应用',
+            path: '/guide/concept/layout',
           },
+          {
+            title: '微应用',
+            path: '/guide/concept/child',
+          },
+          // {
+          //   title: '生命周期',
+          //   path: '/guide/concept/lifecycle',
+          // },
           {
             title: '微应用入口',
             path: '/guide/concept/entry',
@@ -157,20 +166,24 @@ export default {
         title: '接入指南',
         path: '/guide/access',
         children: [
-          {
-            title: 'CRA 应用',
-            path: '/guide/access/cra',
-          },
+          // {
+          //   title: 'CRA 应用',
+          //   path: '/guide/access/cra',
+          // },
           {
             title: 'Umi 应用',
             path: '/guide/access/umi',
           },
         ],
       },
-      {
-        title: '贡献代码',
-        path: '/guide/contribute',
-      },
+      // {
+      //   title: '社区',
+      //   path: '/guide/community',
+      // },
+      // {
+      //   title: '贡献代码',
+      //   path: '/guide/contribute',
+      // },
     ],
     '/api': [
       {
