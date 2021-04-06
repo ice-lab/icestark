@@ -14,10 +14,12 @@ footer: Open-source MIT Licensed | Copyright © 2021<br />
 <div class="homepage-root">
   <div style="max-width: 1180px;position: relative;z-index: 2; display: flex; flex-direction: column; align-items: center">
     <div class="homepage-title" style="font-size: 65px; text-align: center;line-height: 90px; font-weight: 800; max-width: 600px">
-      简单、可用于生产的微前端解决方案
+      <!-- 简单、完备的微前端解决方案 -->
+      面向大型前端系统的微前端解决方案
     </div>
     <div class="homepage-subtitle" >
-       icestark 为大型前端应用提供了简单、易迁移的解耦方案。完备的沙箱能力，性能优化方案也让应用更安全，更快速。
+      使用 icestark 构建您的下一个大型前端应用，让开发变得简单，让应用变得强大且安全。
+       <!-- icestark 为大型前端应用提供了简单、易迁移的解耦方案。完备的沙箱能力，性能优化方案也让应用更安全，更快速。 -->
     </div>
     <div class="quick-start" >
       <a class="quick-start-btn" href="/guide" style="display: flex">
@@ -42,21 +44,74 @@ footer: Open-source MIT Licensed | Copyright © 2021<br />
       </li>
       <li class="features-item">
         <div class="features-header" style="font-size: 24px;font-weight: 500;">快速迁移</div>
-        <p>支持 url、html entry、html content、甚至 iframe 等多种接入方式，可以快速、低成本地迁移老项目</p>
+        <p>支持 url、entry、html content、甚至 iframe 等多种接入方式，可以快速、低成本地迁移老项目</p>
+      </li>
+      <li class="features-item">
+        <div class="features-header" style="font-size: 24px;font-weight: 500;">安全</div>
+        <p>完备的沙箱能力、CSS Module 样式方案，让微应用更安全地接入</p>
+      </li>
+    </ul>
+    <ul class="features no-padding-top">
+      <li class="features-item">
+        <div class="features-header" style="font-size: 24px;font-weight: 500;">性能优秀</div>
+        <p>提供 shouldAssetsRemove、预加载、预执行、ssr 等多种性能优化手段，让您的应用加载起飞</p>
       </li>
       <li class="features-item">
         <div class="features-header" style="font-size: 24px;font-weight: 500;">简单易用</div>
-        <p>icestark 提供多种开箱即用的能力，让你在接入和使用过程中没有障碍</p>
+        <p>提供多种开箱即用的工具和不断改进的报错信息，可以身心愉悦地开发并调试您的微前端应用</p>
+      </li>
+      <li class="features-item">
+        <div class="features-header" style="font-size: 24px;font-weight: 500;">支持微模块</div>
+        <p>除了微应用，icestark 还支持微模块，一种没有路由、粒度更小的挂件</p>
       </li>
     </ul>
   </div>
 </div>
 
 <div>
+  <div style="width:100%;margin:0 auto;">
+    <div style="color:#0b1b3e;font-size:32px;margin:0 0 10px;padding-top: 50px;height: 88px; text-align: center">谁在使用 icestark</div>
+    <div class="userContainer">
+    <ul style="text-align: center">
+      <li class="showCaseItem">
+        <img class="showCaseImgItem" src="https://img.alicdn.com/imgextra/i2/O1CN011pV2Gq24auj3ExIQD_!!6000000007408-2-tps-3570-1714.png">
+        <div class="showCasePopup" style="">阿里创作者中心</div>
+      </li>
+      <li class="showCaseItem">
+        <img class="showCaseImgItem" src="https://img.alicdn.com/imgextra/i3/O1CN01K8Bq6I1Pv9zOVkNw0_!!6000000001902-2-tps-3570-1714.png">
+         <div class="showCasePopup" style="">轻课堂</div></li>
+      <li class="showCaseItem">
+        <img class="showCaseImgItem" src="https://img.alicdn.com/imgextra/i3/O1CN01UvVhB61rfs0ag60nB_!!6000000005659-2-tps-3570-1714.png">
+         <div class="showCasePopup" style="">运营工作台产研平台</div></li>
+      <li class="showCaseItem">
+        <img class="showCaseImgItem" src="https://img.alicdn.com/imgextra/i4/O1CN010rpl2321v7LrPqIyI_!!6000000007046-2-tps-3570-1714.png">
+         <div class="showCasePopup" style="">千牛特价版（商家中心）</div></li>
+      <li class="showCaseItem">
+        <img class="showCaseImgItem" src="https://img.alicdn.com/imgextra/i4/O1CN01Gkx6nO24pZOxID5B9_!!6000000007440-2-tps-3570-1714.png">
+         <div class="showCasePopup" style="">TESLA 交付工厂</div></li>
+      <li class="showCaseItem">
+        <img class="showCaseImgItem" src="https://img.alicdn.com/imgextra/i1/O1CN01i9ovqD1XxvIuPWoVi_!!6000000002991-2-tps-3570-1714.png">
+         <div class="showCasePopup" style="">淘宝直播</div></li>
+      <li class="showCaseItem">
+        <img class="showCaseImgItem" src="https://img.alicdn.com/imgextra/i1/O1CN01ZzPJA829a44XQpuB1_!!6000000008083-2-tps-3570-1714.png">
+         <div class="showCasePopup" style="">饿了么商家版</div></li>
+      <li class="showCaseItem">
+        <img class="showCaseImgItem" src="https://img.alicdn.com/imgextra/i4/O1CN01vVl1UY1OUlY3UIV4P_!!6000000001709-2-tps-3570-1714.png">
+         <div class="showCasePopup" style="">阿里云控制台</div></li>
+    </ul>
+    </div>
+  </div>
+</div>
+
+<div class="line" style="height: 1px; width: 100%; background: #ebeef5;margin: 80px 0;position: relative;">
+  <div style="position: absolute;bottom: -35px; left: 50%; transform: translateX(-50%); box-shadow: rgb(0 0 0 / 12%) 0px 30px 60px; padding: 16px 36px; background: #FFF; border-radius: 6px;font-size: 26px;font-weight: 500">300+ 应用正在使用 icestark</div>
+</div>
+
+<div>
   <div style="max-width:1180px;width:100%;margin:0 auto;">
-    <div style="color:#0b1b3e;font-size:32px;margin:0 0 10px;padding-top: 70px;height: 88px">谁在使用 icestark</div>
+    <!-- <div style="color:#0b1b3e;font-size:32px;margin:0 0 10px;padding-top: 70px;height: 88px">谁在使用 icestark</div> -->
     <div class="userContainer" style="margin-bottom: 100px">
-      <ul class="userGroup">
+      <ul>
         <li class="userItem"><img class="userItemImg " src="//gw.alicdn.com/tfs/TB11_n_fq67gK0jSZFHXXa9jVXa-1280-533.png_200x200.jpg"></li>
         <li class="userItem"><img class="userItemImg " src="//gw.alicdn.com/tfs/TB1LW.Xfvb2gK0jSZK9XXaEgFXa-190-27.png"></li>
         <li class="userItem"><img class="userItemImg " src="//gw.alicdn.com/tfs/TB1IZMbfET1gK0jSZFrXXcNCXXa-1754-485.png_200x200.jpg"></li>

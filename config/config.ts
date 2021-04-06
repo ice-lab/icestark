@@ -30,9 +30,14 @@ export default {
     '.footer-container a { color: #FFFFFF !important }',
     '.__dumi-default-layout[data-route="/"] .__dumi-default-layout-footer { display: none }',
     '.__dumi-default-navbar-logo{ width: 100px }',
+    `.__dumi-default-badge:not([type]), .__dumi-default-badge[type='info'] { background: red !important }`,
     '.__dumi-default-layout-features > dl dt { margin-bottom: 8px !important }',
     '.userItem{ display: inline-block; margin: 30px 50px 0 0 } .userItemImg{ max-width: 200px; max-height: 33px; vertial-align: middle}',
-    '.features{ display: flex; justify-content: space-around; padding: 50px 0 !important} .features-item { display: inline-block; max-width: 300px; text-align: center }',
+    `.showCaseItem{ display: inline-block; margin: 30px 50px 0 0; cursor: pointer; position: relative; font-size: 0 }\
+     li.showCaseItem:hover .showCasePopup{ display: block !important; }\
+     .showCaseImgItem{ max-height: 250px; vertial-align: middle; box-shadow: rgb(0 0 0 / 8%) 0px 10px 20px, rgb(0 0 0 / 10%) 0px 5px 12px; border-radius: 7px; }\
+     .showCasePopup{position: absolute; bottom: 0;height: 48px; width: 100%; text-align: center; background: #000; color: #FFF;line-height: 48px;border-radius: 0 0px 7px 7px;opacity: 0.6;  display: none; font-size: 15px}`,
+    '.features{ display: flex; justify-content: space-around; padding: 40px 0 !important} .features-item { display: inline-block; max-width: 300px; text-align: center } .no-padding-top{ padding-top: 0 !important}',
     '@media only screen and (min-width: 767px) {\
       .__dumi-default-menu { width: 350px !important }\
       .markdown{ padding-left: 380px !important }\
@@ -41,7 +46,7 @@ export default {
       .homepage-img { width: 50%;position: absolute;right: 0;z-index: 1 } \
       .quick-start-github{ line-height: 42px; }\
       .quick-start{ margin-top: 50px; display: flex;flex-direction:row; }\
-      .homepage-root{ max-width: 1180px;width: 100%;margin: 0 auto;position: relative;height:450px }\
+      .homepage-root{ max-width: 1180px;width: 100%;margin: 0 auto;position: relative;height: 430px }\
       .introduction-infos{ width:50%; padding:120px 25px }\
       .footer-block-content{ flex-grow: 1; }\
       .footer-wrapper{ max-width: 1180px;margin: 0 auto;padding: 100px 0 0px;display: flex;flex-wrap: wrap; }\
@@ -56,7 +61,7 @@ export default {
       iframe.quick-start-btn{ display: none; }\
       .quick-start-github{ text-align: center;margin-top: 20px;margin-left: 0; position: relative;top: 10px; }\
       .__dumi-default-layout[data-route="/"]{ padding-left: 0 !important; padding-right: 0 !important }\
-      .homepage-root{ max-width: 1180px;width: 100%;margin: 0 auto;position: relative;height:450px }\
+      .homepage-root{ max-width: 1180px;width: 100%;margin: 0 auto;position: relative;height: 430px }\
       .__dumi-default-layout-features dl { padding-left: 80px !important;width: 170px;margin: 30px auto !important; display: table; }\
       .introduction-img{ display: none !important; }\
       .introduction-infos{ width:100%; padding:120px 25px }\
@@ -116,31 +121,44 @@ export default {
             title: '微应用',
             path: '/guide/concept/child',
           },
-          // {
-          //   title: '生命周期',
-          //   path: '/guide/concept/lifecycle',
-          // },
+        ],
+      },
+      {
+        title: '主应用接入',
+        path: '/guide/use-layout',
+        children: [
           {
-            title: '微应用入口',
-            path: '/guide/concept/entry',
+            title: 'React',
+            path: '/guide/use-layout/react',
+          },
+          {
+            title: 'Vue',
+            path: '/guide/use-layout/vue',
           },
         ],
       },
       {
-        title: '使用',
-        path: '/guide/use',
+        title: '微应用接入',
+        path: '/guide/use-child',
         children: [
           {
-            title: '微应用打包',
-            path: '/guide/use/bundler',
+            title: 'React',
+            path: '/guide/use-child/react',
           },
           {
-            title: '使用 API 接入',
-            path: '/guide/use/api',
+            title: 'Vue',
+            path: '/guide/use-child/vue',
           },
           {
-            title: '使用 React Component 接入',
-            path: '/guide/use/wrapper',
+            title: '其他框架',
+            path: '/guide/use-child/others',
+            // children: [
+            //   'guide/use-child/others/vue.md',
+            //   // {
+            //   //   title: 'icejs',
+            //   //   path: '/guide/use-child/others/vue',
+            //   // },
+            // ],
           },
         ],
       },
@@ -162,20 +180,20 @@ export default {
           },
         ],
       },
-      {
-        title: '接入指南',
-        path: '/guide/access',
-        children: [
-          // {
-          //   title: 'CRA 应用',
-          //   path: '/guide/access/cra',
-          // },
-          {
-            title: 'Umi 应用',
-            path: '/guide/access/umi',
-          },
-        ],
-      },
+      // {
+      //   title: '接入指南',
+      //   path: '/guide/access',
+      //   children: [
+      //     // {
+      //     //   title: 'CRA 应用',
+      //     //   path: '/guide/access/cra',
+      //     // },
+      //     {
+      //       title: 'Umi 应用',
+      //       path: '/guide/access/umi',
+      //     },
+      //   ],
+      // },
       // {
       //   title: '社区',
       //   path: '/guide/community',
