@@ -74,5 +74,5 @@ start();
 
 #### 微应用入口 url/entry/entryContent
 
-详见 [微应用入口](/guide/concept/entry) 。
+详见 [微应用入口](/guide/concept/child#入口规范)) 。
 

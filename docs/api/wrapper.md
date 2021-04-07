@@ -4,7 +4,7 @@ toc: menu
 
 # Wrapper
 
-对于 React 用户，我们封装了 [core 能力](./core) 以便通过 React 组件的方式快速接入 icestark。了解更多请移步 [使用 React Component 接入](/guide/use/wrapper)。
+对于 React 用户，我们封装了 [core 能力](./core) 以便通过 React 组件的方式快速接入 icestark。了解更多请移步 [使用 React Component 接入](/guide/use-layout/react)。
 
 以下 api 均从 `@ice/stark` 导出。
 

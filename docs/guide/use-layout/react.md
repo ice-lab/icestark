@@ -103,7 +103,7 @@ ReactDOM.render(<App />, document.getElementById('root'));
 
 #### 微应用入口 entry/entryContent/url
 
-对于 entry/entryContent/url 方式的使用请参考文档[微应用入口](/guide/concept/entry)。在此基础上，结合 React 的能力 AppRoute 还支持了更为灵活的 component 和 render 方式配置微应用入口：
+对于 entry/entryContent/url 方式的使用请参考文档[微应用入口](/guide/concept/child#入口规范)。在此基础上，结合 React 的能力 AppRoute 还支持了更为灵活的 component 和 render 方式配置微应用入口：
 
 ```js
 <AppRoute

@@ -4,7 +4,7 @@ toc: menu
 
 # Core
 
-icestark 底层能力已完全与框架解耦。这些能力使得您可以使用 [api 的方式](/guide/use/api) 接入 icestark。可以按照下面的方式导入这些函数：
+icestark 底层能力已完全与框架解耦。这些能力使得您可以使用 [api 的方式](/guide/use-child/vue) 接入 icestark。可以按照下面的方式导入这些函数：
 
 ```js
 import { start, registerMicroApps } from '@ice/stark';
@@ -27,9 +27,7 @@ import {
 } from '@iice/stark/lib/apps';
 ```
 
-## registerMicroApps
-
-> 仅 2.0.0 以上支持
+## registerMicroApps <Badge>2.0.0+</Badge>
 
 用于注册微应用信息，`registerMicroApps(appConfigs: AppConfig[])`
 
@@ -182,9 +180,7 @@ export function mount(props) {
 }
 ```
 
-## removeMicroApps
-
-> 仅 2.0.0 以上支持
+## removeMicroApps <Badge>2.0.0+</Badge>
 
 移除已注册微应用信息，`removeMicroApps(appNames: string[])`
 
@@ -258,22 +254,16 @@ removeMicroApps(['app1', 'app2']);
 - 类型：`Boolean | string[] | Function(app)`
 - 默认值：`undefined`
 
-## createMicroApp
-
-> 仅 2.0.0 以上支持
+## createMicroApp <Badge>2.0.0+</Badge>
 
 手动加载微应用，`createMicroApp(appConfig: AppConfig)`
 AppConfig 同 `regsiterMicroApps` 配置项，手动加载的情况下一般不包含路由相关配置：activePath、hashType、excat、strict、sensitive
 
-## unmountMicroApp
-
-> 仅 2.0.0 以上支持
+## unmountMicroApp <Badge>2.0.0+</Badge>
 
 手动卸载微应用，`unmountMicroApp(appName)`
 
-## unloadMicroApp
-
-> 仅 2.0.0 以上支持
+## unloadMicroApp <Badge>2.0.0+</Badge>
 
 手动移除微应用，`unloadMicroApp(appName)`
 
