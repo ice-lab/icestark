@@ -4,7 +4,7 @@ toc: menu
 
 # Utils
 
-以下 api 均从 `@ice/stark-app` 导出。
+以下 api 均从 `@ice/stark-app` 导出。使用方式如下：
 
 ```js
 import { isInIcestark } from '@ice/stark-app';

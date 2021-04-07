@@ -98,4 +98,4 @@ const apps = [{
 
 ### 4. render/component
 
-仅使用 React 的主应用支持，具体请参考 [使用 React Component 接入](/guide/use/wrapper)。
+仅使用 React 的主应用支持，具体请参考 [主应用接入 - React](/guide/use-layout/react)。

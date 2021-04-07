@@ -1,6 +1,6 @@
 # Vue 主应用接入
 
-使用 API `registerMicroApps` 的方式注册微应用，该方式不再限制主应用所使用的框架，因此主应用可以使用 Vue/Angular... 等不同框架编写。
+使用 API `registerMicroApps` 的方式注册微应用，该方式 **不限制主应用所使用的框架**，因此主应用可以使用 React、Vue、Angular 等不同框架编写。
 
 ## 通过官方脚手架创建
 
@@ -74,5 +74,5 @@ start();
 
 #### 微应用入口 url/entry/entryContent
 
-详见 [微应用入口](/guide/concept/child#入口规范)) 。
+详见 [微应用 - 入口规范](/guide/concept/child#入口规范) 。
 

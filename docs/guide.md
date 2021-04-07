@@ -12,7 +12,7 @@ icestark 在保证一个系统的操作体验基础上，实现各个微应用�
 
 ## 项目初始化
 
-icestark 可以通过简单的命令行，生成主应用和微应用模板。无论您是使用 React 还是 Vue，都可以便捷的创建符合 icestark 微前端规范的项目。这些项目均由 icetark 团队官方维护。
+icestark 可以通过简单的命令行，生成主应用和微应用模板。无论您是使用 React 还是 Vue，都可以便捷的创建符合 icestark 微前端规范的项目。这些项目均由 icestark 团队官方维护。
 
 <Alert>
 如果您想将正在开发中或已开发完成的项目接入 icestark，请移步 <a href="/guide/use-layout">主应用接入</a> 和 <a href="/guide/use-child">微应用接入</a>。如果您使用的是 <a href="https://github.com/facebook/create-react-app">create-react-app</a> 、umi 等框架开发的应用，亦可参考 <a href="/guide/use-child/others">其他框架的接入指南</a>。

@@ -152,13 +152,6 @@ export default {
           {
             title: '其他框架',
             path: '/guide/use-child/others',
-            // children: [
-            //   'guide/use-child/others/vue.md',
-            //   // {
-            //   //   title: 'icejs',
-            //   //   path: '/guide/use-child/others/vue',
-            //   // },
-            // ],
           },
         ],
       },
@@ -179,6 +172,10 @@ export default {
             path: '/guide/advanced/performance',
           },
         ],
+      },
+      {
+        title: '微模块',
+        path: '/guide/micro-module',
       },
       // {
       //   title: '接入指南',

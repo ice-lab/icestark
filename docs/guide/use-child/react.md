@@ -10,8 +10,6 @@ $ npm init ice icestark-child @icedesign/stark-child-scaffold
 
 ## 已有 React 项目改造为微应用
 
-如果你的项目基于 icejs，请参考文档 [icejs 接入微前端](https://ice.work/docs/guide/advance/icestark)，接入步骤非常简单。如果不是 icejs 的项目那么请参考下面的流程。
-
 ### 1. 应用入口适配
 
 将 React 应用改造为微应用，只需要导出对应的生命周期即可：

@@ -17,7 +17,8 @@ vue 应用改造同样在入口文件中导出微应用相关生命周期即可�
 ```js
 // 应用入口文件 src/main.js
 import Vue from 'vue';
-import { isInIcestark, setLibraryName } from '@ice/stark-app';
+import isInIcestark from '@ice/stark-app/lib/isInIcestark';
+import setLibraryName from '@ice/stark-app/lib/setLibraryName';
 
 let vue;
 
@@ -41,12 +42,13 @@ if (!isInIcestark()) {
 }
 ```
 
-若使用的是 Vue 3.0，则应用需要使用 Vue 3.0 的方式进行渲染。
+若使用的是 Vue 3.x，则应用需要使用 Vue 3.x 的方式进行渲染。
 
 ```js
 import { createApp } from 'vue'
 import App from './App.vue'
-import { isInIcestark, setLibraryName } from '@ice/stark-app';
+import isInIcestark from '@ice/stark-app/lib/isInIcestark';
+import setLibraryName from '@ice/stark-app/lib/setLibraryName';
 
 let vue = null;
 

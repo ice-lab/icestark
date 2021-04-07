@@ -100,20 +100,6 @@ const onAppLeave = (appConfig) => {
 
 因为 jsx 嵌套层级的关系，在主应用的 Layout 里没法使用 react-router 提供的 API，比如 `withRouter`, `Link`, `useParams` 等，具体参考文档 [主应用中路由跳转](/docs/icestark/guide/framework-app#主应用中路由跳转)。
 
-## UmiJS 应用如何改造为微应用
-
-UmiJS 支持配置 `@umijs/plugin-qiankun` 导出标准的微应用，安装完该插件后，通过注册 `config.js` 开启导出：
-
-```js
-export default {
-  qiankun: {
-    slave: {}
-  }
-}
-```
-
-> 由于 UmiJS 未提供运行时修改路由 basename 的内容，如果涉及到微应用基准路由不固定，可以通过在主应用动态设置 `window.routerBase` 的方式动态修改
-
 ## 官方 Demo 如何启用 HashRouter
 
 官方推荐 BrowserRouter 作为微前端的路由模式。在某些情况下，你可以通过以下方式适配 HashRouter 路由模式。

@@ -15,10 +15,10 @@ footer: Open-source MIT Licensed | Copyright © 2021<br />
   <div style="max-width: 1180px;position: relative;z-index: 2; display: flex; flex-direction: column; align-items: center">
     <div class="homepage-title" style="font-size: 65px; text-align: center;line-height: 90px; font-weight: 800; max-width: 600px">
       <!-- 简单、完备的微前端解决方案 -->
-      面向大型前端系统的微前端解决方案
+      面向大型系统的微前端解决方案
     </div>
-    <div class="homepage-subtitle" >
-      使用 icestark 构建您的下一个大型前端应用，让开发变得简单，让应用变得强大且安全。
+    <div class="homepage-subtitle" style="max-width: 800px; text-align: center">
+      使用 icestark 构建您的下一个微前端应用，或无痛迁移您目前的巨型应用。如同开发 SPA 应用一样简单，不仅解决多个开发团队协同问题，还带来了安全的沙箱、优秀的性能体验。
        <!-- icestark 为大型前端应用提供了简单、易迁移的解耦方案。完备的沙箱能力，性能优化方案也让应用更安全，更快速。 -->
     </div>
     <div class="quick-start" >
@@ -82,7 +82,7 @@ footer: Open-source MIT Licensed | Copyright © 2021<br />
          <div class="showCasePopup" style="">轻课堂</div></li>
       <li class="showCaseItem">
         <img class="showCaseImgItem" src="https://img.alicdn.com/imgextra/i3/O1CN01UvVhB61rfs0ag60nB_!!6000000005659-2-tps-3570-1714.png">
-         <div class="showCasePopup" style="">运营工作台产研平台</div></li>
+         <div class="showCasePopup" style="">淘系小二工作台</div></li>
       <li class="showCaseItem">
         <img class="showCaseImgItem" src="https://img.alicdn.com/imgextra/i4/O1CN010rpl2321v7LrPqIyI_!!6000000007046-2-tps-3570-1714.png">
          <div class="showCasePopup" style="">千牛特价版（商家中心）</div></li>
