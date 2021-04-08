@@ -16,6 +16,6 @@ spawnSync('npm', [
 });
 
 const source = join(__dirname, '../dist');
-const target = join(__dirname, '../docs');
+const target = join(__dirname, '../');
 
 copySync(source, target);
