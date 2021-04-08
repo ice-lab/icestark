@@ -51,3 +51,25 @@ describe('sanbox: binding this', () => {
     sandbox.execScriptInSandbox('expect(window === this).toBe(true);');
   });
 });
+
+describe('sandbox: falsy values should be trapped.', () => {
+  const sandbox = new Sandbox({ multiMode: true });
+
+  test('Falsy value - 0', () => {
+    sandbox.execScriptInSandbox('window.a = 0;expect(window.a).toBe(0);');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((window as any).a).toBe(undefined);
+  });
+
+  test('Falsy value - false', () => {
+    sandbox.execScriptInSandbox('window.b = false;expect(window.b).toBe(false);');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((window as any).a).toBe(undefined);
+  });
+
+  test('Falsy value - void 0', () => {
+    sandbox.execScriptInSandbox('window.c = void 0;expect(window.c).toBe(undefined);');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((window as any).a).toBe(undefined);
+  });
+});

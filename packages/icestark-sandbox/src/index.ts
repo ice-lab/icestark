@@ -125,7 +125,10 @@ export default class Sandbox {
         }
 
         const targetValue = target[p];
-        if (targetValue) {
+        /**
+         * Falsy value like 0/ ''/ false should be trapped by proxy window.
+         */
+        if (targetValue !== undefined) {
           // case of addEventListener, removeEventListener, setTimeout, setInterval setted in sandbox
           return targetValue;
         }
