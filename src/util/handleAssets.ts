@@ -136,7 +136,10 @@ export function appendExternalScript(
 
     element.addEventListener(
       'error',
-      () => reject(new Error(`js asset loaded error: ${content || asset}`)),
+      () => {
+        error(`js asset loaded error: ${content || asset}`);
+        return resolve();
+      },
       false,
     );
     element.addEventListener('load', () => resolve(), false);
