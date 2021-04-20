@@ -7,7 +7,7 @@ export default {
   publicPath: '/icestark/',
   logo: ' ',
   favicon:
-    '/assets/favicon.png',
+    './assets/favicon.png',
   styles: [
     '.__dumi-default-navbar-logo:not([data-plaintext]){padding-left: 0 !important}',
     '.markdown{ padding-bottom: 200px }',
