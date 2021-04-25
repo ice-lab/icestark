@@ -38,7 +38,7 @@ function loadEntry (entry: string, root = document.body): Promise<void> {
     const element: HTMLScriptElement = document.createElement('script');
 
     element.setAttribute('icestark', 'dynamic');
-    element.type = 'ext/javascrip';
+    element.type = 'text/javascript';
     element.src = entry;
     element.async = false;
 
@@ -48,9 +48,10 @@ function loadEntry (entry: string, root = document.body): Promise<void> {
 
     element.onload = () => {
       entryMap[entry] = true;
+      resolve();
     };
 
-    root.append(root);
+    root.append(element);
   });
 }
 
@@ -70,7 +71,6 @@ async function loadFederatedModule (app: string, module: string, shareScope: Sco
   const factory = await container.get(module);
   const Module = factory();
   return Module;
-
 }
 
 export function loadModule(options: ModuleOptions): Promise<void> {
@@ -78,7 +78,5 @@ export function loadModule(options: ModuleOptions): Promise<void> {
   // FIXME: should cache modules already loaded
 
   return loadEntry(entry)
-    .then(() => {
-      return loadFederatedModule(app, module);
-    });
+    .then(() => loadFederatedModule(app, module));
 }
