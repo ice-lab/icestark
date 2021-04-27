@@ -5,7 +5,7 @@ toc: menu
 
 ## 微应用 bundle 加载失败？
 
-前端应用如果做了按需加载，按需加载的 bundle 默认是根据当前域名拼接地址，如果前端资源部署在非当前域名（比如 CDN）下，则需要通过手动配置 publicPath 来实现，具体参考[文档](/docs/guide/basic/build#publicPath)。
+前端应用如果做了按需加载，按需加载的 bundle 默认是根据当前域名拼接地址，如果前端资源部署在非当前域名（比如 CDN）下，则需要通过手动配置 publicPath 来实现，具体参考[文档](https://ice.work/docs/guide/basic/build#publicPath)。
 
 ## 微应用开发时请求本地 Mock 接口？
 
@@ -82,7 +82,9 @@ const apps = [{
 }]
 ```
 
-> 如果微应用是开启按需加载，为了让微应用资源能够正确加载，需要微应用开启本地服务的时候设置 `publicPath`，如果微应用基于 icejs 进行开发，可以参考[配置](/docs/guide/basic/build#devPublicPath)。
+<Alert>
+如果微应用是开启按需加载，为了让微应用资源能够正确加载，需要微应用开启本地服务的时候设置 <code>publicPath</code>，如果微应用基于 icejs 进行开发，可以参考<a href="https://ice.work/docs/guide/basic/build#devPublicPath">配置</a>。
+</Alert>
 
 ## 应用启用 lazy 后，chunk 加载失败
 
@@ -98,7 +100,7 @@ const onAppLeave = (appConfig) => {
 
 ## `Error: Invariant failed: You should not use <withRouter(Navigation) /> outside a <Router>`
 
-因为 jsx 嵌套层级的关系，在主应用的 Layout 里没法使用 react-router 提供的 API，比如 `withRouter`, `Link`, `useParams` 等，具体参考文档 [主应用中路由跳转](/docs/icestark/guide/framework-app#主应用中路由跳转)。
+因为 jsx 嵌套层级的关系，在主应用的 Layout 里没法使用 react-router 提供的 API，比如 `withRouter`, `Link`, `useParams` 等，具体参考文档 [主应用中路由跳转](/guide/use-layout/react#主应用中路由跳转)。
 
 ## 官方 Demo 如何启用 HashRouter
 
