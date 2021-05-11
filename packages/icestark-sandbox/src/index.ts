@@ -67,8 +67,7 @@ export default class Sandbox {
 
     // hijack addEventListener
     proxyWindow.addEventListener = (eventName, fn, ...rest) => {
-      const listeners = this.eventListeners[eventName] || [];
-      listeners.push(fn);
+      this.eventListeners[eventName] = (this.eventListeners[eventName] || []).push(fn);
       return originalAddEventListener.apply(originalWindow, [eventName, fn, ...rest]);
     };
     // hijack removeEventListener
