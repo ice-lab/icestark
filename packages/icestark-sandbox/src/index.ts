@@ -148,7 +148,7 @@ export default class Sandbox {
         * https://262.ecma-international.org/5.1/#sec-10.4.2
         */
         if (p === 'eval') {
-          return value
+          return value;
         }
         
         if (isWindowFunction(value)) {
