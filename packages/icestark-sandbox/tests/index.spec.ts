@@ -73,3 +73,26 @@ describe('sandbox: falsy values should be trapped.', () => {
     expect((window as any).a).toBe(undefined);
   });
 });
+
+describe('eval in sandbox', () => {
+  const sandbox = new Sandbox({ multiMode: true });
+
+  test('execution context is not global execution context', () => {
+    let error = null;
+    try {
+      sandbox.execScriptInSandbox(
+        `
+          function bar (value) {
+            eval('console.log(value);');
+          }
+          bar(1);
+        `
+      );
+    } catch (e) {
+      error = e.message;
+    }
+
+    expect(error).toBe(null);
+  });
+});
+
