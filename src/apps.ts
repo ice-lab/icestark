@@ -179,8 +179,10 @@ export async function loadAppModule(appConfig: AppConfig) {
     await loadAndAppendCssAssets(appAssets);
     lifecycle = await loadBundle(appAssets.jsList, appSandbox);
   } else {
-    await loadAndAppendCssAssets(appAssets);
-    await loadAndAppendJsAssets(appAssets, { sandbox: appSandbox, fetch, scriptAttributes });
+    await Promise.all([
+      loadAndAppendCssAssets(appAssets),
+      loadAndAppendJsAssets(appAssets, { sandbox: appSandbox, fetch, scriptAttributes }),
+    ]);
 
     lifecycle =
       getLifecyleByLibrary() ||

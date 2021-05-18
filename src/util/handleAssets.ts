@@ -1,7 +1,9 @@
+/* eslint-disable no-param-reassign */
 import * as urlParse from 'url-parse';
 import Sandbox, { SandboxProps, SandboxContructor } from '@ice/sandbox';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { warn, error } from './message';
+import { toArray, isDev, formatMessage } from './helpers';
 import { Fetch, defaultFetch } from '../start';
 
 const COMMENT_REGEX = /<!--.*?-->/g;
@@ -111,11 +113,42 @@ export function appendCSS(
 /**
  * append custom attribute for element
  */
-function setAttributeForElement (attributes: string[], element: HTMLElement) {
-  attributes.forEach(attr => {
-    const pair = attr?.split('=');
-    element.setAttribute(pair[0], pair[1] || '');
+function setAttributeForScriptNode (element: HTMLScriptElement, {
+  id,
+  src,
+  scriptAttributes,
+}: { id: string; src: string; scriptAttributes: string[] }) {
+  /*
+  * stamped by icestark for recycle when needed.
+  */
+  element.setAttribute(PREFIX, DYNAMIC);
+  element.id = id;
+
+
+  element.type = 'text/javascript';
+  element.src = src;
+
+  /*
+  * `async=false` is required to make sure all js resources execute sequentially
+  * like you bundle them using webpack.
+   */
+  element.async = false;
+
+  const unableReachedAttributes = [PREFIX, 'id', 'type', 'src', 'async'];
+
+  scriptAttributes.forEach(attr => {
+    const [attrKey, attrValue] = attr.split('=');
+    if (unableReachedAttributes.includes(attrKey)) {
+      // eslint-disable-next-line no-unused-expressions
+      isDev && (
+        console.warn(formatMessage(`${attrKey} will be ignored by icestark.`))
+      );
+    } else {
+      // @ts-ignore
+      element.setAttribute(attrKey, attrValue || true);
+    }
   });
+
 }
 
 /**
@@ -139,12 +172,11 @@ export function appendExternalScript(
       resolve();
       return;
     }
-    setAttributeForElement(scriptAttributes, element);
-    element.setAttribute(PREFIX, DYNAMIC);
-    element.id = id;
-    element.type = 'text/javascript';
-    element.src = content || (asset as string);
-    element.async = false;
+    setAttributeForScriptNode(element, {
+      id,
+      src: content ||(asset as string),
+      scriptAttributes,
+    });
 
     element.addEventListener(
       'error',
@@ -157,12 +189,11 @@ export function appendExternalScript(
   });
 }
 
-export function getUrlAssets(url: string | string[]) {
-  const urls = Array.isArray(url) ? url : [url];
+export function getUrlAssets(urls: string | string[]) {
   const jsList = [];
   const cssList = [];
 
-  urls.forEach(url => {
+  toArray(urls).forEach(url => {
     // //icestark.com/index.css -> true
     // //icestark.com/index.css?timeSamp=1575443657834 -> true
     // //icestark.com/index.css?query=test.js -> false
