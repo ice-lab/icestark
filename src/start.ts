@@ -11,6 +11,7 @@ import {
 import { AppConfig, getMicroApps, createMicroApp, unmountMicroApp, clearMicroApps } from './apps';
 import { emptyAssets, recordAssets } from './util/handleAssets';
 import { LOADING_ASSETS, MOUNTED } from './util/constant';
+import { doPrefetch } from './util/prefetch';
 
 if (!window?.fetch) {
   throw new Error('[icestark] window.fetch not found, you need polyfill it');
@@ -19,6 +20,10 @@ if (!window?.fetch) {
 export const defaultFetch = window?.fetch.bind(window);
 
 export type Fetch = typeof window.fetch | ((url: string) => Promise<Response>);
+export type Prefetch =
+ | boolean
+ | string[]
+ | ((app: AppConfig) => boolean);
 
 export interface StartConfiguration {
   shouldAssetsRemove?: (
@@ -40,6 +45,7 @@ export interface StartConfiguration {
   onActiveApps?: (appConfigs: AppConfig[]) => void;
   reroute?: (url: string, type: RouteType | 'init' | 'popstate'| 'hashchange') => void;
   fetch?: Fetch;
+  prefetch?: Prefetch;
 }
 
 const globalConfiguration: StartConfiguration = {
@@ -53,6 +59,7 @@ const globalConfiguration: StartConfiguration = {
   onActiveApps: () => {},
   reroute,
   fetch: defaultFetch,
+  prefetch: false,
 };
 
 interface OriginalStateFunction {
@@ -84,7 +91,7 @@ export function reroute (url: string, type: RouteType | 'init' | 'popstate'| 'ha
   // trigger onRouteChange when url is changed
   if (lastUrl !== url) {
     globalConfiguration.onRouteChange(url, pathname, query, hash, type);
-  
+
     const unmountApps = [];
     const activeApps = [];
     getMicroApps().forEach((microApp: AppConfig) => {
@@ -191,11 +198,20 @@ function start(options?: StartConfiguration) {
     return;
   }
   started = true;
+
   recordAssets();
+
   // update globalConfiguration
   Object.keys(options || {}).forEach((configKey) => {
     globalConfiguration[configKey] = options[configKey];
   });
+
+  const { prefetch, fetch } = globalConfiguration;
+  if (prefetch) {
+    doPrefetch(getMicroApps(), prefetch, fetch);
+  }
+
+  // hajack history & eventListener
   hijackHistory();
   hijackEventListener();
 

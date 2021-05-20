@@ -9,6 +9,9 @@ const COMMENT_REGEX = /<!--.*?-->/g;
 const EMPTY_STRING = '';
 const STYLESHEET_LINK_TYPE = 'stylesheet';
 
+const cachedScriptsContent: object = {};
+const cachedStyleContent: object = {};
+
 export enum AssetTypeEnum {
   INLINE = 'inline',
   EXTERNAL = 'external',
@@ -53,7 +56,7 @@ export function appendCSS(
   asset: string | Asset,
   id: string,
 ): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
+  return new Promise<string>(async (resolve, reject) => {
     const { type, content } = (asset as Asset);
     if (!root) reject(new Error(`no root element for css assert: ${content || asset}`));
 
@@ -65,23 +68,43 @@ export function appendCSS(
       return;
     }
 
-    const element: HTMLLinkElement = document.createElement('link');
-    element.setAttribute(PREFIX, DYNAMIC);
-    element.id = id;
-    element.rel = 'stylesheet';
-    element.href = content || (asset as string);
+    /**
+     * if external resource is cached by prefetch, use cached content instead.
+     * For cachedStyleContent may fail to fetch (cors, and so on)，recover to original way
+     */
+    let useExternalLink = true;
+    if (type && type === AssetTypeEnum.EXTERNAL && cachedStyleContent[content]) {
+      try {
+        const styleElement: HTMLStyleElement = document.createElement('style');
+        styleElement.innerHTML = await cachedStyleContent[content];
+        root.appendChild(styleElement);
+        useExternalLink = false;
+        resolve();
+      } catch (e) {
+        useExternalLink = true;
+      }
+    }
 
-    element.addEventListener(
-      'error',
-      () => {
-        error(`css asset loaded error: ${content || asset}`);
-        return resolve();
-      },
-      false,
-    );
-    element.addEventListener('load', () => resolve(), false);
+    if (useExternalLink) {
+      const element: HTMLLinkElement = document.createElement('link');
+      element.setAttribute(PREFIX, DYNAMIC);
+      element.id = id;
+      element.rel = 'stylesheet';
+      element.href = content || (asset as string);
 
-    root.appendChild(element);
+      element.addEventListener(
+        'error',
+        () => {
+          error(`css asset loaded error: ${content || asset}`);
+          return resolve();
+        },
+        false,
+      );
+      element.addEventListener('load', () => resolve(), false);
+
+      root.appendChild(element);
+    }
+
   });
 }
 
@@ -146,8 +169,6 @@ export function getUrlAssets(url: string | string[]) {
   return { jsList, cssList };
 }
 
-const cachedScriptsContent: object = {};
-
 export function fetchScripts(jsList: Asset[], fetch = defaultFetch ) {
   return Promise.all(jsList.map((asset) => {
     const { type, content } = asset;
@@ -159,6 +180,20 @@ export function fetchScripts(jsList: Asset[], fetch = defaultFetch ) {
     }
   }));
 }
+
+// for prefetch
+export function fetchStyles(cssList: Asset[], fetch = defaultFetch) {
+  return Promise.all(
+    cssList.map((asset) => {
+      const { type, content} = asset;
+      if (type === AssetTypeEnum.INLINE) {
+        return content;
+      }
+      return cachedStyleContent[content] || (cachedStyleContent[content] = fetch(content).then(res => res.text()));
+    })
+  );
+}
+
 export async function appendAssets(assets: Assets, sandbox?: Sandbox, fetch = defaultFetch) {
   await loadAndAppendCssAssets(assets);
   await loadAndAppendJsAssets(assets, sandbox, fetch);
@@ -300,10 +335,10 @@ export async function getEntryAssets({
   entry,
   entryContent,
   assetsCacheKey,
-  href,
+  href = location.href,
   fetch = defaultFetch,
 }: {
-  root: HTMLElement | ShadowRoot;
+  root?: HTMLElement | ShadowRoot;
   entry?: string;
   entryContent?: string;
   assetsCacheKey: string;
@@ -330,7 +365,10 @@ export async function getEntryAssets({
   }
 
   const { html } = cachedContent;
-  root.appendChild(html);
+
+  if (root) {
+    root.appendChild(html);
+  }
 
   return cachedContent.assets;
 }

@@ -67,8 +67,9 @@ export default class Sandbox {
 
     // hijack addEventListener
     proxyWindow.addEventListener = (eventName, fn, ...rest) => {
-      const listeners = this.eventListeners[eventName] || [];
-      listeners.push(fn);
+      this.eventListeners[eventName] = (this.eventListeners[eventName] || []);
+      this.eventListeners[eventName].push(fn);
+
       return originalAddEventListener.apply(originalWindow, [eventName, fn, ...rest]);
     };
     // hijack removeEventListener
@@ -125,7 +126,10 @@ export default class Sandbox {
         }
 
         const targetValue = target[p];
-        if (targetValue) {
+        /**
+         * Falsy value like 0/ ''/ false should be trapped by proxy window.
+         */
+        if (targetValue !== undefined) {
           // case of addEventListener, removeEventListener, setTimeout, setInterval setted in sandbox
           return targetValue;
         }
@@ -137,6 +141,17 @@ export default class Sandbox {
         }
 
         const value = originalWindow[p];
+
+        /** 
+        * use `eval` indirectly if you bind it. And if eval code is not being evaluated by a direct call,
+        * then initialise the execution context as if it was a global execution context.
+        * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval
+        * https://262.ecma-international.org/5.1/#sec-10.4.2
+        */
+        if (p === 'eval') {
+          return value;
+        }
+        
         if (isWindowFunction(value)) {
           // fix Illegal invocation
           return value.bind(originalWindow);
