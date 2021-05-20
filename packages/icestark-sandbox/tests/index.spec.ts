@@ -35,7 +35,7 @@ describe('sandbox: default props', () => {
   });
 });
 
-describe('sandbox: access contructor', () => {
+describe('sandbox: access constructor', () => {
   const sandbox = new Sandbox();
 
   test('execute global functions', () => {
