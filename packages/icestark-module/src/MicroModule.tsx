@@ -19,7 +19,7 @@ interface State {
 }
 
 /**
- * default render compoent, mount all modules
+ * default render component, mount all modules
  */
 export default class MicroModule extends React.Component<any, State> {
   private moduleInfo = null;

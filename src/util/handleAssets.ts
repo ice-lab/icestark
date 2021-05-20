@@ -1,5 +1,5 @@
 import * as urlParse from 'url-parse';
-import Sandbox, { SandboxProps, SandboxContructor } from '@ice/sandbox';
+import Sandbox, { SandboxProps, SandboxConstructor } from '@ice/sandbox';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { warn, error } from './message';
 import { Fetch, defaultFetch } from '../start';
@@ -515,7 +515,7 @@ export async function loadAndAppendJsAssets(assets: Assets, sandbox?: Sandbox, f
   );
 }
 
-export function createSandbox(sandbox?: boolean | SandboxProps | SandboxContructor) {
+export function createSandbox(sandbox?: boolean | SandboxProps | SandboxConstructor) {
   // Create appSandbox if sandbox is active
   let appSandbox = null;
   if (sandbox) {

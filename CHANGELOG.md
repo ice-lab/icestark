@@ -2,6 +2,10 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
+## 2.3.2
+
+- [refact] compatible with sandbox spell error.
+
 ## 2.3.1
 
 - [fix] parse `library` the right way if `library` is an array. ([#287](https://github.com/ice-lab/icestark/issues/287))
