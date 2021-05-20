@@ -2,15 +2,15 @@ export interface SandboxProps {
   multiMode?: boolean;
 }
 
-export interface SandboxContructor {
+export interface SandboxConstructor {
   new(): Sandbox;
 }
 
-// check window contructor function， like Object Array
+// check window constructor function， like Object Array
 function isConstructor(fn) {
   // generator function and has own prototype properties
   const hasConstructor = fn.prototype && fn.prototype.constructor === fn && Object.getOwnPropertyNames(fn.prototype).length > 1;
-  // unnecessary to call toString if it has contructor function
+  // unnecessary to call toString if it has constructor function
   const functionStr = !hasConstructor && fn.toString();
   const upperCaseRegex = /^function\s+[A-Z]/;
 
@@ -67,8 +67,9 @@ export default class Sandbox {
 
     // hijack addEventListener
     proxyWindow.addEventListener = (eventName, fn, ...rest) => {
-      const listeners = this.eventListeners[eventName] || [];
-      listeners.push(fn);
+      this.eventListeners[eventName] = (this.eventListeners[eventName] || []);
+      this.eventListeners[eventName].push(fn);
+
       return originalAddEventListener.apply(originalWindow, [eventName, fn, ...rest]);
     };
     // hijack removeEventListener
@@ -96,11 +97,11 @@ export default class Sandbox {
       set(target: Window, p: PropertyKey, value: any): boolean {
         // eslint-disable-next-line no-prototype-builtins
         if (!originalWindow.hasOwnProperty(p)) {
-          // recorde value added in sandbox
+          // record value added in sandbox
           propertyAdded[p] = value;
         // eslint-disable-next-line no-prototype-builtins
         } else if (!originalValues.hasOwnProperty(p)) {
-          // if it is already been setted in orignal window, record it's original value
+          // if it is already been setted in original window, record it's original value
           originalValues[p] = originalWindow[p];
         }
         // set new value to original window in case of jsonp, js bundle which will be execute outof sandbox
@@ -140,6 +141,17 @@ export default class Sandbox {
         }
 
         const value = originalWindow[p];
+
+        /** 
+        * use `eval` indirectly if you bind it. And if eval code is not being evaluated by a direct call,
+        * then initialise the execution context as if it was a global execution context.
+        * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval
+        * https://262.ecma-international.org/5.1/#sec-10.4.2
+        */
+        if (p === 'eval') {
+          return value;
+        }
+        
         if (isWindowFunction(value)) {
           // fix Illegal invocation
           return value.bind(originalWindow);
