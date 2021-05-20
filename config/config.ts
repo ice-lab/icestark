@@ -3,8 +3,8 @@ export default {
   mode: 'site',
   locales: [['zh-CN', '中文']],
   title: 'icestark',
-  base: '/icestark',
-  publicPath: '/icestark/',
+  // base: '/icestark',
+  // publicPath: '/icestark/',
   logo: ' ',
   favicon:
     './assets/favicon.png',

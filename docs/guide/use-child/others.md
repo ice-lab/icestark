@@ -199,3 +199,73 @@ export default defineConfig({
   ],
 });
 ```
+
+## next.js 应用
+
+> 基于 next.js 10.x
+
+#### 定义基准路由
+
+next.js 可以通过 [basePath](https://nextjs.org/docs/api-reference/next.config.js/basepath) 来指定。
+
+```js
+// next.config.js
+module.exports = {
+  basePath: '/seller'
+}
+```
+
+由于 next.js 无法运行时指定 basePath，因此建议提前对基准路由进行强约定。比如约定 `http://localhost:3000/seller` 下渲染上述配置的 next 微应用。则主应用的 [path](/api/wrapper#approuter) 配置需要与之一一对应：
+
+```js
+<AppRoute
+  name="seller",
+  path="/seller"
+>
+</AppRoute>
+```
+
+#### 微应用通过 [entry](/guide/concept/child#入口规范) 方式接入
+
+```js
+<AppRoute
+  name="seller",
+  path="/seller" ,
+  entry="http://localhost:3001/seller"  // 入口 html 地址
+>
+</AppRoute>
+```
+
+#### 其他
+
+1. next.js 微应用本地开发访问跨域时的处理
+
+可以通过 next.js [custom server](https://nextjs.org/docs/advanced-features/custom-server) 来处理本地开发时访问跨域的问题。其中 server.js 的内容可参考：
+
+```js
+// server.js
+const { createServer } = require('http')
+const { parse } = require('url')
+const next = require('next')
+
+const dev = process.env.NODE_ENV !== 'production'
+const app = next({ dev })
+const handle = app.getRequestHandler()
+
+app.prepare().then(() => {
+  createServer((req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Request-Method', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET');
+    res.setHeader('Access-Control-Allow-Headers', '*');
+
+    handle(req, res)
+
+  }).listen(3000, (err) => {
+    if (err) throw err
+    console.log('> Ready on http://localhost:3000')
+  })
+})
+```
+
+<Alert>有关 next.js 微应用接入 icestark 的更多疑问或方案，可以在这个 <a href="https://github.com/ice-lab/icestark/issues/294">issue</a>下讨论</Alert>
