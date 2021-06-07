@@ -1,4 +1,7 @@
+import '@testing-library/jest-dom/extend-expect';
 import Sandbox from '../src/index';
+
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 describe('sandbox: excapeSandbox', () => {
   const sandbox = new Sandbox({});
@@ -35,7 +38,7 @@ describe('sandbox: default props', () => {
   });
 });
 
-describe('sandbox: access contructor', () => {
+describe('sandbox: access constructor', () => {
   const sandbox = new Sandbox();
 
   test('execute global functions', () => {
@@ -73,3 +76,58 @@ describe('sandbox: falsy values should be trapped.', () => {
     expect((window as any).a).toBe(undefined);
   });
 });
+
+describe('sandbox: eventListener and setTimeout should be trapped', () => {
+  /**
+   * for some reason, set `setTimeout: false` to enable communicate with global.
+   */
+  const sandbox = new Sandbox({ multiMode: false });
+
+  test('trap eventListener and setTimeout', async () => {
+    sandbox.execScriptInSandbox(`
+      window.count = 0;
+      window.addEventListener('popstate', (event) => {
+        console.warn('sandbox: onPopState count', count);
+        count += 1;
+      });
+      history.pushState({page: 1}, "title 1", "?page=1");
+      history.pushState({page: 2}, "title 2", "?page=2");
+      history.pushState({page: 3}, "title 3", "?page=3");
+      history.back();
+
+      window.id = setTimeout(() => {
+        expect(count).toEqual(1);
+      }, 100)
+    `);
+
+    await delay(1000);
+    expect((window as any).count).toEqual(1);
+    sandbox.clear();
+    history.back();
+    await delay(1000);
+    expect((window as any).count).toEqual(undefined);
+  });
+});
+
+describe('eval in sandbox', () => {
+  const sandbox = new Sandbox({ multiMode: true });
+
+  test('execution context is not global execution context', () => {
+    let error = null;
+    try {
+      sandbox.execScriptInSandbox(
+        `
+          function bar (value) {
+            eval('console.log(value);');
+          }
+          bar(1);
+        `
+      );
+    } catch (e) {
+      error = e.message;
+    }
+
+    expect(error).toBe(null);
+  });
+});
+

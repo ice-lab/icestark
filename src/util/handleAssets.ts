@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 import * as urlParse from 'url-parse';
 import * as camelCase from 'lodash.camelcase';
-import Sandbox, { SandboxProps, SandboxContructor } from '@ice/sandbox';
+import Sandbox, { SandboxProps, SandboxConstructor } from '@ice/sandbox';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { warn, error } from './message';
 import { toArray, isDev, formatMessage } from './helpers';
@@ -592,7 +592,7 @@ export async function loadAndAppendJsAssets(
   );
 }
 
-export function createSandbox(sandbox?: boolean | SandboxProps | SandboxContructor) {
+export function createSandbox(sandbox?: boolean | SandboxProps | SandboxConstructor) {
   // Create appSandbox if sandbox is active
   let appSandbox = null;
   if (sandbox) {

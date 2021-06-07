@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.1
+
+- [refact] compatible with sandbox spell error.
+
 ## 1.4.0
 
 - [feat] support local component when using `<MicroModule />`. ([#205](https://github.com/ice-lab/icestark/issues/205))
