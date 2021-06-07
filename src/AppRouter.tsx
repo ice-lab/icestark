@@ -55,7 +55,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
   private unmounted: boolean = false;
 
-  private err: string = ''; // js assets load err
+  private err: string | Error = ''; // js assets load err
 
   private appKey: string = '';
 
@@ -207,7 +207,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     if (url === ICESTSRK_NOT_FOUND) {
       return renderComponent(NotFoundComponent, {});
     } else if (url === ICESTSRK_ERROR) {
-      return renderComponent(ErrorComponent, { err: this.err });
+      return renderComponent(ErrorComponent, { err: typeof this.err === 'string' ? this.err : this.err?.message });
     }
 
     let match = null;
