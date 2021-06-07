@@ -48,7 +48,6 @@
   },
   "dependencies": {
     "@ice/sandbox": "^1.0.4",
-    "lodash.camelcase": "^4.3.0",
     "lodash.isempty": "^4.4.0",
     "lodash.isequal": "^4.5.0",
     "path-to-regexp": "^1.7.0",
