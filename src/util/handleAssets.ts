@@ -1,10 +1,12 @@
 /* eslint-disable no-param-reassign */
 import * as urlParse from 'url-parse';
+import * as camelCase from 'lodash.camelcase';
 import Sandbox, { SandboxProps, SandboxContructor } from '@ice/sandbox';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { warn, error } from './message';
 import { toArray, isDev, formatMessage } from './helpers';
 import { Fetch, defaultFetch } from '../start';
+import type { ScriptAttributes } from '../apps';
 
 const COMMENT_REGEX = /<!--.*?-->/g;
 
@@ -117,7 +119,7 @@ function setAttributeForScriptNode (element: HTMLScriptElement, {
   id,
   src,
   scriptAttributes,
-}: { id: string; src: string; scriptAttributes: string[] }) {
+}: { id: string; src: string; scriptAttributes: ScriptAttributes }) {
   /*
   * stamped by icestark for recycle when needed.
   */
@@ -129,23 +131,50 @@ function setAttributeForScriptNode (element: HTMLScriptElement, {
   element.src = src;
 
   /*
-  * `async=false` is required to make sure all js resources execute sequentially
-  * like you bundle them using webpack.
+  * `async=false` is required to make sure all js resources execute sequentially.
    */
   element.async = false;
 
+  /*
+  * `type` is not allowed to set currently.
+  */
   const unableReachedAttributes = [PREFIX, 'id', 'type', 'src', 'async'];
 
-  scriptAttributes.forEach(attr => {
+  const attrs = (typeof (scriptAttributes) === 'function'
+    ? scriptAttributes(src)
+    : scriptAttributes);
+
+  if (!Array.isArray(attrs)) {
+    isDev && (
+      console.warn(formatMessage('scriptAttributes should be Array or Function that returns Array.'))
+    );
+    return;
+  }
+
+  /*
+  * all built in <script /> attributes referring to https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script
+  */
+  const builtInScriptAttribute = ['async', 'crossorigin', 'defer', 'integrity', 'nomodule', 'nonce', 'referrerpolicy', 'src', 'type', 'autocapitalize', 'contenteditable', 'dir', 'draggable', 'hidden', 'id', 'inputMode', 'lang', 'part', 'slot', 'spellcheck', 'style', 'tabindex', 'title', 'translate'];
+
+  attrs.forEach(attr => {
     const [attrKey, attrValue] = attr.split('=');
     if (unableReachedAttributes.includes(attrKey)) {
-      // eslint-disable-next-line no-unused-expressions
-      isDev && (
-        console.warn(formatMessage(`${attrKey} will be ignored by icestark.`))
-      );
+      (isDev ? console.warn : console.log)(formatMessage(`${attrKey} will be ignored by icestark.`));
+      return;
+    }
+
+    if (builtInScriptAttribute.includes(attrKey)) {
+      /*
+      * built in attribute like `crossorigin`、`nomodule` should be set as follow:
+      * script.crossOrigin = 'use-credentials';
+      * sscript.noModule = false;
+      */
+      element[camelCase(attrKey)] = (attrValue === 'true' || attrValue === 'false' || !attrValue) ? !!attrValue : attrValue;
     } else {
-      // @ts-ignore
-      element.setAttribute(attrKey, attrValue || true);
+      /*
+      * none built in attribute added by `setAttribute`
+      */
+      element.setAttribute(attrKey, attrValue);
     }
   });
 
@@ -157,7 +186,7 @@ function setAttributeForScriptNode (element: HTMLScriptElement, {
 export function appendExternalScript(
   root: HTMLElement | ShadowRoot,
   asset: string | Asset,
-  scriptAttributes: string[],
+  scriptAttributes: ScriptAttributes,
   id: string,
 ): Promise<string> {
   return new Promise<string>((resolve, reject) => {
@@ -532,7 +561,7 @@ export async function loadAndAppendJsAssets(
   }: {
     sandbox?: Sandbox;
     fetch?: Fetch;
-    scriptAttributes?: string[];
+    scriptAttributes?: ScriptAttributes;
   }) {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
 

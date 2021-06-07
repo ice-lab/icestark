@@ -7,4 +7,3 @@ export const toArray = <T>(any: T | T[]): T[] => {
 export const formatMessage = (msg: string): string => {
   return `[icestark]: ${msg}`;
 };
-

@@ -16,6 +16,8 @@ import { loadBundle } from './util/loader';
 import { globalConfiguration, StartConfiguration } from './start';
 import { getLifecyleByLibrary, getLifecyleByRegister } from './util/getLifecycle';
 
+export type ScriptAttributes = string[] | ((url: string) => string[]);
+
 interface ActiveFn {
   (url: string): boolean;
 }
@@ -55,7 +57,7 @@ export interface BaseConfig extends PathOptions {
   /**
    * custom script attributes，only effective when scripts load by `<scrpit />`
    */
-  scriptAttributes?: string[];
+  scriptAttributes?: ScriptAttributes;
 }
 
 interface LifeCycleFn {

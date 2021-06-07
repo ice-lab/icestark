@@ -380,23 +380,47 @@ describe('appendAssets', () => {
       scriptAttributes: ['crossorigin=anonymous', 'nomodule', 'src=http://xxxx.js']
     })])
       .then(() => {
-        const jsElement0 = document.getElementById('icestark-js-0');
-        const jsElement1 = document.getElementById('icestark-js-1');
+        const jsElement0 = document.getElementById('icestark-js-0') as HTMLScriptElement;
+        const jsElement1 = document.getElementById('icestark-js-1') as HTMLScriptElement;
 
-        expect((jsElement0 as HTMLScriptElement).src).toEqual('http://icestark.com/js/index.js');
-        expect((jsElement0 as HTMLScriptElement).async).toEqual(false);
-        expect((jsElement1 as HTMLScriptElement).src).toEqual('http://icestark.com/js/test1.js');
-        expect((jsElement1 as HTMLScriptElement).async).toEqual(false);
+        expect(jsElement0.src).toEqual('http://icestark.com/js/index.js');
+        expect(jsElement0.async).toEqual(false);
+        expect(jsElement1.src).toEqual('http://icestark.com/js/test1.js');
+        expect(jsElement1.async).toEqual(false);
         expect(jsElement0.getAttribute('icestark')).toEqual('dynamic');
         expect(jsElement1.getAttribute('icestark')).toEqual('dynamic');
-        expect(jsElement0.getAttribute('crossorigin')).toEqual('anonymous');
-        expect(jsElement0.getAttribute('nomodule')).toEqual('');
+        expect(jsElement0.crossOrigin).toEqual('anonymous');
+        expect(jsElement0.noModule).toEqual(true);
         expect(jsElement0.getAttribute('src')).toEqual('http://icestark.com/js/index.js');
 
         recordAssets();
 
         expect(jsElement0.getAttribute('icestark')).toEqual('dynamic');
         expect(jsElement1.getAttribute('icestark')).toEqual('dynamic');
+
+        emptyAssets(() => true, true);
+    });
+  });
+
+  test('appendAssets - functional scriptAttributes', () => {
+    emptyAssets(() => true, true);
+    const assets = getUrlAssets([
+      'http://icestark.com/js/index.js'
+    ]);
+    Promise.all([loadAndAppendCssAssets(assets), loadAndAppendJsAssets(assets, {
+      scriptAttributes: (url) => {
+        if (url.includes('//icestark.com/js/index.js')) {
+          return ['crossorigin=anonymous']
+        }
+        return []
+      }
+    })])
+      .then(() => {
+        const jsElement0 = document.getElementById('icestark-js-0') as HTMLScriptElement;
+
+        expect(jsElement0.src).toEqual('http://icestark.com/js/index.js');
+        expect(jsElement0.async).toEqual(false);
+        expect(jsElement0.crossOrigin).toEqual('anonymous');
 
         emptyAssets(() => true, true);
     });
