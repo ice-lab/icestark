@@ -180,8 +180,6 @@ export async function loadAppModule(appConfig: AppConfig) {
 
   onFinishLoading(appConfig);
 
-  // clear appSandbox
-  appSandbox?.clear();
   return combineLifecyle(lifecycle, appConfig);
 }
 
