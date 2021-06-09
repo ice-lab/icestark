@@ -62,7 +62,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   static defaultProps = {
     onRouteChange: () => {},
     // eslint-disable-next-line react/jsx-filename-extension
-    ErrorComponent: ({ err }) => <div>{ err || 'Error' }</div>,
+    ErrorComponent: ({ err }: { err: string | Error}) => <div>{ typeof err === 'string' ? err : err?.message }</div>,
     LoadingComponent: <div>Loading...</div>,
     NotFoundComponent: <div>NotFound</div>,
     shouldAssetsRemove: () => true,
@@ -207,7 +207,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     if (url === ICESTSRK_NOT_FOUND) {
       return renderComponent(NotFoundComponent, {});
     } else if (url === ICESTSRK_ERROR) {
-      return renderComponent(ErrorComponent, { err: typeof this.err === 'string' ? this.err : this.err?.message });
+      return renderComponent(ErrorComponent, { err: this.err });
     }
 
     let match = null;
