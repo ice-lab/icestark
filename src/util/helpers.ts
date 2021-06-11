@@ -17,3 +17,10 @@ export const builtInScriptAttributesMap = new Map<string, string>([
     .map(item => ([item, item]) as [string, string]),
   ['crossorigin', 'crossOrigin'], ['nomodule', 'noModule'], ['contenteditable', 'contentEditable'], ['inputmode', 'inputMode'], ['tabindex', 'tabIndex'],
 ]);
+
+export const looseBoolean2Boolean = (falsyBoolean: 'true' | 'false' | unknown): boolean | unknown => {
+  if (falsyBoolean === 'false' || falsyBoolean === 'true') {
+    return falsyBoolean !== 'false';
+  }
+  return falsyBoolean;
+};

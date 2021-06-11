@@ -3,7 +3,7 @@ import * as urlParse from 'url-parse';
 import Sandbox, { SandboxProps, SandboxConstructor } from '@ice/sandbox';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { warn, error } from './message';
-import { toArray, isDev, formatMessage, builtInScriptAttributesMap } from './helpers';
+import { toArray, isDev, formatMessage, builtInScriptAttributesMap, looseBoolean2Boolean } from './helpers';
 import { Fetch, defaultFetch } from '../start';
 import type { ScriptAttributes } from '../apps';
 
@@ -163,8 +163,7 @@ function setAttributeForScriptNode (element: HTMLScriptElement, {
       * script.crossOrigin = 'use-credentials';
       * script.noModule = true;
       */
-      const nonLooseBooleanAttrValue = (attrValue === 'true' || attrValue === 'false') ? Boolean(attrValue) : attrValue;
-      element[builtInScriptAttributesMap.get(attrKey)] = nonLooseBooleanAttrValue === undefined ? true : attrValue;
+      element[builtInScriptAttributesMap.get(attrKey)] = looseBoolean2Boolean(attrValue) === undefined ? true : attrValue;
     } else {
       /*
       * none built in attribute added by `setAttribute`
