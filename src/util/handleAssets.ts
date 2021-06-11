@@ -163,7 +163,7 @@ function setAttributeForScriptNode (element: HTMLScriptElement, {
       * script.crossOrigin = 'use-credentials';
       * script.noModule = true;
       */
-      element[builtInScriptAttributesMap.get(attrKey)] = looseBoolean2Boolean(attrValue) === undefined ? true : attrValue;
+      element[builtInScriptAttributesMap.get(attrKey)] = looseBoolean2Boolean(attrValue) === undefined || attrValue;
     } else {
       /*
       * none built in attribute added by `setAttribute`
