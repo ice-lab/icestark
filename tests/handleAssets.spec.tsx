@@ -369,7 +369,7 @@ describe('getEntryAssets', () => {
 
 // tests for url
 describe('appendAssets', () => {
-  test('appendAssets basic', () => {
+  test('appendAssets basic', done => {
     emptyAssets(() => true, true);
     const assets = getUrlAssets([
       'http://icestark.com/js/index.js',
@@ -377,7 +377,7 @@ describe('appendAssets', () => {
       'http://icestark.com/js/test1.js',
     ]);
     Promise.all([loadAndAppendCssAssets(assets), loadAndAppendJsAssets(assets, {
-      scriptAttributes: ['crossorigin=anonymous', 'nomodule', 'src=http://xxxx.js']
+      scriptAttributes: ['crossorigin=anonymous', 'nomodule=false', 'src=http://xxxx.js']
     })])
       .then(() => {
         const jsElement0 = document.getElementById('icestark-js-0') as HTMLScriptElement;
@@ -390,7 +390,7 @@ describe('appendAssets', () => {
         expect(jsElement0.getAttribute('icestark')).toEqual('dynamic');
         expect(jsElement1.getAttribute('icestark')).toEqual('dynamic');
         expect(jsElement0.crossOrigin).toEqual('anonymous');
-        expect(jsElement0.noModule).toEqual(true);
+        expect(jsElement0.noModule).toEqual(false);
         expect(jsElement0.getAttribute('src')).toEqual('http://icestark.com/js/index.js');
 
         recordAssets();
@@ -399,10 +399,20 @@ describe('appendAssets', () => {
         expect(jsElement1.getAttribute('icestark')).toEqual('dynamic');
 
         emptyAssets(() => true, true);
+
+        done();
     });
+
+    const links = Array.from(document.getElementsByTagName('link') || []);
+    const scripts = Array.from(document.getElementsByTagName('script') || [])
+    const linksAndScripts = links.concat(scripts as any);
+    for (let i = 0; i < linksAndScripts.length; i++) {
+      (linksAndScripts[i] as HTMLLinkElement | HTMLScriptElement).dispatchEvent(new Event('load'));
+    }
+
   });
 
-  test('appendAssets - functional scriptAttributes', () => {
+  test('appendAssets - functional scriptAttributes', done => {
     emptyAssets(() => true, true);
     const assets = getUrlAssets([
       'http://icestark.com/js/index.js'
@@ -423,7 +433,14 @@ describe('appendAssets', () => {
         expect(jsElement0.crossOrigin).toEqual('anonymous');
 
         emptyAssets(() => true, true);
+
+        done();
     });
+
+    const scripts = Array.from(document.getElementsByTagName('script') || [])
+    for (let i = 0; i < scripts.length; i++) {
+      (scripts[i]).dispatchEvent(new Event('load'));
+    }
   });
 
   test('appendAssets useShadow=true', () => {
