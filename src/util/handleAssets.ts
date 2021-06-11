@@ -1,9 +1,9 @@
 /* eslint-disable no-param-reassign */
 import * as urlParse from 'url-parse';
 import Sandbox, { SandboxProps, SandboxConstructor } from '@ice/sandbox';
-import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX, builtInScriptAttributesMap } from './constant';
+import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { warn, error } from './message';
-import { toArray, isDev, formatMessage } from './helpers';
+import { toArray, isDev, formatMessage, builtInScriptAttributesMap } from './helpers';
 import { Fetch, defaultFetch } from '../start';
 import type { ScriptAttributes } from '../apps';
 
