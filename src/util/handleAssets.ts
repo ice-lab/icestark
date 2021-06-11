@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 import * as urlParse from 'url-parse';
 import Sandbox, { SandboxProps, SandboxConstructor } from '@ice/sandbox';
-import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
+import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX, builtInScriptAttributesMap } from './constant';
 import { warn, error } from './message';
 import { toArray, isDev, formatMessage } from './helpers';
 import { Fetch, defaultFetch } from '../start';
@@ -150,15 +150,6 @@ function setAttributeForScriptNode (element: HTMLScriptElement, {
     return;
   }
 
-  /*
-  * all built in <script /> attributes referring to https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script
-  */
-  const builtInScriptAttributesMap = new Map<string, string>([
-    ...['async', 'defer', 'integrity', 'nonce', 'referrerpolicy', 'src', 'type', 'autocapitalize', 'dir', 'draggable', 'hidden', 'id', 'lang', 'part', 'slot', 'spellcheck', 'style', 'title', 'translate']
-      .map(item => ([item, item]) as [string, string]),
-    ['crossorigin', 'crossOrigin'], ['nomodule', 'noModule'], ['contenteditable', 'contentEditable'], ['inputmode', 'inputMode'], ['tabindex', 'tabIndex'],
-  ]);
-
   attrs.forEach(attr => {
     const [attrKey, attrValue] = attr.split('=');
     if (unableReachedAttributes.includes(attrKey)) {
@@ -168,11 +159,12 @@ function setAttributeForScriptNode (element: HTMLScriptElement, {
 
     if (builtInScriptAttributesMap.has(attrKey)) {
       /*
-      * built in attribute like `crossorigin`、`nomodule` should be set as follow:
+      * built in attribute like ["crossorigin=use-credentials"]、["nomodule"] should be set as follow:
       * script.crossOrigin = 'use-credentials';
-      * sscript.noModule = false;
+      * script.noModule = true;
       */
-      element[builtInScriptAttributesMap.get(attrKey)] = (attrValue === 'true' || attrValue === 'false' || !attrValue) ? !!attrValue : attrValue;
+      const nonLooseBooleanAttrValue = (attrValue === 'true' || attrValue === 'false') ? Boolean(attrValue) : attrValue;
+      element[builtInScriptAttributesMap.get(attrKey)] = nonLooseBooleanAttrValue === undefined ? true : attrValue;
     } else {
       /*
       * none built in attribute added by `setAttribute`
