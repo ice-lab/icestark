@@ -5,13 +5,13 @@ import { setCache, getCache } from './cache';
 
 const eventNameSpace = 'event';
 
-type StringAndSymbol = string | symbol;
+type StringSymbolUnion = string | symbol;
 
 interface Hooks {
-  emit(key: StringAndSymbol, value: any): void;
-  on(key: StringAndSymbol, callback: (value: any) => void): void;
-  off(key: StringAndSymbol, callback?: (value: any) => void): void;
-  has(key: StringAndSymbol): boolean;
+  emit(key: StringSymbolUnion, value: any): void;
+  on(key: StringSymbolUnion, callback: (value: any) => void): void;
+  off(key: StringSymbolUnion, callback?: (value: any) => void): void;
+  has(key: StringSymbolUnion): boolean;
 }
 
 class Event implements Hooks {
@@ -21,7 +21,7 @@ class Event implements Hooks {
     this.eventEmitter = {};
   }
 
-  emit(key: StringAndSymbol, ...args) {
+  emit(key: StringSymbolUnion, ...args) {
     const keyEmitter = this.eventEmitter[key];
 
     if (!isArray(keyEmitter) || (isArray(keyEmitter) && keyEmitter.length === 0)) {
@@ -34,7 +34,7 @@ class Event implements Hooks {
     });
   }
 
-  on(key: StringAndSymbol, callback: (value: any) => void) {
+  on(key: StringSymbolUnion, callback: (value: any) => void) {
     if (typeof key !== 'string' && typeof key !== 'symbol') {
       warn('event.on: key should be string / symbol');
       return;
@@ -51,7 +51,7 @@ class Event implements Hooks {
     this.eventEmitter[key].push(callback);
   }
 
-  off(key: StringAndSymbol, callback?: (value: any) => void) {
+  off(key: StringSymbolUnion, callback?: (value: any) => void) {
     if (typeof key !== 'string' && typeof key !== 'symbol') {
       warn('event.off: key should be string / symbol');
       return;
@@ -71,7 +71,7 @@ class Event implements Hooks {
     this.eventEmitter[key] = this.eventEmitter[key].filter(cb => cb !== callback);
   }
 
-  has(key: StringAndSymbol) {
+  has(key: StringSymbolUnion) {
     const keyEmitter = this.eventEmitter[key];
     return isArray(keyEmitter) && keyEmitter.length > 0;
   }

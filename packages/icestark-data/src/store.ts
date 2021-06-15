@@ -6,18 +6,18 @@ import { setCache, getCache } from './cache';
 
 const storeNameSpace = 'store';
 
-type StringAndSymbol = string | symbol;
+type StringSymbolUnion = string | symbol;
 
 // eslint-disable-next-line @typescript-eslint/interface-name-prefix
 interface IO {
   set(key: string | symbol | object, value?: any): void;
-  get(key?: StringAndSymbol): void;
+  get(key?: StringSymbolUnion): void;
 }
 
 interface Hooks {
-  on(key: StringAndSymbol, callback: (value: any) => void, force?: boolean): void;
-  off(key: StringAndSymbol, callback?: (value: unknown) => void): void;
-  has(key: StringAndSymbol): boolean;
+  on(key: StringSymbolUnion, callback: (value: any) => void, force?: boolean): void;
+  off(key: StringSymbolUnion, callback?: (value: unknown) => void): void;
+  has(key: StringSymbolUnion): boolean;
 }
 
 class Store implements IO, Hooks {
@@ -30,16 +30,16 @@ class Store implements IO, Hooks {
     this.storeEmitter = {};
   }
 
-  _getValue(key: StringAndSymbol) {
+  _getValue(key: StringSymbolUnion) {
     return this.store[key];
   }
 
-  _setValue(key: StringAndSymbol, value: any) {
+  _setValue(key: StringSymbolUnion, value: any) {
     this.store[key] = value;
     this._emit(key);
   }
 
-  _emit(key: StringAndSymbol) {
+  _emit(key: StringSymbolUnion) {
     const keyEmitter = this.storeEmitter[key];
 
     if (!isArray(keyEmitter) || (isArray(keyEmitter) && keyEmitter.length === 0)) {
@@ -52,7 +52,7 @@ class Store implements IO, Hooks {
     });
   }
 
-  get(key?: StringAndSymbol) {
+  get(key?: StringSymbolUnion) {
     warn('123232');
     if (key === undefined) {
       return this.store;
@@ -81,11 +81,11 @@ class Store implements IO, Hooks {
         this._setValue(k, v);
       });
     } else {
-      this._setValue(key as StringAndSymbol, value);
+      this._setValue(key as StringSymbolUnion, value);
     }
   }
 
-  on(key: StringAndSymbol, callback: (value: any) => void, force?: boolean) {
+  on(key: StringSymbolUnion, callback: (value: any) => void, force?: boolean) {
     if (typeof key !== 'string') {
       if (typeof key !== 'symbol') {
         warn('store.on: key should be string / symbol');
@@ -109,7 +109,7 @@ class Store implements IO, Hooks {
     }
   }
 
-  off(key: StringAndSymbol, callback?: (value: any) => void) {
+  off(key: StringSymbolUnion, callback?: (value: any) => void) {
     if (typeof key !== 'string' && typeof key !== 'symbol') {
       warn('store.off: key should be string / symbol');
       return;
@@ -128,7 +128,7 @@ class Store implements IO, Hooks {
     this.storeEmitter[key] = this.storeEmitter[key].filter(cb => cb !== callback);
   }
 
-  has(key: StringAndSymbol) {
+  has(key: StringSymbolUnion) {
     const keyEmitter = this.storeEmitter[key];
     return isArray(keyEmitter) && keyEmitter.length > 0;
   }
