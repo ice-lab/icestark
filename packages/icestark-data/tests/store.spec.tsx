@@ -15,7 +15,7 @@ describe('store', () => {
     expect(store.get()).toStrictEqual({});
 
     store.get([]);
-    expect(warnMockFn).toBeCalledWith('store.get: key should be string');
+    expect(warnMockFn).toBeCalledWith('store.get: key should be string / symbol');
 
     expect(store.get('test')).toBeUndefined();
   });
@@ -27,7 +27,7 @@ describe('store', () => {
     };
 
     store.set([]);
-    expect(warnMockFn).toBeCalledWith('store.set: key should be string / object');
+    expect(warnMockFn).toBeCalledWith('store.set: key should be string / symbol / object');
 
     const testArray = [];
     const testObj = {};
@@ -50,7 +50,7 @@ describe('store', () => {
     };
 
     store.on([]);
-    expect(warnMockFn).toBeCalledWith('store.on: key should be string');
+    expect(warnMockFn).toBeCalledWith('store.on: key should be string / symbol');
 
     store.on('testOn');
     expect(warnMockFn).toBeCalledWith('store.on: callback is required, should be function');
@@ -75,7 +75,7 @@ describe('store', () => {
     };
 
     store.off([]);
-    expect(warnMockFn).toBeCalledWith('store.off: key should be string');
+    expect(warnMockFn).toBeCalledWith('store.off: key should be string / symbol');
 
     store.off('testOff');
     expect(warnMockFn).toBeCalledWith('store.off: testOff has no callback');

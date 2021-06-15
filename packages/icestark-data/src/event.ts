@@ -5,11 +5,13 @@ import { setCache, getCache } from './cache';
 
 const eventNameSpace = 'event';
 
+type StringSymbolUnion = string | symbol;
+
 interface Hooks {
-  emit(key: string, value: any): void;
-  on(key: string, callback: (value: any) => void): void;
-  off(key: string, callback?: (value: any) => void): void;
-  has(key: string): boolean;
+  emit(key: StringSymbolUnion, value: any): void;
+  on(key: StringSymbolUnion, callback: (value: any) => void): void;
+  off(key: StringSymbolUnion, callback?: (value: any) => void): void;
+  has(key: StringSymbolUnion): boolean;
 }
 
 class Event implements Hooks {
@@ -19,11 +21,11 @@ class Event implements Hooks {
     this.eventEmitter = {};
   }
 
-  emit(key: string, ...args) {
+  emit(key: StringSymbolUnion, ...args) {
     const keyEmitter = this.eventEmitter[key];
 
     if (!isArray(keyEmitter) || (isArray(keyEmitter) && keyEmitter.length === 0)) {
-      warn(`event.emit: no callback is called for ${key}`);
+      warn(`event.emit: no callback is called for ${String(key)}`);
       return;
     }
 
@@ -32,12 +34,11 @@ class Event implements Hooks {
     });
   }
 
-  on(key: string, callback: (value: any) => void) {
-    if (typeof key !== 'string') {
-      warn('event.on: key should be string');
+  on(key: StringSymbolUnion, callback: (value: any) => void) {
+    if (typeof key !== 'string' && typeof key !== 'symbol') {
+      warn('event.on: key should be string / symbol');
       return;
     }
-
     if (callback === undefined || typeof callback !== 'function') {
       warn('event.on: callback is required, should be function');
       return;
@@ -50,14 +51,15 @@ class Event implements Hooks {
     this.eventEmitter[key].push(callback);
   }
 
-  off(key: string, callback?: (value: any) => void) {
-    if (typeof key !== 'string') {
-      warn('event.off: key should be string');
+  off(key: StringSymbolUnion, callback?: (value: any) => void) {
+    if (typeof key !== 'string' && typeof key !== 'symbol') {
+      warn('event.off: key should be string / symbol');
       return;
+
     }
 
     if (!isArray(this.eventEmitter[key])) {
-      warn(`event.off: ${key} has no callback`);
+      warn(`event.off: ${String(key)} has no callback`);
       return;
     }
 
@@ -69,7 +71,7 @@ class Event implements Hooks {
     this.eventEmitter[key] = this.eventEmitter[key].filter(cb => cb !== callback);
   }
 
-  has(key: string) {
+  has(key: StringSymbolUnion) {
     const keyEmitter = this.eventEmitter[key];
     return isArray(keyEmitter) && keyEmitter.length > 0;
   }
