@@ -16,7 +16,7 @@ interface IO {
 
 interface Hooks {
   on(key: StringSymbolUnion, callback: (value: any) => void, force?: boolean): void;
-  off(key: StringSymbolUnion, callback?: (value: unknown) => void): void;
+  off(key: StringSymbolUnion, callback?: (value: any) => void): void;
   has(key: StringSymbolUnion): boolean;
 }
 
@@ -85,11 +85,9 @@ class Store implements IO, Hooks {
   }
 
   on(key: StringSymbolUnion, callback: (value: any) => void, force?: boolean) {
-    if (typeof key !== 'string') {
-      if (typeof key !== 'symbol') {
-        warn('store.on: key should be string / symbol');
-        return;
-      }
+    if (typeof key !== 'string' && typeof key !== 'symbol') {
+      warn('store.on: key should be string / symbol');
+      return;
     }
 
     if (callback === undefined || typeof callback !== 'function') {
