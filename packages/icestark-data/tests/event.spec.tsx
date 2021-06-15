@@ -13,7 +13,7 @@ describe('event', () => {
     };
 
     event.on([]);
-    expect(warnMockFn).toBeCalledWith('event.on: key should be string');
+    expect(warnMockFn).toBeCalledWith('event.on: key should be string / symbol');
 
     event.on('testOn');
     expect(warnMockFn).toBeCalledWith('event.on: callback is required, should be function');
@@ -33,7 +33,7 @@ describe('event', () => {
     };
 
     event.off([]);
-    expect(warnMockFn).toBeCalledWith('event.off: key should be string');
+    expect(warnMockFn).toBeCalledWith('event.off: key should be string / symbol');
 
     event.off('testOff');
     expect(warnMockFn).toBeCalledWith('event.off: testOff has no callback');
