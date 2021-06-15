@@ -110,11 +110,9 @@ class Store implements IO, Hooks {
   }
 
   off(key: StringAndSymbol, callback?: (value: any) => void) {
-    if (typeof key !== 'string') {
-      if (typeof key !== 'symbol') {
-        warn('store.off: key should be string / symbol');
-        return;
-      }
+    if (typeof key !== 'string' && typeof key !== 'symbol') {
+      warn('store.off: key should be string / symbol');
+      return;
     }
 
     if (!isArray(this.storeEmitter[key])) {
