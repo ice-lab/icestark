@@ -53,7 +53,6 @@ class Store implements IO, Hooks {
   }
 
   get(key?: StringSymbolUnion) {
-    warn('123232');
     if (key === undefined) {
       return this.store;
     }
