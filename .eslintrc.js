@@ -8,6 +8,7 @@ module.exports = deepmerge(tslint, {
     '@typescript-eslint/explicit-member-accessibility': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/interface-name-prefix': 1,
+    'no-unused-expressions': 'off',
   },
   settings: {
     react: {

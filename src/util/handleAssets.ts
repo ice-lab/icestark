@@ -1,8 +1,11 @@
+/* eslint-disable no-param-reassign */
 import * as urlParse from 'url-parse';
 import Sandbox, { SandboxProps, SandboxConstructor } from '@ice/sandbox';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { warn, error } from './message';
+import { toArray, isDev, formatMessage, builtInScriptAttributesMap, looseBoolean2Boolean } from './helpers';
 import { Fetch, defaultFetch } from '../start';
+import type { ScriptAttributes } from '../apps';
 
 const COMMENT_REGEX = /<!--.*?-->/g;
 
@@ -109,11 +112,76 @@ export function appendCSS(
 }
 
 /**
+ * append custom attribute for element
+ */
+function setAttributeForScriptNode (element: HTMLScriptElement, {
+  id,
+  src,
+  scriptAttributes,
+}: { id: string; src: string; scriptAttributes: ScriptAttributes }) {
+  /*
+  * stamped by icestark for recycle when needed.
+  */
+  element.setAttribute(PREFIX, DYNAMIC);
+  element.id = id;
+
+
+  element.type = 'text/javascript';
+  element.src = src;
+
+  /*
+  * `async=false` is required to make sure all js resources execute sequentially.
+   */
+  element.async = false;
+
+  /*
+  * `type` is not allowed to set currently.
+  */
+  const unableReachedAttributes = [PREFIX, 'id', 'type', 'src', 'async'];
+
+  const attrs = typeof (scriptAttributes) === 'function'
+    ? scriptAttributes(src)
+    : scriptAttributes;
+
+  if (!Array.isArray(attrs)) {
+    isDev && (
+      console.warn(formatMessage('scriptAttributes should be Array or Function that returns Array.'))
+    );
+    return;
+  }
+
+  attrs.forEach(attr => {
+    const [attrKey, attrValue] = attr.split('=');
+    if (unableReachedAttributes.includes(attrKey)) {
+      (isDev ? console.warn : console.log)(formatMessage(`${attrKey} will be ignored by icestark.`));
+      return;
+    }
+
+    if (builtInScriptAttributesMap.has(attrKey)) {
+      /*
+      * built in attribute like ["crossorigin=use-credentials"]、["nomodule"] should be set as follow:
+      * script.crossOrigin = 'use-credentials';
+      * script.noModule = true;
+      */
+      const nonLooseBooleanAttrValue = looseBoolean2Boolean(attrValue);
+      element[builtInScriptAttributesMap.get(attrKey)] = nonLooseBooleanAttrValue === undefined || nonLooseBooleanAttrValue;
+    } else {
+      /*
+      * none built in attribute added by `setAttribute`
+      */
+      element.setAttribute(attrKey, attrValue);
+    }
+  });
+
+}
+
+/**
  * Create script element (without inline) and append to root
  */
 export function appendExternalScript(
   root: HTMLElement | ShadowRoot,
   asset: string | Asset,
+  scriptAttributes: ScriptAttributes,
   id: string,
 ): Promise<string> {
   return new Promise<string>((resolve, reject) => {
@@ -121,18 +189,18 @@ export function appendExternalScript(
     if (!root) reject(new Error(`no root element for js assert: ${content || asset}`));
 
     const element: HTMLScriptElement = document.createElement('script');
-    // inline script    
+    // inline script
     if (type && type  === AssetTypeEnum.INLINE) {
       element.innerHTML = content;
       root.appendChild(element);
       resolve();
       return;
     }
-    element.setAttribute(PREFIX, DYNAMIC);
-    element.id = id;
-    element.type = 'text/javascript';
-    element.src = content || (asset as string);
-    element.async = false;
+    setAttributeForScriptNode(element, {
+      id,
+      src: content ||(asset as string),
+      scriptAttributes,
+    });
 
     element.addEventListener(
       'error',
@@ -145,12 +213,11 @@ export function appendExternalScript(
   });
 }
 
-export function getUrlAssets(url: string | string[]) {
-  const urls = Array.isArray(url) ? url : [url];
+export function getUrlAssets(urls: string | string[]) {
   const jsList = [];
   const cssList = [];
 
-  urls.forEach(url => {
+  toArray(urls).forEach(url => {
     // //icestark.com/index.css -> true
     // //icestark.com/index.css?timeSamp=1575443657834 -> true
     // //icestark.com/index.css?query=test.js -> false
@@ -192,11 +259,6 @@ export function fetchStyles(cssList: Asset[], fetch = defaultFetch) {
       return cachedStyleContent[content] || (cachedStyleContent[content] = fetch(content).then(res => res.text()));
     })
   );
-}
-
-export async function appendAssets(assets: Assets, sandbox?: Sandbox, fetch = defaultFetch) {
-  await loadAndAppendCssAssets(assets);
-  await loadAndAppendJsAssets(assets, sandbox, fetch);
 }
 
 export function parseUrl(entry: string): ParsedConfig {
@@ -485,7 +547,17 @@ export async function loadAndAppendCssAssets(assets: Assets) {
  * @param {Sandbox} [sandbox]
  * @returns
  */
-export async function loadAndAppendJsAssets(assets: Assets, sandbox?: Sandbox, fetch = defaultFetch) {
+export async function loadAndAppendJsAssets(
+  assets: Assets,
+  {
+    sandbox,
+    fetch = defaultFetch,
+    scriptAttributes = [],
+  }: {
+    sandbox?: Sandbox;
+    fetch?: Fetch;
+    scriptAttributes?: ScriptAttributes;
+  }) {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
 
   const { jsList } = assets;
@@ -505,13 +577,13 @@ export async function loadAndAppendJsAssets(assets: Assets, sandbox?: Sandbox, f
   if (hasInlineScript) {
     // make sure js assets loaded in order if has inline scripts
     await jsList.reduce((chain, asset, index) => {
-      return chain.then(() => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`));
+      return chain.then(() => appendExternalScript(jsRoot, asset, scriptAttributes, `${PREFIX}-js-${index}`));
     }, Promise.resolve());
     return;
   }
 
   await Promise.all(
-    jsList.map((asset, index) => appendExternalScript(jsRoot, asset, `${PREFIX}-js-${index}`)),
+    jsList.map((asset, index) => appendExternalScript(jsRoot, asset, scriptAttributes, `${PREFIX}-js-${index}`)),
   );
 }
 

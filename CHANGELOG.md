@@ -2,6 +2,12 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
+## 2.4.0
+
+- [feat] support appending extra attributes for scripts when using `loadScriptMode = script`. ([#276](https://github.com/ice-lab/icestark/issues/276))
+- [fix] unexpectable sandbox's cleaning up when load modules. ([#293](https://github.com/ice-lab/icestark/issues/293))
+- [fix] missing `ErrorComponent` causes React rendering's error. ([#312](https://github.com/ice-lab/icestark/issues/312))
+
 ## 2.3.2
 
 - [refact] compatible with sandbox spell error.

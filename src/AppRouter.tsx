@@ -55,14 +55,14 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
   private unmounted: boolean = false;
 
-  private err: string = ''; // js assets load err
+  private err: string | Error = ''; // js assets load err
 
   private appKey: string = '';
 
   static defaultProps = {
     onRouteChange: () => {},
     // eslint-disable-next-line react/jsx-filename-extension
-    ErrorComponent: ({ err }) => <div>{ err || 'Error' }</div>,
+    ErrorComponent: ({ err }: { err: string | Error}) => <div>{ typeof err === 'string' ? err : err?.message }</div>,
     LoadingComponent: <div>Loading...</div>,
     NotFoundComponent: <div>NotFound</div>,
     shouldAssetsRemove: () => true,
