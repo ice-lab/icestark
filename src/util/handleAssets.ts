@@ -249,7 +249,10 @@ export function fetchScripts(jsList: Asset[], fetch = defaultFetch ) {
         * will be the page's origin. As a result, `//# sourceURL` appends to the generated code.
         * See https://sourcemaps.info/spec.html
         */
-        || (cachedScriptsContent[content] = fetch(content).then(res => `${res.text()} \n //# sourceURL=${content}`));
+        || (cachedScriptsContent[content] = fetch(content)
+          .then(res => res.text())
+          .then(res => `${res} \n //# sourceURL=${content}`)
+        );
     }
   }));
 }
