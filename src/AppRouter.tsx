@@ -24,6 +24,9 @@ export interface AppRouterProps {
   NotFoundComponent?: React.ComponentType | React.ReactElement;
   onAppEnter?: (appConfig: CompatibleAppConfig) => void;
   onAppLeave?: (appConfig: CompatibleAppConfig) => void;
+  onLoadingApp?: (appConfig: CompatibleAppConfig) => void;
+  onFinishLoading?:  (appConfig: CompatibleAppConfig) => void;
+  onError?: (err: Error) => void;
   shouldAssetsRemove?: (
     assetUrl?: string,
     element?: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement,
@@ -68,6 +71,9 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     shouldAssetsRemove: () => true,
     onAppEnter: () => {},
     onAppLeave: () => {},
+    onLoadingApp: () => {},
+    onFinishLoading: () => {},
+    onError: () => {},
     basename: '',
     fetch: defaultFetch,
     prefetch: false,
@@ -155,6 +161,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     // if AppRouter is unmounted, cancel all operations
     if (this.unmounted) return;
 
+    this.props.onError(err);
     this.err = err;
     this.setState({ url: ICESTSRK_ERROR });
   };
@@ -178,11 +185,13 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
   loadingApp = (app: AppConfig) => {
     if (this.unmounted) return;
+    this.props.onLoadingApp(app);
     this.setState({ appLoading: app.name });
   }
 
   finishLoading = (app: AppConfig) => {
     if (this.unmounted) return;
+    this.props.onFinishLoading(app);
     const { appLoading } = this.state;
     if (appLoading === app.name) {
       this.setState({ appLoading: '' });
