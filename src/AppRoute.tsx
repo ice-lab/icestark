@@ -88,7 +88,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     // re-render and callCapturedEventListeners if componentProps is changed
     if ((nextProps.component || nextProps.render && typeof nextProps.render === 'function') &&
       !isEqual(componentProps, nextProps.componentProps)) {
-      callCapturedEventListeners();
+      // callCapturedEventListeners();
+      setTimeout(() => callCapturedEventListeners(), 0);
       return true;
     } else if (
       name === nextProps.name &&
@@ -99,7 +100,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       showComponent === nextState.showComponent
     ) {
       // reRender is triggered by sub-application router / browser, call popStateListeners
-      callCapturedEventListeners();
+      // callCapturedEventListeners();
+      setTimeout(() => callCapturedEventListeners(), 0);
       return false;
     }
     return true;

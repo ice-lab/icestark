@@ -9,6 +9,7 @@ import start, { unload, Fetch, defaultFetch, Prefetch } from './start';
 import { matchActivePath, PathData, addLeadingSlash } from './util/matchPath';
 import { AppConfig } from './apps';
 import { doPrefetch } from './util/prefetch';
+import { callCapturedEventListeners } from './util/capturedListeners';
 
 type RouteType = 'pushState' | 'replaceState';
 
@@ -109,6 +110,12 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       fetch,
     });
     this.setState({ started: true });
+  }
+
+  componentDidUpdate() {
+    console.log('bbbb');
+    // debugger;
+    // callCapturedEventListeners();
   }
 
   componentWillUnmount() {
