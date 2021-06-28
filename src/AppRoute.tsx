@@ -72,6 +72,11 @@ function genCompatibleAppConfig (appRouteProps: AppRouteProps): CompatibleAppCon
   return appConfig;
 }
 
+function path2ActivePath (appConfig: CompatibleAppConfig) {
+  const { path, activePath } = appConfig;
+  return path || activePath;
+}
+
 export default class AppRoute extends React.Component<AppRouteProps, AppRouteState> {
   state = {
     showComponent: false,

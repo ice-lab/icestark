@@ -9,6 +9,7 @@ import start, { unload, Fetch, defaultFetch, Prefetch } from './start';
 import { matchActivePath, PathData, addLeadingSlash } from './util/matchPath';
 import { AppConfig } from './apps';
 import { doPrefetch } from './util/prefetch';
+import checkActive from './util/checkActive';
 
 type RouteType = 'pushState' | 'replaceState';
 
@@ -221,18 +222,24 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
     let match = null;
     let element: React.ReactElement;
-    let routerPath = null;
+    // let routerPath = null;
     React.Children.forEach(children, child => {
       if (match == null && React.isValidElement(child)) {
-        const { path } = child.props;
-        routerPath = appBasename
-          ? [].concat(path).map((pathStr: string | PathData) => `${addLeadingSlash(appBasename)}${(pathStr as PathData).value || pathStr}`)
-          : path;
+        const { path, activePath, exact, strict, sensitive, hashType } = child.props;
+        // routerPath = appBasename
+        //   ? [].concat(path).map((pathStr: string | PathData) => `${addLeadingSlash(appBasename)}${(pathStr as PathData).value || pathStr}`)
+        //   : path;
         element = child;
-        match = matchActivePath(url, {
-          ...child.props,
-          path: routerPath,
-        });
+        // match = matchActivePath(url, {
+        //   ...child.props,
+        //   path: routerPath,
+        // });
+        match = checkActive({
+          exact,
+          strict,
+          sensitive,
+          hashType,
+        }, activePath)(url);
       }
     });
 
