@@ -1,38 +1,9 @@
-name: CI
-
+name: Build Docs
 on: [push]
 
+# 任务
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [10.x]
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set branch name
-      run: echo >>$GITHUB_ENV BRANCH_NAME=${GITHUB_REF#refs/heads/}
-    - name: Echo branch name
-      run: echo ${BRANCH_NAME}
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-        registry-url: https://registry.npmjs.org/
-    - run: npm run install:deps
-    - run: npm run lint
-    - run: npm run test
-    - run: npm run coverage
-      env:
-        CI: true
-    - run: npm run publish:packages
-      env:
-        NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-
-  build-docs-and-deploy:
+  build-and-deploy:
     # 服务器环境：最新版 Ubuntu
     runs-on: ubuntu-latest
     steps:
@@ -56,14 +27,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
 
-      - run: cd website
       - run: yarn
       - run: yarn build
-
+        
       # 部署到 GitHub Pages
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@4.1.0
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/site'
         with:
           BRANCH: gh-pages
-          FOLDER: website/build
+          FOLDER: build
