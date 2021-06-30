@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://micro-frontends.ice.work/blog</id>
+    <title>icestark Blog</title>
+    <updated>2021-06-28T00:00:00.000Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://micro-frontends.ice.work/blog"/>
+    <subtitle>icestark Blog</subtitle>
+    <icon>https://micro-frontends.ice.work/img/favicon.ico</icon>
+    <entry>
+        <title type="html"><![CDATA[icestark 2.4.0]]></title>
+        <id>icestark 2.4.0</id>
+        <link href="https://micro-frontends.ice.work/blog/2021/06/28/icestark-2-4-0"/>
+        <updated>2021-06-28T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Announcing icestark 2.4.0]]></summary>
+    </entry>
+</feed>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+    <channel>
+        <title>icestark Blog</title>
+        <link>https://micro-frontends.ice.work/blog</link>
+        <description>icestark Blog</description>
+        <lastBuildDate>Mon, 28 Jun 2021 00:00:00 GMT</lastBuildDate>
+        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
+        <generator>https://github.com/jpmonette/feed</generator>
+        <item>
+            <title><![CDATA[icestark 2.4.0]]></title>
+            <link>https://micro-frontends.ice.work/blog/2021/06/28/icestark-2-4-0</link>
+            <guid>icestark 2.4.0</guid>
+            <pubDate>Mon, 28 Jun 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[Announcing icestark 2.4.0]]></description>
+        </item>
+    </channel>
+</rss>
