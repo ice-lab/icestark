@@ -82,7 +82,7 @@ scriptAttributes: (url) => url.includes('chunk') ? ["resourceType=chunk"] : [],
 
 ### @ice/stark-data 支持 Symbol key
 
-[@ice/stark-data](/docs/guide/advanced/communication) 是 icestark 提供的应用间通信解决方案。现在，已支持 Symbol 作为标识 key。
+[@ice/stark-data](/docs/guide/advanced/communication) 是 icestark 提供的应用间通信解决方案。现在，已支持 `Symbol` 作为标识 key。
 
 > 如果您对 Symbol 还不熟悉，可以先在这里[了解](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol)下。
 
@@ -121,13 +121,13 @@ Symbol('foo') !== Symbol('foo')
 
 icestark 于前两周上线独立[官网](https://micro-frontends.ice.work/)。我们重新梳理了所有文档，并扩展了很多内容。
 
-1. 为 umi、create-react-app、nuxt.js、next.js 等其他多种框架的用户提供了接入 icestark 的指导，请参阅 [其他框架接入微应用](/docs/guide/use-child/others)；
+1. 为 [icejs](https://ice.work/)、umi、create-react-app、nuxt.js、next.js、Angular 等其他多种框架的用户提供了接入 icestark 指导，请参阅 [其他框架接入微应用](/docs/guide/use-child/others)；
 
-2. 为 api 提供了支持的版本
+2. 为所有 api 标记了支持的版本;
 
-![](https://img.alicdn.com/imgextra/i2/O1CN01qqoKx31PVVpMDtO7E_!!6000000001846-0-tps-1508-408.jpg)
+![](https://img.alicdn.com/imgextra/i1/O1CN01dp76nB2A5fPvnBB6O_!!6000000008152-0-tps-956-186.jpg)
 
-3. 以及更明显的 [FAQ 入口](http://localhost:3000/icestark-site/docs/faq)
+3. 以及更明显的 [FAQ 入口](http://localhost:3000/icestark-site/docs/faq)。
 
 ### 提供 [ice](https://ice.work/) 用户消费框架应用传递的 props
 
