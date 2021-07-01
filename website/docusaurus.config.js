@@ -4,7 +4,7 @@ const footer = require('./config/footer');
 
 module.exports = {
   title: 'icestark',
-  tagline: '基于 React 的渐进式研发框架',
+  tagline: '面向大型系统的微前端解决方案',
   url: 'https://micro-frontends.ice.work',
   baseUrl: '/',
   onBrokenLinks: 'throw',

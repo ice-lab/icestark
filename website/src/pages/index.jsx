@@ -11,7 +11,7 @@ import Users from '../components/Users';
 export default function Home() {
   const { siteConfig } = useDocusaurusContext();
   return (
-    <Layout title={`${siteConfig.title}-${siteConfig.tagline}`} description="基于 React 的渐进式研发框架">
+    <Layout title={`${siteConfig.title}-${siteConfig.tagline}`} description="面向大型系统的微前端解决方案">
       <Splash />
       <main>
         <Feature />

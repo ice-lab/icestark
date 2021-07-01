@@ -40,20 +40,5 @@ module.exports = {
     'api/core',
     'api/wrapper',
     'api/utils'
-  ],
-  plugin: [
-    {
-      type: 'category',
-      label: '官方插件',
-      collapsed: false,
-      items: getDocsFromDir('plugin/list')
-    },
-    {
-      type: 'category',
-      label: '插件开发',
-      collapsed: false,
-      items: getDocsFromDir('plugin/develop')
-    },
-  ],
-  resource: getDocsFromDir('resource'),
+  ]
 };

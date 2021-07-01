@@ -183,6 +183,36 @@ export function mount(props) {
 }
 ```
 
+#### loadScriptMode <Badge text="2.0.0+" />
+
+微应用 JavaScript 资源加载方式。当值 `fetch` 时，会通过 `window.fetch` (若AppRouter 提供了 `fetch` 参数，则会使用自定义 `fetch`) 请求资源；值为 `script`，会使用 `<script />` 标签加载资源，选填。
+
+- 类型： `fetch | script`
+- 默认值：`script`
+
+#### scriptAttributes <Badge text="2.4.0+" />
+
+当 [`loadScriptMode`](#loadscriptmode) 为 `script` 时，为 `<script />` 添加的自定义 [attributes](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script#attributes)。比如，您想为 `<script />` 标签添加 `crossorigin="anonymous"` 来解决 [`Script error`](https://help.aliyun.com/document_detail/88579.html) 问题，可以这样设置：
+
+```js
+// 微应用配置
+{
+  name: 'app1',
+  activePath: '/seller',
+  url: [
+    '//unpkg.com/app1/js/chunk.js',
+    '//unpkg.com/app1/js/index.js',
+    '//unpkg.com/app1/css/index.css',
+  ],
+  ...
+  // 为微应用 app1 的所有 js 资源添加 crossorigin="anonymous"
+  scriptAttributes: ["crossorigin=anonymous"],
+  // or
+  // 为 `//unpkg.com/app1/js/chunk.js` 资源添加 crossorigin="anonymous"
+  scriptAttributes: (url) => url.includes('chunk') ? ["crossorigin=anonymous"] : [],
+}
+```
+
 ## removeMicroApps <Badge text="2.0.0+" />
 
 移除已注册微应用信息，`removeMicroApps(appNames: string[])`

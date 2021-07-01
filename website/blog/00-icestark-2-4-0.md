@@ -5,8 +5,7 @@ author_url: https://github.com/maoxiaoke
 author_image_url: https://avatars.githubusercontent.com/u/13417006?v=4
 tags: [v2, announcement]
 description: Announcing icestark 2.4.0
-image: https://i.imgur.com/mErPwqL.png
-hide_table_of_contents: true
+hide_table_of_contents: false
 ---
 
 ## Announcing icestark 2.4.0
@@ -56,7 +55,7 @@ hide_table_of_contents: true
 }
 ```
 
-有关 scriptAttributes 使用的更多内容，可参考 [api - scriptAttributes](#解决-script-error-错误)
+有关 scriptAttributes 使用的更多内容，可参考 [api - scriptAttributes](/docs/api/core#scriptattributes)
 
 此外，还可以通过 scriptAttributes 来为某个 JavaScript 文件做特殊的标记。比如：
 
@@ -101,7 +100,6 @@ event.on('sym', () => {
 })
 ```
 
-
 （2）在微应用触发事件
 
 ```js
@@ -129,7 +127,7 @@ icestark 于前两周上线独立[官网](https://micro-frontends.ice.work/)。�
 
 ![](https://img.alicdn.com/imgextra/i2/O1CN01qqoKx31PVVpMDtO7E_!!6000000001846-0-tps-1508-408.jpg)
 
-3. 更明显的 [FAQ 入口](http://localhost:3000/icestark-site/docs/faq)
+3. 以及更明显的 [FAQ 入口](http://localhost:3000/icestark-site/docs/faq)
 
 ### 提供 [ice](https://ice.work/) 用户消费框架应用传递的 props
 
@@ -209,7 +207,7 @@ console.log(a);
 在最近的版本中，我们修正了这一行为。
 
 
-### 未来的计划
+## 后续的版本计划
 
 我们会持续扩展 icestark 的能力，提升微前端体验。在接下来的版本中，我们会：
 
