@@ -1,1 +1,0 @@
-(self.webpackChunksite=self.webpackChunksite||[]).push([[522],{6353:function(e){"use strict";e.exports=JSON.parse('{"title":"Recent posts","items":[{"title":"icestark 2.4.0","permalink":"/blog/2021/06/28/icestark-2-4-0"}]}')}}]);
