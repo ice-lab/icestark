@@ -56,9 +56,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
 
-      - run: cd website
-      - run: yarn
-      - run: yarn build
+      - run: cd website && yarn
+      - run: cd website && yarn build
 
       # 部署到 GitHub Pages
       - name: Deploy
