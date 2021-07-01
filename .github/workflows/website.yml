@@ -32,7 +32,7 @@ jobs:
 
       - run: cd website
       - run: yarn
-      - run: yarn build
+      - run: npm run build
 
       # 部署到 GitHub Pages
       - name: Deploy
