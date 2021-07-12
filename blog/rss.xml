@@ -4,14 +4,14 @@
         <title>icestark Blog</title>
         <link>https://micro-frontends.ice.work/blog</link>
         <description>icestark Blog</description>
-        <lastBuildDate>Thu, 01 Jul 2021 06:14:34 GMT</lastBuildDate>
+        <lastBuildDate>Mon, 12 Jul 2021 02:30:15 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <item>
             <title><![CDATA[icestark 2.4.0]]></title>
             <link>https://micro-frontends.ice.work/blog/00-icestark-2-4-0</link>
             <guid>icestark 2.4.0</guid>
-            <pubDate>Thu, 01 Jul 2021 06:14:34 GMT</pubDate>
+            <pubDate>Mon, 12 Jul 2021 02:30:15 GMT</pubDate>
             <description><![CDATA[Announcing icestark 2.4.0]]></description>
         </item>
     </channel>
