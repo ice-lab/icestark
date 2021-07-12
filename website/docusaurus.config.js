@@ -15,9 +15,9 @@ module.exports = {
   themeConfig: {
     navbar,
     footer,
-    // googleAnalytics: {
-    //   trackingID: 'G-QZ0FEKY38G',
-    // },
+    gtag: {
+      trackingID: 'G-SQ6Y3V76JV',
+    },
   },
   presets: [
     [
@@ -41,6 +41,7 @@ module.exports = {
         hashed: true,
         language: ["en", "zh"],
       },
-    ]
-  ]
+    ],
+    '@docusaurus/plugin-google-gtag',
+  ],
 };
