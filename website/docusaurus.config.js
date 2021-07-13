@@ -15,9 +15,9 @@ module.exports = {
   themeConfig: {
     navbar,
     footer,
-    // googleAnalytics: {
-    //   trackingID: 'G-QZ0FEKY38G',
-    // },
+    gtag: {
+      trackingID: 'G-BYD48PYEE0',
+    },
   },
   presets: [
     [
@@ -41,6 +41,6 @@ module.exports = {
         hashed: true,
         language: ["en", "zh"],
       },
-    ]
-  ]
+    ],
+  ],
 };
