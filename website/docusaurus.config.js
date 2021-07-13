@@ -16,7 +16,7 @@ module.exports = {
     navbar,
     footer,
     gtag: {
-      trackingID: 'G-SQ6Y3V76JV',
+      trackingID: 'G-BYD48PYEE0',
     },
   },
   presets: [
