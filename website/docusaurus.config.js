@@ -42,6 +42,5 @@ module.exports = {
         language: ["en", "zh"],
       },
     ],
-    '@docusaurus/plugin-google-gtag',
   ],
 };
