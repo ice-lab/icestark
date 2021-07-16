@@ -50,7 +50,7 @@ import App from './App';
 
 + setLibraryName('microApp');
 
-+ if (!isInIcestark) {
++ if (!isInIcestark()) {
     ReactDOM.render(
       <React.StrictMode>
         <App />
