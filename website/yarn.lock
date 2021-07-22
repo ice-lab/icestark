@@ -1242,90 +1242,6 @@
     webpack-merge "^5.7.3"
     webpackbar "^5.0.0-3"
 
-"@docusaurus/core@2.0.0-beta.3":
-  version "2.0.0-beta.3"
-  resolved "https://registry.npm.alibaba-inc.com/@docusaurus/core/download/@docusaurus/core-2.0.0-beta.3.tgz#3af14897dcf5b73554314f6ed02c46cf0f463336"
-  integrity sha1-OvFIl9z1tzVUMU9u0CxGzw9GMzY=
-  dependencies:
-    "@babel/core" "^7.12.16"
-    "@babel/generator" "^7.12.15"
-    "@babel/plugin-syntax-dynamic-import" "^7.8.3"
-    "@babel/plugin-transform-runtime" "^7.12.15"
-    "@babel/preset-env" "^7.12.16"
-    "@babel/preset-react" "^7.12.13"
-    "@babel/preset-typescript" "^7.12.16"
-    "@babel/runtime" "^7.12.5"
-    "@babel/runtime-corejs3" "^7.12.13"
-    "@babel/traverse" "^7.12.13"
-    "@docusaurus/cssnano-preset" "2.0.0-beta.3"
-    "@docusaurus/react-loadable" "5.5.0"
-    "@docusaurus/types" "2.0.0-beta.3"
-    "@docusaurus/utils" "2.0.0-beta.3"
-    "@docusaurus/utils-common" "2.0.0-beta.3"
-    "@docusaurus/utils-validation" "2.0.0-beta.3"
-    "@slorber/static-site-generator-webpack-plugin" "^4.0.0"
-    "@svgr/webpack" "^5.5.0"
-    autoprefixer "^10.2.5"
-    babel-loader "^8.2.2"
-    babel-plugin-dynamic-import-node "2.3.0"
-    boxen "^5.0.1"
-    chalk "^4.1.1"
-    chokidar "^3.5.1"
-    clean-css "^5.1.2"
-    commander "^5.1.0"
-    copy-webpack-plugin "^9.0.0"
-    core-js "^3.9.1"
-    css-loader "^5.1.1"
-    css-minimizer-webpack-plugin "^3.0.1"
-    cssnano "^5.0.4"
-    del "^6.0.0"
-    detect-port "^1.3.0"
-    escape-html "^1.0.3"
-    eta "^1.12.1"
-    express "^4.17.1"
-    file-loader "^6.2.0"
-    fs-extra "^10.0.0"
-    github-slugger "^1.3.0"
-    globby "^11.0.2"
-    html-minifier-terser "^5.1.1"
-    html-tags "^3.1.0"
-    html-webpack-plugin "^5.3.2"
-    import-fresh "^3.3.0"
-    is-root "^2.1.0"
-    leven "^3.1.0"
-    lodash "^4.17.20"
-    mini-css-extract-plugin "^1.6.0"
-    module-alias "^2.2.2"
-    nprogress "^0.2.0"
-    postcss "^8.2.15"
-    postcss-loader "^5.3.0"
-    prompts "^2.4.1"
-    react-dev-utils "^11.0.1"
-    react-error-overlay "^6.0.9"
-    react-helmet "^6.1.0"
-    react-loadable "^5.5.0"
-    react-loadable-ssr-addon-v5-slorber "^1.0.1"
-    react-router "^5.2.0"
-    react-router-config "^5.1.1"
-    react-router-dom "^5.2.0"
-    resolve-pathname "^3.0.0"
-    rtl-detect "^1.0.3"
-    semver "^7.3.4"
-    serve-handler "^6.1.3"
-    shelljs "^0.8.4"
-    std-env "^2.2.1"
-    strip-ansi "^6.0.0"
-    terser-webpack-plugin "^5.1.3"
-    tslib "^2.2.0"
-    update-notifier "^5.1.0"
-    url-loader "^4.1.1"
-    wait-on "^5.3.0"
-    webpack "^5.40.0"
-    webpack-bundle-analyzer "^4.4.2"
-    webpack-dev-server "^3.11.2"
-    webpack-merge "^5.8.0"
-    webpackbar "^5.0.0-3"
-
 "@docusaurus/cssnano-preset@2.0.0-beta.0":
   version "2.0.0-beta.0"
   resolved "https://registry.yarnpkg.com/@docusaurus/cssnano-preset/-/cssnano-preset-2.0.0-beta.0.tgz#a79223479666059565d60a505bed2bbcac770384"
@@ -1334,15 +1250,6 @@
     cssnano-preset-advanced "^5.0.0"
     postcss "^8.2.10"
     postcss-sort-media-queries "^3.8.9"
-
-"@docusaurus/cssnano-preset@2.0.0-beta.3":
-  version "2.0.0-beta.3"
-  resolved "https://registry.npm.alibaba-inc.com/@docusaurus/cssnano-preset/download/@docusaurus/cssnano-preset-2.0.0-beta.3.tgz#b82d58df4e95b04cd57a3e9922d39056207d2c73"
-  integrity sha1-uC1Y306VsEzVej6ZItOQViB9LHM=
-  dependencies:
-    cssnano-preset-advanced "^5.1.1"
-    postcss "^8.2.15"
-    postcss-sort-media-queries "^3.10.11"
 
 "@docusaurus/mdx-loader@2.0.0-beta.0":
   version "2.0.0-beta.0"
@@ -1456,13 +1363,6 @@
   dependencies:
     "@docusaurus/core" "2.0.0-beta.0"
 
-"@docusaurus/plugin-google-gtag@^2.0.0-beta.3":
-  version "2.0.0-beta.3"
-  resolved "https://registry.npm.alibaba-inc.com/@docusaurus/plugin-google-gtag/download/@docusaurus/plugin-google-gtag-2.0.0-beta.3.tgz#e52105a749e33e6ea44e7103f42df0fcac0268ac"
-  integrity sha1-5SEFp0njPm6kTnED9C3w/KwCaKw=
-  dependencies:
-    "@docusaurus/core" "2.0.0-beta.3"
-
 "@docusaurus/plugin-sitemap@2.0.0-beta.0":
   version "2.0.0-beta.0"
   resolved "https://registry.yarnpkg.com/@docusaurus/plugin-sitemap/-/plugin-sitemap-2.0.0-beta.0.tgz#985d4cc3af86499f616ced024ba1fab8329e601d"
@@ -1568,25 +1468,6 @@
     webpack "^5.28.0"
     webpack-merge "^5.7.3"
 
-"@docusaurus/types@2.0.0-beta.3":
-  version "2.0.0-beta.3"
-  resolved "https://registry.npm.alibaba-inc.com/@docusaurus/types/download/@docusaurus/types-2.0.0-beta.3.tgz#042838d3a1ce0aa6f0df1b87180da0d503268d9b"
-  integrity sha1-BCg406HOCqbw3xuHGA2g1QMmjZs=
-  dependencies:
-    commander "^5.1.0"
-    joi "^17.4.0"
-    querystring "0.2.0"
-    webpack "^5.40.0"
-    webpack-merge "^5.8.0"
-
-"@docusaurus/utils-common@2.0.0-beta.3":
-  version "2.0.0-beta.3"
-  resolved "https://registry.npm.alibaba-inc.com/@docusaurus/utils-common/download/@docusaurus/utils-common-2.0.0-beta.3.tgz#85fc7f7572d0f55e62b8f0baeb91967bf7d699e0"
-  integrity sha1-hfx/dXLQ9V5iuPC665GWe/fWmeA=
-  dependencies:
-    "@docusaurus/types" "2.0.0-beta.3"
-    tslib "^2.2.0"
-
 "@docusaurus/utils-validation@2.0.0-beta.0", "@docusaurus/utils-validation@^2.0.0-alpha.73":
   version "2.0.0-beta.0"
   resolved "https://registry.yarnpkg.com/@docusaurus/utils-validation/-/utils-validation-2.0.0-beta.0.tgz#3e6491c269a397fed29717a1cb69109df9483461"
@@ -1594,16 +1475,6 @@
   dependencies:
     "@docusaurus/utils" "2.0.0-beta.0"
     chalk "^4.1.0"
-    joi "^17.4.0"
-    tslib "^2.1.0"
-
-"@docusaurus/utils-validation@2.0.0-beta.3":
-  version "2.0.0-beta.3"
-  resolved "https://registry.npm.alibaba-inc.com/@docusaurus/utils-validation/download/@docusaurus/utils-validation-2.0.0-beta.3.tgz#24e8187ff853dfec111faaef75af432274bd8773"
-  integrity sha1-JOgYf/hT3+wRH6rvda9DInS9h3M=
-  dependencies:
-    "@docusaurus/utils" "2.0.0-beta.3"
-    chalk "^4.1.1"
     joi "^17.4.0"
     tslib "^2.1.0"
 
@@ -1621,21 +1492,6 @@
     lodash "^4.17.20"
     resolve-pathname "^3.0.0"
     tslib "^2.1.0"
-
-"@docusaurus/utils@2.0.0-beta.3":
-  version "2.0.0-beta.3"
-  resolved "https://registry.npm.alibaba-inc.com/@docusaurus/utils/download/@docusaurus/utils-2.0.0-beta.3.tgz#81bdf02c5128f3d307d56925cbc398dbf3600e50"
-  integrity sha1-gb3wLFEo89MH1Wkly8OY2/NgDlA=
-  dependencies:
-    "@docusaurus/types" "2.0.0-beta.3"
-    "@types/github-slugger" "^1.3.0"
-    chalk "^4.1.1"
-    escape-string-regexp "^4.0.0"
-    fs-extra "^10.0.0"
-    gray-matter "^4.0.3"
-    lodash "^4.17.20"
-    resolve-pathname "^3.0.0"
-    tslib "^2.2.0"
 
 "@easyops-cn/autocomplete.js@^0.38.1":
   version "0.38.1"
@@ -1826,17 +1682,6 @@
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.14.0.tgz#9fb3a3cf3132328151f353de4632e01e52102bea"
   integrity sha512-9NET910DNaIPngYnLLPeg+Ogzqsi9uM4mSboU5y6p8S5DzMTVEsJZrawi+BoDNUVBa2DhJqQYUFvMDfgU062LQ==
 
-"@slorber/static-site-generator-webpack-plugin@^4.0.0":
-  version "4.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/@slorber/static-site-generator-webpack-plugin/download/@slorber/static-site-generator-webpack-plugin-4.0.1.tgz#0c8852146441aaa683693deaa5aee2f991d94841"
-  integrity sha1-DIhSFGRBqqaDaT3qpa7i+ZHZSEE=
-  dependencies:
-    bluebird "^3.7.1"
-    cheerio "^0.22.0"
-    eval "^0.1.4"
-    url "^0.11.0"
-    webpack-sources "^1.4.3"
-
 "@svgr/babel-plugin-add-jsx-attribute@^5.4.0":
   version "5.4.0"
   resolved "https://registry.yarnpkg.com/@svgr/babel-plugin-add-jsx-attribute/-/babel-plugin-add-jsx-attribute-5.4.0.tgz#81ef61947bb268eb9d50523446f9c638fb355906"
@@ -1972,11 +1817,6 @@
   version "0.0.47"
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-0.0.47.tgz#d7a51db20f0650efec24cd04994f523d93172ed4"
   integrity sha512-c5ciR06jK8u9BstrmJyO97m+klJrrhCf9u3rLu3DEAJBirxRqSCvDQoYKmxuYwQI5SZChAWu+tq9oVlGRuzPAg==
-
-"@types/estree@^0.0.50":
-  version "0.0.50"
-  resolved "https://registry.npm.alibaba-inc.com/@types/estree/download/@types/estree-0.0.50.tgz#1e0caa9364d3fccd2931c3ed96fdbeaa5d4cca83"
-  integrity sha1-Hgyqk2TT/M0pMcPtlv2+ql1MyoM=
 
 "@types/github-slugger@^1.3.0":
   version "1.3.0"
@@ -2140,43 +1980,20 @@
     "@webassemblyjs/helper-numbers" "1.11.0"
     "@webassemblyjs/helper-wasm-bytecode" "1.11.0"
 
-"@webassemblyjs/ast@1.11.1":
-  version "1.11.1"
-  resolved "https://registry.npm.alibaba-inc.com/@webassemblyjs/ast/download/@webassemblyjs/ast-1.11.1.tgz#2bfd767eae1a6996f432ff7e8d7fc75679c0b6a7"
-  integrity sha1-K/12fq4aaZb0Mv9+jX/HVnnAtqc=
-  dependencies:
-    "@webassemblyjs/helper-numbers" "1.11.1"
-    "@webassemblyjs/helper-wasm-bytecode" "1.11.1"
-
 "@webassemblyjs/floating-point-hex-parser@1.11.0":
   version "1.11.0"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/floating-point-hex-parser/-/floating-point-hex-parser-1.11.0.tgz#34d62052f453cd43101d72eab4966a022587947c"
   integrity sha512-Q/aVYs/VnPDVYvsCBL/gSgwmfjeCb4LW8+TMrO3cSzJImgv8lxxEPM2JA5jMrivE7LSz3V+PFqtMbls3m1exDA==
-
-"@webassemblyjs/floating-point-hex-parser@1.11.1":
-  version "1.11.1"
-  resolved "https://registry.npm.alibaba-inc.com/@webassemblyjs/floating-point-hex-parser/download/@webassemblyjs/floating-point-hex-parser-1.11.1.tgz#f6c61a705f0fd7a6aecaa4e8198f23d9dc179e4f"
-  integrity sha1-9sYacF8P16auyqToGY8j2dwXnk8=
 
 "@webassemblyjs/helper-api-error@1.11.0":
   version "1.11.0"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/helper-api-error/-/helper-api-error-1.11.0.tgz#aaea8fb3b923f4aaa9b512ff541b013ffb68d2d4"
   integrity sha512-baT/va95eXiXb2QflSx95QGT5ClzWpGaa8L7JnJbgzoYeaA27FCvuBXU758l+KXWRndEmUXjP0Q5fibhavIn8w==
 
-"@webassemblyjs/helper-api-error@1.11.1":
-  version "1.11.1"
-  resolved "https://registry.npm.alibaba-inc.com/@webassemblyjs/helper-api-error/download/@webassemblyjs/helper-api-error-1.11.1.tgz#1a63192d8788e5c012800ba6a7a46c705288fd16"
-  integrity sha1-GmMZLYeI5cASgAump6RscFKI/RY=
-
 "@webassemblyjs/helper-buffer@1.11.0":
   version "1.11.0"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/helper-buffer/-/helper-buffer-1.11.0.tgz#d026c25d175e388a7dbda9694e91e743cbe9b642"
   integrity sha512-u9HPBEl4DS+vA8qLQdEQ6N/eJQ7gT7aNvMIo8AAWvAl/xMrcOSiI2M0MAnMCy3jIFke7bEee/JwdX1nUpCtdyA==
-
-"@webassemblyjs/helper-buffer@1.11.1":
-  version "1.11.1"
-  resolved "https://registry.npm.alibaba-inc.com/@webassemblyjs/helper-buffer/download/@webassemblyjs/helper-buffer-1.11.1.tgz#832a900eb444884cde9a7cad467f81500f5e5ab5"
-  integrity sha1-gyqQDrREiEzemnytRn+BUA9eWrU=
 
 "@webassemblyjs/helper-numbers@1.11.0":
   version "1.11.0"
@@ -2187,24 +2004,10 @@
     "@webassemblyjs/helper-api-error" "1.11.0"
     "@xtuc/long" "4.2.2"
 
-"@webassemblyjs/helper-numbers@1.11.1":
-  version "1.11.1"
-  resolved "https://registry.npm.alibaba-inc.com/@webassemblyjs/helper-numbers/download/@webassemblyjs/helper-numbers-1.11.1.tgz#64d81da219fbbba1e3bd1bfc74f6e8c4e10a62ae"
-  integrity sha1-ZNgdohn7u6HjvRv8dPboxOEKYq4=
-  dependencies:
-    "@webassemblyjs/floating-point-hex-parser" "1.11.1"
-    "@webassemblyjs/helper-api-error" "1.11.1"
-    "@xtuc/long" "4.2.2"
-
 "@webassemblyjs/helper-wasm-bytecode@1.11.0":
   version "1.11.0"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/helper-wasm-bytecode/-/helper-wasm-bytecode-1.11.0.tgz#85fdcda4129902fe86f81abf7e7236953ec5a4e1"
   integrity sha512-MbmhvxXExm542tWREgSFnOVo07fDpsBJg3sIl6fSp9xuu75eGz5lz31q7wTLffwL3Za7XNRCMZy210+tnsUSEA==
-
-"@webassemblyjs/helper-wasm-bytecode@1.11.1":
-  version "1.11.1"
-  resolved "https://registry.npm.alibaba-inc.com/@webassemblyjs/helper-wasm-bytecode/download/@webassemblyjs/helper-wasm-bytecode-1.11.1.tgz#f328241e41e7b199d0b20c18e88429c4433295e1"
-  integrity sha1-8ygkHkHnsZnQsgwY6IQpxEMyleE=
 
 "@webassemblyjs/helper-wasm-section@1.11.0":
   version "1.11.0"
@@ -2216,27 +2019,10 @@
     "@webassemblyjs/helper-wasm-bytecode" "1.11.0"
     "@webassemblyjs/wasm-gen" "1.11.0"
 
-"@webassemblyjs/helper-wasm-section@1.11.1":
-  version "1.11.1"
-  resolved "https://registry.npm.alibaba-inc.com/@webassemblyjs/helper-wasm-section/download/@webassemblyjs/helper-wasm-section-1.11.1.tgz#21ee065a7b635f319e738f0dd73bfbda281c097a"
-  integrity sha1-Ie4GWntjXzGec48N1zv72igcCXo=
-  dependencies:
-    "@webassemblyjs/ast" "1.11.1"
-    "@webassemblyjs/helper-buffer" "1.11.1"
-    "@webassemblyjs/helper-wasm-bytecode" "1.11.1"
-    "@webassemblyjs/wasm-gen" "1.11.1"
-
 "@webassemblyjs/ieee754@1.11.0":
   version "1.11.0"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/ieee754/-/ieee754-1.11.0.tgz#46975d583f9828f5d094ac210e219441c4e6f5cf"
   integrity sha512-KXzOqpcYQwAfeQ6WbF6HXo+0udBNmw0iXDmEK5sFlmQdmND+tr773Ti8/5T/M6Tl/413ArSJErATd8In3B+WBA==
-  dependencies:
-    "@xtuc/ieee754" "^1.2.0"
-
-"@webassemblyjs/ieee754@1.11.1":
-  version "1.11.1"
-  resolved "https://registry.npm.alibaba-inc.com/@webassemblyjs/ieee754/download/@webassemblyjs/ieee754-1.11.1.tgz#963929e9bbd05709e7e12243a099180812992614"
-  integrity sha1-ljkp6bvQVwnn4SJDoJkYCBKZJhQ=
   dependencies:
     "@xtuc/ieee754" "^1.2.0"
 
@@ -2247,22 +2033,10 @@
   dependencies:
     "@xtuc/long" "4.2.2"
 
-"@webassemblyjs/leb128@1.11.1":
-  version "1.11.1"
-  resolved "https://registry.npm.alibaba-inc.com/@webassemblyjs/leb128/download/@webassemblyjs/leb128-1.11.1.tgz#ce814b45574e93d76bae1fb2644ab9cdd9527aa5"
-  integrity sha1-zoFLRVdOk9drrh+yZEq5zdlSeqU=
-  dependencies:
-    "@xtuc/long" "4.2.2"
-
 "@webassemblyjs/utf8@1.11.0":
   version "1.11.0"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/utf8/-/utf8-1.11.0.tgz#86e48f959cf49e0e5091f069a709b862f5a2cadf"
   integrity sha512-A/lclGxH6SpSLSyFowMzO/+aDEPU4hvEiooCMXQPcQFPPJaYcPQNKGOCLUySJsYJ4trbpr+Fs08n4jelkVTGVw==
-
-"@webassemblyjs/utf8@1.11.1":
-  version "1.11.1"
-  resolved "https://registry.npm.alibaba-inc.com/@webassemblyjs/utf8/download/@webassemblyjs/utf8-1.11.1.tgz#d1f8b764369e7c6e6bae350e854dec9a59f0a3ff"
-  integrity sha1-0fi3ZDaefG5rrjUOhU3smlnwo/8=
 
 "@webassemblyjs/wasm-edit@1.11.0":
   version "1.11.0"
@@ -2278,20 +2052,6 @@
     "@webassemblyjs/wasm-parser" "1.11.0"
     "@webassemblyjs/wast-printer" "1.11.0"
 
-"@webassemblyjs/wasm-edit@1.11.1":
-  version "1.11.1"
-  resolved "https://registry.npm.alibaba-inc.com/@webassemblyjs/wasm-edit/download/@webassemblyjs/wasm-edit-1.11.1.tgz#ad206ebf4bf95a058ce9880a8c092c5dec8193d6"
-  integrity sha1-rSBuv0v5WgWM6YgKjAksXeyBk9Y=
-  dependencies:
-    "@webassemblyjs/ast" "1.11.1"
-    "@webassemblyjs/helper-buffer" "1.11.1"
-    "@webassemblyjs/helper-wasm-bytecode" "1.11.1"
-    "@webassemblyjs/helper-wasm-section" "1.11.1"
-    "@webassemblyjs/wasm-gen" "1.11.1"
-    "@webassemblyjs/wasm-opt" "1.11.1"
-    "@webassemblyjs/wasm-parser" "1.11.1"
-    "@webassemblyjs/wast-printer" "1.11.1"
-
 "@webassemblyjs/wasm-gen@1.11.0":
   version "1.11.0"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/wasm-gen/-/wasm-gen-1.11.0.tgz#3cdb35e70082d42a35166988dda64f24ceb97abe"
@@ -2303,17 +2063,6 @@
     "@webassemblyjs/leb128" "1.11.0"
     "@webassemblyjs/utf8" "1.11.0"
 
-"@webassemblyjs/wasm-gen@1.11.1":
-  version "1.11.1"
-  resolved "https://registry.npm.alibaba-inc.com/@webassemblyjs/wasm-gen/download/@webassemblyjs/wasm-gen-1.11.1.tgz#86c5ea304849759b7d88c47a32f4f039ae3c8f76"
-  integrity sha1-hsXqMEhJdZt9iMR6MvTwOa48j3Y=
-  dependencies:
-    "@webassemblyjs/ast" "1.11.1"
-    "@webassemblyjs/helper-wasm-bytecode" "1.11.1"
-    "@webassemblyjs/ieee754" "1.11.1"
-    "@webassemblyjs/leb128" "1.11.1"
-    "@webassemblyjs/utf8" "1.11.1"
-
 "@webassemblyjs/wasm-opt@1.11.0":
   version "1.11.0"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/wasm-opt/-/wasm-opt-1.11.0.tgz#1638ae188137f4bb031f568a413cd24d32f92978"
@@ -2323,16 +2072,6 @@
     "@webassemblyjs/helper-buffer" "1.11.0"
     "@webassemblyjs/wasm-gen" "1.11.0"
     "@webassemblyjs/wasm-parser" "1.11.0"
-
-"@webassemblyjs/wasm-opt@1.11.1":
-  version "1.11.1"
-  resolved "https://registry.npm.alibaba-inc.com/@webassemblyjs/wasm-opt/download/@webassemblyjs/wasm-opt-1.11.1.tgz#657b4c2202f4cf3b345f8a4c6461c8c2418985f2"
-  integrity sha1-ZXtMIgL0zzs0X4pMZGHIwkGJhfI=
-  dependencies:
-    "@webassemblyjs/ast" "1.11.1"
-    "@webassemblyjs/helper-buffer" "1.11.1"
-    "@webassemblyjs/wasm-gen" "1.11.1"
-    "@webassemblyjs/wasm-parser" "1.11.1"
 
 "@webassemblyjs/wasm-parser@1.11.0":
   version "1.11.0"
@@ -2346,32 +2085,12 @@
     "@webassemblyjs/leb128" "1.11.0"
     "@webassemblyjs/utf8" "1.11.0"
 
-"@webassemblyjs/wasm-parser@1.11.1":
-  version "1.11.1"
-  resolved "https://registry.npm.alibaba-inc.com/@webassemblyjs/wasm-parser/download/@webassemblyjs/wasm-parser-1.11.1.tgz#86ca734534f417e9bd3c67c7a1c75d8be41fb199"
-  integrity sha1-hspzRTT0F+m9PGfHocddi+QfsZk=
-  dependencies:
-    "@webassemblyjs/ast" "1.11.1"
-    "@webassemblyjs/helper-api-error" "1.11.1"
-    "@webassemblyjs/helper-wasm-bytecode" "1.11.1"
-    "@webassemblyjs/ieee754" "1.11.1"
-    "@webassemblyjs/leb128" "1.11.1"
-    "@webassemblyjs/utf8" "1.11.1"
-
 "@webassemblyjs/wast-printer@1.11.0":
   version "1.11.0"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/wast-printer/-/wast-printer-1.11.0.tgz#680d1f6a5365d6d401974a8e949e05474e1fab7e"
   integrity sha512-Fg5OX46pRdTgB7rKIUojkh9vXaVN6sGYCnEiJN1GYkb0RPwShZXp6KTDqmoMdQPKhcroOXh3fEzmkWmCYaKYhQ==
   dependencies:
     "@webassemblyjs/ast" "1.11.0"
-    "@xtuc/long" "4.2.2"
-
-"@webassemblyjs/wast-printer@1.11.1":
-  version "1.11.1"
-  resolved "https://registry.npm.alibaba-inc.com/@webassemblyjs/wast-printer/download/@webassemblyjs/wast-printer-1.11.1.tgz#d0c73beda8eec5426f10ae8ef55cee5e7084c2f0"
-  integrity sha1-0Mc77ajuxUJvEK6O9VzuXnCEwvA=
-  dependencies:
-    "@webassemblyjs/ast" "1.11.1"
     "@xtuc/long" "4.2.2"
 
 "@xtuc/ieee754@^1.2.0":
@@ -2416,11 +2135,6 @@ acorn@^8.0.4, acorn@^8.2.1:
   version "8.2.4"
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.2.4.tgz#caba24b08185c3b56e3168e97d15ed17f4d31fd0"
   integrity sha512-Ibt84YwBDDA890eDiDCEqcbwvHlBvzzDkU2cGBBDDI1QWT12jTiXIOn2CIw5KK4i6N5Z2HUxwYjzriDyqaqqZg==
-
-acorn@^8.4.1:
-  version "8.4.1"
-  resolved "https://registry.npm.alibaba-inc.com/acorn/download/acorn-8.4.1.tgz#56c36251fc7cabc7096adc18f05afe814321a28c"
-  integrity sha1-VsNiUfx8q8cJatwY8Fr+gUMhoow=
 
 address@1.1.2, address@^1.0.1:
   version "1.1.2"
@@ -2729,18 +2443,6 @@ autoprefixer@^10.0.2, autoprefixer@^10.2.5:
     normalize-range "^0.1.2"
     postcss-value-parser "^4.1.0"
 
-autoprefixer@^10.2.0:
-  version "10.3.0"
-  resolved "https://registry.npm.alibaba-inc.com/autoprefixer/download/autoprefixer-10.3.0.tgz#c60803dce9268f7fe0a5e5c1fe48a74356d7b864"
-  integrity sha1-xggD3Okmj3/gpeXB/kinQ1bXuGQ=
-  dependencies:
-    browserslist "^4.16.6"
-    caniuse-lite "^1.0.30001243"
-    colorette "^1.2.2"
-    fraction.js "^4.1.1"
-    normalize-range "^0.1.2"
-    postcss-value-parser "^4.1.0"
-
 axios@^0.21.1:
   version "0.21.1"
   resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.1.tgz#22563481962f4d6bde9a76d516ef0e5d3c09b2b8"
@@ -2916,7 +2618,7 @@ boolbase@^1.0.0, boolbase@~1.0.0:
   resolved "https://registry.yarnpkg.com/boolbase/-/boolbase-1.0.0.tgz#68dff5fbe60c51eb37725ea9e3ed310dcc1e776e"
   integrity sha1-aN/1++YMUes3cl6p4+0xDcwed24=
 
-boxen@^5.0.0, boxen@^5.0.1:
+boxen@^5.0.0:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/boxen/-/boxen-5.0.1.tgz#657528bdd3f59a772b8279b831f27ec2c744664b"
   integrity sha512-49VBlw+PrWEF51aCmy7QIteYPIFZxSpvqBdP/2itCPPlJ49kj9zg/XPRFrdkne2W+CfwXUls8exMvu1RysZpKA==
@@ -3081,11 +2783,6 @@ caniuse-lite@^1.0.0, caniuse-lite@^1.0.30001125, caniuse-lite@^1.0.30001196, can
   resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001228.tgz#bfdc5942cd3326fa51ee0b42fbef4da9d492a7fa"
   integrity sha512-QQmLOGJ3DEgokHbMSA8cj2a+geXqmnpyOFT0lhQV6P3/YOJvGDEwoedcwxEQ30gJIwIIunHIicunJ2rzK5gB2A==
 
-caniuse-lite@^1.0.30001243:
-  version "1.0.30001243"
-  resolved "https://registry.npm.alibaba-inc.com/caniuse-lite/download/caniuse-lite-1.0.30001243.tgz#d9250155c91e872186671c523f3ae50cfc94a3aa"
-  integrity sha1-2SUBVckehyGGZxxSPzrlDPyUo6o=
-
 ccount@^1.0.0, ccount@^1.0.3:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/ccount/-/ccount-1.1.0.tgz#246687debb6014735131be8abab2d93898f8d043"
@@ -3100,7 +2797,7 @@ chalk@2.4.2, chalk@^2.0.0, chalk@^2.4.1:
     escape-string-regexp "^1.0.5"
     supports-color "^5.3.0"
 
-chalk@^4.1.0, chalk@^4.1.1:
+chalk@^4.1.0:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-4.1.1.tgz#c80b3fab28bf6371e6863325eee67e618b77e6ad"
   integrity sha512-diHzdDKxcU+bAsUboHLPEDQiw0qEe0qd7SYUn3HgcFlWgbDcfLGswOHYeGrHKzG9z6UYf01d9VFMfZxPM1xZSg==
@@ -3247,13 +2944,6 @@ clean-css@^5.1.1:
   dependencies:
     source-map "~0.6.0"
 
-clean-css@^5.1.2:
-  version "5.1.3"
-  resolved "https://registry.npm.alibaba-inc.com/clean-css/download/clean-css-5.1.3.tgz#42348778c3acb0083946ba340896802be5517ee2"
-  integrity sha1-QjSHeMOssAg5Rro0CJaAK+VRfuI=
-  dependencies:
-    source-map "~0.6.0"
-
 clean-stack@^2.0.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/clean-stack/-/clean-stack-2.2.0.tgz#ee8472dbb129e727b31e8a10a427dee9dfe4008b"
@@ -3360,11 +3050,6 @@ color@^3.1.1:
   dependencies:
     color-convert "^1.9.1"
     color-string "^1.5.4"
-
-colord@^2.0.1:
-  version "2.1.0"
-  resolved "https://registry.npm.alibaba-inc.com/colord/download/colord-2.1.0.tgz#28cd9d6ac874dff97ef5ec1432c5c0b4e58e49c7"
-  integrity sha1-KM2dash03/l+9ewUMsXAtOWOScc=
 
 colorette@^1.2.2:
   version "1.2.2"
@@ -3549,19 +3234,6 @@ copy-webpack-plugin@^8.1.0:
     schema-utils "^3.0.0"
     serialize-javascript "^5.0.1"
 
-copy-webpack-plugin@^9.0.0:
-  version "9.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/copy-webpack-plugin/download/copy-webpack-plugin-9.0.1.tgz#b71d21991599f61a4ee00ba79087b8ba279bbb59"
-  integrity sha1-tx0hmRWZ9hpO4AunkIe4uiebu1k=
-  dependencies:
-    fast-glob "^3.2.5"
-    glob-parent "^6.0.0"
-    globby "^11.0.3"
-    normalize-path "^3.0.0"
-    p-limit "^3.1.0"
-    schema-utils "^3.0.0"
-    serialize-javascript "^6.0.0"
-
 core-js-compat@^3.9.0, core-js-compat@^3.9.1:
   version "3.12.1"
   resolved "https://registry.yarnpkg.com/core-js-compat/-/core-js-compat-3.12.1.tgz#2c302c4708505fa7072b0adb5156d26f7801a18b"
@@ -3645,13 +3317,6 @@ css-declaration-sorter@6.0.0:
   dependencies:
     timsort "^0.3.0"
 
-css-declaration-sorter@^6.0.3:
-  version "6.0.3"
-  resolved "https://registry.npm.alibaba-inc.com/css-declaration-sorter/download/css-declaration-sorter-6.0.3.tgz#9dfd8ea0df4cc7846827876fafb52314890c21a9"
-  integrity sha1-nf2OoN9Mx4RoJ4dvr7UjFIkMIak=
-  dependencies:
-    timsort "^0.3.0"
-
 css-loader@^5.1.1:
   version "5.2.4"
   resolved "https://registry.yarnpkg.com/css-loader/-/css-loader-5.2.4.tgz#e985dcbce339812cb6104ef3670f08f9893a1536"
@@ -3680,19 +3345,6 @@ css-minimizer-webpack-plugin@^2.0.0:
     postcss "^8.2.9"
     schema-utils "^3.0.0"
     serialize-javascript "^5.0.1"
-    source-map "^0.6.1"
-
-css-minimizer-webpack-plugin@^3.0.1:
-  version "3.0.2"
-  resolved "https://registry.npm.alibaba-inc.com/css-minimizer-webpack-plugin/download/css-minimizer-webpack-plugin-3.0.2.tgz#8fadbdf10128cb40227bff275a4bb47412534245"
-  integrity sha1-j6298QEoy0Aie/8nWku0dBJTQkU=
-  dependencies:
-    cssnano "^5.0.6"
-    jest-worker "^27.0.2"
-    p-limit "^3.0.2"
-    postcss "^8.3.5"
-    schema-utils "^3.0.0"
-    serialize-javascript "^6.0.0"
     source-map "^0.6.1"
 
 css-select-base-adapter@^0.1.1:
@@ -3725,17 +3377,6 @@ css-select@^4.1.2:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/css-select/-/css-select-4.1.2.tgz#8b52b6714ed3a80d8221ec971c543f3b12653286"
   integrity sha512-nu5ye2Hg/4ISq4XqdLY2bEatAcLIdt3OYGFc9Tm9n7VSlFBcfRv0gBNksHRgSdUDQGtN3XrZ94ztW+NfzkFSUw==
-  dependencies:
-    boolbase "^1.0.0"
-    css-what "^5.0.0"
-    domhandler "^4.2.0"
-    domutils "^2.6.0"
-    nth-check "^2.0.0"
-
-css-select@^4.1.3:
-  version "4.1.3"
-  resolved "https://registry.npm.alibaba-inc.com/css-select/download/css-select-4.1.3.tgz#a70440f70317f2669118ad74ff105e65849c7067"
-  integrity sha1-pwRA9wMX8maRGK10/xBeZYSccGc=
   dependencies:
     boolbase "^1.0.0"
     css-what "^5.0.0"
@@ -3806,18 +3447,6 @@ cssnano-preset-advanced@^5.0.0:
     postcss-reduce-idents "^5.0.0"
     postcss-zindex "^5.0.0"
 
-cssnano-preset-advanced@^5.1.1:
-  version "5.1.3"
-  resolved "https://registry.npm.alibaba-inc.com/cssnano-preset-advanced/download/cssnano-preset-advanced-5.1.3.tgz#a2c6cf2fe39108b81e88810e3c399d1c0fe030ea"
-  integrity sha1-osbPL+ORCLgeiIEOPDmdHA/gMOo=
-  dependencies:
-    autoprefixer "^10.2.0"
-    cssnano-preset-default "^5.1.3"
-    postcss-discard-unused "^5.0.1"
-    postcss-merge-idents "^5.0.1"
-    postcss-reduce-idents "^5.0.1"
-    postcss-zindex "^5.0.1"
-
 cssnano-preset-default@^5.0.1:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/cssnano-preset-default/-/cssnano-preset-default-5.0.1.tgz#76adc00f7aae36ae80552b8356e21bec4b233ca2"
@@ -3853,50 +3482,10 @@ cssnano-preset-default@^5.0.1:
     postcss-svgo "^5.0.0"
     postcss-unique-selectors "^5.0.0"
 
-cssnano-preset-default@^5.1.3:
-  version "5.1.3"
-  resolved "https://registry.npm.alibaba-inc.com/cssnano-preset-default/download/cssnano-preset-default-5.1.3.tgz#caa54183a8c8df03124a9e23f374ab89df5a9a99"
-  integrity sha1-yqVBg6jI3wMSSp4j83Srid9ampk=
-  dependencies:
-    css-declaration-sorter "^6.0.3"
-    cssnano-utils "^2.0.1"
-    postcss-calc "^8.0.0"
-    postcss-colormin "^5.2.0"
-    postcss-convert-values "^5.0.1"
-    postcss-discard-comments "^5.0.1"
-    postcss-discard-duplicates "^5.0.1"
-    postcss-discard-empty "^5.0.1"
-    postcss-discard-overridden "^5.0.1"
-    postcss-merge-longhand "^5.0.2"
-    postcss-merge-rules "^5.0.2"
-    postcss-minify-font-values "^5.0.1"
-    postcss-minify-gradients "^5.0.1"
-    postcss-minify-params "^5.0.1"
-    postcss-minify-selectors "^5.1.0"
-    postcss-normalize-charset "^5.0.1"
-    postcss-normalize-display-values "^5.0.1"
-    postcss-normalize-positions "^5.0.1"
-    postcss-normalize-repeat-style "^5.0.1"
-    postcss-normalize-string "^5.0.1"
-    postcss-normalize-timing-functions "^5.0.1"
-    postcss-normalize-unicode "^5.0.1"
-    postcss-normalize-url "^5.0.2"
-    postcss-normalize-whitespace "^5.0.1"
-    postcss-ordered-values "^5.0.2"
-    postcss-reduce-initial "^5.0.1"
-    postcss-reduce-transforms "^5.0.1"
-    postcss-svgo "^5.0.2"
-    postcss-unique-selectors "^5.0.1"
-
 cssnano-utils@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/cssnano-utils/-/cssnano-utils-2.0.0.tgz#b04baaa312aa3dd5a854b7f61d76b9d94be07f74"
   integrity sha512-xvxmTszdrvSyTACdPe8VU5J6p4sm3egpgw54dILvNqt5eBUv6TFjACLhSxtRuEsxYrgy8uDy269YjScO5aKbGA==
-
-cssnano-utils@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/cssnano-utils/download/cssnano-utils-2.0.1.tgz#8660aa2b37ed869d2e2f22918196a9a8b6498ce2"
-  integrity sha1-hmCqKzfthp0uLyKRgZapqLZJjOI=
 
 cssnano@^5.0.0, cssnano@^5.0.1:
   version "5.0.2"
@@ -3905,15 +3494,6 @@ cssnano@^5.0.0, cssnano@^5.0.1:
   dependencies:
     cosmiconfig "^7.0.0"
     cssnano-preset-default "^5.0.1"
-    is-resolvable "^1.1.0"
-
-cssnano@^5.0.4, cssnano@^5.0.6:
-  version "5.0.6"
-  resolved "https://registry.npm.alibaba-inc.com/cssnano/download/cssnano-5.0.6.tgz#2a91ad34c6521ae31eab3da9c90108ea3093535d"
-  integrity sha1-KpGtNMZSGuMeqz2pyQEI6jCTU10=
-  dependencies:
-    cosmiconfig "^7.0.0"
-    cssnano-preset-default "^5.1.3"
     is-resolvable "^1.1.0"
 
 csso@^4.0.2, csso@^4.2.0:
@@ -4134,7 +3714,7 @@ doctrine@^2.1.0:
   dependencies:
     esutils "^2.0.2"
 
-dom-converter@^0.2, dom-converter@^0.2.0:
+dom-converter@^0.2:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/dom-converter/-/dom-converter-0.2.0.tgz#6721a9daee2e293682955b6afe416771627bb768"
   integrity sha512-gd3ypIPfOMr9h5jIKq8E3sHOTCjeirnl0WK5ZdS1AW0Odt0b1PaWaHdJ4Qk4klv+YB9aJBS7mESXjFoDQPu6DA==
@@ -4368,11 +3948,6 @@ es-module-lexer@^0.4.0:
   resolved "https://registry.yarnpkg.com/es-module-lexer/-/es-module-lexer-0.4.1.tgz#dda8c6a14d8f340a24e34331e0fab0cb50438e0e"
   integrity sha512-ooYciCUtfw6/d2w56UVeqHPcoCFAiJdz5XOkYpv/Txl1HMUozpXjz/2RIQgqwKdXNDPSF1W7mJCFse3G+HDyAA==
 
-es-module-lexer@^0.7.1:
-  version "0.7.1"
-  resolved "https://registry.npm.alibaba-inc.com/es-module-lexer/download/es-module-lexer-0.7.1.tgz#c2c8e0f46f2df06274cdaf0dd3f3b33e0a0b267d"
-  integrity sha1-wsjg9G8t8GJ0za8N0/OzPgoLJn0=
-
 es-to-primitive@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/es-to-primitive/-/es-to-primitive-1.2.1.tgz#e55cd4c9cdc188bcefb03b366c736323fc5c898a"
@@ -4495,7 +4070,7 @@ eslint-plugin-vue@^7.3.0:
     semver "^7.3.2"
     vue-eslint-parser "^7.6.0"
 
-eslint-scope@5.1.1, eslint-scope@^5.0.0, eslint-scope@^5.1.1:
+eslint-scope@^5.0.0, eslint-scope@^5.1.1:
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/eslint-scope/-/eslint-scope-5.1.1.tgz#e786e59a66cb92b3f6c1fb0d508aab174848f48c"
   integrity sha512-2NxwbF/hZ0KpepYN0cNbo+FN6XoK7GaHlQhgx/hIZl6Va0bF45RQOOwhLIy8lQDbuCiadSLCBnH2CFYquit5bw==
@@ -4923,11 +4498,6 @@ fraction.js@^4.0.13:
   resolved "https://registry.yarnpkg.com/fraction.js/-/fraction.js-4.1.0.tgz#229ec1cedc8c3c7e5d2d20688ba64f0a43af5830"
   integrity sha512-o9lSKpK0TDqDwTL24Hxqi6I99s942l6TYkfl6WvGWgLOIFz/YonSGKfiSeMadoiNvTfqnfOa9mjb5SGVbBK9/w==
 
-fraction.js@^4.1.1:
-  version "4.1.1"
-  resolved "https://registry.npm.alibaba-inc.com/fraction.js/download/fraction.js-4.1.1.tgz#ac4e520473dae67012d618aab91eda09bcb400ff"
-  integrity sha1-rE5SBHPa5nAS1hiquR7aCby0AP8=
-
 fragment-cache@^0.2.1:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/fragment-cache/-/fragment-cache-0.2.1.tgz#4290fad27f13e89be7f33799c6bc5a0abfff0d19"
@@ -5075,13 +4645,6 @@ glob-parent@^5.1.0, glob-parent@^5.1.1, glob-parent@~5.1.0:
   version "5.1.2"
   resolved "https://registry.yarnpkg.com/glob-parent/-/glob-parent-5.1.2.tgz#869832c58034fe68a4093c17dc15e8340d8401c4"
   integrity sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==
-  dependencies:
-    is-glob "^4.0.1"
-
-glob-parent@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.npm.alibaba-inc.com/glob-parent/download/glob-parent-6.0.0.tgz#f851b59b388e788f3a44d63fab50382b2859c33c"
-  integrity sha1-+FG1mziOeI86RNY/q1A4KyhZwzw=
   dependencies:
     is-glob "^4.0.1"
 
@@ -5465,17 +5028,6 @@ html-webpack-plugin@^5.2.0:
     html-minifier-terser "^5.0.1"
     lodash "^4.17.20"
     pretty-error "^2.1.1"
-    tapable "^2.0.0"
-
-html-webpack-plugin@^5.3.2:
-  version "5.3.2"
-  resolved "https://registry.npm.alibaba-inc.com/html-webpack-plugin/download/html-webpack-plugin-5.3.2.tgz#7b04bf80b1f6fe84a6d3f66c8b79d64739321b08"
-  integrity sha1-ewS/gLH2/oSm0/Zsi3nWRzkyGwg=
-  dependencies:
-    "@types/html-minifier-terser" "^5.0.0"
-    html-minifier-terser "^5.0.1"
-    lodash "^4.17.21"
-    pretty-error "^3.0.4"
     tapable "^2.0.0"
 
 htmlparser2@^3.10.1, htmlparser2@^3.9.1:
@@ -6132,15 +5684,6 @@ jest-worker@^26.3.0, jest-worker@^26.6.2:
     merge-stream "^2.0.0"
     supports-color "^7.0.0"
 
-jest-worker@^27.0.2:
-  version "27.0.6"
-  resolved "https://registry.npm.alibaba-inc.com/jest-worker/download/jest-worker-27.0.6.tgz#a5fdb1e14ad34eb228cfe162d9f729cdbfa28aed"
-  integrity sha1-pf2x4UrTTrIoz+Fi2fcpzb+iiu0=
-  dependencies:
-    "@types/node" "*"
-    merge-stream "^2.0.0"
-    supports-color "^8.0.0"
-
 joi@^17.3.0, joi@^17.4.0:
   version "17.4.0"
   resolved "https://registry.yarnpkg.com/joi/-/joi-17.4.0.tgz#b5c2277c8519e016316e49ababd41a1908d9ef20"
@@ -6731,15 +6274,6 @@ mini-css-extract-plugin@^1.4.0:
     schema-utils "^3.0.0"
     webpack-sources "^1.1.0"
 
-mini-css-extract-plugin@^1.6.0:
-  version "1.6.2"
-  resolved "https://registry.npm.alibaba-inc.com/mini-css-extract-plugin/download/mini-css-extract-plugin-1.6.2.tgz#83172b4fd812f8fc4a09d6f6d16f924f53990ca8"
-  integrity sha1-gxcrT9gS+PxKCdb20W+ST1OZDKg=
-  dependencies:
-    loader-utils "^2.0.0"
-    schema-utils "^3.0.0"
-    webpack-sources "^1.1.0"
-
 minimalistic-assert@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/minimalistic-assert/-/minimalistic-assert-1.0.1.tgz#2e194de044626d4a10e7f7fbc00ce73e83e4d5c7"
@@ -6958,11 +6492,6 @@ normalize-url@^4.1.0, normalize-url@^4.5.0:
   version "4.5.1"
   resolved "https://registry.yarnpkg.com/normalize-url/-/normalize-url-4.5.1.tgz#0dd90cf1288ee1d1313b87081c9a5932ee48518a"
   integrity sha512-9UZCFRHQdNrfTpGg8+1INIg93B6zE0aXMVFkw1WFwvO4SlZywU6aLg5Of0Ap/PgcbSw4LNxvMWXMeugwMCX0AA==
-
-normalize-url@^6.0.1:
-  version "6.1.0"
-  resolved "https://registry.npm.alibaba-inc.com/normalize-url/download/normalize-url-6.1.0.tgz#40d0885b535deffe3f3147bec877d05fe4c5668a"
-  integrity sha1-QNCIW1Nd7/4/MUe+yHfQX+TFZoo=
 
 npm-run-path@^2.0.0:
   version "2.0.2"
@@ -7520,27 +7049,10 @@ postcss-colormin@^5.0.0:
     color "^3.1.1"
     postcss-value-parser "^4.1.0"
 
-postcss-colormin@^5.2.0:
-  version "5.2.0"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-colormin/download/postcss-colormin-5.2.0.tgz#2b620b88c0ff19683f3349f4cf9e24ebdafb2c88"
-  integrity sha1-K2ILiMD/GWg/M0n0z54k69r7LIg=
-  dependencies:
-    browserslist "^4.16.6"
-    caniuse-api "^3.0.0"
-    colord "^2.0.1"
-    postcss-value-parser "^4.1.0"
-
 postcss-convert-values@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/postcss-convert-values/-/postcss-convert-values-5.0.0.tgz#cd77e1d23ebe8fcf508640551eed08e232784cba"
   integrity sha512-V5kmYm4xoBAjNs+eHY/6XzXJkkGeg4kwNf2ocfqhLb1WBPEa4oaSmoi1fnVO7Dkblqvus9h+AenDvhCKUCK7uQ==
-  dependencies:
-    postcss-value-parser "^4.1.0"
-
-postcss-convert-values@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-convert-values/download/postcss-convert-values-5.0.1.tgz#4ec19d6016534e30e3102fdf414e753398645232"
-  integrity sha1-TsGdYBZTTjDjEC/fQU51M5hkUjI=
   dependencies:
     postcss-value-parser "^4.1.0"
 
@@ -7549,40 +7061,20 @@ postcss-discard-comments@^5.0.0:
   resolved "https://registry.yarnpkg.com/postcss-discard-comments/-/postcss-discard-comments-5.0.0.tgz#6c27310e0657c0b9e38a6175ad001b5aa28964bc"
   integrity sha512-Umig6Gxs8m20RihiXY6QkePd6mp4FxkA1Dg+f/Kd6uw0gEMfKRjDeQOyFkLibexbJJGHpE3lrN/Q0R9SMrUMbQ==
 
-postcss-discard-comments@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-discard-comments/download/postcss-discard-comments-5.0.1.tgz#9eae4b747cf760d31f2447c27f0619d5718901fe"
-  integrity sha1-nq5LdHz3YNMfJEfCfwYZ1XGJAf4=
-
 postcss-discard-duplicates@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/postcss-discard-duplicates/-/postcss-discard-duplicates-5.0.0.tgz#6a2c4f779e8d20da6781e90730f234f9e650c51c"
   integrity sha512-vEJJ+Y3pFUnO1FyCBA6PSisGjHtnphL3V6GsNvkASq/VkP3OX5/No5RYXXLxHa2QegStNzg6HYrYdo71uR4caQ==
-
-postcss-discard-duplicates@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-discard-duplicates/download/postcss-discard-duplicates-5.0.1.tgz#68f7cc6458fe6bab2e46c9f55ae52869f680e66d"
-  integrity sha1-aPfMZFj+a6suRsn1WuUoafaA5m0=
 
 postcss-discard-empty@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/postcss-discard-empty/-/postcss-discard-empty-5.0.0.tgz#0f0a9baee415f5f7be4ae046ba235e98626ba821"
   integrity sha512-+wigy099Y1xZxG36WG5L1f2zeH1oicntkJEW4TDIqKKDO2g9XVB3OhoiHTu08rDEjLnbcab4rw0BAccwi2VjiQ==
 
-postcss-discard-empty@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-discard-empty/download/postcss-discard-empty-5.0.1.tgz#ee136c39e27d5d2ed4da0ee5ed02bc8a9f8bf6d8"
-  integrity sha1-7hNsOeJ9XS7U2g7l7QK8ip+L9tg=
-
 postcss-discard-overridden@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/postcss-discard-overridden/-/postcss-discard-overridden-5.0.0.tgz#ac00f695a60001eda52135a11fac87376b8da9ee"
   integrity sha512-hybnScTaZM2iEA6kzVQ6Spozy7kVdLw+lGw8hftLlBEzt93uzXoltkYp9u0tI8xbfhxDLTOOzHsHQCkYdmzRUg==
-
-postcss-discard-overridden@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-discard-overridden/download/postcss-discard-overridden-5.0.1.tgz#454b41f707300b98109a75005ca4ab0ff2743ac6"
-  integrity sha1-RUtB9wcwC5gQmnUAXKSrD/J0OsY=
 
 postcss-discard-unused@^5.0.0:
   version "5.0.0"
@@ -7591,14 +7083,7 @@ postcss-discard-unused@^5.0.0:
   dependencies:
     postcss-selector-parser "^6.0.4"
 
-postcss-discard-unused@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-discard-unused/download/postcss-discard-unused-5.0.1.tgz#63e35a74a154912f93d4e75a1e6ff3cc146f934b"
-  integrity sha1-Y+NadKFUkS+T1OdaHm/zzBRvk0s=
-  dependencies:
-    postcss-selector-parser "^6.0.5"
-
-postcss-loader@^5.2.0, postcss-loader@^5.3.0:
+postcss-loader@^5.2.0:
   version "5.3.0"
   resolved "https://registry.yarnpkg.com/postcss-loader/-/postcss-loader-5.3.0.tgz#1657f869e48d4fdb018a40771c235e499ee26244"
   integrity sha512-/+Z1RAmssdiSLgIZwnJHwBMnlABPgF7giYzTN2NOfr9D21IJZ4mQC1R2miwp80zno9M4zMD/umGI8cR+2EL5zw==
@@ -7620,14 +7105,6 @@ postcss-merge-idents@^5.0.0:
     cssnano-utils "^2.0.0"
     postcss-value-parser "^4.1.0"
 
-postcss-merge-idents@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-merge-idents/download/postcss-merge-idents-5.0.1.tgz#6b5856fc28f2571f28ecce49effb9b0e64be9437"
-  integrity sha1-a1hW/CjyVx8o7M5J7/ubDmS+lDc=
-  dependencies:
-    cssnano-utils "^2.0.1"
-    postcss-value-parser "^4.1.0"
-
 postcss-merge-longhand@^5.0.1:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/postcss-merge-longhand/-/postcss-merge-longhand-5.0.1.tgz#1a008ff72d14cd3e2f3d32accc2ad37948bcabf4"
@@ -7636,15 +7113,6 @@ postcss-merge-longhand@^5.0.1:
     css-color-names "^1.0.1"
     postcss-value-parser "^4.1.0"
     stylehacks "^5.0.0"
-
-postcss-merge-longhand@^5.0.2:
-  version "5.0.2"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-merge-longhand/download/postcss-merge-longhand-5.0.2.tgz#277ada51d9a7958e8ef8cf263103c9384b322a41"
-  integrity sha1-J3raUdmnlY6O+M8mMQPJOEsyKkE=
-  dependencies:
-    css-color-names "^1.0.1"
-    postcss-value-parser "^4.1.0"
-    stylehacks "^5.0.1"
 
 postcss-merge-rules@^5.0.0:
   version "5.0.0"
@@ -7657,28 +7125,10 @@ postcss-merge-rules@^5.0.0:
     postcss-selector-parser "^6.0.4"
     vendors "^1.0.3"
 
-postcss-merge-rules@^5.0.2:
-  version "5.0.2"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-merge-rules/download/postcss-merge-rules-5.0.2.tgz#d6e4d65018badbdb7dcc789c4f39b941305d410a"
-  integrity sha1-1uTWUBi629t9zHicTzm5QTBdQQo=
-  dependencies:
-    browserslist "^4.16.6"
-    caniuse-api "^3.0.0"
-    cssnano-utils "^2.0.1"
-    postcss-selector-parser "^6.0.5"
-    vendors "^1.0.3"
-
 postcss-minify-font-values@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/postcss-minify-font-values/-/postcss-minify-font-values-5.0.0.tgz#fee5d0fa192fae8757cb744870a0ad02be5f402e"
   integrity sha512-zi2JhFaMOcIaNxhndX5uhsqSY1rexKDp23wV8EOmC9XERqzLbHsoRye3aYF716Zm+hkcR4loqKDt8LZlmihwAg==
-  dependencies:
-    postcss-value-parser "^4.1.0"
-
-postcss-minify-font-values@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-minify-font-values/download/postcss-minify-font-values-5.0.1.tgz#a90cefbfdaa075bd3dbaa1b33588bb4dc268addf"
-  integrity sha1-qQzvv9qgdb09uqGzNYi7TcJord8=
   dependencies:
     postcss-value-parser "^4.1.0"
 
@@ -7688,15 +7138,6 @@ postcss-minify-gradients@^5.0.0:
   integrity sha512-/jPtNgs6JySMwgsE5dPOq8a2xEopWTW3RyqoB9fLqxgR+mDUNLSi7joKd+N1z7FXWgVkc4l/dEBMXHgNAaUbvg==
   dependencies:
     cssnano-utils "^2.0.0"
-    is-color-stop "^1.1.0"
-    postcss-value-parser "^4.1.0"
-
-postcss-minify-gradients@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-minify-gradients/download/postcss-minify-gradients-5.0.1.tgz#2dc79fd1a1afcb72a9e727bc549ce860f93565d2"
-  integrity sha1-Lcef0aGvy3Kp5ye8VJzoYPk1ZdI=
-  dependencies:
-    cssnano-utils "^2.0.1"
     is-color-stop "^1.1.0"
     postcss-value-parser "^4.1.0"
 
@@ -7711,17 +7152,6 @@ postcss-minify-params@^5.0.0:
     postcss-value-parser "^4.1.0"
     uniqs "^2.0.0"
 
-postcss-minify-params@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-minify-params/download/postcss-minify-params-5.0.1.tgz#371153ba164b9d8562842fdcd929c98abd9e5b6c"
-  integrity sha1-NxFTuhZLnYVihC/c2SnJir2eW2w=
-  dependencies:
-    alphanum-sort "^1.0.2"
-    browserslist "^4.16.0"
-    cssnano-utils "^2.0.1"
-    postcss-value-parser "^4.1.0"
-    uniqs "^2.0.0"
-
 postcss-minify-selectors@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/postcss-minify-selectors/-/postcss-minify-selectors-5.0.0.tgz#d3e43d97fd0ba83ba0010950fc5acfa420f7caa9"
@@ -7729,14 +7159,6 @@ postcss-minify-selectors@^5.0.0:
   dependencies:
     alphanum-sort "^1.0.2"
     postcss-selector-parser "^3.1.2"
-
-postcss-minify-selectors@^5.1.0:
-  version "5.1.0"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-minify-selectors/download/postcss-minify-selectors-5.1.0.tgz#4385c845d3979ff160291774523ffa54eafd5a54"
-  integrity sha1-Q4XIRdOXn/FgKRd0Uj/6VOr9WlQ=
-  dependencies:
-    alphanum-sort "^1.0.2"
-    postcss-selector-parser "^6.0.5"
 
 postcss-modules-extract-imports@^3.0.0:
   version "3.0.0"
@@ -7771,11 +7193,6 @@ postcss-normalize-charset@^5.0.0:
   resolved "https://registry.yarnpkg.com/postcss-normalize-charset/-/postcss-normalize-charset-5.0.0.tgz#59e1fe2094fb2e3371cc5b054cbc39828a41a710"
   integrity sha512-pqsCkgo9KmQP0ew6DqSA+uP9YN6EfsW20pQ3JU5JoQge09Z6Too4qU0TNDsTNWuEaP8SWsMp+19l15210MsDZQ==
 
-postcss-normalize-charset@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-normalize-charset/download/postcss-normalize-charset-5.0.1.tgz#121559d1bebc55ac8d24af37f67bd4da9efd91d0"
-  integrity sha1-EhVZ0b68VayNJK839nvU2p79kdA=
-
 postcss-normalize-display-values@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/postcss-normalize-display-values/-/postcss-normalize-display-values-5.0.0.tgz#4ff2d3b3b5146a366de28ec9e24131a1868f1933"
@@ -7784,25 +7201,10 @@ postcss-normalize-display-values@^5.0.0:
     cssnano-utils "^2.0.0"
     postcss-value-parser "^4.1.0"
 
-postcss-normalize-display-values@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-normalize-display-values/download/postcss-normalize-display-values-5.0.1.tgz#62650b965981a955dffee83363453db82f6ad1fd"
-  integrity sha1-YmULllmBqVXf/ugzY0U9uC9q0f0=
-  dependencies:
-    cssnano-utils "^2.0.1"
-    postcss-value-parser "^4.1.0"
-
 postcss-normalize-positions@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/postcss-normalize-positions/-/postcss-normalize-positions-5.0.0.tgz#fe1d9a8122dd385b9c6908bd2008140dea17750d"
   integrity sha512-0o6/qU5ky74X/eWYj/tv4iiKCm3YqJnrhmVADpIMNXxzFZywsSQxl8F7cKs8jQEtF3VrJBgcDHTexZy1zgDoYg==
-  dependencies:
-    postcss-value-parser "^4.1.0"
-
-postcss-normalize-positions@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-normalize-positions/download/postcss-normalize-positions-5.0.1.tgz#868f6af1795fdfa86fbbe960dceb47e5f9492fe5"
-  integrity sha1-ho9q8Xlf36hvu+lg3OtH5flJL+U=
   dependencies:
     postcss-value-parser "^4.1.0"
 
@@ -7814,25 +7216,10 @@ postcss-normalize-repeat-style@^5.0.0:
     cssnano-utils "^2.0.0"
     postcss-value-parser "^4.1.0"
 
-postcss-normalize-repeat-style@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-normalize-repeat-style/download/postcss-normalize-repeat-style-5.0.1.tgz#cbc0de1383b57f5bb61ddd6a84653b5e8665b2b5"
-  integrity sha1-y8DeE4O1f1u2Hd1qhGU7XoZlsrU=
-  dependencies:
-    cssnano-utils "^2.0.1"
-    postcss-value-parser "^4.1.0"
-
 postcss-normalize-string@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/postcss-normalize-string/-/postcss-normalize-string-5.0.0.tgz#2ea08ff4cb8817ce160755e9fdc7e6ef6d495002"
   integrity sha512-wSO4pf7GNcDZpmelREWYADF1+XZWrAcbFLQCOqoE92ZwYgaP/RLumkUTaamEzdT2YKRZAH8eLLKGWotU/7FNPw==
-  dependencies:
-    postcss-value-parser "^4.1.0"
-
-postcss-normalize-string@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-normalize-string/download/postcss-normalize-string-5.0.1.tgz#d9eafaa4df78c7a3b973ae346ef0e47c554985b0"
-  integrity sha1-2er6pN94x6O5c640bvDkfFVJhbA=
   dependencies:
     postcss-value-parser "^4.1.0"
 
@@ -7844,26 +7231,10 @@ postcss-normalize-timing-functions@^5.0.0:
     cssnano-utils "^2.0.0"
     postcss-value-parser "^4.1.0"
 
-postcss-normalize-timing-functions@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-normalize-timing-functions/download/postcss-normalize-timing-functions-5.0.1.tgz#8ee41103b9130429c6cbba736932b75c5e2cb08c"
-  integrity sha1-juQRA7kTBCnGy7pzaTK3XF4ssIw=
-  dependencies:
-    cssnano-utils "^2.0.1"
-    postcss-value-parser "^4.1.0"
-
 postcss-normalize-unicode@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/postcss-normalize-unicode/-/postcss-normalize-unicode-5.0.0.tgz#aa46a89c86ae51a01cbca13e73c1ed7b0b38807e"
   integrity sha512-2CpVoz/67rXU5s9tsPZDxG1YGS9OFHwoY9gsLAzrURrCxTAb0H7Vp87/62LvVPgRWTa5ZmvgmqTp2rL8tlm72A==
-  dependencies:
-    browserslist "^4.16.0"
-    postcss-value-parser "^4.1.0"
-
-postcss-normalize-unicode@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-normalize-unicode/download/postcss-normalize-unicode-5.0.1.tgz#82d672d648a411814aa5bf3ae565379ccd9f5e37"
-  integrity sha1-gtZy1kikEYFKpb865WU3nM2fXjc=
   dependencies:
     browserslist "^4.16.0"
     postcss-value-parser "^4.1.0"
@@ -7877,26 +7248,10 @@ postcss-normalize-url@^5.0.0:
     normalize-url "^4.5.0"
     postcss-value-parser "^4.1.0"
 
-postcss-normalize-url@^5.0.2:
-  version "5.0.2"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-normalize-url/download/postcss-normalize-url-5.0.2.tgz#ddcdfb7cede1270740cf3e4dfc6008bd96abc763"
-  integrity sha1-3c37fO3hJwdAzz5N/GAIvZarx2M=
-  dependencies:
-    is-absolute-url "^3.0.3"
-    normalize-url "^6.0.1"
-    postcss-value-parser "^4.1.0"
-
 postcss-normalize-whitespace@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/postcss-normalize-whitespace/-/postcss-normalize-whitespace-5.0.0.tgz#1faf147a4f8d3d93a3c75109d120b4eefa00589b"
   integrity sha512-KRnxQvQAVkJfaeXSz7JlnD9nBN9sFZF9lrk9452Q2uRoqrRSkinqifF8Iex7wZGei2DZVG/qpmDFDmRvbNAOGA==
-  dependencies:
-    postcss-value-parser "^4.1.0"
-
-postcss-normalize-whitespace@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-normalize-whitespace/download/postcss-normalize-whitespace-5.0.1.tgz#b0b40b5bcac83585ff07ead2daf2dcfbeeef8e9a"
-  integrity sha1-sLQLW8rINYX/B+rS2vLc++7vjpo=
   dependencies:
     postcss-value-parser "^4.1.0"
 
@@ -7908,25 +7263,10 @@ postcss-ordered-values@^5.0.0:
     cssnano-utils "^2.0.0"
     postcss-value-parser "^4.1.0"
 
-postcss-ordered-values@^5.0.2:
-  version "5.0.2"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-ordered-values/download/postcss-ordered-values-5.0.2.tgz#1f351426977be00e0f765b3164ad753dac8ed044"
-  integrity sha1-HzUUJpd74A4PdlsxZK11PayO0EQ=
-  dependencies:
-    cssnano-utils "^2.0.1"
-    postcss-value-parser "^4.1.0"
-
 postcss-reduce-idents@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/postcss-reduce-idents/-/postcss-reduce-idents-5.0.0.tgz#a6fbc9369b955daa756fe578de2ed916c01eed56"
   integrity sha512-wDth7wkXAZ91i7GNe+/PJKyC9NOR2n04U0t5nnqlvlkKhMhnRn/8NJLYQRa7ZZHPGOZcOfvugrhblioTTg2X8A==
-  dependencies:
-    postcss-value-parser "^4.1.0"
-
-postcss-reduce-idents@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-reduce-idents/download/postcss-reduce-idents-5.0.1.tgz#99b49ce8ee6f9c179447671cc9693e198e877bb7"
-  integrity sha1-mbSc6O5vnBeUR2ccyWk+GY6He7c=
   dependencies:
     postcss-value-parser "^4.1.0"
 
@@ -7938,28 +7278,12 @@ postcss-reduce-initial@^5.0.0:
     browserslist "^4.16.0"
     caniuse-api "^3.0.0"
 
-postcss-reduce-initial@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-reduce-initial/download/postcss-reduce-initial-5.0.1.tgz#9d6369865b0f6f6f6b165a0ef5dc1a4856c7e946"
-  integrity sha1-nWNphlsPb29rFloO9dwaSFbH6UY=
-  dependencies:
-    browserslist "^4.16.0"
-    caniuse-api "^3.0.0"
-
 postcss-reduce-transforms@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/postcss-reduce-transforms/-/postcss-reduce-transforms-5.0.0.tgz#5c820f71fbd4eec82b323523642b7b2d1c7d29ef"
   integrity sha512-iHdGODW4YzM3WjVecBhPQt6fpJC4lGQZxJKjkBNHpp2b8dzmvj0ogKThqya+IRodQEFzjfXgYeESkf172FH5Lw==
   dependencies:
     cssnano-utils "^2.0.0"
-    postcss-value-parser "^4.1.0"
-
-postcss-reduce-transforms@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-reduce-transforms/download/postcss-reduce-transforms-5.0.1.tgz#93c12f6a159474aa711d5269923e2383cedcf640"
-  integrity sha1-k8EvahWUdKpxHVJpkj4jg87c9kA=
-  dependencies:
-    cssnano-utils "^2.0.1"
     postcss-value-parser "^4.1.0"
 
 postcss-resolve-nested-selector@^0.1.1:
@@ -7976,20 +7300,13 @@ postcss-selector-parser@^3.1.2:
     indexes-of "^1.0.1"
     uniq "^1.0.1"
 
-postcss-selector-parser@^6.0.2, postcss-selector-parser@^6.0.4, postcss-selector-parser@^6.0.5:
+postcss-selector-parser@^6.0.2, postcss-selector-parser@^6.0.4:
   version "6.0.6"
   resolved "https://registry.yarnpkg.com/postcss-selector-parser/-/postcss-selector-parser-6.0.6.tgz#2c5bba8174ac2f6981ab631a42ab0ee54af332ea"
   integrity sha512-9LXrvaaX3+mcv5xkg5kFwqSzSH1JIObIx51PrndZwlmznwXRfxMddDvo9gve3gVR8ZTKgoFDdWkbRFmEhT4PMg==
   dependencies:
     cssesc "^3.0.0"
     util-deprecate "^1.0.2"
-
-postcss-sort-media-queries@^3.10.11:
-  version "3.11.12"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-sort-media-queries/download/postcss-sort-media-queries-3.11.12.tgz#bfc449fadedfe2765ca4566c30b24694635ad182"
-  integrity sha1-v8RJ+t7f4nZcpFZsMLJGlGNa0YI=
-  dependencies:
-    sort-css-media-queries "1.5.4"
 
 postcss-sort-media-queries@^3.8.9:
   version "3.9.10"
@@ -8006,14 +7323,6 @@ postcss-svgo@^5.0.0:
     postcss-value-parser "^4.1.0"
     svgo "^2.3.0"
 
-postcss-svgo@^5.0.2:
-  version "5.0.2"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-svgo/download/postcss-svgo-5.0.2.tgz#bc73c4ea4c5a80fbd4b45e29042c34ceffb9257f"
-  integrity sha1-vHPE6kxagPvUtF4pBCw0zv+5JX8=
-  dependencies:
-    postcss-value-parser "^4.1.0"
-    svgo "^2.3.0"
-
 postcss-unique-selectors@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/postcss-unique-selectors/-/postcss-unique-selectors-5.0.0.tgz#17856278f6c38d024defc9694d568bb09dd7f771"
@@ -8021,15 +7330,6 @@ postcss-unique-selectors@^5.0.0:
   dependencies:
     alphanum-sort "^1.0.2"
     postcss-selector-parser "^6.0.2"
-    uniqs "^2.0.0"
-
-postcss-unique-selectors@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-unique-selectors/download/postcss-unique-selectors-5.0.1.tgz#3be5c1d7363352eff838bd62b0b07a0abad43bfc"
-  integrity sha1-O+XB1zYzUu/4OL1isLB6CrrUO/w=
-  dependencies:
-    alphanum-sort "^1.0.2"
-    postcss-selector-parser "^6.0.5"
     uniqs "^2.0.0"
 
 postcss-value-parser@^4.0.2, postcss-value-parser@^4.1.0:
@@ -8045,11 +7345,6 @@ postcss-zindex@^5.0.0:
     has "^1.0.3"
     uniqs "^2.0.0"
 
-postcss-zindex@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/postcss-zindex/download/postcss-zindex-5.0.1.tgz#c585724beb69d356af8c7e68847b28d6298ece03"
-  integrity sha1-xYVyS+tp01avjH5ohHso1imOzgM=
-
 postcss@^8.2.10, postcss@^8.2.4, postcss@^8.2.9:
   version "8.2.15"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.2.15.tgz#9e66ccf07292817d226fc315cbbf9bc148fbca65"
@@ -8058,15 +7353,6 @@ postcss@^8.2.10, postcss@^8.2.4, postcss@^8.2.9:
     colorette "^1.2.2"
     nanoid "^3.1.23"
     source-map "^0.6.1"
-
-postcss@^8.2.15, postcss@^8.3.5:
-  version "8.3.5"
-  resolved "https://registry.npm.alibaba-inc.com/postcss/download/postcss-8.3.5.tgz#982216b113412bc20a86289e91eb994952a5b709"
-  integrity sha1-mCIWsRNBK8IKhiiekeuZSVKltwk=
-  dependencies:
-    colorette "^1.2.2"
-    nanoid "^3.1.23"
-    source-map-js "^0.6.2"
 
 prepend-http@^2.0.0:
   version "2.0.0"
@@ -8080,14 +7366,6 @@ pretty-error@^2.1.1:
   dependencies:
     lodash "^4.17.20"
     renderkid "^2.0.4"
-
-pretty-error@^3.0.4:
-  version "3.0.4"
-  resolved "https://registry.npm.alibaba-inc.com/pretty-error/download/pretty-error-3.0.4.tgz#94b1d54f76c1ed95b9c604b9de2194838e5b574e"
-  integrity sha1-lLHVT3bB7ZW5xgS53iGUg45bV04=
-  dependencies:
-    lodash "^4.17.20"
-    renderkid "^2.0.6"
 
 pretty-time@^1.1.0:
   version "1.1.0"
@@ -8124,7 +7402,7 @@ prompts@2.4.0:
     kleur "^3.0.3"
     sisteransi "^1.0.5"
 
-prompts@^2.4.0, prompts@^2.4.1:
+prompts@^2.4.0:
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/prompts/-/prompts-2.4.1.tgz#befd3b1195ba052f9fd2fde8a486c4e82ee77f61"
   integrity sha512-EQyfIuO2hPDsX1L/blblV+H7I0knhgAd82cVneCwcdND9B8AuCDuRcBH6yIcG4dFzlOUqbazQqwGjx5xmsNLuQ==
@@ -8672,17 +7950,6 @@ renderkid@^2.0.4:
     lodash "^4.17.20"
     strip-ansi "^3.0.0"
 
-renderkid@^2.0.6:
-  version "2.0.7"
-  resolved "https://registry.npm.alibaba-inc.com/renderkid/download/renderkid-2.0.7.tgz#464f276a6bdcee606f4a15993f9b29fc74ca8609"
-  integrity sha1-Rk8namvc7mBvShWZP5sp/HTKhgk=
-  dependencies:
-    css-select "^4.1.3"
-    dom-converter "^0.2.0"
-    htmlparser2 "^6.1.0"
-    lodash "^4.17.21"
-    strip-ansi "^3.0.1"
-
 repeat-element@^1.1.2:
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/repeat-element/-/repeat-element-1.1.4.tgz#be681520847ab58c7568ac75fbfad28ed42d39e9"
@@ -8812,7 +8079,7 @@ rimraf@^3.0.2:
   dependencies:
     glob "^7.1.3"
 
-rtl-detect@^1.0.2, rtl-detect@^1.0.3:
+rtl-detect@^1.0.2:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/rtl-detect/-/rtl-detect-1.0.3.tgz#42145b9a4f9cf0b94c4542aba90d57f0d18559bf"
   integrity sha512-2sMcZO60tL9YDEFe24gqddg3hJ+xSmJFN8IExcQUxeHxQzydQrN6GHPL+yAWgzItXSI7es53hcZC9pJneuZDKA==
@@ -8976,13 +8243,6 @@ serialize-javascript@^5.0.1:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/serialize-javascript/-/serialize-javascript-5.0.1.tgz#7886ec848049a462467a97d3d918ebb2aaf934f4"
   integrity sha512-SaaNal9imEO737H2c05Og0/8LUXG7EnsZyMa8MzkmuHoELfT6txuj0cMqRj6zfPKnmQ1yasR4PCJc8x+M4JSPA==
-  dependencies:
-    randombytes "^2.1.0"
-
-serialize-javascript@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.npm.alibaba-inc.com/serialize-javascript/download/serialize-javascript-6.0.0.tgz#efae5d88f45d7924141da8b5c3a7a7e663fefeb8"
-  integrity sha1-765diPRdeSQUHai1w6en5mP+/rg=
   dependencies:
     randombytes "^2.1.0"
 
@@ -9208,11 +8468,6 @@ source-list-map@^2.0.0, source-list-map@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/source-list-map/-/source-list-map-2.0.1.tgz#3993bd873bfc48479cca9ea3a547835c7c154b34"
   integrity sha512-qnQ7gVMxGNxsiL4lEuJwe/To8UnK7fAnmbGEEH8RpLouuKbeEm0lhbQVFIrNSuB+G7tVrAlVsZgETT5nljf+Iw==
-
-source-map-js@^0.6.2:
-  version "0.6.2"
-  resolved "https://registry.npm.alibaba-inc.com/source-map-js/download/source-map-js-0.6.2.tgz#0bb5de631b41cfbda6cfba8bd05a80efdfd2385e"
-  integrity sha1-C7XeYxtBz72mz7qL0FqA79/SOF4=
 
 source-map-resolve@^0.5.0:
   version "0.5.3"
@@ -9510,14 +8765,6 @@ stylehacks@^5.0.0:
     browserslist "^4.16.0"
     postcss-selector-parser "^6.0.4"
 
-stylehacks@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npm.alibaba-inc.com/stylehacks/download/stylehacks-5.0.1.tgz#323ec554198520986806388c7fdaebc38d2c06fb"
-  integrity sha1-Mj7FVBmFIJhoBjiMf9rrw40sBvs=
-  dependencies:
-    browserslist "^4.16.0"
-    postcss-selector-parser "^6.0.4"
-
 stylelint-config-ali@^0.3.4:
   version "0.3.4"
   resolved "https://registry.yarnpkg.com/stylelint-config-ali/-/stylelint-config-ali-0.3.4.tgz#3b93ce1f85a32b362360a78d2c091912e87849d7"
@@ -9552,13 +8799,6 @@ supports-color@^7.0.0, supports-color@^7.1.0:
   version "7.2.0"
   resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-7.2.0.tgz#1b7dcdcb32b8138801b3e478ba6a51caa89648da"
   integrity sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==
-  dependencies:
-    has-flag "^4.0.0"
-
-supports-color@^8.0.0:
-  version "8.1.1"
-  resolved "https://registry.npm.alibaba-inc.com/supports-color/download/supports-color-8.1.1.tgz#cd6fc17e28500cff56c1b86c0a7fd4a54a73005c"
-  integrity sha1-zW/BfihQDP9WwbhsCn/UpUpzAFw=
   dependencies:
     has-flag "^4.0.0"
 
@@ -9630,18 +8870,6 @@ terser-webpack-plugin@^5.1.1:
     p-limit "^3.1.0"
     schema-utils "^3.0.0"
     serialize-javascript "^5.0.1"
-    source-map "^0.6.1"
-    terser "^5.7.0"
-
-terser-webpack-plugin@^5.1.3:
-  version "5.1.4"
-  resolved "https://registry.npm.alibaba-inc.com/terser-webpack-plugin/download/terser-webpack-plugin-5.1.4.tgz#c369cf8a47aa9922bd0d8a94fe3d3da11a7678a1"
-  integrity sha1-w2nPikeqmSK9DYqU/j09oRp2eKE=
-  dependencies:
-    jest-worker "^27.0.2"
-    p-limit "^3.1.0"
-    schema-utils "^3.0.0"
-    serialize-javascript "^6.0.0"
     source-map "^0.6.1"
     terser "^5.7.0"
 
@@ -10175,7 +9403,7 @@ vue-eslint-parser@^7.2.0, vue-eslint-parser@^7.6.0:
     esquery "^1.4.0"
     lodash "^4.17.15"
 
-wait-on@^5.2.1, wait-on@^5.3.0:
+wait-on@^5.2.1:
   version "5.3.0"
   resolved "https://registry.yarnpkg.com/wait-on/-/wait-on-5.3.0.tgz#584e17d4b3fe7b46ac2b9f8e5e102c005c2776c7"
   integrity sha512-DwrHrnTK+/0QFaB9a8Ol5Lna3k7WvUR4jzSKmz0YaPBpuN2sACyiPVKVfj6ejnjcajAcvn3wlbTyMIn9AZouOg==
@@ -10194,14 +9422,6 @@ watchpack@^2.0.0:
     glob-to-regexp "^0.4.1"
     graceful-fs "^4.1.2"
 
-watchpack@^2.2.0:
-  version "2.2.0"
-  resolved "https://registry.npm.alibaba-inc.com/watchpack/download/watchpack-2.2.0.tgz#47d78f5415fe550ecd740f99fe2882323a58b1ce"
-  integrity sha1-R9ePVBX+VQ7NdA+Z/iiCMjpYsc4=
-  dependencies:
-    glob-to-regexp "^0.4.1"
-    graceful-fs "^4.1.2"
-
 wbuf@^1.1.0, wbuf@^1.7.3:
   version "1.7.3"
   resolved "https://registry.yarnpkg.com/wbuf/-/wbuf-1.7.3.tgz#c1d8d149316d3ea852848895cb6a0bfe887b87df"
@@ -10214,7 +9434,7 @@ web-namespaces@^1.0.0, web-namespaces@^1.1.2:
   resolved "https://registry.yarnpkg.com/web-namespaces/-/web-namespaces-1.1.4.tgz#bc98a3de60dadd7faefc403d1076d529f5e030ec"
   integrity sha512-wYxSGajtmoP4WxfejAPIr4l0fVh+jeMXZb08wNc0tMg6xsfZXj3cECqIK0G7ZAqUq0PP8WlMDtaOGVBTAWztNw==
 
-webpack-bundle-analyzer@^4.4.0, webpack-bundle-analyzer@^4.4.2:
+webpack-bundle-analyzer@^4.4.0:
   version "4.4.2"
   resolved "https://registry.yarnpkg.com/webpack-bundle-analyzer/-/webpack-bundle-analyzer-4.4.2.tgz#39898cf6200178240910d629705f0f3493f7d666"
   integrity sha512-PIagMYhlEzFfhMYOzs5gFT55DkUdkyrJi/SxJp8EF3YMWhS+T9vvs2EoTetpk5qb6VsCq02eXTlRDOydRhDFAQ==
@@ -10295,14 +9515,6 @@ webpack-merge@^5.7.3:
     clone-deep "^4.0.1"
     wildcard "^2.0.0"
 
-webpack-merge@^5.8.0:
-  version "5.8.0"
-  resolved "https://registry.npm.alibaba-inc.com/webpack-merge/download/webpack-merge-5.8.0.tgz#2b39dbf22af87776ad744c390223731d30a68f61"
-  integrity sha1-Kznb8ir4d3atdEw5AiNzHTCmj2E=
-  dependencies:
-    clone-deep "^4.0.1"
-    wildcard "^2.0.0"
-
 webpack-sources@^1.1.0, webpack-sources@^1.4.3:
   version "1.4.3"
   resolved "https://registry.yarnpkg.com/webpack-sources/-/webpack-sources-1.4.3.tgz#eedd8ec0b928fbf1cbfe994e22d2d890f330a933"
@@ -10315,14 +9527,6 @@ webpack-sources@^2.1.1:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/webpack-sources/-/webpack-sources-2.2.0.tgz#058926f39e3d443193b6c31547229806ffd02bac"
   integrity sha512-bQsA24JLwcnWGArOKUxYKhX3Mz/nK1Xf6hxullKERyktjNMC4x8koOeaDNTA2fEJ09BdWLbM/iTW0ithREUP0w==
-  dependencies:
-    source-list-map "^2.0.1"
-    source-map "^0.6.1"
-
-webpack-sources@^2.3.0:
-  version "2.3.0"
-  resolved "https://registry.npm.alibaba-inc.com/webpack-sources/download/webpack-sources-2.3.0.tgz#9ed2de69b25143a4c18847586ad9eccb19278cfa"
-  integrity sha1-ntLeabJRQ6TBiEdYatnsyxknjPo=
   dependencies:
     source-list-map "^2.0.1"
     source-map "^0.6.1"
@@ -10355,35 +9559,6 @@ webpack@^5.28.0:
     terser-webpack-plugin "^5.1.1"
     watchpack "^2.0.0"
     webpack-sources "^2.1.1"
-
-webpack@^5.40.0:
-  version "5.44.0"
-  resolved "https://registry.npm.alibaba-inc.com/webpack/download/webpack-5.44.0.tgz#97b13a02bd79fb71ac6301ce697920660fa214a1"
-  integrity sha1-l7E6Ar15+3GsYwHOaXkgZg+iFKE=
-  dependencies:
-    "@types/eslint-scope" "^3.7.0"
-    "@types/estree" "^0.0.50"
-    "@webassemblyjs/ast" "1.11.1"
-    "@webassemblyjs/wasm-edit" "1.11.1"
-    "@webassemblyjs/wasm-parser" "1.11.1"
-    acorn "^8.4.1"
-    browserslist "^4.14.5"
-    chrome-trace-event "^1.0.2"
-    enhanced-resolve "^5.8.0"
-    es-module-lexer "^0.7.1"
-    eslint-scope "5.1.1"
-    events "^3.2.0"
-    glob-to-regexp "^0.4.1"
-    graceful-fs "^4.2.4"
-    json-parse-better-errors "^1.0.2"
-    loader-runner "^4.2.0"
-    mime-types "^2.1.27"
-    neo-async "^2.6.2"
-    schema-utils "^3.0.0"
-    tapable "^2.1.1"
-    terser-webpack-plugin "^5.1.3"
-    watchpack "^2.2.0"
-    webpack-sources "^2.3.0"
 
 webpackbar@^5.0.0-3:
   version "5.0.0-3"
