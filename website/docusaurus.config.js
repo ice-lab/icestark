@@ -15,6 +15,10 @@ module.exports = {
   themeConfig: {
     navbar,
     footer,
+    algolia: {
+      apiKey: '7bf43a6132517f8d2577935c492bea10',
+      indexName: 'icework',
+    },
     gtag: {
       trackingID: 'G-BYD48PYEE0',
     },
@@ -35,12 +39,12 @@ module.exports = {
     ],
   ],
   plugins: [
-    [
-      require.resolve("@easyops-cn/docusaurus-search-local"),
-      {
-        hashed: true,
-        language: ["en", "zh"],
-      },
-    ],
+    // [
+    //   require.resolve("@easyops-cn/docusaurus-search-local"),
+    //   {
+    //     hashed: true,
+    //     language: ["en", "zh"],
+    //   },
+    // ],
   ],
 };
