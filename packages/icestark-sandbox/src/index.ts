@@ -62,7 +62,7 @@ export default class Sandbox {
     const originalWindow = window;
     const originalAddEventListener = window.addEventListener;
     const originalRemoveEventListener = window.removeEventListener;
-    const originalSetInerval = window.setInterval;
+    const originalSetInterval = window.setInterval;
     const originalSetTimeout = window.setTimeout;
 
     // hijack addEventListener
@@ -88,7 +88,7 @@ export default class Sandbox {
     };
     // hijack setInterval
     proxyWindow.setInterval = (...args) => {
-      const intervalId = originalSetInerval(...args);
+      const intervalId = originalSetInterval(...args);
       this.intervalIds.push(intervalId);
       return intervalId;
     };
