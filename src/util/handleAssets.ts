@@ -243,7 +243,16 @@ export function fetchScripts(jsList: Asset[], fetch = defaultFetch) {
     } else {
       // content will script url when type is AssetTypeEnum.EXTERNAL
       // eslint-disable-next-line no-return-assign
-      return cachedScriptsContent[content] || (cachedScriptsContent[content] = fetch(content).then((res) => res.text()));
+      return cachedScriptsContent[content]
+        /**
+        * If code is being evaluated as a string with `eval` or via `new Function`，then the source origin
+        * will be the page's origin. As a result, `//# sourceURL` appends to the generated code.
+        * See https://sourcemaps.info/spec.html
+        */
+        || (cachedScriptsContent[content] = fetch(content)
+          .then((res) => res.text())
+          .then((res) => `${res} \n //# sourceURL=${content}`)
+        );
     }
   }));
 }

@@ -98,10 +98,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   shouldComponentUpdate(nextProps, nextState) {
     const { url, title, rootId, componentProps, cssLoading, name } = this.props;
     const { showComponent } = this.state;
-    // re-render and callCapturedEventListeners if componentProps is changed
     if ((nextProps.component || nextProps.render && typeof nextProps.render === 'function') &&
       !isEqual(componentProps, nextProps.componentProps)) {
-      callCapturedEventListeners();
+      Promise.resolve().then(callCapturedEventListeners);
       return true;
     } else if (
       name === nextProps.name &&
@@ -111,8 +110,11 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       cssLoading === nextProps.cssLoading &&
       showComponent === nextState.showComponent
     ) {
-      // reRender is triggered by sub-application router / browser, call popStateListeners
-      callCapturedEventListeners();
+      /**
+       * delay to trigger popState Listeners.
+       * issue https://github.com/ice-lab/icestark/issues/325
+       */
+      Promise.resolve().then(callCapturedEventListeners);
       return false;
     }
     return true;
