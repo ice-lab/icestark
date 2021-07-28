@@ -1,27 +1,174 @@
-import { MatchOptions, PathData, PathOptions, matchActivePath } from './matchPath';
+import * as pathToRegexp from 'path-to-regexp';
+import * as urlParse from 'url-parse';
+import { isFunction, toArray, isObject, addLeadingSlash } from './helpers';
 
-interface ActiveFn {
+/**
+ * "slash" - hashes like #/ and #/sunshine/lollipops
+ * "noslash" - hashes like # and #sunshine/lollipops
+ * "hashbang" - “ajax crawlable” (deprecated by Google) hashes like #!/ and #!/sunshine/lollipops
+*/
+export type HashType = 'hashbang' | 'noslash' | 'slash';
+
+export type PathOption = Partial<Record<'exact' | 'strict' | 'sensitive', boolean>>;
+
+export type PathData = PathOption & {
+  value: string;
+};
+
+export interface ActiveFn {
   (url: string): boolean;
 }
 
-export type ActivePath = string | string[] | PathData[] | MatchOptions[] | ActiveFn;
+/**
+ * Old logic, AppRoute's `path` only accept the follwing limited type.
+ */
+export type AppRoutePath = string | PathData | string[] | PathData[];
 
-const checkAtive = (options: PathOptions, activePath?: ActivePath ) => {
-  const { hashType = false, exact = false, sensitive = false, strict = false } = options;
-  const activeRules: (ActiveFn | string | MatchOptions)[] = Array.isArray(activePath) ? activePath : [activePath];
-  return activePath ? (url: string) => activeRules.map((activeRule: ActiveFn | string | MatchOptions) => {
-    if (typeof activeRule === 'function' ) {
-      return activeRule;
-    } else {
-      const pathOptions: MatchOptions = { hashType, exact, sensitive, strict };
-      const pathInfo = Object.prototype.toString.call(activeRule) === '[object Object]'
-        ? { ...pathOptions, ...(activeRule as MatchOptions) }
-        : { path: activeRule as string, ...pathOptions };
-      return (checkUrl: string) => matchActivePath(checkUrl, pathInfo);
-    }
-  }).some((activeRule: ActiveFn) => activeRule(url))
-  // active app when activePath is not specified
-    : () => true;
+export type MatchOptions = PathOptionWithHashType & {
+  pathData: PathData;
 };
 
-export default checkAtive;
+export type MixedPathData = Array<string | PathData>;
+
+/**
+ * One can set activePath as follows:
+ * case one: '/seller'
+ * case two: ['/seller', '/waiter']
+ * case three { value: '/seller', exact: true }
+ * case four: [{ value: '/seller', exact: true }]
+ * case five: [{ value: '/seller', exact: true }, '/waiter']
+ * case six: (url) => url.includes('/seller')
+ */
+export type ActivePath = string | PathData | string[] | PathData[] | MixedPathData | ActiveFn;
+
+export type PathOptionWithHashType = PathOption & {
+  hashType?: boolean | HashType;
+};
+
+/**
+ * Format non-functional activePath to PathData.
+ */
+const formatPath = (activePath: ActivePath): PathData[] => {
+  const string2ObjectPath = (pathData: string | PathData): PathData => (isObject<object>(pathData) ? pathData : { value: pathData });
+  return toArray(activePath).map(string2ObjectPath);
+};
+
+/**
+ * Whether a given herf matchs activePath or not.
+ * @param options
+ * @param activePath
+ * @returns
+ */
+const checkActive = (options: PathOptionWithHashType, activePath?: ActivePath) => {
+  const {
+    hashType = false,
+    exact = false,
+    sensitive = false,
+    strict = false,
+  } = options;
+
+  // Always activate app when activePath is not specified.
+  if (!activePath) {
+    return () => true;
+  }
+
+  // If pass fucntion to activePath, just returns
+  if (isFunction(activePath)) {
+    return activePath;
+  }
+
+  const activeRules = formatPath(activePath);
+
+  return (url: string) => activeRules
+    .map((rule) => {
+      return (checkUrl: string) => matchPath(checkUrl, {
+        pathData: rule,
+        hashType,
+        exact,
+        sensitive,
+        strict,
+      });
+    })
+    .some((functionalRule) => functionalRule(url));
+};
+
+export default checkActive;
+
+const HashPathDecoders = {
+  hashbang: (path: string) => (path.charAt(0) === '!' ? path.substr(1) : path),
+  noslash: addLeadingSlash,
+  slash: addLeadingSlash,
+};
+
+function getHashPath(hash = '/'): string {
+  const hashIndex = hash.indexOf('#');
+  const hashPath = hashIndex === -1 ? hash : hash.substr(hashIndex + 1);
+
+  // remove hash query
+  const searchIndex = hashPath.indexOf('?');
+  return searchIndex === -1 ? hashPath : hashPath.substr(0, searchIndex);
+}
+
+/**
+ * Api for turning hash to pathname. Like `/seller#homepage` turns to `/homepage`.
+ * HashType only exists in outer setting scope which may not act as a path option.
+ */
+export function getPathname(url: string, hashType?: boolean | HashType) {
+  const { pathname, hash } = urlParse(url, true);
+
+  return hashType
+    ? HashPathDecoders[hashType === true ? 'slash' : hashType](getHashPath(hash))
+    : pathname;
+}
+
+/**
+ * Use path-to-regexp to get the matching RegExpression
+ */
+function genPath2RegExp(path: string, regExpOptions: pathToRegexp.RegExpOptions) {
+  const keys = [];
+  const regexp = pathToRegexp(path, keys, regExpOptions);
+  return { regexp, keys };
+}
+
+/**
+ * Api for matching URL's pathname to path.
+ * @returns false | {
+ *  path: PathData.value
+ *  url: matched path
+ *  isExact:
+ *  params: href params
+ * }
+ */
+export function matchPath(href: string, options: MatchOptions) {
+  const { hashType, exact = false, strict = false, sensitive = false, pathData } = options;
+  const { value } = pathData;
+
+  const pathname = getPathname(href, hashType);
+
+  const { regexp, keys } = genPath2RegExp(value, {
+    strict: pathData.strict ?? strict,
+    sensitive: pathData.sensitive ?? sensitive,
+    end: pathData.exact ?? exact,
+  });
+
+  const match = regexp.exec(pathname);
+
+  if (!match) {
+    return false;
+  }
+
+  const [url, ...values] = match;
+  const isExact = pathname === url;
+
+  if ((pathData.exact ?? exact) && !isExact) return false;
+
+  return {
+    path: value,
+    url: value === '/' && url === '' ? '/' : url,
+    isExact,
+    params: keys.reduce((memo, key, index) => {
+      memo[key.name] = values[index];
+      return memo;
+    }, {}),
+  };
+}

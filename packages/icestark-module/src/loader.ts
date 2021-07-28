@@ -4,7 +4,7 @@ import { StarkModule } from './modules';
 
 export interface ImportTask {
   [name: string]: Promise<string[]>;
-};
+}
 
 export type PromiseModule = Promise<Response>;
 
@@ -77,4 +77,4 @@ export default class ModuleLoader {
       return moduleInfo;
     });
   }
-};
+}

@@ -1,3 +1,6 @@
+/* eslint-disable no-mixed-operators */
+/* eslint-disable curly */
+/* eslint-disable nonblock-statement-body-position */
 // fork: https://github.com/systemjs/systemjs/blob/master/src/extras/global.js
 
 // safari unpredictably lists some new globals first or second in object order
@@ -14,7 +17,7 @@ function shouldSkipProperty(p, globalWindow) {
     || isIE11 && globalWindow[p] && typeof window !== 'undefined' && globalWindow[p].parent === window;
 }
 
-export function getGlobalProp (globalWindow) {
+export function getGlobalProp(globalWindow) {
   let cnt = 0;
   let lastProp;
   // eslint-disable-next-line no-restricted-syntax
@@ -42,7 +45,7 @@ export function getGlobalProp (globalWindow) {
   }
 }
 
-export function noteGlobalProps (globalWindow) {
+export function noteGlobalProps(globalWindow) {
   // alternatively Object.keys(global).pop()
   // but this may be faster (pending benchmarks)
   firstGlobalProp = undefined;

@@ -3,7 +3,7 @@ import { getCache } from './cache';
 /**
  * CustomEvent Polyfill for IE
  */
-(function() {
+(function () {
   if (typeof (window as any).CustomEvent === 'function') return false;
 
   function CustomEvent(event, params) {

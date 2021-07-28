@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-indent */
 import * as React from 'react';
 import { unmoutModule, loadModule, getModules, registerModules, ISandbox, StarkModule } from './modules';
 import { shallowCompare } from './assist';
@@ -22,16 +23,16 @@ interface State {
  * default render component, mount all modules
  */
 export default class MicroModule extends React.Component<any, State> {
+  static defaultProps = {
+    loadingComponent: null,
+    handleError: () => {},
+  };
+
   private moduleInfo = null;
 
   private mountNode = null;
 
   private unmout = false;
-
-  static defaultProps = {
-    loadingComponent: null,
-    handleError: () => {},
-  };
 
   constructor(props) {
     super(props);
@@ -61,15 +62,15 @@ export default class MicroModule extends React.Component<any, State> {
     }
   }
 
-  getModuleInfo () {
+  getModuleInfo() {
     const { moduleInfo } = this.props;
-    this.moduleInfo = moduleInfo || getModules().filter(m => m.name === this.props.moduleName)[0];
+    this.moduleInfo = moduleInfo || getModules().filter((m) => m.name === this.props.moduleName)[0];
     if (!this.moduleInfo) {
       console.error(`[icestark] Can't find ${this.props.moduleName} module in modules config`);
     }
   }
 
-  validateRender () {
+  validateRender() {
     const { render } = this.moduleInfo || {};
 
     if (render && typeof render !== 'function') {
@@ -77,7 +78,6 @@ export default class MicroModule extends React.Component<any, State> {
     }
     return render && typeof render === 'function';
   }
-
 
   async mountModule() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -94,7 +94,7 @@ export default class MicroModule extends React.Component<any, State> {
       this.setState({ loading: true });
 
       try {
-        const { mount, component } =  await loadModule(this.moduleInfo, sandbox);
+        const { mount, component } = await loadModule(this.moduleInfo, sandbox);
         const lifecycleMount = mount;
         this.setState({ loading: false });
         if (lifecycleMount && component) {
@@ -122,13 +122,15 @@ export default class MicroModule extends React.Component<any, State> {
 
     const { wrapperClassName, wrapperStyle, loadingComponent } = this.props;
     return loading ? loadingComponent
-      : (<div className={wrapperClassName} style={wrapperStyle} ref={ref => this.mountNode = ref} >
+      // eslint-disable-next-line no-return-assign
+      : (<div className={wrapperClassName} style={wrapperStyle} ref={(ref) => this.mountNode = ref} >
         {
-          this.moduleInfo && this.validateRender() && render()
-        }
-      </div>);
+            this.moduleInfo && this.validateRender() && render()
+          }
+         </div>
+      );
   }
-};
+}
 
 /**
  * Render Modules, compatible with Render and <Render>
@@ -147,4 +149,4 @@ export function renderModules(modules: StarkModule[], render: any, componentProp
 
   console.warn('Please set render Component, try use MicroModule and mount first module');
   return <MicroModule moduleName={modules[0]?.name} {...componentProps} />;
-};
+}

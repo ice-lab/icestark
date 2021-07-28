@@ -50,7 +50,7 @@ describe('app start', () => {
       },
       {
         name: 'app6',
-        activePath: [{ path: '/test6', exact: true}],
+        activePath: [{ value: '/test6', exact: true}],
         url: ['//icestark.com/index.js'],
       }
     ]);

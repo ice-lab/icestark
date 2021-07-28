@@ -5,14 +5,14 @@ const appHistory = {
     window.history.pushState(
       {},
       null,
-      formatUrl(url, hashType)
+      formatUrl(url, hashType),
     );
   },
   replace: (url: string, hashType?: boolean) => {
     window.history.replaceState(
       {},
       null,
-      formatUrl(url, hashType)
+      formatUrl(url, hashType),
     );
   },
 };

@@ -23,3 +23,5 @@ export const NOT_MOUNTED = 'NOT_MOUNTED';
 export const MOUNTED = 'MOUNTED';
 
 export const UNMOUNTED = 'UNMOUNTED';
+
+export const defaultFetch = window?.fetch.bind(window);

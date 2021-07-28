@@ -1,8 +1,8 @@
-import { ModuleLifeCycle } from '../apps';
 import { getCache, setCache } from './cache';
 import { AppLifeCycleEnum } from './appLifeCycle';
+import type { ModuleLifeCycle } from '../apps';
 
-export function getLifecyleByLibrary () {
+export function getLifecyleByLibrary() {
   const libraryName = getCache('library');
 
   /**
@@ -23,7 +23,7 @@ export function getLifecyleByLibrary () {
   return null;
 }
 
-export function getLifecyleByRegister () {
+export function getLifecyleByRegister() {
   const mount = getCache(AppLifeCycleEnum.AppEnter);
   const unmount = getCache(AppLifeCycleEnum.AppLeave);
 
