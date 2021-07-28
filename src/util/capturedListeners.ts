@@ -42,6 +42,12 @@ export function createPopStateEvent(state, originalMethodName) {
   return evt;
 }
 
+/**
+ * For micro apps don't share the same history instance, it's need
+ * to hajack popstate eventListeners and trigger it when routes change.
+ * As a side effect，micro app's popstate eventLister would execute twice,
+ * which works as expected.
+ */
 export function callCapturedEventListeners() {
   if (historyEvent) {
     Object.keys(capturedEventListeners).forEach(eventName => {
