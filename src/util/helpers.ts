@@ -83,7 +83,7 @@ export const getActualUrlFromPath = (path: AppRoutePath): string => {
  * Set basename for micro apps to use handily.
  * A properly formatted basename has a leading slash, but not trailing slash.
  */
-export const setBasenameCache = (path: AppRoutePath, frameworkBase?: string, appBase?: string): void => {
+export const setBasenameCache = (path: AppRoutePath = '', frameworkBase?: string, appBase?: string): void => {
   const actualPath = getActualUrlFromPath(path);
 
   const leadingSlashFrameworkBase = frameworkBase ? addLeadingSlash(frameworkBase) : '';

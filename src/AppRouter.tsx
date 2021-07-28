@@ -43,12 +43,6 @@ interface AppRouterState {
 }
 
 export default class AppRouter extends React.Component<AppRouterProps, AppRouterState> {
-  private unmounted = false;
-
-  private err: string | Error = '';
-
-  private appKey = '';
-
   static defaultProps = {
     onRouteChange: () => {},
     // eslint-disable-next-line react/jsx-filename-extension
@@ -65,6 +59,12 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     fetch: defaultFetch,
     prefetch: false,
   };
+
+  private unmounted = false;
+
+  private err: string | Error = '';
+
+  private appKey = '';
 
   constructor(props) {
     super(props);
@@ -205,12 +205,12 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       return renderComponent(ErrorComponent, { err: this.err });
     }
 
-    let match = null;
+    let match = false;
     let element: React.ReactElement;
     let compatPath: ActivePath | null = null;
 
     React.Children.forEach(children, (child) => {
-      if (match == null && React.isValidElement(child)) {
+      if (!match && React.isValidElement(child)) {
         const { path, activePath, exact, strict, sensitive, hashType } = child.props;
 
         compatPath = activePath || path;
@@ -244,7 +244,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       }
 
       if (isFunction(compatPath) && !name) {
-        const err = new Error('[icestark]: `name` is required in AppConfig');
+        const err = new Error('[icestark]: name is required in AppConfig');
         console.error(err);
         return renderComponent(ErrorComponent, { err });
       }
