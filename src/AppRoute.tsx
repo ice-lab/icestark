@@ -4,7 +4,7 @@ import { AppHistory } from './appHistory';
 import { unloadMicroApp, BaseConfig, createMicroApp } from './apps';
 import { converArray2String } from './AppRouter';
 import { PathData } from './util/matchPath';
-import { callCapturedEventListeners, resetCapturedEventListeners } from './util/capturedListeners';
+import { callCapturedEventListeners, resetCapturedEventListeners, capturedEventListeners, setCachedCaptureEventListeners } from './util/capturedListeners';
 // eslint-disable-next-line import/order
 import isEqual = require('lodash.isequal');
 
@@ -42,16 +42,18 @@ export interface AppRouteProps extends BaseConfig {
   path?: string | string[] | PathData[];
   onAppEnter?: (appConfig: CompatibleAppConfig) => void;
   onAppLeave?: (appConfig: CompatibleAppConfig) => void;
+  keepAlive?: boolean;
+  keep?: any;
 }
 
-export type CompatibleAppConfig = Omit<AppRouteProps, 'componentProps' | 'cssLoading' | 'onAppEnter' | 'onAppLeave'>
+export type CompatibleAppConfig = Omit<AppRouteProps, 'componentProps' | 'cssLoading' | 'onAppEnter' | 'onAppLeave' | 'keep'>
 
 /**
  * Gen compatible app config from AppRoute props
  */
 function genCompatibleAppConfig (appRouteProps: AppRouteProps): CompatibleAppConfig {
   const appConfig: CompatibleAppConfig = {};
-  const omitProperties = ['componentProps', 'cssLoading', 'onAppEnter', 'onAppLeave'];
+  const omitProperties = ['componentProps', 'cssLoading', 'onAppEnter', 'onAppLeave', 'keep'];
 
   Object.keys(appRouteProps).forEach(key => {
     if (omitProperties.indexOf(key) === -1) {
@@ -79,16 +81,25 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   componentDidMount() {
-    this.mountApp();
+    const { keep, name } = this.props;
+    if (this.props.keepAlive && keep(name)) {
+      this.myRefBase.appendChild(keep(name).node);
+      setCachedCaptureEventListeners(keep(name).listeners);
+      callCapturedEventListeners();
+    } else {
+      this.mountApp();
+    }
   }
 
   shouldComponentUpdate(nextProps, nextState) {
+    console.log('shouldComponentUpdate---');
     const { url, title, rootId, componentProps, cssLoading, name } = this.props;
     const { showComponent } = this.state;
     // re-render and callCapturedEventListeners if componentProps is changed
     if ((nextProps.component || nextProps.render && typeof nextProps.render === 'function') &&
       !isEqual(componentProps, nextProps.componentProps)) {
       callCapturedEventListeners();
+      console.log('shouldComponentUpdate---a');
       return true;
     } else if (
       name === nextProps.name &&
@@ -98,10 +109,12 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       cssLoading === nextProps.cssLoading &&
       showComponent === nextState.showComponent
     ) {
+      console.log('shouldComponentUpdate---b');
       // reRender is triggered by sub-application router / browser, call popStateListeners
       callCapturedEventListeners();
       return false;
     }
+    console.log('shouldComponentUpdate---c');
     return true;
   }
 
@@ -115,13 +128,35 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       entryContent !== prevProps.entryContent ||
       rootId !== prevProps.rootId
     ) {
-      this.unmountApp();
-      this.mountApp();
+      console.log('componentDidUpdate----222---');
+
+      if (this.props.keepAlive) {
+        console.log('--componentDidUpdatedidUpdate---');
+        const { keep, name } = this.props;
+        keep(name, this.myRefBase, { ...capturedEventListeners });
+
+        if (keep(name)) {
+          this.myRefBase.appendChild(keep(name).node);
+          setCachedCaptureEventListeners(keep(name).listeners);
+          callCapturedEventListeners();
+        }
+
+      } else {
+        this.unmountApp();
+        this.mountApp();
+      }
+      // this.unmountApp();
+      // this.mountApp();
     }
   }
 
   componentWillUnmount() {
-    this.unmountApp();
+    if (this.props.keepAlive) {
+      const { keep, name } = this.props;
+      keep(name, this.myRefBase, { ...capturedEventListeners });
+    } else {
+      this.unmountApp();
+    }
   }
 
   mountApp = () => {

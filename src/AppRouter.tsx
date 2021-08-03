@@ -33,6 +33,10 @@ export interface AppRouterProps {
   prefetch?: Prefetch;
 }
 
+interface Json<T> {
+  [id: string]: T;
+}
+
 interface AppRouterState {
   url: string;
   appLoading: string;
@@ -58,6 +62,12 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   private err: string | Error = ''; // js assets load err
 
   private appKey: string = '';
+
+  private cache: Json<{
+    id: string;
+    node: HTMLElement;
+    listeners: any;
+  }> = {};
 
   static defaultProps = {
     onRouteChange: () => {},
@@ -148,6 +158,14 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     doPrefetch(apps, strategy, fetch);
   }
 
+  keep = (id: string, node?: HTMLElement, listeners?: any) =>{
+    console.log('keeeppppp', id, node, this.cache);
+    if (node) {
+      this.cache[id] = { id, node, listeners };
+    }
+    return this.cache[id];
+  }
+
   /**
    * Trigger Error
    */
@@ -160,6 +178,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   };
 
   triggerNotFound = (): void => {
+    console.log('triggerNotFound');
     // if AppRouter is unmounted, cancel all operations
     if (this.unmounted) return;
     this.setState({ url: ICESTSRK_NOT_FOUND });
@@ -170,6 +189,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    */
   handleRouteChange = (url: string, type: RouteType | 'init' | 'popstate'): void => {
     if (!this.unmounted && url !== this.state.url) {
+      console.log('handleRouteChange', url);
       this.setState({ url });
     }
     const { pathname, query, hash } = urlParse(url, true);
@@ -198,6 +218,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       basename: appBasename,
     } = this.props;
     const { url, appLoading, started } = this.state;
+
+    console.log('render-url', url);
 
     if (!started) {
       return renderComponent(LoadingComponent, {});
@@ -247,6 +269,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
             cssLoading: appLoading === this.appKey,
             onAppEnter: this.props.onAppEnter,
             onAppLeave: this.props.onAppLeave,
+            keep: this.keep,
             path: routerPath,
           })}
         </div>

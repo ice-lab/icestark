@@ -9,7 +9,8 @@ export const routingEventsListeningTo = [
   CapturedEventNameEnum.POPSTATE,
 ];
 
-const capturedEventListeners = {
+// eslint-disable-next-line import/no-mutable-exports
+export let capturedEventListeners = {
   [CapturedEventNameEnum.POPSTATE]: [],
   [CapturedEventNameEnum.HASHCHANGE]: [],
 };
@@ -77,4 +78,8 @@ export function removeCapturedEventListeners(eventName, listenerFn) {
 export function resetCapturedEventListeners() {
   capturedEventListeners[CapturedEventNameEnum.POPSTATE] = [];
   capturedEventListeners[CapturedEventNameEnum.HASHCHANGE] = [];
+}
+
+export function setCachedCaptureEventListeners (listeners: any) {
+  capturedEventListeners = listeners;
 }
