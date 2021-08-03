@@ -15,6 +15,8 @@ import { setCache } from './util/cache';
 import { loadBundle } from './util/loader';
 import { globalConfiguration, StartConfiguration } from './start';
 import { getLifecyleByLibrary, getLifecyleByRegister } from './util/getLifecycle';
+import { keep } from './util/keepAliveNodeCache';
+import { callCapturedEventListeners, resetCapturedEventListeners, capturedEventListeners, setCachedCaptureEventListeners } from './util/capturedListeners';
 
 export type ScriptAttributes = string[] | ((url: string) => string[]);
 
@@ -58,6 +60,7 @@ export interface BaseConfig extends PathOptions {
    * custom script attributes，only effective when scripts load by `<scrpit />`
    */
   scriptAttributes?: ScriptAttributes;
+  keepAlive?: boolean;
 }
 
 interface LifeCycleFn {
@@ -293,12 +296,22 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
 }
 
 export async function mountMicroApp(appName: string) {
+
   const appConfig = getAppConfig(appName);
   // check current url before mount
   if (appConfig && appConfig.checkActive(window.location.href) && appConfig.status !== MOUNTED) {
     updateAppConfig(appName, { status: MOUNTED });
     if (appConfig.mount) {
-      await appConfig.mount({ container: appConfig.container, customProps: appConfig.props });
+      const { keepAlive, name, container } = appConfig;
+      console.log('mountMicroApp---', keep(name));
+      if (keepAlive && keep(name)) {
+        container.appendChild(keep(name).node.children[0]);
+        setCachedCaptureEventListeners(keep(name).listeners);
+        callCapturedEventListeners();
+      } else {
+        await appConfig.mount({ container: appConfig.container, customProps: appConfig.props });
+        // keep(name, container, { ...capturedEventListeners });
+      }
     }
   }
 }
@@ -323,12 +336,15 @@ export async function unmountMicroApp(appName: string) {
 // unload micro app, load app bundles when create micro app
 export async function unloadMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
-  if (appConfig) {
+  if (appConfig && !appConfig.keepAlive) {
     unmountMicroApp(appName);
     delete appConfig.mount;
     delete appConfig.unmount;
     delete appConfig.appAssets;
     updateAppConfig(appName, { status: NOT_LOADED });
+  } else if (appConfig.keepAlive) {
+    updateAppConfig(appName, { status: NOT_MOUNTED });
+    keep(appName, appConfig.container, { ...capturedEventListeners });
   } else {
     console.log(`[icestark] can not find app ${appName} when call unloadMicroApp`);
   }

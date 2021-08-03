@@ -33,10 +33,6 @@ export interface AppRouterProps {
   prefetch?: Prefetch;
 }
 
-interface Json<T> {
-  [id: string]: T;
-}
-
 interface AppRouterState {
   url: string;
   appLoading: string;
@@ -62,12 +58,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   private err: string | Error = ''; // js assets load err
 
   private appKey: string = '';
-
-  private cache: Json<{
-    id: string;
-    node: HTMLElement;
-    listeners: any;
-  }> = {};
 
   static defaultProps = {
     onRouteChange: () => {},
@@ -158,14 +148,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     doPrefetch(apps, strategy, fetch);
   }
 
-  keep = (id: string, node?: HTMLElement, listeners?: any) =>{
-    console.log('keeeppppp', id, node, this.cache);
-    if (node) {
-      this.cache[id] = { id, node, listeners };
-    }
-    return this.cache[id];
-  }
-
   /**
    * Trigger Error
    */
@@ -249,8 +231,9 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       }
     });
 
-
+    console.log('match', match);
     if (match) {
+
       const { path, basename, name } = element.props as AppRouteProps;
       setCache('basename', `${appBasename}${basename || (Array.isArray(path) ? (path[0] as PathData).value || path[0] : path)}`);
       this.appKey = name || converArray2String(path);
@@ -269,7 +252,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
             cssLoading: appLoading === this.appKey,
             onAppEnter: this.props.onAppEnter,
             onAppLeave: this.props.onAppLeave,
-            keep: this.keep,
             path: routerPath,
           })}
         </div>

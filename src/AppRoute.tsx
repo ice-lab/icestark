@@ -4,7 +4,7 @@ import { AppHistory } from './appHistory';
 import { unloadMicroApp, BaseConfig, createMicroApp } from './apps';
 import { converArray2String } from './AppRouter';
 import { PathData } from './util/matchPath';
-import { callCapturedEventListeners, resetCapturedEventListeners, capturedEventListeners, setCachedCaptureEventListeners } from './util/capturedListeners';
+import { callCapturedEventListeners, resetCapturedEventListeners } from './util/capturedListeners';
 // eslint-disable-next-line import/order
 import isEqual = require('lodash.isequal');
 
@@ -42,8 +42,6 @@ export interface AppRouteProps extends BaseConfig {
   path?: string | string[] | PathData[];
   onAppEnter?: (appConfig: CompatibleAppConfig) => void;
   onAppLeave?: (appConfig: CompatibleAppConfig) => void;
-  keepAlive?: boolean;
-  keep?: any;
 }
 
 export type CompatibleAppConfig = Omit<AppRouteProps, 'componentProps' | 'cssLoading' | 'onAppEnter' | 'onAppLeave' | 'keep'>
@@ -81,18 +79,12 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   componentDidMount() {
-    const { keep, name } = this.props;
-    if (this.props.keepAlive && keep(name)) {
-      this.myRefBase.appendChild(keep(name).node);
-      setCachedCaptureEventListeners(keep(name).listeners);
-      callCapturedEventListeners();
-    } else {
-      this.mountApp();
-    }
+    console.log('componentDidMount---');
+    this.mountApp();
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    console.log('shouldComponentUpdate---');
+    console.log('shouldComponentUpdate---', nextProps, this.props);
     const { url, title, rootId, componentProps, cssLoading, name } = this.props;
     const { showComponent } = this.state;
     // re-render and callCapturedEventListeners if componentProps is changed
@@ -128,35 +120,16 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       entryContent !== prevProps.entryContent ||
       rootId !== prevProps.rootId
     ) {
-      console.log('componentDidUpdate----222---');
 
-      if (this.props.keepAlive) {
-        console.log('--componentDidUpdatedidUpdate---');
-        const { keep, name } = this.props;
-        keep(name, this.myRefBase, { ...capturedEventListeners });
+      this.unmountApp();
+      this.mountApp();
 
-        if (keep(name)) {
-          this.myRefBase.appendChild(keep(name).node);
-          setCachedCaptureEventListeners(keep(name).listeners);
-          callCapturedEventListeners();
-        }
-
-      } else {
-        this.unmountApp();
-        this.mountApp();
-      }
-      // this.unmountApp();
-      // this.mountApp();
     }
   }
 
   componentWillUnmount() {
-    if (this.props.keepAlive) {
-      const { keep, name } = this.props;
-      keep(name, this.myRefBase, { ...capturedEventListeners });
-    } else {
-      this.unmountApp();
-    }
+    console.log('componentWillUnmount---');
+    this.unmountApp();
   }
 
   mountApp = () => {
