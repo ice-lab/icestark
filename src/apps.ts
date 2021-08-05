@@ -41,6 +41,10 @@ export interface BaseConfig extends PathOption {
   entry?: string;
   entryContent?: string;
   /**
+  * basename is used for setting custom basename for child's basename.
+  */
+  basename?: string;
+  /**
    * will be deprecated in future version, use `loadScriptMode` instead.
    * @see loadScriptMode
    * @deprecated
@@ -234,10 +238,14 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
   const appConfig = getAppConfigForLoad(app, appLifecyle);
   const appName = appConfig && appConfig.name;
 
-  // compatible with use inIcestark
-  const container = (app as AppConfig).container || appConfig?.container;
+  const { container, basename } = appConfig ?? {};
+
   if (container) {
     setCache('root', container);
+  }
+
+  if (basename) {
+    setCache('basename', basename);
   }
 
   if (appConfig && appName) {
@@ -287,10 +295,10 @@ export async function mountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   // check current url before mount
   if (appConfig && appConfig.checkActive(window.location.href) && appConfig.status !== MOUNTED) {
-    updateAppConfig(appName, { status: MOUNTED });
     if (appConfig.mount) {
       await appConfig.mount({ container: appConfig.container, customProps: appConfig.props });
     }
+    updateAppConfig(appName, { status: MOUNTED });
   }
 }
 

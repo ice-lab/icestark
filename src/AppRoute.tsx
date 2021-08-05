@@ -2,7 +2,7 @@ import * as React from 'react';
 import renderComponent from './util/renderComponent';
 import { AppHistory } from './appHistory';
 import { unloadMicroApp, BaseConfig, createMicroApp } from './apps';
-import { converArray2String } from './util/helpers';
+import { converArray2String, getBasename } from './util/helpers';
 import { PathData } from './util/checkActive';
 import { callCapturedEventListeners, resetCapturedEventListeners } from './util/capturedListeners';
 // eslint-disable-next-line import/order
@@ -37,12 +37,7 @@ export interface AppRouteProps extends BaseConfig {
   cssLoading?: boolean;
   rootId?: string;
   component?: React.ReactElement;
-  /**
-   * will be deprecated in future version, use funcational `activePath` instead.
-   * @see activePath
-   * @deprecated
-   */
-  basename?: string;
+  frameworkBasename?: string;
   render?: (componentProps: AppRouteComponentProps) => React.ReactElement;
   /**
    * will be deprecated in future version, use `activePath` instead.
@@ -54,14 +49,14 @@ export interface AppRouteProps extends BaseConfig {
   onAppLeave?: (appConfig: CompatibleAppConfig) => void;
 }
 
-export type CompatibleAppConfig = Omit<AppRouteProps, 'componentProps' | 'cssLoading' | 'onAppEnter' | 'onAppLeave'>;
+export type CompatibleAppConfig = Omit<AppRouteProps, 'componentProps' | 'cssLoading' | 'onAppEnter' | 'onAppLeave' | 'frameworkBasename'>;
 
 /**
  * Gen compatible app config from AppRoute props
  */
 function genCompatibleAppConfig(appRouteProps: AppRouteProps): CompatibleAppConfig {
   const appConfig: CompatibleAppConfig = {};
-  const omitProperties = ['componentProps', 'cssLoading', 'onAppEnter', 'onAppLeave'];
+  const omitProperties = ['componentProps', 'cssLoading', 'onAppEnter', 'onAppLeave', 'frameworkBasename'];
 
   Object.keys(appRouteProps).forEach((key) => {
     if (omitProperties.indexOf(key) === -1) {
@@ -169,13 +164,14 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   renderChild = (): void => {
-    const { path, name, rootId, ...rest } = this.props;
+    const { path, name, rootId, frameworkBasename, basename, ...rest } = this.props;
     // reCreate rootElement to remove sub-application instance,
     // rootElement is created for render sub-application
     const rootElement: HTMLElement = this.reCreateElementInBase(rootId);
     const appConfig = {
       ...(rest as BaseConfig),
       name,
+      basename: getBasename(path, frameworkBasename, basename),
       activePath: path,
       container: rootElement,
     };

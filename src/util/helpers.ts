@@ -91,23 +91,24 @@ export function addLeadingSlash(path: string): string {
  */
 export const getActualUrlFromPath = (path: AppRoutePath): string => {
   if (Array.isArray(path)) {
-    return addLeadingSlash(typeof path[0] === 'string' ? path[0] : path[0].value);
+    return (typeof path[0] === 'string' ? path[0] : path[0].value);
   }
   if (isObject<PathData>(path)) {
     return path.value;
   }
-  return addLeadingSlash(path);
+  return path;
 };
 
 /**
- * Set basename for micro apps to use handily.
+ * Get basename for micro apps to use handily.
  * A properly formatted basename has a leading slash, but not trailing slash.
  */
-export const setBasenameCache = (path: AppRoutePath = '', frameworkBase?: string, appBase?: string): void => {
-  const actualPath = getActualUrlFromPath(path);
+export const getBasename = (path: AppRoutePath = '', frameworkBase?: string, appBase?: string): string => {
+  const actualPath = addLeadingSlash(getActualUrlFromPath(path));
 
   const leadingSlashFrameworkBase = frameworkBase ? addLeadingSlash(frameworkBase) : '';
   const leadingSlashAppBase = appBase ? addLeadingSlash(appBase) : '';
-  setCache('basename', `${leadingSlashFrameworkBase}${leadingSlashAppBase || actualPath}`);
+
+  return `${leadingSlashFrameworkBase}${leadingSlashAppBase || actualPath}`;
 };
 

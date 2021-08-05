@@ -8,7 +8,7 @@ import start, { unload } from './start';
 import { AppConfig } from './apps';
 import { doPrefetch, Prefetch } from './util/prefetch';
 import checkActive, { PathData, ActivePath, AppRoutePath } from './util/checkActive';
-import { converArray2String, addLeadingSlash, setBasenameCache, isFunction } from './util/helpers';
+import { converArray2String, addLeadingSlash, isFunction } from './util/helpers';
 import type { Fetch } from './util/globalConfiguration';
 
 type RouteType = 'pushState' | 'replaceState';
@@ -234,15 +234,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
 
     if (match) {
-      const { basename, name } = element.props as AppRouteProps;
-
-      /**
-      * If function is passed to activePath, then we don't know the exact basename
-      * for micro apps. One must set basename themselves.
-      */
-      if (!isFunction(compatPath)) {
-        setBasenameCache(compatPath as AppRoutePath, frameworkBasename, basename);
-      }
+      const { name } = element.props as AppRouteProps;
 
       if (isFunction(compatPath) && !name) {
         const err = new Error('[icestark]: name is required in AppConfig');
@@ -267,6 +259,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
             onAppEnter: this.props.onAppEnter,
             onAppLeave: this.props.onAppLeave,
             path: compatPath,
+            frameworkBasename,
           })}
         </div>
       );
