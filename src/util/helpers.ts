@@ -1,4 +1,3 @@
-import { setCache } from './cache';
 import type { PathData, AppRoutePath } from './checkActive';
 
 export const isDev = process.env.NODE_ENV === 'development';
@@ -103,12 +102,14 @@ export const getActualUrlFromPath = (path: AppRoutePath): string => {
  * Get basename for micro apps to use handily.
  * A properly formatted basename has a leading slash, but not trailing slash.
  */
-export const getBasename = (path: AppRoutePath = '', frameworkBase?: string, appBase?: string): string => {
+export const getAppRouteBasename = (path: AppRoutePath = '', frameworkBase?: string, appBase?: string): string => {
   const actualPath = addLeadingSlash(getActualUrlFromPath(path));
 
   const leadingSlashFrameworkBase = frameworkBase ? addLeadingSlash(frameworkBase) : '';
   const leadingSlashAppBase = appBase ? addLeadingSlash(appBase) : '';
 
-  return `${leadingSlashFrameworkBase}${leadingSlashAppBase || actualPath}`;
+  if (appBase) {
+    return `${leadingSlashFrameworkBase}${leadingSlashAppBase}`;
+  }
+  return actualPath;
 };
-

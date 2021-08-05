@@ -2,7 +2,7 @@ import * as React from 'react';
 import renderComponent from './util/renderComponent';
 import { AppHistory } from './appHistory';
 import { unloadMicroApp, BaseConfig, createMicroApp } from './apps';
-import { converArray2String, getBasename } from './util/helpers';
+import { converArray2String, getAppRouteBasename } from './util/helpers';
 import { PathData } from './util/checkActive';
 import { callCapturedEventListeners, resetCapturedEventListeners } from './util/capturedListeners';
 // eslint-disable-next-line import/order
@@ -171,7 +171,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     const appConfig = {
       ...(rest as BaseConfig),
       name,
-      basename: getBasename(path, frameworkBasename, basename),
+      basename: getAppRouteBasename(path, frameworkBasename, basename),
       activePath: path,
       container: rootElement,
     };
