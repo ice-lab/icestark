@@ -1,6 +1,3 @@
-/* eslint-disable no-mixed-operators */
-/* eslint-disable curly */
-/* eslint-disable nonblock-statement-body-position */
 // fork: https://github.com/systemjs/systemjs/blob/master/src/extras/global.js
 
 // safari unpredictably lists some new globals first or second in object order
@@ -23,11 +20,8 @@ export function getGlobalProp(globalWindow) {
   // eslint-disable-next-line no-restricted-syntax
   for (const p in globalWindow) {
     // do not check frames cause it could be removed during import
-    if (shouldSkipProperty(p, globalWindow))
-      // eslint-disable-next-line no-continue
-      continue;
-    if (cnt === 0 && p !== firstGlobalProp || cnt === 1 && p !== secondGlobalProp)
-      return p;
+    if (shouldSkipProperty(p, globalWindow)) { continue; }
+    if (cnt === 0 && p !== firstGlobalProp || cnt === 1 && p !== secondGlobalProp) { return p; }
     cnt++;
     lastProp = p;
   }
@@ -54,13 +48,8 @@ export function noteGlobalProps(globalWindow) {
   // eslint-disable-next-line no-restricted-syntax
   for (const p in globalWindow) {
     // do not check frames cause it could be removed during import
-    if (shouldSkipProperty(p, globalWindow))
-      // eslint-disable-next-line no-continue
-      continue;
-    if (!firstGlobalProp)
-      firstGlobalProp = p;
-    else if (!secondGlobalProp)
-      secondGlobalProp = p;
+    if (shouldSkipProperty(p, globalWindow)) { continue; }
+    if (!firstGlobalProp) { firstGlobalProp = p; } else if (!secondGlobalProp) { secondGlobalProp = p; }
     lastGlobalProp = p;
   }
   return lastGlobalProp;

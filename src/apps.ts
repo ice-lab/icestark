@@ -1,7 +1,7 @@
 import Sandbox, { SandboxConstructor, SandboxProps } from '@ice/sandbox';
 import * as isEmpty from 'lodash.isempty';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
-import checkUrlActive, { ActivePath, PathOptionWithHashType } from './util/checkActive';
+import checkUrlActive, { ActivePath, PathOption } from './util/checkActive';
 import {
   createSandbox,
   getUrlAssets,
@@ -14,9 +14,8 @@ import {
 import { setCache } from './util/cache';
 import { loadBundle } from './util/loader';
 import { getLifecyleByLibrary, getLifecyleByRegister } from './util/getLifecycle';
-import type { StartConfiguration } from './start';
-// eslint-disable-next-line import/no-cycle
-import { globalConfiguration } from './start';
+import globalConfiguration from './util/globalConfiguration';
+import type { StartConfiguration } from './util/globalConfiguration';
 
 export type ScriptAttributes = string[] | ((url: string) => string[]);
 
@@ -32,7 +31,7 @@ export interface ModuleLifeCycle {
   bootstrap?: (props: LifecycleProps) => Promise<void> | void;
 }
 
-export interface BaseConfig extends PathOptionWithHashType {
+export interface BaseConfig extends PathOption {
   name?: string;
   url?: string | string[];
   activePath?: ActivePath;
@@ -107,12 +106,12 @@ export function registerMicroApp(appConfig: AppConfig, appLifecyle?: AppLifecylc
 
   const { activePath, hashType = false, exact = false, sensitive = false, strict = false } = appConfig;
 
-  const checkActive = checkUrlActive({
+  const checkActive = checkUrlActive(activePath, {
     hashType,
     exact,
     sensitive,
     strict,
-  }, activePath);
+  });
 
   const microApp = {
     status: NOT_LOADED,

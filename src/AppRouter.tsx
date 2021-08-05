@@ -3,12 +3,13 @@ import * as urlParse from 'url-parse';
 import { AppRouteProps, AppRouteComponentProps, CompatibleAppConfig } from './AppRoute';
 import appHistory from './appHistory';
 import renderComponent from './util/renderComponent';
-import { ICESTSRK_ERROR, ICESTSRK_NOT_FOUND, defaultFetch } from './util/constant';
-import start, { unload, Fetch, Prefetch } from './start';
+import { ICESTSRK_ERROR, ICESTSRK_NOT_FOUND } from './util/constant';
+import start, { unload } from './start';
 import { AppConfig } from './apps';
-import { doPrefetch } from './util/prefetch';
+import { doPrefetch, Prefetch } from './util/prefetch';
 import checkActive, { PathData, ActivePath, AppRoutePath } from './util/checkActive';
 import { converArray2String, addLeadingSlash, setBasenameCache, isFunction } from './util/helpers';
+import type { Fetch } from './util/globalConfiguration';
 
 type RouteType = 'pushState' | 'replaceState';
 
@@ -56,7 +57,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     onFinishLoading: () => {},
     onError: () => {},
     basename: '',
-    fetch: defaultFetch,
+    fetch: window.fetch,
     prefetch: false,
   };
 
@@ -222,12 +223,12 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
         element = child;
 
-        match = checkActive({
+        match = checkActive(compatPath, {
           exact,
           strict,
           sensitive,
           hashType,
-        }, compatPath)(url);
+        })(url);
       }
     });
 

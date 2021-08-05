@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-indent */
 import * as React from 'react';
 import { unmoutModule, loadModule, getModules, registerModules, ISandbox, StarkModule } from './modules';
 import { shallowCompare } from './assist';
@@ -121,13 +120,16 @@ export default class MicroModule extends React.Component<any, State> {
     const { render } = this.moduleInfo || {};
 
     const { wrapperClassName, wrapperStyle, loadingComponent } = this.props;
-    return loading ? loadingComponent
-      // eslint-disable-next-line no-return-assign
-      : (<div className={wrapperClassName} style={wrapperStyle} ref={(ref) => this.mountNode = ref} >
-        {
-            this.moduleInfo && this.validateRender() && render()
-          }
-         </div>
+    return loading
+      ? loadingComponent
+      : (
+        <div
+          className={wrapperClassName}
+          style={wrapperStyle}
+          ref={(ref) => { this.mountNode = ref; }}
+        >
+          { this.moduleInfo && this.validateRender() && render() }
+        </div>
       );
   }
 }

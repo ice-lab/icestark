@@ -32,16 +32,36 @@ export const looseBoolean2Boolean = (falsyBoolean: 'true' | 'false' | unknown): 
   return falsyBoolean;
 };
 
-// eslint-disable-next-line max-len
-type AllTypes = 'Number' | 'Object' | 'BigInt' | 'Boolean' | 'Undefined' | 'Null' | 'Array' | 'Symbol' | 'Math' | 'JSON' | 'Date' | 'RegExp' | 'Error' | 'Window' | 'HTMLDocument';
+type AllTypes =
+  | 'Number'
+  | 'Object'
+  | 'BigInt'
+  | 'Boolean'
+  | 'Undefined'
+  | 'Null'
+  | 'Array'
+  | 'Symbol'
+  | 'Math'
+  | 'JSON'
+  | 'Date'
+  | 'RegExp'
+  | 'Error'
+  | 'Window'
+  | 'HTMLDocument';
 
-export const types = (type: AllTypes) => <T>(value: unknown): value is T => Object.prototype.toString.call(value).slice(8, -1) === type;
+export const checkTypes = (type: AllTypes) => <T>(value: unknown): value is T => Object.prototype.toString.call(value).slice(8, -1) === type;
 
+/**
+ * Checks if value is classified as a Function object.
+ */
 export const isFunction = (value: unknown): value is Function => {
   return typeof value === 'function';
 };
 
-export const isObject = types('Object');
+/**
+ * Checks if value is a plain object.
+ */
+export const isObject = checkTypes('Object');
 
 /**
  * convert path to unique string.

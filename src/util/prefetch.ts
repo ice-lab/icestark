@@ -1,7 +1,12 @@
 import { fetchScripts, fetchStyles, getUrlAssets, getEntryAssets } from './handleAssets';
 import { NOT_LOADED } from '../util/constant';
-import type { Prefetch, Fetch } from '../start';
+import type { Fetch } from '../util/globalConfiguration';
 import type { MicroApp, AppConfig } from '../apps';
+
+export type Prefetch =
+ | boolean
+ | string[]
+ | ((app: AppConfig) => boolean);
 
 /**
  * https://github.com/microsoft/TypeScript/issues/21309#issuecomment-376338415

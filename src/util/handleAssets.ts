@@ -2,10 +2,10 @@
 /* eslint-disable no-param-reassign */
 import * as urlParse from 'url-parse';
 import Sandbox, { SandboxProps, SandboxConstructor } from '@ice/sandbox';
-import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX, defaultFetch } from './constant';
+import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { warn, error } from './message';
 import { toArray, isDev, formatMessage, builtInScriptAttributesMap, looseBoolean2Boolean } from './helpers';
-import type { Fetch } from '../start';
+import type { Fetch } from './globalConfiguration';
 import type { ScriptAttributes } from '../apps';
 
 const COMMENT_REGEX = /<!--.*?-->/g;
@@ -15,6 +15,8 @@ const STYLESHEET_LINK_TYPE = 'stylesheet';
 
 const cachedScriptsContent: object = {};
 const cachedStyleContent: object = {};
+
+const defaultFetch = window?.fetch.bind(window);
 
 export enum AssetTypeEnum {
   INLINE = 'inline',

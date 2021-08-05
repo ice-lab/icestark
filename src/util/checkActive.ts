@@ -9,7 +9,12 @@ import { isFunction, toArray, isObject, addLeadingSlash } from './helpers';
 */
 export type HashType = 'hashbang' | 'noslash' | 'slash';
 
-export type PathOption = Partial<Record<'exact' | 'strict' | 'sensitive', boolean>>;
+export interface PathOption {
+  exact?: boolean;
+  strict?: boolean;
+  sensitive?: boolean;
+  hashType?: boolean | HashType;
+}
 
 export type PathData = PathOption & {
   value: string;
@@ -24,9 +29,9 @@ export interface ActiveFn {
  */
 export type AppRoutePath = string | PathData | string[] | PathData[];
 
-export type MatchOptions = PathOptionWithHashType & {
-  pathData: PathData;
-};
+// export type MatchOptions = PathOptionWithHashType & {
+//   pathData: PathData;
+// };
 
 export type MixedPathData = Array<string | PathData>;
 
@@ -41,15 +46,24 @@ export type MixedPathData = Array<string | PathData>;
  */
 export type ActivePath = string | PathData | string[] | PathData[] | MixedPathData | ActiveFn;
 
-export type PathOptionWithHashType = PathOption & {
-  hashType?: boolean | HashType;
-};
-
 /**
- * Format non-functional activePath to PathData.
+ * Used for formatting non-functional activePath to PathData and
+ * merging outer PathOption to PathData.
  */
-const formatPath = (activePath: ActivePath): PathData[] => {
-  const string2ObjectPath = (pathData: string | PathData): PathData => (isObject<object>(pathData) ? pathData : { value: pathData });
+const formatPath = (activePath: ActivePath, options: PathOption): PathData[] => {
+  const string2ObjectPath = (pathData: string | PathData): PathData => {
+    const objectPath = (isObject<object>(pathData)
+      ? pathData
+      : { value: pathData });
+
+    return {
+      ...objectPath,
+      exact: objectPath.exact ?? options.exact,
+      sensitive: objectPath.sensitive ?? options.sensitive,
+      strict: objectPath.strict ?? options.strict,
+      hashType: objectPath.hashType ?? options.hashType,
+    };
+  };
   return toArray(activePath).map(string2ObjectPath);
 };
 
@@ -59,14 +73,7 @@ const formatPath = (activePath: ActivePath): PathData[] => {
  * @param activePath
  * @returns
  */
-const checkActive = (options: PathOptionWithHashType, activePath?: ActivePath) => {
-  const {
-    hashType = false,
-    exact = false,
-    sensitive = false,
-    strict = false,
-  } = options;
-
+const checkActive = (activePath?: ActivePath, options: PathOption = {}) => {
   // Always activate app when activePath is not specified.
   if (!activePath) {
     return () => true;
@@ -77,17 +84,11 @@ const checkActive = (options: PathOptionWithHashType, activePath?: ActivePath) =
     return activePath;
   }
 
-  const activeRules = formatPath(activePath);
+  const activeRules = formatPath(activePath, options);
 
   return (url: string) => activeRules
     .map((rule) => {
-      return (checkUrl: string) => matchPath(checkUrl, {
-        pathData: rule,
-        hashType,
-        exact,
-        sensitive,
-        strict,
-      });
+      return (checkUrl: string) => matchPath(checkUrl, rule);
     })
     .some((functionalRule) => functionalRule(url));
 };
@@ -139,16 +140,15 @@ function genPath2RegExp(path: string, regExpOptions: pathToRegexp.RegExpOptions)
  *  params: href params
  * }
  */
-export function matchPath(href: string, options: MatchOptions) {
-  const { hashType, exact = false, strict = false, sensitive = false, pathData } = options;
-  const { value } = pathData;
+export function matchPath(href: string, options: PathData) {
+  const { value, hashType, exact = false, strict = false, sensitive = false } = options;
 
   const pathname = getPathname(href, hashType);
 
   const { regexp, keys } = genPath2RegExp(value, {
-    strict: pathData.strict ?? strict,
-    sensitive: pathData.sensitive ?? sensitive,
-    end: pathData.exact ?? exact,
+    strict,
+    sensitive,
+    end: exact,
   });
 
   const match = regexp.exec(pathname);
@@ -160,7 +160,7 @@ export function matchPath(href: string, options: MatchOptions) {
   const [url, ...values] = match;
   const isExact = pathname === url;
 
-  if ((pathData.exact ?? exact) && !isExact) return false;
+  if (exact && !isExact) return false;
 
   return {
     path: value,
