@@ -129,15 +129,15 @@ function setAttributeForScriptNode (element: HTMLScriptElement, {
   element.type = 'text/javascript';
   element.src = src;
 
-  /*
+  /**
   * `async=false` is required to make sure all js resources execute sequentially.
    */
   element.async = false;
 
-  /*
-  * `type` is not allowed to set currently.
+  /**
+  * `type` is allowed to set as `module`, `nomodule` and so on.
   */
-  const unableReachedAttributes = [PREFIX, 'id', 'type', 'src', 'async'];
+  const unableReachedAttributes = [PREFIX, 'id', 'src', 'async'];
 
   const attrs = typeof (scriptAttributes) === 'function'
     ? scriptAttributes(src)
