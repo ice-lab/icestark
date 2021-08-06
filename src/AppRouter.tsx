@@ -91,7 +91,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
      * status `started` used to make sure parent's `componentDidMount` to be invoked eariler then child's,
      * for mounting child component needs global configuration be settled.
      */
-    const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch, basename } = this.props;
+    const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch } = this.props;
     start({
       shouldAssetsRemove,
       onAppLeave,
@@ -101,7 +101,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       onError: this.triggerError,
       reroute: this.handleRouteChange,
       fetch,
-      basename,
     });
     this.setState({ started: true });
   }
