@@ -237,7 +237,7 @@ export function getUrlAssets(urls: string | string[]) {
   return { jsList, cssList };
 }
 
-export function fetchScripts(jsList: Asset[], fetch = defaultFetch) {
+export function fetchScripts(jsList: Asset[], fetch: Fetch = defaultFetch) {
   return Promise.all(jsList.map((asset) => {
     const { type, content } = asset;
     if (type === AssetTypeEnum.INLINE) {
@@ -260,7 +260,7 @@ export function fetchScripts(jsList: Asset[], fetch = defaultFetch) {
 }
 
 // for prefetch
-export function fetchStyles(cssList: Asset[], fetch = defaultFetch) {
+export function fetchStyles(cssList: Asset[], fetch: Fetch = defaultFetch) {
   return Promise.all(
     cssList.map((asset) => {
       const { type, content } = asset;

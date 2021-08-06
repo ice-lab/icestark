@@ -7,7 +7,7 @@ import { ICESTSRK_ERROR, ICESTSRK_NOT_FOUND } from './util/constant';
 import start, { unload } from './start';
 import { AppConfig, MicroApp } from './apps';
 import { doPrefetch, Prefetch } from './util/prefetch';
-import checkActive, { ActiveFn, ActivePath, AppRoutePath, formatPath, PathData } from './util/checkActive';
+import checkActive, { ActiveFn, AppRoutePath, formatPath, PathData } from './util/checkActive';
 import { converArray2String, isFunction, mergeFrameworkBaseToPath } from './util/helpers';
 import type { Fetch } from './util/globalConfiguration';
 

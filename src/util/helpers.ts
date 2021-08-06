@@ -114,6 +114,10 @@ export const getAppBasename = (path: AppRoutePath = '', frameworkBase?: string, 
   return actualPath;
 };
 
+/**
+ * Sometime layout application hosts under certain basename. So frameworkBasename is supported on globalConfiguration
+ * and will merge to activePath in advance.
+ */
 export const mergeFrameworkBaseToPath = (path: PathData[] | ActiveFn, frameworkBase?: string) => {
   if (frameworkBase && !isFunction(path)) {
     return path.map((pathStr) => ({
