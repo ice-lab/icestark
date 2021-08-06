@@ -2,7 +2,7 @@ import * as React from 'react';
 import renderComponent from './util/renderComponent';
 import { AppHistory } from './appHistory';
 import { unloadMicroApp, BaseConfig, createMicroApp } from './apps';
-import { converArray2String, getAppRouteBasename } from './util/helpers';
+import { converArray2String } from './util/helpers';
 import { PathData } from './util/checkActive';
 import { callCapturedEventListeners, resetCapturedEventListeners } from './util/capturedListeners';
 // eslint-disable-next-line import/order
@@ -164,14 +164,13 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   renderChild = (): void => {
-    const { path, name, rootId, frameworkBasename, basename, ...rest } = this.props;
+    const { path, name, rootId, frameworkBasename, ...rest } = this.props;
     // reCreate rootElement to remove sub-application instance,
     // rootElement is created for render sub-application
     const rootElement: HTMLElement = this.reCreateElementInBase(rootId);
     const appConfig = {
       ...(rest as BaseConfig),
       name,
-      basename: getAppRouteBasename(path, frameworkBasename, basename),
       activePath: path,
       container: rootElement,
     };

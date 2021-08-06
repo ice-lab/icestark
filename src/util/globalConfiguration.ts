@@ -26,6 +26,7 @@ export interface StartConfiguration {
   reroute?: (url: string, type: RouteType | 'init' | 'popstate'| 'hashchange') => void;
   fetch?: Fetch;
   prefetch?: Prefetch;
+  basename?: string;
 }
 
 const globalConfiguration: StartConfiguration = {
@@ -40,6 +41,7 @@ const globalConfiguration: StartConfiguration = {
   reroute: () => {},
   fetch: window.fetch,
   prefetch: false,
+  basename: '',
 };
 
 export default globalConfiguration;

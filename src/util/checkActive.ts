@@ -50,7 +50,10 @@ export type ActivePath = string | PathData | string[] | PathData[] | MixedPathDa
  * Used for formatting non-functional activePath to PathData and
  * merging outer PathOption to PathData.
  */
-const formatPath = (activePath: ActivePath, options: PathOption): PathData[] => {
+export const formatPath = (activePath: ActivePath, options: PathOption = {}): PathData[] | ActiveFn => {
+  if (isFunction(activePath)) {
+    return activePath;
+  }
   const string2ObjectPath = (pathData: string | PathData): PathData => {
     const objectPath = (isObject<object>(pathData)
       ? pathData
@@ -73,7 +76,7 @@ const formatPath = (activePath: ActivePath, options: PathOption): PathData[] => 
  * @param activePath
  * @returns
  */
-const checkActive = (activePath?: ActivePath, options: PathOption = {}) => {
+const checkActive = (activePath?: PathData[] | ActiveFn) => {
   // Always activate app when activePath is not specified.
   if (!activePath) {
     return () => true;
@@ -84,9 +87,7 @@ const checkActive = (activePath?: ActivePath, options: PathOption = {}) => {
     return activePath;
   }
 
-  const activeRules = formatPath(activePath, options);
-
-  return (url: string) => activeRules
+  return (url: string) => activePath
     .map((rule) => {
       return (checkUrl: string) => matchPath(checkUrl, rule);
     })

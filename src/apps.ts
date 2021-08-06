@@ -1,7 +1,7 @@
 import Sandbox, { SandboxConstructor, SandboxProps } from '@ice/sandbox';
 import * as isEmpty from 'lodash.isempty';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
-import checkUrlActive, { ActivePath, PathOption } from './util/checkActive';
+import checkUrlActive, { ActiveFn, ActivePath, PathData, PathOption, formatPath } from './util/checkActive';
 import {
   createSandbox,
   getUrlAssets,
@@ -14,6 +14,7 @@ import {
 import { setCache } from './util/cache';
 import { loadBundle } from './util/loader';
 import { getLifecyleByLibrary, getLifecyleByRegister } from './util/getLifecycle';
+import { mergeFrameworkBaseToPath, getAppBasename, isFunction } from './util/helpers';
 import globalConfiguration from './util/globalConfiguration';
 import type { StartConfiguration } from './util/globalConfiguration';
 
@@ -80,10 +81,13 @@ export interface AppConfig extends BaseConfig {
   appSandbox?: Sandbox;
 }
 
-export type MicroApp =
-  AppConfig
-  & ModuleLifeCycle
-  & { configuration?: StartConfiguration };
+export interface MicroApp extends AppConfig, ModuleLifeCycle {
+  /**
+   * Format ActivePath to PathData | ActiveFn in advance
+   */
+  activePath?: PathData[] | ActiveFn;
+  configuration?: StartConfiguration;
+}
 
 // cache all microApp
 let microApps: MicroApp[] = [];
@@ -108,18 +112,23 @@ export function registerMicroApp(appConfig: AppConfig, appLifecyle?: AppLifecylc
     throw Error(`name ${appConfig.name} already been regsitered`);
   }
 
-  const { activePath, hashType = false, exact = false, sensitive = false, strict = false } = appConfig;
+  const { activePath: inputActivePath, hashType = false, exact = false, sensitive = false, strict = false } = appConfig;
 
-  const checkActive = checkUrlActive(activePath, {
+  const activePath = formatPath(inputActivePath, {
     hashType,
     exact,
     sensitive,
     strict,
   });
 
+  const { basename: frameworkBasename } = globalConfiguration;
+
+  const checkActive = checkUrlActive(mergeFrameworkBaseToPath(activePath, frameworkBasename));
+
   const microApp = {
     status: NOT_LOADED,
     ...appConfig,
+    activePath,
     appLifecycle: appLifecyle,
     checkActive,
   };
@@ -238,16 +247,6 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
   const appConfig = getAppConfigForLoad(app, appLifecyle);
   const appName = appConfig && appConfig.name;
 
-  const { container, basename } = appConfig ?? {};
-
-  if (container) {
-    setCache('root', container);
-  }
-
-  if (basename) {
-    setCache('basename', basename);
-  }
-
   if (appConfig && appName) {
     // add configuration to every micro app
     const userConfiguration = globalConfiguration;
@@ -255,6 +254,18 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
       userConfiguration[key] = configuration[key];
     });
     updateAppConfig(appName, { configuration: userConfiguration });
+
+    const { container, basename, activePath } = appConfig;
+
+    if (container) {
+      setCache('root', container);
+    }
+
+    const { basename: frameworkBasename } = userConfiguration;
+
+    if (!isFunction(activePath)) {
+      setCache('basename', getAppBasename(activePath, frameworkBasename, basename));
+    }
 
     // check status of app
     if (appConfig.status === NOT_LOADED || appConfig.status === LOAD_ERROR) {

@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/extend-expect';
-import checkActive, { matchPath, getPathname } from '../src/util/checkActive';
+import checkActive, { matchPath, getPathname, formatPath } from '../src/util/checkActive';
 
 describe('checkActive', () => {
   test('matchPath - path options', () => {
@@ -58,25 +58,24 @@ describe('checkActive', () => {
     expect(checkFnc('/test/123')).toBeTruthy();
 
     // type `string`
-    checkFnc = checkActive('/test', {});
+    checkFnc = checkActive(formatPath('/test', {}));
     expect(checkFnc('/test/123')).toBeTruthy();
 
-    checkFnc = checkActive('/test', { exact: true });
+    checkFnc = checkActive(formatPath('/test', { exact: true }));
     expect(checkFnc('/test/123')).toBeFalsy();
 
     // type `string[]`
-    checkFnc = checkActive(['/test', '/seller'], {});
+    checkFnc = checkActive(formatPath(['/test', '/seller'], {}));
     expect(checkFnc('/test/123')).toBeTruthy();
 
-    checkFnc = checkActive(['/test', '/seller'], { exact: true });
+    checkFnc = checkActive(formatPath(['/test', '/seller'], { exact: true }));
     expect(checkFnc('/test/123')).toBeFalsy();
 
     // type `PathData`
-    checkFnc = checkActive({ value: '/test' });
-    debugger
+    checkFnc = checkActive(formatPath({ value: '/test' }, {}));
     expect(checkFnc('/test/123')).toBeTruthy();
 
-    checkFnc = checkActive({ value: '/test', exact: true });
+    checkFnc = checkActive(formatPath({ value: '/test', exact: true }, {}));
     expect(checkFnc('/test/123')).toBeFalsy();
 
     // type `PathData[]`
@@ -84,7 +83,7 @@ describe('checkActive', () => {
     expect(checkFnc('/test/123')).toBeTruthy();
 
     // type `MixedPathData`
-    checkFnc = checkActive(['/test', { value: '/seller' }]);
+    checkFnc = checkActive(formatPath(['/test', { value: '/seller' }]));
     expect(checkFnc('/test/123')).toBeTruthy();
 
     // type `ActiveFn`

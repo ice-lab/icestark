@@ -5,10 +5,10 @@ import appHistory from './appHistory';
 import renderComponent from './util/renderComponent';
 import { ICESTSRK_ERROR, ICESTSRK_NOT_FOUND } from './util/constant';
 import start, { unload } from './start';
-import { AppConfig } from './apps';
+import { AppConfig, MicroApp } from './apps';
 import { doPrefetch, Prefetch } from './util/prefetch';
-import checkActive, { PathData, ActivePath, AppRoutePath } from './util/checkActive';
-import { converArray2String, addLeadingSlash, isFunction } from './util/helpers';
+import checkActive, { ActiveFn, ActivePath, AppRoutePath, formatPath, PathData } from './util/checkActive';
+import { converArray2String, isFunction, mergeFrameworkBaseToPath } from './util/helpers';
 import type { Fetch } from './util/globalConfiguration';
 
 type RouteType = 'pushState' | 'replaceState';
@@ -91,7 +91,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
      * status `started` used to make sure parent's `componentDidMount` to be invoked eariler then child's,
      * for mounting child component needs global configuration be settled.
      */
-    const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch } = this.props;
+    const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch, basename } = this.props;
     start({
       shouldAssetsRemove,
       onAppLeave,
@@ -101,6 +101,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       onError: this.triggerError,
       reroute: this.handleRouteChange,
       fetch,
+      basename,
     });
     this.setState({ started: true });
   }
@@ -116,7 +117,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    * prefetch for resources.
    * no worry to excute `prefetch` many times, for all prefetched resources have been cached, and never request twice.
    */
-  prefetch = (strategy: Prefetch, children: React.ReactNode, fetch = window.fetch) => {
+  prefetch = (strategy: Prefetch, children: React.ReactNode, fetch: Fetch = window.fetch) => {
     const apps: AppConfig[] = React.Children
       /**
        * we can do prefetch for url, entry and entryContent.
@@ -138,7 +139,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       })
       .filter(Boolean);
 
-    doPrefetch(apps, strategy, fetch);
+    doPrefetch(apps as MicroApp[], strategy, fetch);
   };
 
   /**
@@ -208,27 +209,25 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
     let match = false;
     let element: React.ReactElement;
-    let compatPath: ActivePath | null = null;
+    let compatPath: PathData[] | ActiveFn | null = null;
 
     React.Children.forEach(children, (child) => {
       if (!match && React.isValidElement(child)) {
         const { path, activePath, exact, strict, sensitive, hashType } = child.props;
 
-        compatPath = activePath || path;
-
-        compatPath = (frameworkBasename && !isFunction(compatPath))
-          // eslint-disable-next-line max-len
-          ? [].concat(compatPath).map((pathStr: string | PathData) => `${addLeadingSlash(frameworkBasename)}${(pathStr as PathData).value || pathStr}`)
-          : compatPath;
+        compatPath = mergeFrameworkBaseToPath(
+          formatPath(activePath || path, {
+            exact,
+            strict,
+            sensitive,
+            hashType,
+          }),
+          frameworkBasename,
+        );
 
         element = child;
 
-        match = checkActive(compatPath, {
-          exact,
-          strict,
-          sensitive,
-          hashType,
-        })(url);
+        match = checkActive(compatPath)(url);
       }
     });
 
@@ -259,7 +258,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
             onAppEnter: this.props.onAppEnter,
             onAppLeave: this.props.onAppLeave,
             path: compatPath,
-            frameworkBasename,
           })}
         </div>
       );
