@@ -105,13 +105,10 @@ export const getActualUrlFromPath = (path: AppRoutePath): string => {
 export const getAppBasename = (path: AppRoutePath = '', frameworkBase?: string, appBase?: string): string => {
   const actualPath = addLeadingSlash(getActualUrlFromPath(path));
 
-  const leadingSlashFrameworkBase = frameworkBase ? addLeadingSlash(frameworkBase) : '';
-  const leadingSlashAppBase = appBase ? addLeadingSlash(appBase) : '';
+  const leadingSlashFrameworkBase = frameworkBase && addLeadingSlash(frameworkBase);
+  const leadingSlashAppBase = appBase && addLeadingSlash(appBase);
 
-  if (appBase) {
-    return `${leadingSlashFrameworkBase}${leadingSlashAppBase}`;
-  }
-  return actualPath;
+  return `${leadingSlashFrameworkBase}${leadingSlashAppBase ?? actualPath}`;
 };
 
 /**

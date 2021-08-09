@@ -7,6 +7,9 @@ import * as React from 'react';
 import { render } from '@testing-library/react';
 import { AppRouter, AppRoute } from '../src/index';
 
+
+const delay = (milliscond: number) => new Promise(resolve => setTimeout(resolve, milliscond));
+
 describe('AppRouter', () => {
   const umdSourceWithSetLibrary = fs.readFileSync(path.resolve(__dirname, './umd-setlibrary-sample.js'));
   beforeEach(() => {
@@ -14,11 +17,13 @@ describe('AppRouter', () => {
     setCache('root', true);
   });
 
-  test('app-basename-default', () => {
+  test('app-basename-default', async () => {
     (fetch as FetchMock).mockResponseOnce(umdSourceWithSetLibrary.toString());
-    const { unmount } = render(
+    const { container, unmount } = render(
       <AppRouter>
         <AppRoute
+          loadScriptMode="fetch"
+          name="seller"
           path="/seller"
           title="小二"
           url={[
@@ -28,15 +33,24 @@ describe('AppRouter', () => {
       </AppRouter>
     );
     window.history.pushState({}, 'test', '/seller');
+    expect(container.innerHTML).toContain('Loading')
     expect(getCache('basename')).toBe('/seller');
-    unmount();
+
+    await delay(1000);
+    expect(container.innerHTML).toContain('商家平台')
+
+    window.history.pushState({}, 'test', '/seller/detail');
+    await delay(1000);
+    expect(container.innerHTML).toContain('商家详情')
   })
 
-  test('app-basename-custom', () => {
+  test('app-basename-custom', async () => {
     (fetch as FetchMock).mockResponseOnce(umdSourceWithSetLibrary.toString());
-    const { unmount } = render(
+    const { container, unmount } = render(
       <AppRouter>
         <AppRoute
+          loadScriptMode="fetch"
+          name="seller"
           path="/seller"
           basename="/seller-b"
           title="小二"
@@ -47,17 +61,23 @@ describe('AppRouter', () => {
       </AppRouter>
     );
     window.history.pushState({}, 'test', '/seller');
+    expect(container.innerHTML).toContain('Loading')
     expect(getCache('basename')).toBe('/seller-b');
+
+    await delay(1000);
+    expect(container.innerHTML).toContain('NotFound')
+
     unmount();
   })
 
-  test('app-basename-frameworkBasename', () => {
+  test('app-basename-frameworkBasename', async () => {
     (fetch as FetchMock).mockResponseOnce(umdSourceWithSetLibrary.toString());
-    const { unmount } = render(
+    const { container, unmount } = render(
       <AppRouter
         basename="/micro"
         >
         <AppRoute
+          loadScriptMode="fetch"
           path="/seller"
           title="小二"
           url={[
@@ -68,6 +88,10 @@ describe('AppRouter', () => {
     );
     window.history.pushState({}, 'test', '/micro/seller');
     expect(getCache('basename')).toBe('/micro/seller');
+
+    await delay(1000);
+    expect(container.innerHTML).toContain('商家平台')
+
     unmount();
   })
 })

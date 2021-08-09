@@ -7,7 +7,7 @@ import { ICESTSRK_ERROR, ICESTSRK_NOT_FOUND } from './util/constant';
 import start, { unload } from './start';
 import { AppConfig, MicroApp } from './apps';
 import { doPrefetch, Prefetch } from './util/prefetch';
-import checkActive, { ActiveFn, AppRoutePath, formatPath, PathData } from './util/checkActive';
+import checkActive, { AppRoutePath, formatPath } from './util/checkActive';
 import { converArray2String, isFunction, mergeFrameworkBaseToPath } from './util/helpers';
 import type { Fetch } from './util/globalConfiguration';
 
@@ -91,7 +91,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
      * status `started` used to make sure parent's `componentDidMount` to be invoked eariler then child's,
      * for mounting child component needs global configuration be settled.
      */
-    const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch } = this.props;
+    const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch, basename } = this.props;
     start({
       shouldAssetsRemove,
       onAppLeave,
@@ -101,6 +101,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       onError: this.triggerError,
       reroute: this.handleRouteChange,
       fetch,
+      basename,
     });
     this.setState({ started: true });
   }
@@ -208,13 +209,12 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
     let match = false;
     let element: React.ReactElement;
-    let compatPath: PathData[] | ActiveFn | null = null;
 
     React.Children.forEach(children, (child) => {
       if (!match && React.isValidElement(child)) {
         const { path, activePath, exact, strict, sensitive, hashType } = child.props;
 
-        compatPath = mergeFrameworkBaseToPath(
+        const compatPath = mergeFrameworkBaseToPath(
           formatPath(activePath || path, {
             exact,
             strict,
@@ -232,15 +232,15 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
 
     if (match) {
-      const { name } = element.props as AppRouteProps;
+      const { name, activePath, path } = element.props as AppRouteProps;
 
-      if (isFunction(compatPath) && !name) {
+      if (isFunction(activePath) && !name) {
         const err = new Error('[icestark]: name is required in AppConfig');
         console.error(err);
         return renderComponent(ErrorComponent, { err });
       }
 
-      this.appKey = name || converArray2String(compatPath as AppRoutePath);
+      this.appKey = name || converArray2String((activePath ?? path) as AppRoutePath);
       const componentProps: AppRouteComponentProps = {
         location: urlParse(url, true),
         match,
@@ -256,7 +256,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
             cssLoading: appLoading === this.appKey,
             onAppEnter: this.props.onAppEnter,
             onAppLeave: this.props.onAppLeave,
-            path: compatPath,
           })}
         </div>
       );

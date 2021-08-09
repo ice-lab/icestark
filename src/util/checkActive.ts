@@ -27,7 +27,7 @@ export interface ActiveFn {
 /**
  * Old logic, AppRoute's `path` only accept the follwing limited type.
  */
-export type AppRoutePath = string | PathData | string[] | PathData[];
+export type AppRoutePath = string | PathData | string[] | PathData[] | MixedPathData;
 
 // export type MatchOptions = PathOptionWithHashType & {
 //   pathData: PathData;

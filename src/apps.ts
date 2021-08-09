@@ -1,7 +1,7 @@
 import Sandbox, { SandboxConstructor, SandboxProps } from '@ice/sandbox';
 import * as isEmpty from 'lodash.isempty';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
-import checkUrlActive, { ActiveFn, ActivePath, PathData, PathOption, formatPath } from './util/checkActive';
+import checkUrlActive, { ActivePath, PathOption, formatPath } from './util/checkActive';
 import {
   createSandbox,
   getUrlAssets,
@@ -82,10 +82,6 @@ export interface AppConfig extends BaseConfig {
 }
 
 export interface MicroApp extends AppConfig, ModuleLifeCycle {
-  /**
-   * Format ActivePath to PathData | ActiveFn in advance
-   */
-  activePath?: PathData[] | ActiveFn;
   configuration?: StartConfiguration;
 }
 
@@ -112,9 +108,12 @@ export function registerMicroApp(appConfig: AppConfig, appLifecyle?: AppLifecylc
     throw Error(`name ${appConfig.name} already been regsitered`);
   }
 
-  const { activePath: inputActivePath, hashType = false, exact = false, sensitive = false, strict = false } = appConfig;
+  const { activePath, hashType = false, exact = false, sensitive = false, strict = false } = appConfig;
 
-  const activePath = formatPath(inputActivePath, {
+  /**
+   * Format activePath in advance
+   */
+  const activePathArray = formatPath(activePath, {
     hashType,
     exact,
     sensitive,
@@ -123,12 +122,11 @@ export function registerMicroApp(appConfig: AppConfig, appLifecyle?: AppLifecylc
 
   const { basename: frameworkBasename } = globalConfiguration;
 
-  const checkActive = checkUrlActive(mergeFrameworkBaseToPath(activePath, frameworkBasename));
+  const checkActive = checkUrlActive(mergeFrameworkBaseToPath(activePathArray, frameworkBasename));
 
   const microApp = {
     status: NOT_LOADED,
     ...appConfig,
-    activePath,
     appLifecycle: appLifecyle,
     checkActive,
   };
