@@ -76,7 +76,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   constructor(props) {
     super(props);
     this.state = {
-      url: location.href,
+      url: '',
       appLoading: '',
       started: false,
     };
