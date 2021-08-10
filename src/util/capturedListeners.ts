@@ -21,7 +21,7 @@ export function find(list, element) {
     return false;
   }
 
-  return list.filter(item => item === element).length > 0;
+  return list.filter((item) => item === element).length > 0;
 }
 
 // inspired by https://github.com/single-spa/single-spa/blob/master/src/navigation/navigation-events.js#L107
@@ -30,7 +30,7 @@ export function createPopStateEvent(state, originalMethodName) {
   // all the applications can reroute.
   let evt;
   try {
-    evt =  new PopStateEvent('popstate', { state });
+    evt = new PopStateEvent('popstate', { state });
   } catch (err) {
     // IE 11 compatibility
     // https://docs.microsoft.com/en-us/openspecs/ie_standards/ms-html5e/bd560f47-b349-4d2c-baa8-f1560fb489dd
@@ -50,10 +50,10 @@ export function createPopStateEvent(state, originalMethodName) {
  */
 export function callCapturedEventListeners() {
   if (historyEvent) {
-    Object.keys(capturedEventListeners).forEach(eventName => {
+    Object.keys(capturedEventListeners).forEach((eventName) => {
       const capturedListeners = capturedEventListeners[eventName];
       if (capturedListeners.length) {
-        capturedListeners.forEach(listener => {
+        capturedListeners.forEach((listener) => {
           listener.call(this, historyEvent);
         });
       }
@@ -76,7 +76,7 @@ export function addCapturedEventListeners(eventName, fn) {
 
 export function removeCapturedEventListeners(eventName, listenerFn) {
   capturedEventListeners[eventName] = capturedEventListeners[eventName].filter(
-    fn => fn !== listenerFn,
+    (fn) => fn !== listenerFn,
   );
 }
 

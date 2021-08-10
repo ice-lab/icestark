@@ -2,8 +2,8 @@ import * as React from 'react';
 import renderComponent from './util/renderComponent';
 import { AppHistory } from './appHistory';
 import { unloadMicroApp, BaseConfig, createMicroApp } from './apps';
-import { converArray2String } from './AppRouter';
-import { PathData } from './util/matchPath';
+import { converArray2String } from './util/helpers';
+import { PathData } from './util/checkActive';
 import { callCapturedEventListeners, resetCapturedEventListeners } from './util/capturedListeners';
 // eslint-disable-next-line import/order
 import isEqual = require('lodash.isequal');
@@ -37,23 +37,27 @@ export interface AppRouteProps extends BaseConfig {
   cssLoading?: boolean;
   rootId?: string;
   component?: React.ReactElement;
-  basename?: string;
   render?: (componentProps: AppRouteComponentProps) => React.ReactElement;
+  /**
+   * will be deprecated in future version, use `activePath` instead.
+   * @see activePath
+   * @deprecated
+   */
   path?: string | string[] | PathData[];
   onAppEnter?: (appConfig: CompatibleAppConfig) => void;
   onAppLeave?: (appConfig: CompatibleAppConfig) => void;
 }
 
-export type CompatibleAppConfig = Omit<AppRouteProps, 'componentProps' | 'cssLoading' | 'onAppEnter' | 'onAppLeave'>
+export type CompatibleAppConfig = Omit<AppRouteProps, 'componentProps' | 'cssLoading' | 'onAppEnter' | 'onAppLeave'>;
 
 /**
  * Gen compatible app config from AppRoute props
  */
-function genCompatibleAppConfig (appRouteProps: AppRouteProps): CompatibleAppConfig {
+function genCompatibleAppConfig(appRouteProps: AppRouteProps): CompatibleAppConfig {
   const appConfig: CompatibleAppConfig = {};
   const omitProperties = ['componentProps', 'cssLoading', 'onAppEnter', 'onAppLeave'];
 
-  Object.keys(appRouteProps).forEach(key => {
+  Object.keys(appRouteProps).forEach((key) => {
     if (omitProperties.indexOf(key) === -1) {
       appConfig[key] = appRouteProps[key];
     }
@@ -63,12 +67,6 @@ function genCompatibleAppConfig (appRouteProps: AppRouteProps): CompatibleAppCon
 }
 
 export default class AppRoute extends React.Component<AppRouteProps, AppRouteState> {
-  state = {
-    showComponent: false,
-  };
-
-  private myRefBase: HTMLDivElement = null;
-
   static defaultProps = {
     exact: false,
     strict: false,
@@ -77,6 +75,15 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     rootId: 'icestarkNode',
     shouldAssetsRemove: () => true,
   };
+
+  private myRefBase: HTMLDivElement = null;
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      showComponent: false,
+    };
+  }
 
   componentDidMount() {
     this.mountApp();
@@ -131,7 +138,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     const { onAppEnter } = this.props;
 
     // Trigger app enter
-    if(typeof onAppEnter === 'function') {
+    if (typeof onAppEnter === 'function') {
       onAppEnter(genCompatibleAppConfig(this.props));
     }
 
@@ -140,7 +147,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     } else {
       this.renderChild();
     }
-  }
+  };
 
   unmountApp = () => {
     const { name, onAppLeave } = this.props;
@@ -153,7 +160,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     if (!this.validateRender()) {
       unloadMicroApp(name);
     }
-  }
+  };
 
   renderChild = (): void => {
     const { path, name, rootId, ...rest } = this.props;
@@ -168,7 +175,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     };
 
     createMicroApp(appConfig);
-  }
+  };
 
   reCreateElementInBase = (elementId: string): HTMLElement => {
     const myBase = this.myRefBase;
@@ -182,11 +189,11 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     element.id = elementId;
     myBase.appendChild(element);
     return element;
-  }
+  };
 
   validateRender() {
     const { render, component } = this.props;
-    return render && typeof render === 'function' || component;
+    return (render && typeof render === 'function') || component;
   }
 
   render() {
@@ -196,12 +203,12 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       return showComponent ? renderComponent(component, componentProps) : null;
     }
     if (render && typeof render === 'function') {
-      return showComponent? render(componentProps) : null;
+      return showComponent ? render(componentProps) : null;
     }
     return (
       // eslint-disable-next-line react/jsx-filename-extension
       <div
-        ref={element => {
+        ref={(element) => {
           this.myRefBase = element;
         }}
         className={cssLoading ? 'ice-stark-loading' : 'ice-stark-loaded'}

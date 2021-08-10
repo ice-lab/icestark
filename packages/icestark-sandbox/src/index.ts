@@ -31,7 +31,7 @@ function isWindowFunction(func) {
 export default class Sandbox {
   private sandbox: Window;
 
-  private multiMode: boolean = false;
+  private multiMode = false;
 
   private eventListeners = {};
 
@@ -142,7 +142,7 @@ export default class Sandbox {
 
         const value = originalWindow[p];
 
-        /** 
+        /**
         * use `eval` indirectly if you bind it. And if eval code is not being evaluated by a direct call,
         * then initialise the execution context as if it was a global execution context.
         * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval
@@ -151,7 +151,7 @@ export default class Sandbox {
         if (p === 'eval') {
           return value;
         }
-        
+
         if (isWindowFunction(value)) {
           // fix Illegal invocation
           return value.bind(originalWindow);
@@ -171,7 +171,7 @@ export default class Sandbox {
     return this.sandbox;
   }
 
-  getAddedProperties () {
+  getAddedProperties() {
     return this.propertyAdded;
   }
 
@@ -198,18 +198,18 @@ export default class Sandbox {
     if (!this.sandboxDisabled) {
       // remove event listeners
       Object.keys(this.eventListeners).forEach((eventName) => {
-        (this.eventListeners[eventName] || []).forEach(listener => {
+        (this.eventListeners[eventName] || []).forEach((listener) => {
           window.removeEventListener(eventName, listener);
         });
       });
       // clear timeout
-      this.timeoutIds.forEach(id => window.clearTimeout(id));
-      this.intervalIds.forEach(id => window.clearInterval(id));
+      this.timeoutIds.forEach((id) => window.clearTimeout(id));
+      this.intervalIds.forEach((id) => window.clearInterval(id));
       // recover original values
-      Object.keys(this.originalValues).forEach(key => {
+      Object.keys(this.originalValues).forEach((key) => {
         window[key] = this.originalValues[key];
       });
-      Object.keys(this.propertyAdded).forEach(key => {
+      Object.keys(this.propertyAdded).forEach((key) => {
         delete window[key];
       });
     }

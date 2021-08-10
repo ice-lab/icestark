@@ -14,17 +14,14 @@ function shouldSkipProperty(p, globalWindow) {
     || isIE11 && globalWindow[p] && typeof window !== 'undefined' && globalWindow[p].parent === window;
 }
 
-export function getGlobalProp (globalWindow) {
+export function getGlobalProp(globalWindow) {
   let cnt = 0;
   let lastProp;
   // eslint-disable-next-line no-restricted-syntax
   for (const p in globalWindow) {
     // do not check frames cause it could be removed during import
-    if (shouldSkipProperty(p, globalWindow))
-      // eslint-disable-next-line no-continue
-      continue;
-    if (cnt === 0 && p !== firstGlobalProp || cnt === 1 && p !== secondGlobalProp)
-      return p;
+    if (shouldSkipProperty(p, globalWindow)) { continue; }
+    if (cnt === 0 && p !== firstGlobalProp || cnt === 1 && p !== secondGlobalProp) { return p; }
     cnt++;
     lastProp = p;
   }
@@ -42,7 +39,7 @@ export function getGlobalProp (globalWindow) {
   }
 }
 
-export function noteGlobalProps (globalWindow) {
+export function noteGlobalProps(globalWindow) {
   // alternatively Object.keys(global).pop()
   // but this may be faster (pending benchmarks)
   firstGlobalProp = undefined;
@@ -51,13 +48,8 @@ export function noteGlobalProps (globalWindow) {
   // eslint-disable-next-line no-restricted-syntax
   for (const p in globalWindow) {
     // do not check frames cause it could be removed during import
-    if (shouldSkipProperty(p, globalWindow))
-      // eslint-disable-next-line no-continue
-      continue;
-    if (!firstGlobalProp)
-      firstGlobalProp = p;
-    else if (!secondGlobalProp)
-      secondGlobalProp = p;
+    if (shouldSkipProperty(p, globalWindow)) { continue; }
+    if (!firstGlobalProp) { firstGlobalProp = p; } else if (!secondGlobalProp) { secondGlobalProp = p; }
     lastGlobalProp = p;
   }
   return lastGlobalProp;

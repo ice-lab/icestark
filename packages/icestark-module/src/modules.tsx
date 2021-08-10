@@ -12,7 +12,7 @@ export interface StarkModule {
   runtime?: Runtime;
   mount?: (Component: any, targetNode: HTMLElement, props?: any) => void;
   unmount?: (targetNode: HTMLElement) => void;
-};
+}
 
 export type ISandbox = boolean | SandboxProps | SandboxConstructor;
 
@@ -33,7 +33,7 @@ export const registerRuntimes = (runtime: string | RuntimeInstance[]) => {
  * @param name
  */
 export const removeModule = (name?: string) => {
-  globalModules = globalModules.filter(m => m.name !== name);
+  globalModules = globalModules.filter((m) => m.name !== name);
   delete importModules[name];
   moduleLoader.removeTask(name);
 };
@@ -54,11 +54,11 @@ export const clearModules = () => {
  * @returns
  */
 export const registerModule = (module: StarkModule) => {
-  if(!module.url && !module.render) {
+  if (!module.url && !module.render) {
     console.error('[icestark module] url and render cannot both be empty. name: %s', module.name);
     return;
   }
-  const hasRegistered = globalModules.filter(m => m. name === module.name).length;
+  const hasRegistered = globalModules.filter((m) => m.name === module.name).length;
 
   /*
   * If a module registers many times, the former registration will be removed.
@@ -137,7 +137,7 @@ function createSandbox(sandbox: ISandbox, deps?: object) {
 export const parseUrlAssets = (assets: string | string[]) => {
   const jsList = [];
   const cssList = [];
-  (Array.isArray(assets) ? assets : [assets]).forEach(url => {
+  (Array.isArray(assets) ? assets : [assets]).forEach((url) => {
     const isCss: boolean = IS_CSS_REGEX.test(url);
     if (isCss) {
       cssList.push(url);
@@ -154,8 +154,8 @@ export function appendCSS(
   name: string,
   url: string,
   root: HTMLElement | ShadowRoot = document.getElementsByTagName('head')[0],
-): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
+): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
     if (!root) reject(new Error(`no root element for css assert: ${url}`));
 
     const element: HTMLLinkElement = document.createElement('link');
@@ -185,10 +185,10 @@ export function removeCSS(name: string, node?: HTMLElement | Document, removeLis
   const linkList: NodeListOf<HTMLElement> = (node || document).querySelectorAll(
     `link[module=${name}]`,
   );
-  linkList.forEach(link => {
+  linkList.forEach((link) => {
     // check link href if it is in remove list
     // compatible with removeList is undefined
-    if (removeList && removeList.includes(link.getAttribute('href')) || !removeList) {
+    if ((removeList && removeList.includes(link.getAttribute('href'))) || !removeList) {
       link.parentNode.removeChild(link);
     }
   });

@@ -4,7 +4,7 @@ import { StarkModule } from './modules';
 
 export interface ImportTask {
   [name: string]: Promise<string[]>;
-};
+}
 
 export type PromiseModule = Promise<Response>;
 
@@ -27,8 +27,8 @@ export default class ModuleLoader {
       urls.map(
         (scriptUrl) => fetch(scriptUrl)
           .then((res) => res.text())
-          .then(res => `${res} \n //# sourceURL=${scriptUrl}`)
-      )
+          .then((res) => `${res} \n //# sourceURL=${scriptUrl}`),
+      ),
     );
     this.importTask[name] = task;
     return task;
@@ -83,4 +83,4 @@ export default class ModuleLoader {
       return moduleInfo;
     });
   }
-};
+}

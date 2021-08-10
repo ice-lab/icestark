@@ -1,10 +1,11 @@
+/* eslint-disable max-lines */
 /* eslint-disable no-param-reassign */
 import * as urlParse from 'url-parse';
 import Sandbox, { SandboxProps, SandboxConstructor } from '@ice/sandbox';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { warn, error } from './message';
 import { toArray, isDev, formatMessage, builtInScriptAttributesMap, looseBoolean2Boolean } from './helpers';
-import { Fetch, defaultFetch } from '../start';
+import type { Fetch } from './globalConfiguration';
 import type { ScriptAttributes } from '../apps';
 
 const COMMENT_REGEX = /<!--.*?-->/g;
@@ -14,6 +15,8 @@ const STYLESHEET_LINK_TYPE = 'stylesheet';
 
 const cachedScriptsContent: object = {};
 const cachedStyleContent: object = {};
+
+const defaultFetch = window?.fetch.bind(window);
 
 export enum AssetTypeEnum {
   INLINE = 'inline',
@@ -58,8 +61,8 @@ export function appendCSS(
   root: HTMLElement | ShadowRoot,
   asset: string | Asset,
   id: string,
-): Promise<string> {
-  return new Promise<string>(async (resolve, reject) => {
+): Promise<void> {
+  return new Promise<void>(async (resolve, reject) => {
     const { type, content } = (asset as Asset);
     if (!root) reject(new Error(`no root element for css assert: ${content || asset}`));
 
@@ -107,14 +110,13 @@ export function appendCSS(
 
       root.appendChild(element);
     }
-
   });
 }
 
 /**
  * append custom attribute for element
  */
-function setAttributeForScriptNode (element: HTMLScriptElement, {
+function setAttributeForScriptNode(element: HTMLScriptElement, {
   id,
   src,
   scriptAttributes,
@@ -150,7 +152,7 @@ function setAttributeForScriptNode (element: HTMLScriptElement, {
     return;
   }
 
-  attrs.forEach(attr => {
+  attrs.forEach((attr) => {
     const [attrKey, attrValue] = attr.split('=');
     if (unableReachedAttributes.includes(attrKey)) {
       (isDev ? console.warn : console.log)(formatMessage(`${attrKey} will be ignored by icestark.`));
@@ -172,7 +174,6 @@ function setAttributeForScriptNode (element: HTMLScriptElement, {
       element.setAttribute(attrKey, attrValue);
     }
   });
-
 }
 
 /**
@@ -183,14 +184,14 @@ export function appendExternalScript(
   asset: string | Asset,
   scriptAttributes: ScriptAttributes,
   id: string,
-): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
+): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
     const { type, content } = (asset as Asset);
     if (!root) reject(new Error(`no root element for js assert: ${content || asset}`));
 
     const element: HTMLScriptElement = document.createElement('script');
     // inline script
-    if (type && type  === AssetTypeEnum.INLINE) {
+    if (type && type === AssetTypeEnum.INLINE) {
       element.innerHTML = content;
       root.appendChild(element);
       resolve();
@@ -198,7 +199,7 @@ export function appendExternalScript(
     }
     setAttributeForScriptNode(element, {
       id,
-      src: content ||(asset as string),
+      src: content || (asset as string),
       scriptAttributes,
     });
 
@@ -217,7 +218,7 @@ export function getUrlAssets(urls: string | string[]) {
   const jsList = [];
   const cssList = [];
 
-  toArray(urls).forEach(url => {
+  toArray(urls).forEach((url) => {
     // //icestark.com/index.css -> true
     // //icestark.com/index.css?timeSamp=1575443657834 -> true
     // //icestark.com/index.css?query=test.js -> false
@@ -236,37 +237,39 @@ export function getUrlAssets(urls: string | string[]) {
   return { jsList, cssList };
 }
 
-export function fetchScripts(jsList: Asset[], fetch = defaultFetch ) {
+export function fetchScripts(jsList: Asset[], fetch: Fetch = defaultFetch) {
   return Promise.all(jsList.map((asset) => {
     const { type, content } = asset;
     if (type === AssetTypeEnum.INLINE) {
       return content;
     } else {
       // content will script url when type is AssetTypeEnum.EXTERNAL
+      // eslint-disable-next-line no-return-assign
       return cachedScriptsContent[content]
-        /*
+        /**
         * If code is being evaluated as a string with `eval` or via `new Function`，then the source origin
         * will be the page's origin. As a result, `//# sourceURL` appends to the generated code.
         * See https://sourcemaps.info/spec.html
         */
         || (cachedScriptsContent[content] = fetch(content)
-          .then(res => res.text())
-          .then(res => `${res} \n //# sourceURL=${content}`)
+          .then((res) => res.text())
+          .then((res) => `${res} \n //# sourceURL=${content}`)
         );
     }
   }));
 }
 
 // for prefetch
-export function fetchStyles(cssList: Asset[], fetch = defaultFetch) {
+export function fetchStyles(cssList: Asset[], fetch: Fetch = defaultFetch) {
   return Promise.all(
     cssList.map((asset) => {
-      const { type, content} = asset;
+      const { type, content } = asset;
       if (type === AssetTypeEnum.INLINE) {
         return content;
       }
-      return cachedStyleContent[content] || (cachedStyleContent[content] = fetch(content).then(res => res.text()));
-    })
+      // eslint-disable-next-line no-return-assign
+      return cachedStyleContent[content] || (cachedStyleContent[content] = fetch(content).then((res) => res.text()));
+    }),
   );
 }
 
@@ -333,7 +336,7 @@ export function replaceNodeWithComment(node: HTMLElement, comment: string): void
  * html -> { html: processedHtml, assets: processedAssets }
  */
 export function processHtml(html: string, entry?: string): ProcessedContent {
-  if (!html) return { html: document.createElement('div'), assets: { cssList:[], jsList: []} };
+  if (!html) return { html: document.createElement('div'), assets: { cssList: [], jsList: [] } };
 
   const domContent = (new DOMParser()).parseFromString(html.replace(COMMENT_REGEX, ''), 'text/html');
 
@@ -346,7 +349,7 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
 
   // process js assets
   const scripts = Array.from(domContent.getElementsByTagName('script'));
-  const processedJSAssets = scripts.map(script => {
+  const processedJSAssets = scripts.map((script) => {
     const inlineScript = script.src === EMPTY_STRING;
 
     const externalSrc = !inlineScript && (isAbsoluteUrl(script.src) ? script.src : getUrl(entry, script.src));
@@ -363,11 +366,11 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
   // process css assets
   const inlineStyleSheets = Array.from(domContent.getElementsByTagName('style'));
   const externalStyleSheets = Array.from(domContent.getElementsByTagName('link'))
-    .filter(link => !link.rel || link.rel.includes(STYLESHEET_LINK_TYPE));
+    .filter((link) => !link.rel || link.rel.includes(STYLESHEET_LINK_TYPE));
 
   const processedCSSAssets = [
     ...inlineStyleSheets
-      .map(sheet => {
+      .map((sheet) => {
         replaceNodeWithComment(sheet, getComment('style', 'inline', AssetCommentEnum.REPLACED));
         return {
           type: AssetTypeEnum.INLINE,
@@ -444,7 +447,7 @@ export async function getEntryAssets({
   return cachedContent.assets;
 }
 
-export function getAssetsNode(): (HTMLStyleElement|HTMLScriptElement)[] {
+export function getAssetsNode(): Array<HTMLStyleElement|HTMLScriptElement> {
   let nodeList = [];
   ['style', 'link', 'script'].forEach((tagName) => {
     nodeList = [...nodeList, ...Array.from(document.getElementsByTagName(tagName))];
@@ -487,7 +490,7 @@ export function emptyAssets(
   const styleList: NodeListOf<HTMLElement> = document.querySelectorAll(
     `style:not([${PREFIX}=${STATIC}])`,
   );
-  styleList.forEach(style => {
+  styleList.forEach((style) => {
     if (shouldRemove(null, style) && checkCacheKey(style, cacheKey)) {
       style.parentNode.removeChild(style);
     }
@@ -496,7 +499,7 @@ export function emptyAssets(
   const linkList: NodeListOf<HTMLElement> = document.querySelectorAll(
     `link:not([${PREFIX}=${STATIC}])`,
   );
-  linkList.forEach(link => {
+  linkList.forEach((link) => {
     if (shouldRemove(link.getAttribute('href'), link) && checkCacheKey(link, cacheKey)) {
       link.parentNode.removeChild(link);
     }
@@ -505,7 +508,7 @@ export function emptyAssets(
   const jsExtraList: NodeListOf<HTMLElement> = document.querySelectorAll(
     `script:not([${PREFIX}=${STATIC}])`,
   );
-  jsExtraList.forEach(js => {
+  jsExtraList.forEach((js) => {
     if (shouldRemove(js.getAttribute('src'), js) && checkCacheKey(js, cacheKey)) {
       js.parentNode.removeChild(js);
     }
@@ -513,7 +516,7 @@ export function emptyAssets(
 }
 
 export function checkCacheKey(node: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement, cacheKey: string|boolean) {
-  return (typeof cacheKey === 'boolean' &&  cacheKey)
+  return (typeof cacheKey === 'boolean' && cacheKey)
     || !node.getAttribute('cache')
     || node.getAttribute('cache') === cacheKey;
 }
@@ -566,7 +569,8 @@ export async function loadAndAppendJsAssets(
     sandbox?: Sandbox;
     fetch?: Fetch;
     scriptAttributes?: ScriptAttributes;
-  }) {
+  },
+) {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
 
   const { jsList } = assets;
@@ -575,7 +579,7 @@ export async function loadAndAppendJsAssets(
   if (sandbox && !sandbox.sandboxDisabled) {
     const jsContents = await fetchScripts(jsList, fetch);
     // excute code by order
-    jsContents.forEach(script => {
+    jsContents.forEach((script) => {
       sandbox.execScriptInSandbox(script);
     });
     return;

@@ -1,7 +1,7 @@
 import Sandbox, { SandboxConstructor, SandboxProps } from '@ice/sandbox';
 import * as isEmpty from 'lodash.isempty';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
-import { matchActivePath, MatchOptions, PathData, PathOptions } from './util/matchPath';
+import checkUrlActive, { ActivePath, PathOption, formatPath } from './util/checkActive';
 import {
   createSandbox,
   getUrlAssets,
@@ -13,14 +13,12 @@ import {
 } from './util/handleAssets';
 import { setCache } from './util/cache';
 import { loadBundle } from './util/loader';
-import { globalConfiguration, StartConfiguration } from './start';
 import { getLifecyleByLibrary, getLifecyleByRegister } from './util/getLifecycle';
+import { mergeFrameworkBaseToPath, getAppBasename, isFunction } from './util/helpers';
+import globalConfiguration from './util/globalConfiguration';
+import type { StartConfiguration } from './util/globalConfiguration';
 
 export type ScriptAttributes = string[] | ((url: string) => string[]);
-
-interface ActiveFn {
-  (url: string): boolean;
-}
 
 interface LifecycleProps {
   container: HTMLElement | string;
@@ -34,14 +32,19 @@ export interface ModuleLifeCycle {
   bootstrap?: (props: LifecycleProps) => Promise<void> | void;
 }
 
-export interface BaseConfig extends PathOptions {
+export interface BaseConfig extends PathOption {
   name?: string;
   url?: string | string[];
+  activePath?: ActivePath;
   container?: HTMLElement;
   status?: string;
   sandbox?: boolean | SandboxProps | SandboxConstructor;
   entry?: string;
   entryContent?: string;
+  /**
+  * basename is used for setting custom basename for child's basename.
+  */
+  basename?: string;
   /**
    * will be deprecated in future version, use `loadScriptMode` instead.
    * @see loadScriptMode
@@ -74,22 +77,20 @@ interface AppLifecylceOptions {
 }
 
 export interface AppConfig extends BaseConfig {
-  activePath?: string | string[] | PathData[] | MatchOptions[] | ActiveFn;
   appLifecycle?: AppLifecylceOptions;
   appSandbox?: Sandbox;
 }
 
-export type MicroApp =
-  AppConfig
-  & ModuleLifeCycle
-  & { configuration?: StartConfiguration };
+export interface MicroApp extends AppConfig, ModuleLifeCycle {
+  configuration?: StartConfiguration;
+}
 
 // cache all microApp
 let microApps: MicroApp[] = [];
 (window as any).microApps = microApps;
 
 function getAppNames() {
-  return microApps.map(app => app.name);
+  return microApps.map((app) => app.name);
 }
 
 export function getMicroApps() {
@@ -97,7 +98,7 @@ export function getMicroApps() {
 }
 
 export function getAppStatus(appName: string) {
-  const app = microApps.find(microApp => appName === microApp.name);
+  const app = microApps.find((microApp) => appName === microApp.name);
   return app ? app.status : '';
 }
 
@@ -106,34 +107,35 @@ export function registerMicroApp(appConfig: AppConfig, appLifecyle?: AppLifecylc
   if (getAppNames().includes(appConfig.name)) {
     throw Error(`name ${appConfig.name} already been regsitered`);
   }
-  // set activeRules
+
   const { activePath, hashType = false, exact = false, sensitive = false, strict = false } = appConfig;
-  const activeRules: (ActiveFn | string | MatchOptions)[] = Array.isArray(activePath) ? activePath : [activePath];
-  const checkActive = activePath
-    ? (url: string) => activeRules.map((activeRule: ActiveFn | string | MatchOptions) => {
-      if (typeof activeRule === 'function' ) {
-        return activeRule;
-      } else {
-        const pathOptions: MatchOptions = { hashType, exact, sensitive, strict };
-        const pathInfo = Object.prototype.toString.call(activeRule) === '[object Object]'
-          ? { ...pathOptions, ...(activeRule as MatchOptions) }
-          : { path: activeRule as string, ...pathOptions };
-        return (checkUrl: string) => matchActivePath(checkUrl, pathInfo);
-      }
-    }).some((activeRule: ActiveFn) => activeRule(url))
-    // active app when activePath is not specified
-    : () => true;
+
+  /**
+   * Format activePath in advance
+   */
+  const activePathArray = formatPath(activePath, {
+    hashType,
+    exact,
+    sensitive,
+    strict,
+  });
+
+  const { basename: frameworkBasename } = globalConfiguration;
+
+  const checkActive = checkUrlActive(mergeFrameworkBaseToPath(activePathArray, frameworkBasename));
+
   const microApp = {
     status: NOT_LOADED,
     ...appConfig,
     appLifecycle: appLifecyle,
     checkActive,
   };
+
   microApps.push(microApp);
 }
 
 export function registerMicroApps(appConfigs: AppConfig[], appLifecyle?: AppLifecylceOptions) {
-  appConfigs.forEach(appConfig => {
+  appConfigs.forEach((appConfig) => {
     registerMicroApp(appConfig, appLifecyle);
   });
 }
@@ -225,7 +227,7 @@ function combineLifecyle(lifecycle: ModuleLifeCycle, appConfig: AppConfig) {
   return combinedLifecyle;
 }
 
-export function getAppConfigForLoad (app: string | AppConfig, options?: AppLifecylceOptions) {
+export function getAppConfigForLoad(app: string | AppConfig, options?: AppLifecylceOptions) {
   if (typeof app === 'string') {
     return getAppConfig(app);
   }
@@ -237,28 +239,34 @@ export function getAppConfigForLoad (app: string | AppConfig, options?: AppLifec
     updateAppConfig(name, app);
   }
   return getAppConfig(name);
-};
+}
 
 export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppLifecylceOptions, configuration?: StartConfiguration) {
   const appConfig = getAppConfigForLoad(app, appLifecyle);
   const appName = appConfig && appConfig.name;
 
-  // compatible with use inIcestark
-  const container = (app as AppConfig).container || appConfig?.container;
-  if (container) {
-    setCache('root', container);
-  }
-
   if (appConfig && appName) {
     // add configuration to every micro app
     const userConfiguration = globalConfiguration;
-    Object.keys(configuration || {}).forEach(key => {
+    Object.keys(configuration || {}).forEach((key) => {
       userConfiguration[key] = configuration[key];
     });
     updateAppConfig(appName, { configuration: userConfiguration });
 
+    const { container, basename, activePath } = appConfig;
+
+    if (container) {
+      setCache('root', container);
+    }
+
+    const { basename: frameworkBasename } = userConfiguration;
+
+    if (!isFunction(activePath)) {
+      setCache('basename', getAppBasename(activePath, frameworkBasename, basename));
+    }
+
     // check status of app
-    if (appConfig.status === NOT_LOADED || appConfig.status === LOAD_ERROR ) {
+    if (appConfig.status === NOT_LOADED || appConfig.status === LOAD_ERROR) {
       if (appConfig.title) document.title = appConfig.title;
       updateAppConfig(appName, { status: LOADING_ASSETS });
       let lifeCycle: ModuleLifeCycle = {};
@@ -268,7 +276,7 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
         if (getAppStatus(appName) === LOADING_ASSETS) {
           updateAppConfig(appName, { ...lifeCycle, status: NOT_MOUNTED });
         }
-      } catch (err){
+      } catch (err) {
         userConfiguration.onError(err);
         updateAppConfig(appName, { status: LOAD_ERROR });
       }
@@ -277,7 +285,7 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
       }
     } else if (appConfig.status === UNMOUNTED) {
       if (!appConfig.cached) {
-        await loadAndAppendCssAssets(appConfig.appAssets || { cssList: [], jsList: []});
+        await loadAndAppendCssAssets(appConfig.appAssets || { cssList: [], jsList: [] });
       }
       await mountMicroApp(appConfig.name);
     } else if (appConfig.status === NOT_MOUNTED) {
@@ -296,10 +304,10 @@ export async function mountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   // check current url before mount
   if (appConfig && appConfig.checkActive(window.location.href) && appConfig.status !== MOUNTED) {
-    updateAppConfig(appName, { status: MOUNTED });
     if (appConfig.mount) {
       await appConfig.mount({ container: appConfig.container, customProps: appConfig.props });
     }
+    updateAppConfig(appName, { status: MOUNTED });
   }
 }
 
@@ -307,7 +315,7 @@ export async function unmountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   if (appConfig && (appConfig.status === MOUNTED || appConfig.status === LOADING_ASSETS || appConfig.status === NOT_MOUNTED)) {
     // remove assets if app is not cached
-    const { shouldAssetsRemove } = getAppConfig(appName)?.configuration  || globalConfiguration;
+    const { shouldAssetsRemove } = getAppConfig(appName)?.configuration || globalConfiguration;
     emptyAssets(shouldAssetsRemove, !appConfig.cached && appConfig.name);
     updateAppConfig(appName, { status: UNMOUNTED });
     if (!appConfig.cached && appConfig.appSandbox) {
@@ -353,8 +361,8 @@ export function removeMicroApps(appNames: string[]) {
 }
 
 // clear all micro app configs
-export function clearMicroApps () {
-  getAppNames().forEach(name => {
+export function clearMicroApps() {
+  getAppNames().forEach((name) => {
     unloadMicroApp(name);
   });
   microApps = [];
