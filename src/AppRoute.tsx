@@ -37,7 +37,6 @@ export interface AppRouteProps extends BaseConfig {
   cssLoading?: boolean;
   rootId?: string;
   component?: React.ReactElement;
-  frameworkBasename?: string;
   render?: (componentProps: AppRouteComponentProps) => React.ReactElement;
   /**
    * will be deprecated in future version, use `activePath` instead.
@@ -49,14 +48,14 @@ export interface AppRouteProps extends BaseConfig {
   onAppLeave?: (appConfig: CompatibleAppConfig) => void;
 }
 
-export type CompatibleAppConfig = Omit<AppRouteProps, 'componentProps' | 'cssLoading' | 'onAppEnter' | 'onAppLeave' | 'frameworkBasename'>;
+export type CompatibleAppConfig = Omit<AppRouteProps, 'componentProps' | 'cssLoading' | 'onAppEnter' | 'onAppLeave'>;
 
 /**
  * Gen compatible app config from AppRoute props
  */
 function genCompatibleAppConfig(appRouteProps: AppRouteProps): CompatibleAppConfig {
   const appConfig: CompatibleAppConfig = {};
-  const omitProperties = ['componentProps', 'cssLoading', 'onAppEnter', 'onAppLeave', 'frameworkBasename'];
+  const omitProperties = ['componentProps', 'cssLoading', 'onAppEnter', 'onAppLeave'];
 
   Object.keys(appRouteProps).forEach((key) => {
     if (omitProperties.indexOf(key) === -1) {
@@ -164,7 +163,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   renderChild = (): void => {
-    const { path, name, rootId, frameworkBasename, ...rest } = this.props;
+    const { path, name, rootId, ...rest } = this.props;
     // reCreate rootElement to remove sub-application instance,
     // rootElement is created for render sub-application
     const rootElement: HTMLElement = this.reCreateElementInBase(rootId);
