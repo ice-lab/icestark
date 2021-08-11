@@ -163,14 +163,14 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   renderChild = (): void => {
-    const { path, name, rootId, ...rest } = this.props;
+    const { activePath, path, name, rootId, ...rest } = this.props;
     // reCreate rootElement to remove sub-application instance,
     // rootElement is created for render sub-application
     const rootElement: HTMLElement = this.reCreateElementInBase(rootId);
     const appConfig = {
       ...(rest as BaseConfig),
       name,
-      activePath: path,
+      activePath: activePath || path,
       container: rootElement,
     };
 

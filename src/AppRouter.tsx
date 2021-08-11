@@ -240,7 +240,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
         return renderComponent(ErrorComponent, { err });
       }
 
-      this.appKey = name || converArray2String((activePath ?? path) as AppRoutePath);
+      this.appKey = name || converArray2String((activePath || path) as AppRoutePath);
       const componentProps: AppRouteComponentProps = {
         location: urlParse(url, true),
         match,
