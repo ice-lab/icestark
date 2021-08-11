@@ -4,7 +4,7 @@ See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/ic
 
 ## 2.5.0
 
-- [feat] `path` is deprecated and using the more powerful `activePath` instaed. ([#299, #297, #209](https://github.com/ice-lab/icestark/issues/299))
+- [feat] `path` is deprecated and using the more powerful `activePath` instead. ([#299, #297, #209](https://github.com/ice-lab/icestark/issues/299))
 - [feat] debug mirco-frontends are accessiable by using source maps, even in sandbox. ([#259](https://github.com/ice-lab/icestark/issues/259))
 - [fix] call callCapturedEventListeners later to prevent double Prompt. ([#325](https://github.com/ice-lab/icestark/issues/325))
 - [refact] refactor url-matching algorithm.
