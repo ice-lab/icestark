@@ -2,7 +2,7 @@
 toc: menu
 ---
 
-# Utils
+# @ice/stark-app
 
 以下 api 均从 `@ice/stark-app` 导出。使用方式如下：
 

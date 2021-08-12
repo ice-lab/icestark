@@ -14,8 +14,8 @@ module.exports = {
         },
         {
           label: 'GitHub Issue',
-          href: 'https://github.com/ice-lab/icestark/issues'
-        }
+          href: 'https://github.com/ice-lab/icestark/issues',
+        },
       ],
     },
     {
@@ -23,12 +23,12 @@ module.exports = {
       items: [
         {
           label: '反馈问题',
-          href: 'https://github.com/ice-lab/icestark/issues/new?assignees=&labels=bug&template=bug_report.md'
+          href: 'https://github.com/ice-lab/icestark/issues/new?assignees=&labels=bug&template=bug_report.md',
         },
         {
           label: '提交需求',
-          href: 'https://github.com/ice-lab/icestark/issues/new?assignees=&labels=bug&template=bug_report.md'
-        }
+          href: 'https://github.com/ice-lab/icestark/issues/new?assignees=&labels=bug&template=bug_report.md',
+        },
       ],
     },
     {
@@ -36,7 +36,7 @@ module.exports = {
       items: [
         {
           label: '飞冰（ICE）',
-          href: 'https://ice.work/'
+          href: 'https://ice.work/',
         },
         {
           label: 'Rax',
@@ -49,9 +49,9 @@ module.exports = {
         {
           label: 'Kraken',
           href: 'https://openkraken.com/',
-        }
+        },
       ],
     },
   ],
   copyright: `Copyright © ${new Date().getFullYear()} 飞冰（ICE）. Built with Docusaurus.`,
-}
+};

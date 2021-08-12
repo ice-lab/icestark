@@ -14,31 +14,30 @@ module.exports = {
       type: 'category',
       label: '概念',
       collapsed: false,
-      items: getDocsFromDir('guide/concept')
+      items: getDocsFromDir('guide/concept'),
     },
     {
       type: 'category',
       label: '主应用接入',
       collapsed: false,
-      items: getDocsFromDir('guide/use-layout')
+      items: getDocsFromDir('guide/use-layout'),
     },
     {
       type: 'category',
       label: '微应用接入',
       collapsed: false,
-      items: getDocsFromDir('guide/use-child')
+      items: getDocsFromDir('guide/use-child'),
     },
     {
       type: 'category',
       label: '进阶',
       collapsed: false,
-      items: getDocsFromDir('guide/advanced')
+      items: getDocsFromDir('guide/advanced'),
     },
-    'guide/micro-module'
+    'guide/micro-module',
   ],
   api: [
-    'api/core',
-    'api/wrapper',
-    'api/utils'
-  ]
+    'api/ice-stark',
+    'api/ice-stark-app',
+  ],
 };
