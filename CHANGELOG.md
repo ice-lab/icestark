@@ -2,6 +2,14 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
+## 2.5.0
+
+- [feat] `path` is deprecated and using the more powerful `activePath` instead. ([#299, #297, #209](https://github.com/ice-lab/icestark/issues/299))
+- [feat] debug mirco-frontends are accessiable by using source maps, even in sandbox. ([#259](https://github.com/ice-lab/icestark/issues/259))
+- [fix] call callCapturedEventListeners later to prevent double Prompt. ([#325](https://github.com/ice-lab/icestark/issues/325))
+- [refact] refactor url-matching algorithm.
+
+
 ## 2.4.0
 
 - [feat] support appending extra attributes for scripts when using `loadScriptMode = script`. ([#276](https://github.com/ice-lab/icestark/issues/276))

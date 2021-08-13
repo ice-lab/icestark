@@ -8,7 +8,6 @@ const storeNameSpace = 'store';
 
 type StringSymbolUnion = string | symbol;
 
-// eslint-disable-next-line @typescript-eslint/interface-name-prefix
 interface IO {
   set(key: string | symbol | object, value?: any): void;
   get(key?: StringSymbolUnion): void;
@@ -58,7 +57,7 @@ class Store implements IO, Hooks {
     }
 
     if (typeof key !== 'string' && typeof key !== 'symbol') {
-      warn(`store.get: key should be string / symbol`);
+      warn('store.get: key should be string / symbol');
       return null;
     }
 

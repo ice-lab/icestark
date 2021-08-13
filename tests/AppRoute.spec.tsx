@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/extend-expect';
 
-import { converArray2String } from '../src/AppRouter';
+import { converArray2String } from '../src/util/helpers';
 
 describe('converArray2String', () => {
   test('converArray2String', () => {

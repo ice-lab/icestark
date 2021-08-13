@@ -5,7 +5,7 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 describe('sandbox: excapeSandbox', () => {
   const sandbox = new Sandbox({});
-  const delay = (time) => new Promise((resolve) => setTimeout(() => resolve(), time));
+  const delay = (time) => new Promise<void>((resolve) => setTimeout(() => resolve(), time));
 
   test('execute script in sandbox', () => {
     sandbox.execScriptInSandbox('window.a = 1;expect(window.a).toBe(1);');

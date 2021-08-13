@@ -1,6 +1,6 @@
 {
   "name": "@ice/stark",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "Icestark is a JavaScript library for multiple projects, Ice workbench solution.",
   "scripts": {
     "install:deps": "rm -rf node_modules && rm -rf ./packages/*/node_modules && yarn install && lerna exec -- npm install",
@@ -56,7 +56,7 @@
   "devDependencies": {
     "@commitlint/cli": "^7.5.2",
     "@commitlint/config-conventional": "^7.5.0",
-    "@ice/spec": "^0.1.4",
+    "@iceworks/spec": "^1.3.2",
     "@testing-library/jest-dom": "^4.2.3",
     "@testing-library/react": "^9.3.2",
     "@types/jest": "^24.0.12",
@@ -65,7 +65,7 @@
     "@types/react": "^16.8.19",
     "@types/url-parse": "^1.4.3",
     "codecov": "^3.4.0",
-    "eslint": "^5.16.0",
+    "eslint": "^7.31.0",
     "husky": "^2.2.0",
     "jest": "^24.7.1",
     "jest-fetch-mock": "^2.1.2",
@@ -76,7 +76,7 @@
     "stylelint": "^10.1.0",
     "ts-jest": "^24.0.2",
     "ts-node": "^9.0.0",
-    "typescript": "^3.4.4",
+    "typescript": "^4.3.5",
     "urllib": "^2.36.1"
   },
   "resolutions": {

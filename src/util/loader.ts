@@ -2,7 +2,7 @@ import Sandbox from '@ice/sandbox';
 import { getGlobalProp, noteGlobalProps } from './global';
 import { Asset, fetchScripts } from './handleAssets';
 import { getLifecyleByLibrary, getLifecyleByRegister } from './getLifecycle';
-import { ModuleLifeCycle } from '../apps';
+import type { ModuleLifeCycle } from '../apps';
 
 /**
  * load bundle
@@ -12,7 +12,7 @@ import { ModuleLifeCycle } from '../apps';
  */
 export function loadBundle(jsList: Asset[], sandbox?: Sandbox) {
   return fetchScripts(jsList)
-    .then(scriptTexts => {
+    .then((scriptTexts) => {
       const globalwindow = getGobalWindow(sandbox);
       let libraryExport = null;
       // exeute script in order

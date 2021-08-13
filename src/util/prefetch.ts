@@ -1,7 +1,12 @@
-import { Prefetch, Fetch } from '../start';
-import { MicroApp, AppConfig } from '../apps';
-import { NOT_LOADED } from '../util/constant';
 import { fetchScripts, fetchStyles, getUrlAssets, getEntryAssets } from './handleAssets';
+import { NOT_LOADED } from '../util/constant';
+import type { Fetch } from '../util/globalConfiguration';
+import type { MicroApp, AppConfig } from '../apps';
+
+export type Prefetch =
+ | boolean
+ | string[]
+ | ((app: AppConfig) => boolean);
 
 /**
  * https://github.com/microsoft/TypeScript/issues/21309#issuecomment-376338415
@@ -31,9 +36,9 @@ declare global {
  */
 window.requestIdleCallback =
   window.requestIdleCallback ||
-  function(cb) {
+  function (cb) {
     const start = Date.now();
-    return setTimeout(function() {
+    return setTimeout(() => {
       cb({
         didTimeout: false,
         timeRemaining() {
@@ -45,7 +50,7 @@ window.requestIdleCallback =
 
 window.cancelIdleCallback =
   window.cancelIdleCallback ||
-  function(id) {
+  function (id) {
     clearTimeout(id);
   };
 
@@ -97,7 +102,7 @@ export function doPrefetch(
   }
 }
 
-export function prefetchApps (apps: AppConfig[], fetch: Fetch) {
+export function prefetchApps(apps: AppConfig[], fetch: Fetch) {
   if (apps && Array.isArray(apps)) {
     apps.forEach(prefetchIdleTask(fetch));
   }
