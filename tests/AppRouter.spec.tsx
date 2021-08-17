@@ -70,6 +70,32 @@ describe('AppRouter', () => {
     unmount();
   })
 
+  test('app-basename-empty', async () => {
+    (fetch as FetchMock).mockResponseOnce(umdSourceWithSetLibrary.toString());
+    const { container, unmount } = render(
+      <AppRouter>
+        <AppRoute
+          loadScriptMode="fetch"
+          name="seller"
+          path="/seller"
+          basename=""
+          title="小二"
+          url={[
+            '//icestark.com/index.js'
+          ]}
+        />
+      </AppRouter>
+    );
+    window.history.pushState({}, 'test', '/seller');
+    expect(container.innerHTML).toContain('Loading')
+    expect(getCache('basename')).toBe('/seller');
+
+    await delay(1000);
+    expect(container.innerHTML).toContain('商家平台')
+
+    unmount();
+  })
+
   test('app-basename-frameworkBasename', async () => {
     (fetch as FetchMock).mockResponseOnce(umdSourceWithSetLibrary.toString());
     const { container, unmount } = render(
