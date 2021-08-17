@@ -89,5 +89,9 @@ describe('checkActive', () => {
     // type `ActiveFn`
     checkFnc = checkActive((url: string) => url.includes('/test'));
     expect(checkFnc('/test/123')).toBeTruthy();
+
+    // `undefined`
+    checkFnc = checkActive(formatPath());
+    expect(checkFnc('/test/123')).toBeTruthy();
   })
 });
