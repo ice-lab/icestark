@@ -216,7 +216,7 @@ module.exports = {
 }
 ```
 
-由于 next.js 无法运行时指定 basePath，因此建议提前对基准路由进行强约定。比如约定 `http://localhost:3000/seller` 下渲染上述配置的 next 微应用。则主应用的 [path](/docs/api/wrapper#approuter) 配置需要与之一一对应：
+由于 next.js 无法运行时指定 basePath，因此建议提前对基准路由进行强约定。比如约定 `http://localhost:3000/seller` 下渲染上述配置的 next 微应用。则主应用的 [path](/docs/api/ice-stark#approuter) 配置需要与之一一对应：
 
 ```js
 <AppRoute

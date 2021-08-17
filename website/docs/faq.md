@@ -255,7 +255,7 @@ appHistory.push('/seller', true);
 
 2. 添加 `fetch` polyfill
 
-当 [`loadScriptMode`](/docs/api/wrapper#loadscriptmode) 为 `fetch` 时，icestark 会使用 `window.fetch` 获取微应用静态资源，因此还需要对 `fetch` 进行 polyfill。这里，我们推荐 [whatwg-fetch](https://github.com/github/fetch)。请确保在 icestark 之前引入该资源。
+当 [`loadScriptMode`](/docs/api/ice-stark#loadscriptmode) 为 `fetch` 时，icestark 会使用 `window.fetch` 获取微应用静态资源，因此还需要对 `fetch` 进行 polyfill。这里，我们推荐 [whatwg-fetch](https://github.com/github/fetch)。请确保在 icestark 之前引入该资源。
 
 ```js
 // 入口文件
@@ -282,7 +282,7 @@ proxy sandbox is not support by current browser
 
 ## Script Error 的解决方法
 
-“ Script error. ” 是一个常见错误，但由于该错误不提供完整的报错信息（错误堆栈），问题排查往往无从下手。icestark 的 [scriptAttributes](/docs/api/core#scriptattributes) 参数支持为加载的 `<script />` 资源添加 `crossorigin="anonymous"` 来解决这个问题。具体可参考 [scriptAttributes](/docs/api/core#scriptattributes)。
+“ Script error. ” 是一个常见错误，但由于该错误不提供完整的报错信息（错误堆栈），问题排查往往无从下手。icestark 的 [scriptAttributes](/docs/api/ice-stark#scriptattributes) 参数支持为加载的 `<script />` 资源添加 `crossorigin="anonymous"` 来解决这个问题。具体可参考 [scriptAttributes](/docs/api/ice-stark#scriptattributes)。
 
 :::tip
 想了解更多有关 Script Error 的问题，可以参考 <a href="https://help.aliyun.com/document_detail/88579.html">“Script error.”的产生原因和解决办法</a>

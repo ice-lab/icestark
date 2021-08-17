@@ -12,6 +12,10 @@ order: 1
 $ npm init ice icestark-child @icedesign/stark-child-scaffold
 ```
 
+:::info 提示
+更多有关官方脚手架的使用细节，请访问 [飞冰 - 微前端 icestark](https://ice.work/docs/guide/advanced/icestark)
+:::
+
 ## 已有 React 项目改造为微应用
 
 ### 1. 应用入口适配

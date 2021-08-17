@@ -55,7 +55,7 @@ hide_table_of_contents: false
 }
 ```
 
-有关 scriptAttributes 使用的更多内容，可参考 [api - scriptAttributes](/docs/api/core#scriptattributes)
+有关 scriptAttributes 使用的更多内容，可参考 [api - scriptAttributes](/docs/api/ice-stark#scriptattributes)
 
 此外，还可以通过 scriptAttributes 来为某个 JavaScript 文件做特殊的标记。比如：
 
@@ -131,7 +131,7 @@ icestark 于前两周上线独立[官网](https://micro-frontends.ice.work/)。�
 
 ### 提供 [ice](https://ice.work/) 用户消费框架应用传递的 props
 
-在 [icestark 2.x](/docs/guide/upgrade) 版本中，支持框架应用通过 [props](/docs/api/core#props) 传递微应用自定义参数。如：
+在 [icestark 2.x](/docs/guide/upgrade) 版本中，支持框架应用通过 [props](/docs/api/ice-stark#props) 传递微应用自定义参数。如：
 
 ```diff
 // 框架应用
@@ -212,6 +212,6 @@ console.log(a);
 我们会持续扩展 icestark 的能力，提升微前端体验。在接下来的版本中，我们会：
 
 + 优化 icestark 本地开发以及沙箱的调试体验 ([issue](https://github.com/ice-lab/icestark/issues/259))；
-+ 为 [React Component](/docs/api/wrapper) 和 [Api](/docs/api/core) 的使用方式对齐所有字段。这可能会导致某些字段在未来的版本中处于 `@deprecated` 阶段 ([rfc](https://github.com/ice-lab/icestark/issues/299))；
++ 为 [React Component](/docs/api/ice-stark#approuter) 和 [Api](/docs/api/ice-stark#核心-api) 的使用方式对齐所有字段。这可能会导致某些字段在未来的版本中处于 `@deprecated` 阶段 ([rfc](https://github.com/ice-lab/icestark/issues/299))；
 + 会修复使用 Prompt 组件二次弹框的问题；([issue](https://github.com/ice-lab/icestark/issues/325))；
 + 提供更简单、方便样式隔离方案。

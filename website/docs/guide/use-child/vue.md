@@ -80,7 +80,7 @@ Vue 项目中使用 `vue-router`：
 ```js
 import Vue from 'vue';
 import Router from 'vue-router';
-import { getBasename } from '@ice/stark-app';
+import getBasename from '@ice/stark-app/lib/getBasename';
 import routes from '@/config/routes';
 
 Vue.use(Router);

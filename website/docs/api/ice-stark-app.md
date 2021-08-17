@@ -2,12 +2,18 @@
 toc: menu
 ---
 
-# Utils
+# @ice/stark-app
 
 以下 api 均从 `@ice/stark-app` 导出。使用方式如下：
 
 ```js
 import { isInIcestark } from '@ice/stark-app';
+```
+
+对于使用非 React 的用户，我们建议您直接从 `lib` 目录下导入这些方法，比如：
+
+```js
+import isInIcestark from '@ice/stark-app/lib/isInIcestark';
 ```
 
 ## isInIcestark

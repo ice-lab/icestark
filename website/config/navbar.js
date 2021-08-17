@@ -11,7 +11,7 @@ module.exports = {
       label: '文档',
     },
     {
-      to: '/docs/api/core',
+      to: '/docs/api/ice-stark',
       position: 'right',
       label: 'API',
     },
@@ -27,9 +27,9 @@ module.exports = {
     // },
     // currently hide blog
     {
-      label: "博客",
+      label: '博客',
       to: 'blog',
-      position: 'right'
+      position: 'right',
     },
     {
       href: 'https://github.com/ice-lab/icestark',
