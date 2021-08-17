@@ -13,6 +13,11 @@ $ npm install
 $ npm start
 ```
 
+:::info 提示
+更多有关官方脚手架的使用细节，请访问 [飞冰 - 微前端 icestark](https://ice.work/docs/guide/advanced/icestark)
+:::
+
+
 ## 已有应用改造
 
 ### 微应用管理与注册
@@ -67,7 +72,7 @@ ReactDOM.render(<App />, document.getElementById('root'));
 - LoadingComponent：微应用加载过程渲染的组件
 - basename：整个主应用部署在某个基础路由下
 
-更多参数请参考 [API 介绍 AppRouter](/docs/api/wrapper#approuter)。
+更多参数请参考 [API 介绍 AppRouter](/docs/api/ice-stark#approuter)。
 
 ### AppRoute 配置项
 
@@ -125,7 +130,7 @@ ReactDOM.render(<App />, document.getElementById('root'));
 - cache：默认 `false`，切换后是否缓存微应用，可能会引起内存占用过大问题，不建议开启
 - hashType：默认 `false`，标识微应用的路由是否为 hash 模式
 
-更多参数请参考 [API 介绍 AppRoute](/docs/api/wrapper#approute)。
+更多参数请参考 [API 介绍 AppRoute](/docs/api/ice-stark#approute)。
 
 
 ## 进阶指南

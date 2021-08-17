@@ -87,7 +87,7 @@ createMicroApp({
 
 ### 优化 icestark 本地开发以及沙箱的调试体验
 
-当我们本地开发时候，source map 对定位源码非常有效。但是使用 [fetch](http://localhost:3000/docs/api/wrapper/#loadscriptmode) 来加载 js 资源时候，由于当前 origin 是主应用的 origin，导致 source map 文件加载失败。如图：
+当我们本地开发时候，source map 对定位源码非常有效。但是使用 [fetch](http://localhost:3000/docs/api/ice-stark/#loadscriptmode) 来加载 js 资源时候，由于当前 origin 是主应用的 origin，导致 source map 文件加载失败。如图：
 
 ![](https://img.alicdn.com/imgextra/i3/O1CN01Fzwbb31LpQb0uqoHy_!!6000000001348-0-tps-2996-396.jpg)
 
@@ -100,7 +100,7 @@ createMicroApp({
 
 ### 修复使用 Prompt 组件二次弹框的问题
 
-当微应用使用 ReactRouterDOM 的 [Prompt](https://reactrouter.com/core/api/Prompt) 组件时，会出现两次 confirm 框确认，如图：
+当微应用使用 ReactRouterDOM 的 [Prompt](https://reactrouter.com/ice-stark/api/Prompt) 组件时，会出现两次 confirm 框确认，如图：
 
 ![](https://img.alicdn.com/imgextra/i2/O1CN01LRBZex1KyIeJBcoOP_!!6000000001232-1-tps-1694-546.gif)
 

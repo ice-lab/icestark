@@ -28,7 +28,7 @@ import {
   createMicroApp,
   unmountMicroApp,
   unloadMicroApp,
-} from '@iice/stark/lib/apps';
+} from '@ice/stark/lib/apps';
 ```
 
 ## AppConfig
@@ -242,6 +242,67 @@ export function mount(props) {
 }
 ```
 
+## React 组件
+
+对于 React 用户，我们封装了底层 API 的部分能力，以便用户可以通过 React 组件的方式快速接入 icestark。了解更多请移步 [主应用接入 - React](/docs/guide/use-layout/react)。
+
+以下 api 均从 `@ice/stark` 导出。
+
+```js
+import { AppRouter, AppRoute } from '@ice/stark';
+```
+
+### AppRouter
+
+定位微应用渲染节点，包含如下 `props` 属性：
+
+### AppRoute
+
+微应用注册组件，组件 `Props` 的类型定义如下：
+
+```ts
+interface AppRouteProps extends AppConfig {
+  component?: React.ReactElement;
+  render?: (componentProps: AppRouteComponentProps) => React.ReactElement;
+  path?: string | string[] | PathData[];
+}
+```
+
+:::info
+在使用 `<AppRoute />` 渲染微应用是，无需再提供 `container` 参数。一个最简的例子如下：
+
+```jsx
+<AppRoute
+  name="seller"
+  activePath="/seller"
+  url={[
+    '/js/index.js',
+    '/css/index.js'
+  ]}
+>
+```
+:::
+
+除 [AppConfig](#appconfig) 所定义的参数之外，`<AppRoute>` 还支持以下属性：
+
+#### component
+
+当路由匹配是直接渲染 react component，渲染后会带上 `location`、`match`、`history` 的 `props`, 支持 `AppRoute` 替代 `react-route` 的基本能力。**当配置此属性时，`url` 等配置会失效**。参考 [Route.component](https://reacttraining.com/react-router/web/api/Route/component)，选填
+
+- 类型：`string | ReactNode`
+- 默认值：`-`
+
+#### render
+
+支持 `AppRoute` 替代 `react-route` 的基本能力。**当配置此属性时，`url` 等配置会失效**。参考 [Route.render](https://reacttraining.com/react-router/web/api/Route/render-func)，选填
+
+- 类型：`({location, match, history}) => ReactNode`
+- 默认值：`-`
+
+#### path <Badge text="@depreated" />
+
+该字段已处于 `@depreated`，在未来的版本中，该字段可能会被移除。 请使用 [activePath](#activepath)。
+
 ## 核心 API
 
 icestark 底层能力已完全与框架解耦。这些能力使得您可以使用 [api 的方式](/docs/guide/use-child/vue) 接入 icestark。其中包含的 API 有：
@@ -341,64 +402,5 @@ AppConfig 同 `regsiterMicroApps` 配置项，手动加载的情况下一般不�
 
 > 同 unmountMicroApp 区别：unmountMicroApp 仅仅执行了微应用的 unmount 方法，从节点上移除微应用，下一次挂载时可以直接执行 mount 重新挂载；而 unloadMicroApp 除了执行 unmount 方法之外，还会将微应用执行结果（mount/unmount）移除，下一次挂载该微应用时，需要重新加载资源执行来获取其生命周期。
 
-## React 组件
 
-对于 React 用户，我们封装了底层 API 的部分能力，以便用户可以通过 React 组件的方式快速接入 icestark。了解更多请移步 [主应用接入 - React](/docs/guide/use-layout/react)。
-
-以下 api 均从 `@ice/stark` 导出。
-
-```js
-import { AppRouter, AppRoute } from '@ice/stark';
-```
-
-### AppRouter
-
-定位微应用渲染节点，包含如下 `props` 属性：
-
-### AppRoute
-
-微应用注册组件，组件 `Props` 的类型定义如下：
-
-```ts
-interface AppRouteProps extends AppConfig {
-  component?: React.ReactElement;
-  render?: (componentProps: AppRouteComponentProps) => React.ReactElement;
-  path?: string | string[] | PathData[];
-}
-```
-
-:::info
-在使用 `<AppRoute />` 渲染微应用是，无需再提供 `container` 参数。一个最简的例子如下：
-
-```jsx
-<AppRoute
-  name="seller"
-  activePath="/seller"
-  url={[
-    '/js/index.js',
-    '/css/index.js'
-  ]}
->
-```
-:::
-
-除 [AppConfig](#appconfig) 所定义的参数之外，`<AppRoute>` 还支持以下属性：
-
-#### component
-
-当路由匹配是直接渲染 react component，渲染后会带上 `location`、`match`、`history` 的 `props`, 支持 `AppRoute` 替代 `react-route` 的基本能力。**当配置此属性时，`url` 等配置会失效**。参考 [Route.component](https://reacttraining.com/react-router/web/api/Route/component)，选填
-
-- 类型：`string | ReactNode`
-- 默认值：`-`
-
-#### render
-
-支持 `AppRoute` 替代 `react-route` 的基本能力。**当配置此属性时，`url` 等配置会失效**。参考 [Route.render](https://reacttraining.com/react-router/web/api/Route/render-func)，选填
-
-- 类型：`({location, match, history}) => ReactNode`
-- 默认值：`-`
-
-#### path <Badge text="@depreated" />
-
-该字段已处于 `@depreated`，在未来的版本中，该字段可能会被移除。 请使用 [activePath](#activepath)。
 
