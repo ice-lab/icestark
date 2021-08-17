@@ -2,6 +2,10 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
+## 2.5.3
+
+- [fix] `setBasename` before `createMicroApp` may be covered for empty activePath.
+
 ## 2.5.2
 
 - [fix] `createMicroApp` without `activePath` cause error.

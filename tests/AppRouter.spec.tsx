@@ -42,6 +42,8 @@ describe('AppRouter', () => {
     window.history.pushState({}, 'test', '/seller/detail');
     await delay(1000);
     expect(container.innerHTML).toContain('商家详情')
+
+    unmount();
   })
 
   test('app-basename-custom', async () => {
