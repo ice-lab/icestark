@@ -2,6 +2,11 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
+
+## 2.5.1
+
+- [hotfix] keep the misunderstanding `basename=''` working fine with `<AppRoute />`.
+
 ## 2.5.0
 
 - [feat] `path` is deprecated and using the more powerful `activePath` instead. ([#299, #297, #209](https://github.com/ice-lab/icestark/issues/299))

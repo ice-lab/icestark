@@ -108,7 +108,11 @@ export const getAppBasename = (path: AppRoutePath = '', frameworkBase?: string, 
   const leadingSlashFrameworkBase = frameworkBase && addLeadingSlash(frameworkBase);
   const leadingSlashAppBase = appBase && addLeadingSlash(appBase);
 
-  return `${leadingSlashFrameworkBase}${leadingSlashAppBase ?? actualPath}`;
+  /**
+  * It's preferable to use `??` bewteen leadingSlashAppBase and actualPath. But some
+  * users already use the misunderstanding `basename=''`, which we have to keep things the way they are.
+   */
+  return `${leadingSlashFrameworkBase}${leadingSlashAppBase || actualPath}`;
 };
 
 /**
