@@ -25,7 +25,7 @@ hide_table_of_contents: false
 
 #### 1. `<AppRoute />` 的 [path](/docs/api/ice-stark#path) 字段废弃，请使用 [activePath](/docs/api/ice-stark#activepath) 字段。
 
-`activePath` 是 [appConfig](/docs/api/ice-stark#appconfig) 定义的基础字段，除了支持 [path](docs/api/ice-stark#path) 所有配置能力外，还支持函数写法，可自定义路由匹配逻辑：
+`activePath` 是 [appConfig](/docs/api/ice-stark#appconfig) 定义的基础字段，除了支持 [path](/docs/api/ice-stark#path) 所有配置能力外，还支持函数写法，可自定义路由匹配逻辑：
 
 ```ts
 {
@@ -76,7 +76,7 @@ createMicroApp({
 
 #### 3. 在 `<AppRouter />` 中使用 onLoadingApp、onFinishLoading、onError 等 Hooks
 
-在之前的版本中，使用 `<AppRoute />` 不太方便对微应用执行的各个阶段进行监控或埋点（虽然这些能力均在 [API](docs/api/ice-stark#start) 中支持）。因此，我们也在 `<AppRoute />` 中透出了这些 Hooks。
+在之前的版本中，使用 `<AppRoute />` 不太方便对微应用执行的各个阶段进行监控或埋点（虽然这些能力均在 [API](/docs/api/ice-stark#核心-api) 中支持）。因此，我们也在 `<AppRoute />` 中透出了这些 Hooks。
 
 > 更多有关 [对齐 API 和 React Component 使用字段](#对齐-api-和-react-component-使用字段) 可参见 [RFC](https://github.com/ice-lab/icestark/issues/299)。
 
