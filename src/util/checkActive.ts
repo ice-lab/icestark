@@ -50,10 +50,15 @@ export type ActivePath = string | PathData | string[] | PathData[] | MixedPathDa
  * Used for formatting non-functional activePath to PathData and
  * merging outer PathOption to PathData.
  */
-export const formatPath = (activePath: ActivePath, options: PathOption = {}): PathData[] | ActiveFn => {
+export const formatPath = (activePath?: ActivePath, options: PathOption = {}): PathData[] | ActiveFn => {
+  if (!activePath) {
+    return () => true;
+  }
+
   if (isFunction(activePath)) {
     return activePath;
   }
+
   const string2ObjectPath = (pathData: string | PathData): PathData => {
     const objectPath = (isObject<object>(pathData)
       ? pathData
