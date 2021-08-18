@@ -14,7 +14,7 @@ describe('AppRouter', () => {
   const umdSourceWithSetLibrary = fs.readFileSync(path.resolve(__dirname, './umd-setlibrary-sample.js'));
   beforeEach(() => {
     (fetch as FetchMock).resetMocks();
-    setCache('root', true);
+    setCache('basename', '');
   });
 
   test('app-basename-default', async () => {
