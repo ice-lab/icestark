@@ -1,4 +1,4 @@
-import type { PathData, AppRoutePath, ActiveFn } from './checkActive';
+import type { PathData, AppRoutePath, ActiveFn, ActivePath } from './checkActive';
 
 export const isDev = process.env.NODE_ENV === 'development';
 
@@ -61,6 +61,11 @@ export const isFunction = (value: unknown): value is Function => {
  * Checks if value is a plain object.
  */
 export const isObject = checkTypes('Object');
+
+/**
+ * Checks if value is underfined.
+ */
+export const isUndefined = checkTypes('Undefined');
 
 /**
  * convert path to unique string.
@@ -127,4 +132,20 @@ export const mergeFrameworkBaseToPath = (path: PathData[] | ActiveFn, frameworkB
     }));
   }
   return path;
+};
+
+/**
+ * Check basename should set or not. Especially, one may use `createMicroApp` without `activePath` and
+ * `basename` setting.
+ */
+export const shouldSetBasename = (activePath?: ActivePath, basenmae?: string): activePath is AppRoutePath => {
+  if (isFunction(activePath)) {
+    return false;
+  }
+
+  if (isUndefined(activePath) && isUndefined(basenmae)) {
+    return false;
+  }
+
+  return true;
 };

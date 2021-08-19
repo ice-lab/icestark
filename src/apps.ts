@@ -14,7 +14,7 @@ import {
 import { setCache } from './util/cache';
 import { loadBundle } from './util/loader';
 import { getLifecyleByLibrary, getLifecyleByRegister } from './util/getLifecycle';
-import { mergeFrameworkBaseToPath, getAppBasename, isFunction } from './util/helpers';
+import { mergeFrameworkBaseToPath, getAppBasename, isFunction, shouldSetBasename } from './util/helpers';
 import globalConfiguration from './util/globalConfiguration';
 import type { StartConfiguration } from './util/globalConfiguration';
 
@@ -261,7 +261,7 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
 
     const { basename: frameworkBasename } = userConfiguration;
 
-    if (!isFunction(activePath)) {
+    if (shouldSetBasename(activePath, basename)) {
       setCache('basename', getAppBasename(activePath, frameworkBasename, basename));
     }
 
