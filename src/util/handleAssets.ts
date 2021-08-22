@@ -15,6 +15,7 @@ const STYLESHEET_LINK_TYPE = 'stylesheet';
 
 const cachedScriptsContent: object = {};
 const cachedStyleContent: object = {};
+const cachedProcessedContent: object = {};
 
 const defaultFetch = window?.fetch.bind(window);
 
@@ -340,7 +341,10 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
 
   const domContent = (new DOMParser()).parseFromString(html.replace(COMMENT_REGEX, ''), 'text/html');
 
-  if (entry) {
+  /**
+  * If `<base>` is alread exists.
+  */
+  if (entry && !domContent.getElementsByTagName('base').length) {
     // add base URI for absolute resource. see more https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
     const base = document.createElement('base');
     base.href = entry;
@@ -402,8 +406,6 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
   };
 }
 
-const cachedProcessedContent: object = {};
-
 export async function getEntryAssets({
   root,
   entry,
@@ -420,9 +422,10 @@ export async function getEntryAssets({
   fetch?: Fetch;
   assertsCached?: boolean;
 }) {
-  let cachedContent = cachedProcessedContent[assetsCacheKey];
+  const cachedContent = cachedProcessedContent[assetsCacheKey];
+  let htmlContent = entryContent;
+
   if (!cachedContent) {
-    let htmlContent = entryContent;
     if (!htmlContent && entry) {
       if (!fetch) {
         warn('Current environment does not support window.fetch, please use custom fetch');
@@ -431,20 +434,18 @@ export async function getEntryAssets({
         );
       }
 
-      const res = await fetch(entry);
-      htmlContent = await res.text();
+      htmlContent = await fetch(entry).then((res) => res.text());
     }
-    cachedContent = processHtml(htmlContent, entry || href);
-    cachedProcessedContent[assetsCacheKey] = cachedContent;
+    cachedProcessedContent[assetsCacheKey] = htmlContent;
   }
 
-  const { html } = cachedContent;
+  const { html, assets } = processHtml(cachedContent ?? htmlContent, entry || href);
 
   if (root) {
     root.appendChild(html);
   }
 
-  return cachedContent.assets;
+  return assets;
 }
 
 export function getAssetsNode(): Array<HTMLStyleElement|HTMLScriptElement> {

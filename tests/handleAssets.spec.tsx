@@ -297,6 +297,8 @@ describe('getEntryAssets', () => {
       assetsCacheKey: '/test',
     });
 
+    console.log('fsfsfsfsdf', assets)
+
     expect(assets).toStrictEqual({
       cssList: [
         {
