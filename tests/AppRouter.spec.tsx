@@ -14,7 +14,7 @@ describe('AppRouter', () => {
   const umdSourceWithSetLibrary = fs.readFileSync(path.resolve(__dirname, './umd-setlibrary-sample.js'));
   beforeEach(() => {
     (fetch as FetchMock).resetMocks();
-    setCache('root', true);
+    setCache('basename', '');
   });
 
   test('app-basename-default', async () => {
@@ -42,6 +42,8 @@ describe('AppRouter', () => {
     window.history.pushState({}, 'test', '/seller/detail');
     await delay(1000);
     expect(container.innerHTML).toContain('商家详情')
+
+    unmount();
   })
 
   test('app-basename-custom', async () => {
