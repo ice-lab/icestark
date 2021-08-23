@@ -45,7 +45,10 @@ export default class MicroModule extends React.Component<any, State> {
   }
 
   componentDidUpdate(prevProps) {
-    if (!shallowCompare(prevProps.moduleInfo || {}, this.props.moduleInfo || {})) {
+    const { moduleInfo: preModuleInfo = {}, ...preRest } = prevProps;
+    const { moduleInfo: curModuleInfo = {}, ...curRest } = this.props;
+
+    if (!shallowCompare(preModuleInfo, curModuleInfo) || !shallowCompare(preRest, curRest)) {
       this.mountModule();
     }
   }
