@@ -234,7 +234,7 @@ export function getUrlAssets(urls: string | string[]) {
     }
   });
 
-  return { jsList, cssList };
+  return removeDuplicateResources({ jsList, cssList });
 }
 
 export function fetchScripts(jsList: Asset[], fetch: Fetch = defaultFetch) {
@@ -332,6 +332,26 @@ export function replaceNodeWithComment(node: HTMLElement, comment: string): void
   }
 }
 
+export function removeDuplicateResources(assets: Assets): Assets {
+  const getExternalContent = (type: 'script' | 'link') => {
+    const urlAlias = type === 'script' ? 'src' : 'href';
+
+    return Array.from(document.getElementsByTagName(type))
+      .filter((item) => item[urlAlias] && item.getAttribute(PREFIX) === STATIC)
+      .map((item) => item[urlAlias]);
+  };
+
+  const includes = (externalContent: string[]) => (asset: Asset) => asset.type === AssetTypeEnum.INLINE || !externalContent.includes(asset.content);
+
+  const externalScriptContent = getExternalContent('script');
+  const externalStyleContent = getExternalContent('link');
+
+  return {
+    jsList: assets.jsList.filter(includes(externalScriptContent)),
+    cssList: assets.cssList.filter(includes(externalStyleContent)),
+  };
+}
+
 /**
  * html -> { html: processedHtml, assets: processedAssets }
  */
@@ -395,10 +415,10 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
 
   return {
     html: domContent.getElementsByTagName('html')[0],
-    assets: {
+    assets: removeDuplicateResources({
       jsList: processedJSAssets,
       cssList: processedCSSAssets,
-    },
+    }),
   };
 }
 
