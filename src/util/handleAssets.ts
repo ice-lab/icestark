@@ -68,6 +68,8 @@ export function appendCSS(
 
     if (type && type === AssetTypeEnum.INLINE) {
       const styleElement: HTMLStyleElement = document.createElement('style');
+      styleElement.id = id;
+      styleElement.setAttribute(PREFIX, DYNAMIC);
       styleElement.innerHTML = content;
       root.appendChild(styleElement);
       resolve();
@@ -540,10 +542,26 @@ export function cacheAssets(cacheKey: string): void {
  * @export
  * @param {Assets} assets
  */
-export async function loadAndAppendCssAssets(assets: Assets) {
+export async function loadAndAppendCssAssets(assets: Assets, {
+  cache = false,
+  fetch = defaultFetch,
+}: {
+  cache?: boolean;
+  fetch?: Fetch;
+}) {
   const cssRoot: HTMLElement = document.getElementsByTagName('head')[0];
 
   const { cssList } = assets;
+
+  if (cache) {
+    const cssContents = await fetchStyles(cssList, fetch);
+
+    cssContents.forEach((content, index) => appendCSS(
+      cssRoot,
+      { content, type: AssetTypeEnum.INLINE }, `${PREFIX}-css-${index}`,
+    ));
+    return;
+  }
 
   // load css content
   await Promise.all(

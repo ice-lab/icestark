@@ -180,11 +180,17 @@ export async function loadAppModule(appConfig: AppConfig) {
   * `umd` is a deprecated field, which indicates "an umd javascript bundle, acquired by fetch".
   */
   if (appConfig.umd || appConfig.loadScriptMode === 'fetch') {
-    await loadAndAppendCssAssets(appAssets);
+    await loadAndAppendCssAssets(appAssets, {
+      cache: true,
+      fetch,
+    });
     lifecycle = await loadBundle(appAssets.jsList, appSandbox);
   } else {
     await Promise.all([
-      loadAndAppendCssAssets(appAssets),
+      loadAndAppendCssAssets(appAssets, {
+        cache: appSandbox && !appSandbox.sandboxDisabled,
+        fetch,
+      }),
       loadAndAppendJsAssets(appAssets, { sandbox: appSandbox, fetch, scriptAttributes }),
     ]);
 
@@ -285,7 +291,13 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
       }
     } else if (appConfig.status === UNMOUNTED) {
       if (!appConfig.cached) {
-        await loadAndAppendCssAssets(appConfig.appAssets || { cssList: [], jsList: [] });
+        await loadAndAppendCssAssets(
+          appConfig.appAssets || { cssList: [], jsList: [] },
+          {
+            cache: !!((appConfig.loadScriptMode === 'fetch') || appConfig.sandbox || appConfig.umd),
+            fetch: userConfiguration.fetch,
+          },
+        );
       }
       await mountMicroApp(appConfig.name);
     } else if (appConfig.status === NOT_MOUNTED) {
