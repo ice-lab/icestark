@@ -376,7 +376,7 @@ describe('appendAssets', () => {
       'http://icestark.com/css/index.css',
       'http://icestark.com/js/test1.js',
     ]);
-    Promise.all([loadAndAppendCssAssets(assets), loadAndAppendJsAssets(assets, {
+    Promise.all([loadAndAppendCssAssets(assets, {}), loadAndAppendJsAssets(assets, {
       scriptAttributes: ['crossorigin=anonymous', 'nomodule=false', 'src=http://xxxx.js']
     })])
       .then(() => {
@@ -417,7 +417,7 @@ describe('appendAssets', () => {
     const assets = getUrlAssets([
       'http://icestark.com/js/index.js'
     ]);
-    Promise.all([loadAndAppendCssAssets(assets), loadAndAppendJsAssets(assets, {
+    Promise.all([loadAndAppendCssAssets(assets, {}), loadAndAppendJsAssets(assets, {
       scriptAttributes: (url) => {
         if (url.includes('//icestark.com/js/index.js')) {
           return ['crossorigin=anonymous']
@@ -450,7 +450,7 @@ describe('appendAssets', () => {
       'http://icestark.com/css/index.css',
       'http://icestark.com/js/test1.js',
     ]);
-    Promise.all([loadAndAppendCssAssets(assets), loadAndAppendJsAssets(assets, {})])
+    Promise.all([loadAndAppendCssAssets(assets, {}), loadAndAppendJsAssets(assets, {})])
   });
 
   test('recordAssets', () => {
