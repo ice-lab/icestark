@@ -12,10 +12,11 @@ import {
   Assets,
 } from './util/handleAssets';
 import { setCache } from './util/cache';
-import { loadBundle } from './util/loader';
+import { loadBundle, loadESModule } from './util/loader';
 import { getLifecyleByLibrary, getLifecyleByRegister } from './util/getLifecycle';
-import { mergeFrameworkBaseToPath, getAppBasename, isFunction, shouldSetBasename } from './util/helpers';
+import { mergeFrameworkBaseToPath, getAppBasename, shouldSetBasename } from './util/helpers';
 import globalConfiguration from './util/globalConfiguration';
+
 import type { StartConfiguration } from './util/globalConfiguration';
 
 export type ScriptAttributes = string[] | ((url: string) => string[]);
@@ -51,7 +52,7 @@ export interface BaseConfig extends PathOption {
    * @deprecated
    */
   umd?: boolean;
-  loadScriptMode?: 'fetch' | 'script';
+  loadScriptMode?: 'fetch' | 'script' | 'import';
   checkActive?: (url: string) => boolean;
   appAssets?: Assets;
   props?: object;
@@ -163,7 +164,7 @@ export async function loadAppModule(appConfig: AppConfig) {
   let lifecycle: ModuleLifeCycle = {};
   onLoadingApp(appConfig);
   const appSandbox = createSandbox(appConfig.sandbox) as Sandbox;
-  const { url, container, entry, entryContent, name, scriptAttributes = [] } = appConfig;
+  const { url, container, entry, entryContent, name, scriptAttributes = [], loadScriptMode, umd } = appConfig;
   const appAssets = url ? getUrlAssets(url) : await getEntryAssets({
     root: container,
     entry,
@@ -179,20 +180,31 @@ export async function loadAppModule(appConfig: AppConfig) {
   * Whereas js assets may formated as `umd` or `self-executing js bundle`.
   * `umd` is a deprecated field, which indicates "an umd javascript bundle, acquired by fetch".
   */
-  if (appConfig.umd || appConfig.loadScriptMode === 'fetch') {
-    await loadAndAppendCssAssets(appAssets);
-    lifecycle = await loadBundle(appAssets.jsList, appSandbox);
-  } else {
-    await Promise.all([
-      loadAndAppendCssAssets(appAssets),
-      loadAndAppendJsAssets(appAssets, { sandbox: appSandbox, fetch, scriptAttributes }),
-    ]);
-
-    lifecycle =
-      getLifecyleByLibrary() ||
-      getLifecyleByRegister() ||
-      {};
+  switch (loadScriptMode) {
+    case 'import':
+      await loadAndAppendCssAssets(appAssets);
+      lifecycle = await loadESModule(appAssets.jsList);
+      break;
+    case 'fetch':
+      await loadAndAppendCssAssets(appAssets);
+      lifecycle = await loadBundle(appAssets.jsList, appSandbox);
+      break;
+    default:
+      if (umd) {
+        await loadAndAppendCssAssets(appAssets);
+        lifecycle = await loadBundle(appAssets.jsList, appSandbox);
+      } else {
+        await Promise.all([
+          loadAndAppendCssAssets(appAssets),
+          loadAndAppendJsAssets(appAssets, { sandbox: appSandbox, fetch, scriptAttributes }),
+        ]);
+        lifecycle =
+        getLifecyleByLibrary() ||
+        getLifecyleByRegister() ||
+        {};
+      }
   }
+
   if (isEmpty(lifecycle)) {
     console.error('[@ice/stark] microapp should export mount/unmout or register registerAppEnter/registerAppLeave.');
   }

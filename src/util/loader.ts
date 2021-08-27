@@ -1,7 +1,10 @@
 import Sandbox from '@ice/sandbox';
 import { getGlobalProp, noteGlobalProps } from './global';
-import { Asset, fetchScripts } from './handleAssets';
+import { Asset, fetchScripts, AssetTypeEnum } from './handleAssets';
 import { getLifecyleByLibrary, getLifecyleByRegister } from './getLifecycle';
+import { asyncForEach } from './helpers';
+
+
 import type { ModuleLifeCycle } from '../apps';
 
 /**
@@ -65,4 +68,34 @@ export function getGobalWindow(sandbox?: Sandbox) {
   }
   // FIXME: If run in Node environment
   return window;
+}
+
+/**
+ * Load es modules.
+ */
+export async function loadESModule(jsList: Asset[]) {
+  const others = jsList.slice(0, -1);
+  // FIXME: types
+  await asyncForEach(others, (js: any): any => {
+    if (js.type === AssetTypeEnum.INLINE) {
+      // FIXME: how handle inline
+    } else {
+      import(js.content);
+    }
+  });
+
+  const lastScript = jsList.slice(-1)[0];
+
+  // FIXME: show useful infos
+  if (lastScript && lastScript.type === AssetTypeEnum.EXTERNAL) {
+    const { mount, unmount } = await import(lastScript.content);
+
+    if (mount && unmount) {
+      return {
+        mount,
+        unmount,
+      };
+    }
+  }
+  return null;
 }
