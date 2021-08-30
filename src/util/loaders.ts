@@ -75,8 +75,6 @@ export function getGobalWindow(sandbox?: Sandbox) {
  * Load es modules.
  */
 export async function loadESModule(jsList: Asset[]) {
-  console.log('fsdfsf');
-
   const others = jsList.slice(0, -1);
   await asyncForEach(others, async (js) => {
     if (js.type === AssetTypeEnum.INLINE) {
