@@ -175,11 +175,6 @@ export async function loadAppModule(appConfig: AppConfig) {
   });
   updateAppConfig(appConfig.name, { appAssets, appSandbox });
 
-  /**
-  * we support two ways to acquire javascript assets, `fetch` or `<script />` element.
-  * Whereas js assets may formated as `umd` or `self-executing js bundle`.
-  * `umd` is a deprecated field, which indicates "an umd javascript bundle, acquired by fetch".
-  */
   switch (loadScriptMode) {
     case 'import':
       await loadAndAppendCssAssets(appAssets);
