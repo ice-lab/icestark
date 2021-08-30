@@ -6,7 +6,6 @@ import { asyncForEach } from './helpers';
 
 import type { ModuleLifeCycle } from '../apps';
 
-
 function executeScripts(scripts: string[], sandbox?: Sandbox, globalwindow: Window = window) {
   let libraryExport = null;
 

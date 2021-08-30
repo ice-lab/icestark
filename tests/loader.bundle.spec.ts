@@ -3,7 +3,7 @@ import * as path from 'path';
 import { FetchMock } from 'jest-fetch-mock';
 import Sandbox from '@ice/sandbox';
 import { AssetTypeEnum } from '../src/util/handleAssets';
-import { loadBundle } from '../src/util/loader';
+import { loadBundle } from '../src/util/loaders';
 import { setCache } from '../src/util/cache';
 
 describe('loader', () => {
