@@ -12,7 +12,7 @@ import {
   Assets,
 } from './util/handleAssets';
 import { setCache } from './util/cache';
-import { loadBundle, loadESModule } from './util/loader';
+import { loadBundle, loadESModule } from './util/loaders';
 import { getLifecyleByLibrary, getLifecyleByRegister } from './util/getLifecycle';
 import { mergeFrameworkBaseToPath, getAppBasename, shouldSetBasename } from './util/helpers';
 import globalConfiguration from './util/globalConfiguration';
@@ -175,7 +175,7 @@ export async function loadAppModule(appConfig: AppConfig) {
   });
   updateAppConfig(appConfig.name, { appAssets, appSandbox });
 
-  /*
+  /**
   * we support two ways to acquire javascript assets, `fetch` or `<script />` element.
   * Whereas js assets may formated as `umd` or `self-executing js bundle`.
   * `umd` is a deprecated field, which indicates "an umd javascript bundle, acquired by fetch".

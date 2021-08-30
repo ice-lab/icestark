@@ -4,42 +4,43 @@ import { Asset, fetchScripts, AssetTypeEnum } from './handleAssets';
 import { getLifecyleByLibrary, getLifecyleByRegister } from './getLifecycle';
 import { asyncForEach } from './helpers';
 
-
 import type { ModuleLifeCycle } from '../apps';
+
+
+function executeScripts(scripts: string[], sandbox?: Sandbox, globalwindow: Window = window) {
+  let libraryExport = null;
+
+  for (let idx = 0; idx < scripts.length; ++idx) {
+    const lastScript = idx === scripts.length - 1;
+    if (lastScript) {
+      noteGlobalProps(globalwindow);
+    }
+
+    if (sandbox?.execScriptInSandbox) {
+      sandbox.execScriptInSandbox(scripts[idx]);
+    } else {
+      // https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/eval
+      // eslint-disable-next-line no-eval
+      (0, eval)(scripts[idx]);
+    }
+
+    if (lastScript) {
+      libraryExport = getGlobalProp(globalwindow);
+    }
+  }
+
+  return libraryExport;
+}
 
 /**
  * load bundle
- *
- * @param {Asset[]} jsList
- * @param {Sandbox} [sandbox]
  */
 export function loadBundle(jsList: Asset[], sandbox?: Sandbox) {
   return fetchScripts(jsList)
     .then((scriptTexts) => {
       const globalwindow = getGobalWindow(sandbox);
-      let libraryExport = null;
-      // exeute script in order
-      try {
-        scriptTexts.forEach((script, index) => {
-          const lastScript = index === scriptTexts.length - 1;
-          if (lastScript) {
-            noteGlobalProps(globalwindow);
-          }
-          // check sandbox
-          if (sandbox?.execScriptInSandbox) {
-            sandbox.execScriptInSandbox(script);
-          } else {
-            // https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/eval
-            // eslint-disable-next-line no-eval
-            (0, eval)(script);
-          }
-          if (lastScript) {
-            libraryExport = getGlobalProp(globalwindow);
-          }
-        });
-      } catch (err) {
-        console.error(err);
-      }
+
+      const libraryExport = executeScripts(scriptTexts, sandbox, globalwindow);
 
       let moduleInfo = getLifecyleByLibrary() || getLifecyleByRegister();
       if (!moduleInfo) {
@@ -74,21 +75,24 @@ export function getGobalWindow(sandbox?: Sandbox) {
  * Load es modules.
  */
 export async function loadESModule(jsList: Asset[]) {
+  console.log('fsdfsf');
+
   const others = jsList.slice(0, -1);
-  // FIXME: types
-  await asyncForEach(others, (js: any): any => {
+  await asyncForEach(others, async (js) => {
     if (js.type === AssetTypeEnum.INLINE) {
-      // FIXME: how handle inline
+      executeScripts([js.content]);
     } else {
-      import(js.content);
+      await import(/* webpackIgnore: true */js.content);
     }
   });
 
+  /**
+  * The last script is supposed to be the entry point which returns lifecycles.
+  */
   const lastScript = jsList.slice(-1)[0];
 
-  // FIXME: show useful infos
   if (lastScript && lastScript.type === AssetTypeEnum.EXTERNAL) {
-    const { mount, unmount } = await import(lastScript.content);
+    const { mount, unmount } = await import(/* webpackIgnore: true */lastScript.content);
 
     if (mount && unmount) {
       return {

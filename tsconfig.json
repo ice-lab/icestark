@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
     "target": "es5",
+    "module": "esnext",
+    "moduleResolution": "Node",
     "jsx": "react",
     "experimentalDecorators": true,
     "declaration": true,
