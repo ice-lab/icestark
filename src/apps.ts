@@ -164,7 +164,7 @@ export async function loadAppModule(appConfig: AppConfig) {
   let lifecycle: ModuleLifeCycle = {};
   onLoadingApp(appConfig);
   const appSandbox = createSandbox(appConfig.sandbox) as Sandbox;
-  const { url, container, entry, entryContent, name, scriptAttributes = [], loadScriptMode, umd } = appConfig;
+  const { url, container, entry, entryContent, name, scriptAttributes = [], umd } = appConfig;
   const appAssets = url ? getUrlAssets(url) : await getEntryAssets({
     root: container,
     entry,
@@ -174,6 +174,11 @@ export async function loadAppModule(appConfig: AppConfig) {
     fetch,
   });
   updateAppConfig(appConfig.name, { appAssets, appSandbox });
+
+  /**
+   * LoadScriptMode has the first priority
+   */
+  const loadScriptMode = appConfig.loadScriptMode ?? (umd ? 'fetch' : 'script');
 
   switch (loadScriptMode) {
     case 'import':
@@ -185,19 +190,14 @@ export async function loadAppModule(appConfig: AppConfig) {
       lifecycle = await loadBundle(appAssets.jsList, appSandbox);
       break;
     default:
-      if (umd) {
-        await loadAndAppendCssAssets(appAssets);
-        lifecycle = await loadBundle(appAssets.jsList, appSandbox);
-      } else {
-        await Promise.all([
-          loadAndAppendCssAssets(appAssets),
-          loadAndAppendJsAssets(appAssets, { sandbox: appSandbox, fetch, scriptAttributes }),
-        ]);
-        lifecycle =
+      await Promise.all([
+        loadAndAppendCssAssets(appAssets),
+        loadAndAppendJsAssets(appAssets, { sandbox: appSandbox, fetch, scriptAttributes }),
+      ]);
+      lifecycle =
         getLifecyleByLibrary() ||
         getLifecyleByRegister() ||
         {};
-      }
   }
 
   if (isEmpty(lifecycle)) {
