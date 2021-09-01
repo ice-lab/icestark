@@ -149,3 +149,14 @@ export const shouldSetBasename = (activePath?: ActivePath, basenmae?: string): a
 
   return true;
 };
+
+/**
+ * Turns concurrent traversing to sequential travsersing.
+ */
+export const asyncForEach = async <T> (arr: T[], callback: (item: T, index: number) => Promise<void>): Promise<void> => {
+  for (let idx = 0; idx < arr.length; ++idx) {
+    // All async promises run sequentially. So disable the following lint.
+    // eslint-disable-next-line no-await-in-loop
+    await callback(arr[idx], idx);
+  }
+};

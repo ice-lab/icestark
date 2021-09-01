@@ -5,8 +5,7 @@ import { unloadMicroApp, BaseConfig, createMicroApp } from './apps';
 import { converArray2String } from './util/helpers';
 import { PathData } from './util/checkActive';
 import { callCapturedEventListeners, resetCapturedEventListeners } from './util/capturedListeners';
-// eslint-disable-next-line import/order
-import isEqual = require('lodash.isequal');
+import * as isEqual from 'lodash.isequal';
 
 interface AppRouteState {
   showComponent: boolean;
