@@ -119,7 +119,7 @@ describe('getComment', () => {
 });
 
 describe('processHtml', () => {
-  test('processHtml', () => {
+  test('processHtml - basic', () => {
     expect(processHtml(undefined).html.innerHTML).toBe('');
 
     const { html, assets: {jsList, cssList} } = processHtml(tempHTML);
@@ -155,7 +155,6 @@ describe('processHtml', () => {
     expect(jsList[5].type).toBe(AssetTypeEnum.EXTERNAL);
     expect(jsList[5].content).toContain('//g.alicdn.com/test.min.js');
 
-
     // script inline assets
     expect(jsList[0].type).toBe(AssetTypeEnum.INLINE);
     expect(jsList[0].content).toContain('console.log()');
@@ -163,7 +162,38 @@ describe('processHtml', () => {
     expect(jsList[4].content).toContain('window.g_config');
 
   });
+
+  test('processHtml - entry', () => {
+    const { html } = processHtml(tempHTML, "https://localhost:3333");
+    const div = document.createElement('div');
+    div.appendChild(html);
+    const content = div.innerHTML;
+
+    expect(content).toContain('<!--link https://localhost:3333/test.css processed by @ice/stark-->');
+    expect(content).toContain('<!--link https://localhost:3333/index.css processed by @ice/stark-->');
+    expect(content).not.toContain('href="/index.css"');
+    expect(content).not.toContain('href="index.css"');
+
+    expect(content).not.toContain('base href="https://localhost:3333"')
+  });
+
+  test('processHtml - baseElement', () => {
+    let localHtml = tempHTML.replace('<head>', '<head> <base href="https://localhost:3334">')
+
+    const { html } = processHtml(localHtml);
+    const div = document.createElement('div');
+    div.appendChild(html);
+    const content = div.innerHTML;
+
+    expect(content).toContain('<!--link https://localhost:3334/test.css processed by @ice/stark-->');
+    expect(content).toContain('<!--link https://localhost:3334/index.css processed by @ice/stark-->');
+    expect(content).not.toContain('href="/index.css"');
+    expect(content).not.toContain('href="index.css"');
+
+    expect(content).not.toContain('base href="https://localhost:3333"')
+  });
 });
+
 
 describe('appendExternalScript', () => {
   test('appendExternalScript -> inline', () => {
@@ -296,8 +326,6 @@ describe('getEntryAssets', () => {
       entry: '//icestark.com',
       assetsCacheKey: '/test',
     });
-
-    console.log('fsfsfsfsdf', assets)
 
     expect(assets).toStrictEqual({
       cssList: [

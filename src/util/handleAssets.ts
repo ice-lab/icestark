@@ -341,14 +341,30 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
 
   const domContent = (new DOMParser()).parseFromString(html.replace(COMMENT_REGEX, ''), 'text/html');
 
-  /**
-  * If `<base>` is alread exists.
-  */
-  if (entry && !domContent.getElementsByTagName('base').length) {
-    // add base URI for absolute resource. see more https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-    const base = document.createElement('base');
-    base.href = entry;
-    domContent.getElementsByTagName('head')[0].appendChild(base);
+  /*
+  * When using DOMParser，the origin of relative path of `<script />` 和 `<link />` is Framwork's origin.
+  * To escape this error, append <base /> element and then remove them to avoid conflict.
+   */
+  if (entry) {
+    const baseElements = domContent.getElementsByTagName('base');
+    const hasBaseElement = baseElements.length;
+
+    if (hasBaseElement) {
+      // <base /> exists
+      for (let i = 0; i < baseElements.length; ++i) {
+        const { href } = baseElements[i];
+        const { origin } = urlParse(href);
+        // If <base />'s href is equal to current location.origin, replace origin to entry.
+        const baseHref = origin === window.location.origin ? href.replace(origin, entry) : href;
+        baseElements[i].href = baseHref;
+      }
+    } else {
+      // add base URI for absolute resource.
+      // see more https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+      const base = document.createElement('base');
+      base.href = entry;
+      domContent.getElementsByTagName('head')[0].appendChild(base);
+    }
   }
 
   // process js assets
@@ -393,8 +409,10 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
 
   if (entry) {
     // remove base node
-    const baseNode = domContent.getElementsByTagName('base')[0];
-    baseNode?.parentNode.removeChild(baseNode);
+    const baseNodes = domContent.getElementsByTagName('base');
+    for (let i = 0; i < baseNodes.length; ++i) {
+      baseNodes[i]?.parentNode.removeChild(baseNodes[i]);
+    }
   }
 
   return {
