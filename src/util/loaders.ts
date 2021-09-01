@@ -71,32 +71,32 @@ export function getGobalWindow(sandbox?: Sandbox) {
 }
 
 /**
- * Load es modules.
+ * Load es modules and get lifecycles sequentially.
+ * `import` returns a promise for the module namespace object of the requested module which means
+ * + non-export returns empty object
+ * + default export return object with `default` key
  */
 export async function loadESModule(jsList: Asset[]): Promise<null | ModuleLifeCycle> {
-  const others = jsList.slice(0, -1);
-  await asyncForEach(others, async (js) => {
+  let mount = null;
+  let unmount = null;
+  await asyncForEach(jsList, async (js) => {
     if (js.type === AssetTypeEnum.INLINE) {
       executeScripts([js.content]);
     } else {
-      await import(/* webpackIgnore: true */js.content);
+      const { mount: maybeMount, unmount: maybeUnmount } = await import(/* webpackIgnore: true */js.content);
+      if (maybeMount && maybeUnmount) {
+        mount = maybeMount;
+        unmount = maybeUnmount;
+      }
     }
   });
 
-  /**
-  * The last script is supposed to be the entry point which returns lifecycles.
-  */
-  const lastScript = jsList.slice(-1)[0];
-
-  if (lastScript && lastScript.type === AssetTypeEnum.EXTERNAL) {
-    const { mount, unmount } = await import(/* webpackIgnore: true */lastScript.content);
-
-    if (mount && unmount) {
-      return {
-        mount,
-        unmount,
-      };
-    }
+  if (mount && unmount) {
+    return {
+      mount,
+      unmount,
+    };
   }
+
   return null;
 }
