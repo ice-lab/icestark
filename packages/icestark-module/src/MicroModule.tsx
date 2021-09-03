@@ -51,9 +51,8 @@ export default class MicroModule extends React.Component<any, State> {
   }
 
   componentWillUnmount() {
-    const { loading } = this.state;
     try {
-      if (!loading && !this.validateRender()) {
+      if (!this.validateRender()) {
         unmoutModule(this.moduleInfo, this.mountNode);
       }
       this.unmout = true;
