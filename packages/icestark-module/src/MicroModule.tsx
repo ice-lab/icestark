@@ -53,7 +53,7 @@ export default class MicroModule extends React.Component<any, State> {
   componentWillUnmount() {
     const { loading } = this.state;
     try {
-      if (loading && !this.validateRender()) {
+      if (!loading && !this.validateRender()) {
         unmoutModule(this.moduleInfo, this.mountNode);
       }
       this.unmout = true;
@@ -96,7 +96,8 @@ export default class MicroModule extends React.Component<any, State> {
       try {
         const { mount, component } = await loadModule(this.moduleInfo, sandbox);
         const lifecycleMount = mount;
-        this.setState({ loading: false });
+
+        !this.unmout && this.setState({ loading: false });
         if (lifecycleMount && component) {
           if (this.unmout) {
             unmoutModule(this.moduleInfo, this.mountNode);
