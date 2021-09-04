@@ -1,8 +1,9 @@
 import Sandbox from '@ice/sandbox';
 import { getGlobalProp, noteGlobalProps } from './global';
-import { Asset, fetchScripts, AssetTypeEnum } from './handleAssets';
+import { Asset, fetchScripts, AssetTypeEnum, appendExternalScript } from './handleAssets';
 import { getLifecyleByLibrary, getLifecyleByRegister } from './getLifecycle';
 import { asyncForEach } from './helpers';
+import { PREFIX } from './constant';
 
 import type { ModuleLifeCycle } from '../apps';
 
@@ -34,7 +35,7 @@ function executeScripts(scripts: string[], sandbox?: Sandbox, globalwindow: Wind
 /**
  * load bundle
  */
-export function loadBundle(jsList: Asset[], sandbox?: Sandbox) {
+export function loadScriptByFetch(jsList: Asset[], sandbox?: Sandbox) {
   return fetchScripts(jsList)
     .then((scriptTexts) => {
       const globalwindow = getGobalWindow(sandbox);
@@ -76,12 +77,14 @@ export function getGobalWindow(sandbox?: Sandbox) {
  * + non-export returns empty object
  * + default export return object with `default` key
  */
-export async function loadESModule(jsList: Asset[]): Promise<null | ModuleLifeCycle> {
+export async function loadScriptByImport(jsList: Asset[]): Promise<null | ModuleLifeCycle> {
   let mount = null;
   let unmount = null;
-  await asyncForEach(jsList, async (js) => {
+  await asyncForEach(jsList, async (js, index) => {
     if (js.type === AssetTypeEnum.INLINE) {
-      executeScripts([js.content]);
+      await appendExternalScript(js, {
+        id: `${PREFIX}-js-module-${index}`,
+      });
     } else {
       const { mount: maybeMount, unmount: maybeUnmount } = await import(/* webpackIgnore: true */js.content);
       if (maybeMount && maybeUnmount) {

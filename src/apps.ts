@@ -12,7 +12,7 @@ import {
   Assets,
 } from './util/handleAssets';
 import { setCache } from './util/cache';
-import { loadBundle, loadESModule } from './util/loaders';
+import { loadScriptByFetch, loadScriptByImport } from './util/loaders';
 import { getLifecyleByLibrary, getLifecyleByRegister } from './util/getLifecycle';
 import { mergeFrameworkBaseToPath, getAppBasename, shouldSetBasename } from './util/helpers';
 import globalConfiguration from './util/globalConfiguration';
@@ -183,11 +183,11 @@ export async function loadAppModule(appConfig: AppConfig) {
   switch (loadScriptMode) {
     case 'import':
       await loadAndAppendCssAssets(appAssets);
-      lifecycle = await loadESModule(appAssets.jsList);
+      lifecycle = await loadScriptByImport(appAssets.jsList);
       break;
     case 'fetch':
       await loadAndAppendCssAssets(appAssets);
-      lifecycle = await loadBundle(appAssets.jsList, appSandbox);
+      lifecycle = await loadScriptByFetch(appAssets.jsList, appSandbox);
       break;
     default:
       await Promise.all([

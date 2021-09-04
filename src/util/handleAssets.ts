@@ -29,6 +29,7 @@ export enum AssetCommentEnum {
 }
 
 export interface Asset {
+  module?: boolean;
   type: AssetTypeEnum;
   content: string;
 }
@@ -117,10 +118,16 @@ export function appendCSS(
  * append custom attribute for element
  */
 function setAttributeForScriptNode(element: HTMLScriptElement, {
+  module,
   id,
   src,
   scriptAttributes,
-}: { id: string; src: string; scriptAttributes: ScriptAttributes }) {
+}: {
+  module: boolean;
+  id: string;
+  src: string;
+  scriptAttributes: ScriptAttributes;
+}) {
   /*
   * stamped by icestark for recycle when needed.
   */
@@ -128,7 +135,7 @@ function setAttributeForScriptNode(element: HTMLScriptElement, {
   element.id = id;
 
 
-  element.type = 'text/javascript';
+  element.type = module ? 'module' : 'text/javascript';
   element.src = src;
 
   /**
@@ -179,25 +186,36 @@ function setAttributeForScriptNode(element: HTMLScriptElement, {
 /**
  * Create script element (without inline) and append to root
  */
-export function appendExternalScript(
-  root: HTMLElement | ShadowRoot,
-  asset: string | Asset,
-  scriptAttributes: ScriptAttributes,
-  id: string,
-): Promise<void> {
+export function appendExternalScript(asset: string | Asset,
+  {
+    root = document.getElementsByTagName('head')[0],
+    scriptAttributes = [],
+    id,
+  }: {
+    root?: HTMLElement | ShadowRoot;
+    scriptAttributes?: ScriptAttributes;
+    id: string;
+  }): Promise<void> {
   return new Promise<void>((resolve, reject) => {
-    const { type, content } = (asset as Asset);
+    const { type, content, module } = (asset as Asset);
     if (!root) reject(new Error(`no root element for js assert: ${content || asset}`));
 
     const element: HTMLScriptElement = document.createElement('script');
     // inline script
     if (type && type === AssetTypeEnum.INLINE) {
       element.innerHTML = content;
+      module && (element.type = 'module');
       root.appendChild(element);
+
+      /*
+      * For inline script never fire onload event, resolve it immediately.
+      */
       resolve();
       return;
     }
+
     setAttributeForScriptNode(element, {
+      module,
       id,
       src: content || (asset as string),
       scriptAttributes,
@@ -358,6 +376,7 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
     replaceNodeWithComment(script, getComment('script', inlineScript ? 'inline' : script.src, commentType));
 
     return {
+      module: script.type === 'module',
       type: inlineScript ? AssetTypeEnum.INLINE : AssetTypeEnum.EXTERNAL,
       content: inlineScript ? script.text : externalSrc,
     };
@@ -387,11 +406,11 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
       }),
   ];
 
-  if (entry) {
-    // remove base node
-    const baseNode = domContent.getElementsByTagName('base')[0];
-    baseNode?.parentNode.removeChild(baseNode);
-  }
+  // if (entry) {
+  //   // remove base node
+  //   const baseNode = domContent.getElementsByTagName('base')[0];
+  //   baseNode?.parentNode.removeChild(baseNode);
+  // }
 
   return {
     html: domContent.getElementsByTagName('html')[0],
@@ -590,13 +609,21 @@ export async function loadAndAppendJsAssets(
   if (hasInlineScript) {
     // make sure js assets loaded in order if has inline scripts
     await jsList.reduce((chain, asset, index) => {
-      return chain.then(() => appendExternalScript(jsRoot, asset, scriptAttributes, `${PREFIX}-js-${index}`));
+      return chain.then(() => appendExternalScript(asset, {
+        root: jsRoot,
+        scriptAttributes,
+        id: `${PREFIX}-js-${index}`,
+      }));
     }, Promise.resolve());
     return;
   }
 
   await Promise.all(
-    jsList.map((asset, index) => appendExternalScript(jsRoot, asset, scriptAttributes, `${PREFIX}-js-${index}`)),
+    jsList.map((asset, index) => appendExternalScript(asset, {
+      root: jsRoot,
+      scriptAttributes,
+      id: `${PREFIX}-js-${index}`,
+    })),
   );
 }
 
