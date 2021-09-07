@@ -124,6 +124,12 @@ export default class Sandbox {
           // eslint-disable-next-line no-prototype-builtins
           return (key: PropertyKey) => !!target[key] || originalWindow.hasOwnProperty(key);
         }
+        
+        // search from injection
+        const injectionValue = injection && injection[p];
+        if (injectionValue) {
+          return injectionValue;
+        }
 
         const targetValue = target[p];
         /**
@@ -132,12 +138,6 @@ export default class Sandbox {
         if (targetValue !== undefined) {
           // case of addEventListener, removeEventListener, setTimeout, setInterval setted in sandbox
           return targetValue;
-        }
-
-        // search from injection
-        const injectionValue = injection && injection[p];
-        if (injectionValue) {
-          return injectionValue;
         }
 
         const value = originalWindow[p];
