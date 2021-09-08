@@ -29,6 +29,7 @@ export enum AssetCommentEnum {
 }
 
 export interface Asset {
+  module?: boolean;
   type: AssetTypeEnum;
   content: string;
 }
@@ -117,10 +118,16 @@ export function appendCSS(
  * append custom attribute for element
  */
 function setAttributeForScriptNode(element: HTMLScriptElement, {
+  module,
   id,
   src,
   scriptAttributes,
-}: { id: string; src: string; scriptAttributes: ScriptAttributes }) {
+}: {
+  module: boolean;
+  id: string;
+  src: string;
+  scriptAttributes: ScriptAttributes;
+}) {
   /*
   * stamped by icestark for recycle when needed.
   */
@@ -128,7 +135,7 @@ function setAttributeForScriptNode(element: HTMLScriptElement, {
   element.id = id;
 
 
-  element.type = 'text/javascript';
+  element.type = module ? 'module' : 'text/javascript';
   element.src = src;
 
   /**
@@ -179,25 +186,35 @@ function setAttributeForScriptNode(element: HTMLScriptElement, {
 /**
  * Create script element (without inline) and append to root
  */
-export function appendExternalScript(
-  root: HTMLElement | ShadowRoot,
-  asset: string | Asset,
-  scriptAttributes: ScriptAttributes,
-  id: string,
-): Promise<void> {
+export function appendExternalScript(asset: string | Asset,
+  {
+    id,
+    root = document.getElementsByTagName('head')[0],
+    scriptAttributes = [],
+  }: {
+    id: string;
+    root?: HTMLElement | ShadowRoot;
+    scriptAttributes?: ScriptAttributes;
+  }): Promise<void> {
   return new Promise<void>((resolve, reject) => {
-    const { type, content } = (asset as Asset);
-    if (!root) reject(new Error(`no root element for js assert: ${content || asset}`));
+    const { type, content, module } = (asset as Asset);
 
     const element: HTMLScriptElement = document.createElement('script');
     // inline script
     if (type && type === AssetTypeEnum.INLINE) {
       element.innerHTML = content;
+      module && (element.type = 'module');
       root.appendChild(element);
+
+      /*
+      * For inline script never fire onload event, resolve it immediately.
+      */
       resolve();
       return;
     }
+
     setAttributeForScriptNode(element, {
+      module,
       id,
       src: content || (asset as string),
       scriptAttributes,
@@ -323,13 +340,42 @@ export function isAbsoluteUrl(url: string): boolean {
   return (/^(https?:)?\/\/.+/).test(url);
 }
 
-
+/**
+ * Replace processed nodes to comment node.
+ */
 export function replaceNodeWithComment(node: HTMLElement, comment: string): void {
   if (node?.parentNode) {
     const commentNode = document.createComment(comment);
     node.parentNode.appendChild(commentNode);
     node.parentNode.removeChild(node);
   }
+}
+
+/**
+* Deal with inline script for es module, like `import refresh from '/@refresh.js'` should be replaced
+* by absolute one `import refresh from '/@refresh.js'`.
+* Once we hoped ShadowDOM can help, but it's impossible to customize url of shadow root for now.
+* https://github.com/WICG/webcomponents/issues/581
+*/
+export function replaceImportIdentifier(text: string, base: string) {
+  let localText = text;
+  const importRegex = /import\s+?(?:(?:(?:[\w*\s{},]*)\s+from\s+?)|)(?:(?:"(.*?)")|(?:'(.*?)'))[\s]*?(?:;|$|)/;
+  const matches = text.match(new RegExp(importRegex, 'g'));
+
+  if (matches) {
+    matches.forEach((matchStr) => {
+      const [, doubleQuoteImporter, singleQuoteImporter] = matchStr.match(importRegex);
+      const identifier = doubleQuoteImporter || singleQuoteImporter;
+
+      if (!isAbsoluteUrl(identifier)) {
+        const absoluteIdentifier = getUrl(base, identifier);
+        const replacedImportStatement = matchStr.replace(identifier, absoluteIdentifier);
+
+        localText = text.replace(matchStr, replacedImportStatement);
+      }
+    });
+  }
+  return localText;
 }
 
 /**
@@ -351,6 +397,7 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
   const scripts = Array.from(domContent.getElementsByTagName('script'));
   const processedJSAssets = scripts.map((script) => {
     const inlineScript = script.src === EMPTY_STRING;
+    const module = script.type === 'module';
 
     const externalSrc = !inlineScript && (isAbsoluteUrl(script.src) ? script.src : getUrl(entry, script.src));
 
@@ -358,8 +405,16 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
     replaceNodeWithComment(script, getComment('script', inlineScript ? 'inline' : script.src, commentType));
 
     return {
+      module,
       type: inlineScript ? AssetTypeEnum.INLINE : AssetTypeEnum.EXTERNAL,
-      content: inlineScript ? script.text : externalSrc,
+      content:
+        inlineScript
+          ? (
+            // If entryContent provided, skip this.
+            (module && entry)
+              ? replaceImportIdentifier(script.text, entry)
+              : script.text)
+          : externalSrc,
     };
   });
 
@@ -590,13 +645,21 @@ export async function loadAndAppendJsAssets(
   if (hasInlineScript) {
     // make sure js assets loaded in order if has inline scripts
     await jsList.reduce((chain, asset, index) => {
-      return chain.then(() => appendExternalScript(jsRoot, asset, scriptAttributes, `${PREFIX}-js-${index}`));
+      return chain.then(() => appendExternalScript(asset, {
+        root: jsRoot,
+        scriptAttributes,
+        id: `${PREFIX}-js-${index}`,
+      }));
     }, Promise.resolve());
     return;
   }
 
   await Promise.all(
-    jsList.map((asset, index) => appendExternalScript(jsRoot, asset, scriptAttributes, `${PREFIX}-js-${index}`)),
+    jsList.map((asset, index) => appendExternalScript(asset, {
+      root: jsRoot,
+      scriptAttributes,
+      id: `${PREFIX}-js-${index}`,
+    })),
   );
 }
 
