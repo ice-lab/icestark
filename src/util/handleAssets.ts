@@ -341,13 +341,42 @@ export function isAbsoluteUrl(url: string): boolean {
   return (/^(https?:)?\/\/.+/).test(url);
 }
 
-
+/**
+ * Replace processed nodes to comment node.
+ */
 export function replaceNodeWithComment(node: HTMLElement, comment: string): void {
   if (node?.parentNode) {
     const commentNode = document.createComment(comment);
     node.parentNode.appendChild(commentNode);
     node.parentNode.removeChild(node);
   }
+}
+
+/**
+* Deal with inline script for es module, like `import refresh from '/@refresh.js'` should be replaced
+* by absolute one `import refresh from '/@refresh.js'`.
+* Once we hoped ShadowDOM can help, but it's impossible to customize url of shadow root for now.
+* https://github.com/WICG/webcomponents/issues/581
+*/
+export function replaceImportIdentifier(text: string, base: string) {
+  let localText = text;
+  const importRegex = /import\s+?(?:(?:(?:[\w*\s{},]*)\s+from\s+?)|)(?:(?:"(.*?)")|(?:'(.*?)'))[\s]*?(?:;|$|)/;
+  const matches = text.match(new RegExp(importRegex, 'g'));
+
+  if (matches) {
+    matches.forEach((matchStr) => {
+      const [, doubleQuoteImporter, singleQuoteImporter] = matchStr.match(importRegex);
+      const identifier = doubleQuoteImporter || singleQuoteImporter;
+
+      if (!isAbsoluteUrl(identifier)) {
+        const absoluteIdentifier = getUrl(base, identifier);
+        const replacedImportStatement = matchStr.replace(identifier, absoluteIdentifier);
+
+        localText = text.replace(matchStr, replacedImportStatement);
+      }
+    });
+  }
+  return localText;
 }
 
 /**
@@ -369,6 +398,7 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
   const scripts = Array.from(domContent.getElementsByTagName('script'));
   const processedJSAssets = scripts.map((script) => {
     const inlineScript = script.src === EMPTY_STRING;
+    const module = script.type === 'module';
 
     const externalSrc = !inlineScript && (isAbsoluteUrl(script.src) ? script.src : getUrl(entry, script.src));
 
@@ -376,9 +406,15 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
     replaceNodeWithComment(script, getComment('script', inlineScript ? 'inline' : script.src, commentType));
 
     return {
-      module: script.type === 'module',
+      module,
       type: inlineScript ? AssetTypeEnum.INLINE : AssetTypeEnum.EXTERNAL,
-      content: inlineScript ? script.text : externalSrc,
+      content:
+        inlineScript
+          ? (
+            (module && entry)
+              ? replaceImportIdentifier(script.text, entry)
+              : script.text)
+          : externalSrc,
     };
   });
 
@@ -406,11 +442,11 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
       }),
   ];
 
-  // if (entry) {
-  //   // remove base node
-  //   const baseNode = domContent.getElementsByTagName('base')[0];
-  //   baseNode?.parentNode.removeChild(baseNode);
-  // }
+  if (entry) {
+    // remove base node
+    const baseNode = domContent.getElementsByTagName('base')[0];
+    baseNode?.parentNode.removeChild(baseNode);
+  }
 
   return {
     html: domContent.getElementsByTagName('html')[0],

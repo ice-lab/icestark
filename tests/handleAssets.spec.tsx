@@ -16,6 +16,7 @@ import {
   appendExternalScript,
   getUrlAssets,
   isAbsoluteUrl,
+  replaceImportIdentifier,
 } from '../src/util/handleAssets';
 import { setCache } from '../src/util/cache';
 
@@ -171,14 +172,22 @@ describe('appendExternalScript', () => {
 
     expect.assertions(1);
     return expect(
-      appendExternalScript(div, { type: AssetTypeEnum.INLINE, content: 'console.log()' }, [], 'js-id'),
+      appendExternalScript({ type: AssetTypeEnum.INLINE, content: 'console.log()' }, {
+        root: div,
+        scriptAttributes: [],
+        id: 'js-id'
+      }),
     ).resolves.toBeUndefined();
   });
 
   test('appendExternalScript -> url', () => {
     const div = document.createElement('div');
 
-    appendExternalScript(div, '/test.js', [], 'js-id')
+    appendExternalScript('/test.js', {
+      root: div,
+      scriptAttributes: [],
+      id: 'js-id'
+    })
       .then(() => expect(div.innerHTML).toContain('/test.js'))
       .catch(() => {});
     const scripts = div.getElementsByTagName('script');
@@ -190,7 +199,11 @@ describe('appendExternalScript', () => {
   test('appendExternalScript -> EXTERNAL success', () => {
     const div = document.createElement('div');
 
-    appendExternalScript(div, { type: AssetTypeEnum.EXTERNAL, content: '/test.js' }, [], 'js-id')
+    appendExternalScript({ type: AssetTypeEnum.EXTERNAL, content: '/test.js' }, {
+      root: div,
+      scriptAttributes: [],
+      id: 'js-id'
+    })
       .then(() => expect(div.innerHTML).toContain('/test.js'))
       .catch(() => {});
 
@@ -203,7 +216,11 @@ describe('appendExternalScript', () => {
   test('appendExternalScript -> EXTERNAL error', () => {
     const div = document.createElement('div');
 
-    appendExternalScript(div, { type: AssetTypeEnum.EXTERNAL, content: '/test.js' }, [], 'js-id').catch(err =>
+    appendExternalScript({ type: AssetTypeEnum.EXTERNAL, content: '/test.js' }, {
+      root: div,
+      scriptAttributes: [],
+      id: 'js-id'
+    }).catch(err =>
       expect(err.message).toContain('js asset loaded error: '),
     );
 
@@ -278,6 +295,11 @@ describe('getEntryAssets', () => {
       '    <div id="App">' +
       '    </div>' +
       '    <script crossorigin="anonymous" src="/test.js"></script>' +
+      '    <script type="module" src="/es-module.js"></script>' +
+      '    <script type="module">' +
+      '      import add from "./add.js"' +
+      '      console.log(add(1, 2));' +
+      '    </script>' +
       '    <script' +
       '      crossorigin="anonymous"' +
       '      src="/test.min.js"' +
@@ -310,25 +332,40 @@ describe('getEntryAssets', () => {
       ],
       jsList: [
         {
+          module: false,
           content: '      console.log()      console.log(1 > 2);console.log(1 < 2)    ',
           type: AssetTypeEnum.INLINE,
         },
         {
+          module: false,
           content: '//g.alicdn.com/1.1/test/index.js',
           type: AssetTypeEnum.EXTERNAL,
         },
         {
+          module: false,
           content: 'http://icestark.com/test.js',
           type: AssetTypeEnum.EXTERNAL,
         },
         {
+          module: true,
+          content: 'http://icestark.com/es-module.js',
+          type: AssetTypeEnum.EXTERNAL,
+        },
+        {
+          module: true,
+          content: '      import add from "http://icestark.com/add.js"      console.log(add(1, 2));    ',
+          type: AssetTypeEnum.INLINE,
+        },
+        {
+          module: false,
           content: 'http://icestark.com/test.min.js',
           type: AssetTypeEnum.EXTERNAL,
         },
         {
+          module: false,
           content: 'http://icestark.com/index.js',
           type: AssetTypeEnum.EXTERNAL,
-        },
+        }
       ],
     });
     const html = div.innerHTML;
@@ -570,7 +607,6 @@ describe('appendCSS', () => {
   });
 });
 
-
 describe('isAbsoluteUrl', () => {
   test('isAbsoluteUrl', () => {
     expect(isAbsoluteUrl('https://www.baidu.com/')).toBe(true);
@@ -583,3 +619,30 @@ describe('isAbsoluteUrl', () => {
   })
 });
 
+describe('replaceImportIdentifier', () => {
+  test('relative-path', () => {
+    const source = `
+      import RefreshRuntime from "/@react-refresh"
+      RefreshRuntime.injectIntoGlobalHook(window)
+      window.$RefreshReg$ = () => {}
+      window.$RefreshSig$ = () => (type) => type
+      window.__vite_plugin_react_preamble_installed__ = true
+    `
+    const target = replaceImportIdentifier(source, 'http://localhost:3000')
+    expect(target).toContain('import RefreshRuntime from "http://localhost:3000/@react-refresh"')
+    expect(target).toContain('window.__vite_plugin_react_preamble_installed__ = true')
+  })
+
+  test('absolute-path', () => {
+    const source = `
+      import RefreshRuntime from "http://localhost:3000/@react-refresh"
+      RefreshRuntime.injectIntoGlobalHook(window)
+      window.$RefreshReg$ = () => {}
+      window.$RefreshSig$ = () => (type) => type
+      window.__vite_plugin_react_preamble_installed__ = true
+    `
+    const target = replaceImportIdentifier(source, 'http://localhost:3333')
+    expect(target).toContain('import RefreshRuntime from "http://localhost:3000/@react-refresh"')
+    expect(target).toContain('window.__vite_plugin_react_preamble_installed__ = true')
+  })
+});
