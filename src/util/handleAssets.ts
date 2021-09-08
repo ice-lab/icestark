@@ -188,8 +188,8 @@ function setAttributeForScriptNode(element: HTMLScriptElement, {
  */
 export function appendExternalScript(asset: string | Asset,
   {
-    root = document.getElementsByTagName('head')[0],
     id,
+    root = document.getElementsByTagName('head')[0],
     scriptAttributes = [],
   }: {
     id: string;
