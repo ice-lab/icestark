@@ -192,8 +192,8 @@ export function appendExternalScript(asset: string | Asset,
     id,
     scriptAttributes = [],
   }: {
-    root: HTMLElement | ShadowRoot;
     id: string;
+    root?: HTMLElement | ShadowRoot;
     scriptAttributes?: ScriptAttributes;
   }): Promise<void> {
   return new Promise<void>((resolve, reject) => {
