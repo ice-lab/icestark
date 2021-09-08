@@ -189,16 +189,15 @@ function setAttributeForScriptNode(element: HTMLScriptElement, {
 export function appendExternalScript(asset: string | Asset,
   {
     root = document.getElementsByTagName('head')[0],
-    scriptAttributes = [],
     id,
+    scriptAttributes = [],
   }: {
-    root?: HTMLElement | ShadowRoot;
-    scriptAttributes?: ScriptAttributes;
+    root: HTMLElement | ShadowRoot;
     id: string;
+    scriptAttributes?: ScriptAttributes;
   }): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     const { type, content, module } = (asset as Asset);
-    if (!root) reject(new Error(`no root element for js assert: ${content || asset}`));
 
     const element: HTMLScriptElement = document.createElement('script');
     // inline script
@@ -411,6 +410,7 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
       content:
         inlineScript
           ? (
+            // If entryContent provided, skip this.
             (module && entry)
               ? replaceImportIdentifier(script.text, entry)
               : script.text)

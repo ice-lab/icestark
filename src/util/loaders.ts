@@ -86,7 +86,7 @@ export async function loadScriptByImport(jsList: Asset[]): Promise<null | Module
         id: `${PREFIX}-js-module-${index}`,
       });
     } else {
-      const { mount: maybeMount, unmount: maybeUnmount } = await import(/* webpackIgnore: true */js.content);
+      const { mount: maybeMount, unmount: maybeUnmount } = await import(/* webpackIgnore: true */ /* @vite-ignore */js.content);
       if (maybeMount && maybeUnmount) {
         mount = maybeMount;
         unmount = maybeUnmount;
