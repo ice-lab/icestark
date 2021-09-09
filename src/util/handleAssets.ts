@@ -352,10 +352,17 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
     if (hasBaseElement) {
       // <base /> exists
       for (let i = 0; i < baseElements.length; ++i) {
+        const removeEndHtml = (url: string) => {
+          if (entry.endsWith('.html')) {
+            return entry.split('/').slice(0, -1).join('/');
+          }
+          return url;
+        };
         const { href } = baseElements[i];
+        // Origin of <base /> will be current href's origin (relative path) or actual origin (absolute path).
         const { origin } = urlParse(href);
         // If <base />'s href is equal to current location.origin, replace origin to entry.
-        const baseHref = origin === window.location.origin ? href.replace(origin, entry) : href;
+        const baseHref = origin === window.location.origin ? href.replace(origin, removeEndHtml(entry)) : href;
         baseElements[i].href = baseHref;
       }
     } else {
@@ -408,7 +415,9 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
   ];
 
   if (entry) {
-    // remove base node
+    /*
+    * Remove all child's <base /> element to avoid conflict with parent's.
+     */
     const baseNodes = domContent.getElementsByTagName('base');
     for (let i = 0; i < baseNodes.length; ++i) {
       baseNodes[i]?.parentNode.removeChild(baseNodes[i]);
