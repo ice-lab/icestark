@@ -9,6 +9,7 @@ import type { Fetch } from './globalConfiguration';
 import type { ScriptAttributes } from '../apps';
 
 const COMMENT_REGEX = /<!--.*?-->/g;
+const BASE_LOOSE_REGEX = /<base\s[^>]*href=['"]?([^'"]*)['"]?[^>]*>/;
 
 const EMPTY_STRING = '';
 const STYLESHEET_LINK_TYPE = 'stylesheet';
@@ -346,25 +347,17 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
   * To escape this error, append <base /> element and then remove them to avoid conflict.
    */
   if (entry) {
+    const baseElementMatch = html.match(BASE_LOOSE_REGEX);
+
     const baseElements = domContent.getElementsByTagName('base');
     const hasBaseElement = baseElements.length;
 
-    if (hasBaseElement) {
-      // <base /> exists
-      for (let i = 0; i < baseElements.length; ++i) {
-        const removeEndHtml = (url: string) => {
-          if (entry.endsWith('.html')) {
-            return entry.split('/').slice(0, -1).join('/');
-          }
-          return url;
-        };
-        const { href } = baseElements[i];
-        // Origin of <base /> will be current href's origin (relative path) or actual origin (absolute path).
-        const { origin } = urlParse(href);
-        // If <base />'s href is equal to current location.origin, replace origin to entry.
-        const baseHref = origin === window.location.origin ? href.replace(origin, removeEndHtml(entry)) : href;
-        baseElements[i].href = baseHref;
-      }
+    if (baseElementMatch && hasBaseElement) {
+      // Only take the first one into consideration.
+      const baseElement = baseElements[0];
+
+      const [, baseHerf] = baseElementMatch;
+      baseElement.href = isAbsoluteUrl(baseHerf) ? baseHerf : getUrl(entry, baseHerf);
     } else {
       // add base URI for absolute resource.
       // see more https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base

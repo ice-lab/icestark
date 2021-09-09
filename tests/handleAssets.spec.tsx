@@ -19,6 +19,8 @@ import {
 } from '../src/util/handleAssets';
 import { setCache } from '../src/util/cache';
 
+const originalLocation = window.location;
+
 const tempHTML =
   '<!DOCTYPE html>' +
   '<html>' +
@@ -119,6 +121,19 @@ describe('getComment', () => {
 });
 
 describe('processHtml', () => {
+  beforeEach(() => {
+    delete window.location;
+    // @ts-ignore
+    window.location = Object.assign(new URL("https://localhost:3333"), {
+      ancestorOrigins: "",
+      assign: jest.fn(),
+      reload: jest.fn(),
+      replace: jest.fn()
+    });
+  });
+  afterEach(() => {
+    window.location = originalLocation;
+  });
   test('processHtml - basic', () => {
     expect(processHtml(undefined).html.innerHTML).toBe('');
 
@@ -177,10 +192,42 @@ describe('processHtml', () => {
     expect(content).not.toContain('base href="https://localhost:3333"')
   });
 
-  test('processHtml - baseElement', () => {
+  test('processHtml - baseElement - absolute', () => {
     let localHtml = tempHTML.replace('<head>', '<head> <base href="https://localhost:3334">')
 
-    const { html } = processHtml(localHtml);
+    const { html, assets } = processHtml(localHtml);
+    const div = document.createElement('div');
+    div.appendChild(html);
+    const content = div.innerHTML;
+
+    expect(content).toContain('<!--link https://localhost:3334/test.css processed by @ice/stark-->');
+    expect(content).toContain('<!--link https://localhost:3334/index.css processed by @ice/stark-->');
+    expect(content).not.toContain('href="/index.css"');
+    expect(content).not.toContain('href="index.css"');
+
+    expect(content).not.toContain('base href="https://localhost:3333"')
+  });
+
+  test('processHtml - baseElement - relative', () => {
+    let localHtml = tempHTML.replace('<head>', '<head> <base href="./a/b">')
+
+    const { html } = processHtml(localHtml, "https://localhost:3334");
+    const div = document.createElement('div');
+    div.appendChild(html);
+    const content = div.innerHTML;
+
+    expect(content).toContain('<!--link https://localhost:3334/a/test.css processed by @ice/stark-->');
+    expect(content).toContain('<!--link https://localhost:3334/index.css processed by @ice/stark-->');
+    expect(content).not.toContain('href="/index.css"');
+    expect(content).not.toContain('href="index.css"');
+
+    expect(content).not.toContain('base href="https://localhost:3334"')
+  });
+
+  test('processHtml - baseElement - relative', () => {
+    let localHtml = tempHTML.replace('<head>', '<head> <base href="/">')
+
+    const { html } = processHtml(localHtml, "https://localhost:3334/a/b/index.html");
     const div = document.createElement('div');
     div.appendChild(html);
     const content = div.innerHTML;
@@ -598,7 +645,6 @@ describe('appendCSS', () => {
     }
   });
 });
-
 
 describe('isAbsoluteUrl', () => {
   test('isAbsoluteUrl', () => {
