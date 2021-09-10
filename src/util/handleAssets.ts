@@ -350,7 +350,7 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
     const baseElementMatch = html.match(BASE_LOOSE_REGEX);
 
     const baseElements = domContent.getElementsByTagName('base');
-    const hasBaseElement = baseElements.length;
+    const hasBaseElement = baseElements.length > 0;
 
     if (baseElementMatch && hasBaseElement) {
       // Only take the first one into consideration.
@@ -362,6 +362,7 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
       // add base URI for absolute resource.
       // see more https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
       const base = document.createElement('base');
+      // <base /> element also takes effects if href includues `.html`
       base.href = entry;
       domContent.getElementsByTagName('head')[0].appendChild(base);
     }
@@ -459,7 +460,7 @@ export async function getEntryAssets({
     cachedProcessedContent[assetsCacheKey] = htmlContent;
   }
 
-  const { html, assets } = processHtml(cachedContent ?? htmlContent, entry || href);
+  const { html, assets } = processHtml(cachedContent || htmlContent, entry || href);
 
   if (root) {
     root.appendChild(html);
