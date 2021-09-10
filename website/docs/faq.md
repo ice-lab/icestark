@@ -280,10 +280,30 @@ proxy sandbox is not support by current browser
 此外，我们并不推荐添加诸如 <a href="https://github.com/GoogleChrome/proxy-polyfill">proxy-polyfill</a> 等 polyfill 方法来支持 icestark 沙箱。因为目前实现 Proxy 的 polyfill 都不是完备的（有缺陷的），icestark 沙箱在实现上使用了 <code>has</code> trap，而这个 trap 目前无法在 polyfill 中实现。更多有关 Proxy 的内容，可参考 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy</a>。
 :::
 
-## Script Error 的解决方法
+## 如何解决 Script Error
 
-“ Script error. ” 是一个常见错误，但由于该错误不提供完整的报错信息（错误堆栈），问题排查往往无从下手。icestark 的 [scriptAttributes](/docs/api/ice-stark#scriptattributes) 参数支持为加载的 `<script />` 资源添加 `crossorigin="anonymous"` 来解决这个问题。具体可参考 [scriptAttributes](/docs/api/ice-stark#scriptattributes)。
+“Script error.” 是一个常见错误，但由于该错误不提供完整的报错信息（错误堆栈），问题排查往往无从下手。icestark 的 [scriptAttributes](/docs/api/ice-stark#scriptattributes) 参数支持为加载的 `<script />` 资源添加 `crossorigin="anonymous"` 来解决这个问题。具体可参考 [scriptAttributes](/docs/api/ice-stark#scriptattributes)。
 
 :::tip
 想了解更多有关 Script Error 的问题，可以参考 <a href="https://help.aliyun.com/document_detail/88579.html">“Script error.”的产生原因和解决办法</a>
 :::
+
+
+## 页面空白，控制台没有错误
+
+遇到页面空白，而控制台又没有错误的情况，有可能是因为 **微应用已经正常加载，但微应用路由没有匹配成功**。因此我们建议微应用增加一个默认路由：
+
+```js
+import { renderNotFound, isInIcestark, getBasename } from '@ice/stark-app';
+
+const Routes = () => {
+  return (
+    <Router basename={isInIcestark() ? getBasename(): '/'}>
+      <Route componet={Detail} path="/detail" exact>
+      <Route component={isInIcestark() ? () => renderNotFound() : NotFound}>
+    </Route>
+  )
+}
+```
+
+这样，不会导致微应用正常加载，但微应用路由没有匹配成功时导致的页面空白，而会显示 404 页面。这样，我们能清晰地知道，在 icestark 执行环境下，需要修改[微应用的 basename](/docs/guide/use-child/react#2-定义基准路由)，使得微应用可以与当前路由匹配上。
