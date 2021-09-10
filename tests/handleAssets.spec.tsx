@@ -121,19 +121,6 @@ describe('getComment', () => {
 });
 
 describe('processHtml', () => {
-  beforeEach(() => {
-    delete window.location;
-    // @ts-ignore
-    window.location = Object.assign(new URL("https://localhost:3333"), {
-      ancestorOrigins: "",
-      assign: jest.fn(),
-      reload: jest.fn(),
-      replace: jest.fn()
-    });
-  });
-  afterEach(() => {
-    window.location = originalLocation;
-  });
   test('processHtml - basic', () => {
     expect(processHtml(undefined).html.innerHTML).toBe('');
 
