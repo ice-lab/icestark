@@ -9,12 +9,14 @@ import type { Fetch } from './globalConfiguration';
 import type { ScriptAttributes } from '../apps';
 
 const COMMENT_REGEX = /<!--.*?-->/g;
+const BASE_LOOSE_REGEX = /<base\s[^>]*href=['"]?([^'"]*)['"]?[^>]*>/;
 
 const EMPTY_STRING = '';
 const STYLESHEET_LINK_TYPE = 'stylesheet';
 
 const cachedScriptsContent: object = {};
 const cachedStyleContent: object = {};
+const cachedProcessedContent: object = {};
 
 const defaultFetch = window?.fetch.bind(window);
 
@@ -386,11 +388,30 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
 
   const domContent = (new DOMParser()).parseFromString(html.replace(COMMENT_REGEX, ''), 'text/html');
 
+  /*
+  * When using DOMParser，the origin of relative path of `<script />` 和 `<link />` is Framwork's origin.
+  * To escape this error, append <base /> element and then remove them to avoid conflict.
+   */
   if (entry) {
-    // add base URI for absolute resource. see more https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-    const base = document.createElement('base');
-    base.href = entry;
-    domContent.getElementsByTagName('head')[0].appendChild(base);
+    const baseElementMatch = html.match(BASE_LOOSE_REGEX);
+
+    const baseElements = domContent.getElementsByTagName('base');
+    const hasBaseElement = baseElements.length > 0;
+
+    if (baseElementMatch && hasBaseElement) {
+      // Only take the first one into consideration.
+      const baseElement = baseElements[0];
+
+      const [, baseHerf] = baseElementMatch;
+      baseElement.href = isAbsoluteUrl(baseHerf) ? baseHerf : getUrl(entry, baseHerf);
+    } else {
+      // add base URI for absolute resource.
+      // see more https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+      const base = document.createElement('base');
+      // <base /> element also takes effects if href includues `.html`
+      base.href = entry;
+      domContent.getElementsByTagName('head')[0].appendChild(base);
+    }
   }
 
   // process js assets
@@ -443,9 +464,13 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
   ];
 
   if (entry) {
-    // remove base node
-    const baseNode = domContent.getElementsByTagName('base')[0];
-    baseNode?.parentNode.removeChild(baseNode);
+    /*
+    * Remove all child's <base /> element to avoid conflict with parent's.
+     */
+    const baseNodes = domContent.getElementsByTagName('base');
+    for (let i = 0; i < baseNodes.length; ++i) {
+      baseNodes[i]?.parentNode.removeChild(baseNodes[i]);
+    }
   }
 
   return {
@@ -456,8 +481,6 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
     },
   };
 }
-
-const cachedProcessedContent: object = {};
 
 export async function getEntryAssets({
   root,
@@ -475,9 +498,10 @@ export async function getEntryAssets({
   fetch?: Fetch;
   assertsCached?: boolean;
 }) {
-  let cachedContent = cachedProcessedContent[assetsCacheKey];
+  const cachedContent = cachedProcessedContent[assetsCacheKey];
+  let htmlContent = entryContent;
+
   if (!cachedContent) {
-    let htmlContent = entryContent;
     if (!htmlContent && entry) {
       if (!fetch) {
         warn('Current environment does not support window.fetch, please use custom fetch');
@@ -486,20 +510,18 @@ export async function getEntryAssets({
         );
       }
 
-      const res = await fetch(entry);
-      htmlContent = await res.text();
+      htmlContent = await fetch(entry).then((res) => res.text());
     }
-    cachedContent = processHtml(htmlContent, entry || href);
-    cachedProcessedContent[assetsCacheKey] = cachedContent;
+    cachedProcessedContent[assetsCacheKey] = htmlContent;
   }
 
-  const { html } = cachedContent;
+  const { html, assets } = processHtml(cachedContent || htmlContent, entry || href);
 
   if (root) {
     root.appendChild(html);
   }
 
-  return cachedContent.assets;
+  return assets;
 }
 
 export function getAssetsNode(): Array<HTMLStyleElement|HTMLScriptElement> {
