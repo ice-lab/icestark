@@ -1,5 +1,5 @@
 import Sandbox, { SandboxConstructor, SandboxProps } from '@ice/sandbox';
-import * as isEmpty from 'lodash.isempty';
+import isEmpty from 'lodash.isempty';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
 import checkUrlActive, { ActivePath, PathOption, formatPath } from './util/checkActive';
 import {

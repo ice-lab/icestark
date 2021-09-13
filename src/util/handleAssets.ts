@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
 /* eslint-disable no-param-reassign */
-import * as urlParse from 'url-parse';
+import urlParse from 'url-parse';
 import Sandbox, { SandboxProps, SandboxConstructor } from '@ice/sandbox';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { warn, error } from './message';
