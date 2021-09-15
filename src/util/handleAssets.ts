@@ -4,7 +4,7 @@ import * as urlParse from 'url-parse';
 import Sandbox, { SandboxProps, SandboxConstructor } from '@ice/sandbox';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
 import { warn, error } from './message';
-import { toArray, isDev, formatMessage, builtInScriptAttributesMap, looseBoolean2Boolean } from './helpers';
+import { toArray, isDev, formatMessage, builtInScriptAttributesMap, looseBoolean2Boolean, isElement } from './helpers';
 import type { Fetch } from './globalConfiguration';
 import type { ScriptAttributes } from '../apps';
 
@@ -43,7 +43,7 @@ export interface ProcessedContent {
 
 export interface Assets {
   jsList: Asset[];
-  cssList: Asset[];
+  cssList: Array<Asset | HTMLElement>;
 }
 
 export interface ParsedConfig {
@@ -62,16 +62,25 @@ export interface ILifecycleProps {
  */
 export function appendCSS(
   root: HTMLElement | ShadowRoot,
-  asset: string | Asset,
+  asset: Asset | HTMLElement,
   id: string,
 ): Promise<void> {
   return new Promise<void>(async (resolve, reject) => {
-    const { type, content } = (asset as Asset);
-    if (!root) reject(new Error(`no root element for css assert: ${content || asset}`));
+    if (!root) reject(new Error('no root element for css asset'));
+
+    if (isElement(asset)) {
+      root.append(asset);
+      resolve();
+      return;
+    }
+
+    const { type, content } = asset;
 
     if (type && type === AssetTypeEnum.INLINE) {
       const styleElement: HTMLStyleElement = document.createElement('style');
       styleElement.innerHTML = content;
+      styleElement.id = id;
+      styleElement.setAttribute(PREFIX, DYNAMIC);
       root.appendChild(styleElement);
       resolve();
       return;
@@ -86,6 +95,8 @@ export function appendCSS(
       try {
         const styleElement: HTMLStyleElement = document.createElement('style');
         styleElement.innerHTML = await cachedStyleContent[content];
+        styleElement.id = id;
+        styleElement.setAttribute(PREFIX, DYNAMIC);
         root.appendChild(styleElement);
         useExternalLink = false;
         resolve();
@@ -99,7 +110,7 @@ export function appendCSS(
       element.setAttribute(PREFIX, DYNAMIC);
       element.id = id;
       element.rel = 'stylesheet';
-      element.href = content || (asset as string);
+      element.href = content;
 
       element.addEventListener(
         'error',
@@ -205,6 +216,8 @@ export function appendExternalScript(asset: string | Asset,
     // inline script
     if (type && type === AssetTypeEnum.INLINE) {
       element.innerHTML = content;
+      element.id = id;
+      element.setAttribute(PREFIX, DYNAMIC);
       module && (element.type = 'module');
       root.appendChild(element);
 
@@ -554,7 +567,8 @@ export function setStaticAttribute(tag: HTMLStyleElement | HTMLScriptElement): v
 }
 
 /**
- * Empty useless assets
+ * Remove all child's suspected assets.
+ * @returns Removed assets.
  */
 export function emptyAssets(
   shouldRemove: (
@@ -562,34 +576,43 @@ export function emptyAssets(
     element?: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement,
   ) => boolean,
   cacheKey: string|boolean,
-): void {
+) {
+  const removedAssets: HTMLElement[] = [];
   // remove extra assets
-  const styleList: NodeListOf<HTMLElement> = document.querySelectorAll(
+  const styleList: NodeListOf<HTMLStyleElement> = document.querySelectorAll(
     `style:not([${PREFIX}=${STATIC}])`,
   );
   styleList.forEach((style) => {
     if (shouldRemove(null, style) && checkCacheKey(style, cacheKey)) {
       style.parentNode.removeChild(style);
+
+      removedAssets.push(style);
     }
   });
 
-  const linkList: NodeListOf<HTMLElement> = document.querySelectorAll(
+  const linkList: NodeListOf<HTMLLIElement> = document.querySelectorAll(
     `link:not([${PREFIX}=${STATIC}])`,
   );
   linkList.forEach((link) => {
     if (shouldRemove(link.getAttribute('href'), link) && checkCacheKey(link, cacheKey)) {
       link.parentNode.removeChild(link);
+
+      removedAssets.push(link);
     }
   });
 
-  const jsExtraList: NodeListOf<HTMLElement> = document.querySelectorAll(
+  const jsExtraList: NodeListOf<HTMLScriptElement> = document.querySelectorAll(
     `script:not([${PREFIX}=${STATIC}])`,
   );
   jsExtraList.forEach((js) => {
     if (shouldRemove(js.getAttribute('src'), js) && checkCacheKey(js, cacheKey)) {
       js.parentNode.removeChild(js);
+
+      removedAssets.push(js);
     }
   });
+
+  return removedAssets;
 }
 
 export function checkCacheKey(node: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement, cacheKey: string|boolean) {
@@ -617,10 +640,8 @@ export function cacheAssets(cacheKey: string): void {
  * @export
  * @param {Assets} assets
  */
-export async function loadAndAppendCssAssets(assets: Assets) {
+export async function loadAndAppendCssAssets(cssList: Array<Asset | HTMLElement>) {
   const cssRoot: HTMLElement = document.getElementsByTagName('head')[0];
-
-  const { cssList } = assets;
 
   // load css content
   await Promise.all(
@@ -699,3 +720,28 @@ export function createSandbox(sandbox?: boolean | SandboxProps | SandboxConstruc
   }
   return appSandbox;
 }
+
+/**
+ * Get classified assets.
+ */
+type RemovedAssetType = 'SCRIPT' | 'LINK' | 'STYLE';
+
+export function getRemovedImportInjectionByType(types: RemovedAssetType[], assets: HTMLElement[]): Asset[] {
+  return assets
+    .reduce((pre, element) => {
+      // escape stamped element
+      if (element.getAttribute(PREFIX) === DYNAMIC) {
+        return pre;
+      }
+
+      if (types.includes(element.nodeName as RemovedAssetType)) {
+        return [
+          ...pre,
+          element,
+        ];
+      }
+
+      return pre;
+    }, []);
+}
+

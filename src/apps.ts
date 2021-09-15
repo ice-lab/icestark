@@ -9,6 +9,7 @@ import {
   loadAndAppendCssAssets,
   loadAndAppendJsAssets,
   emptyAssets,
+  getRemovedImportInjectionByType,
   Assets,
 } from './util/handleAssets';
 import { setCache } from './util/cache';
@@ -20,6 +21,10 @@ import globalConfiguration from './util/globalConfiguration';
 import type { StartConfiguration } from './util/globalConfiguration';
 
 export type ScriptAttributes = string[] | ((url: string) => string[]);
+
+const importCachedAssets: {
+  [index: string]: HTMLElement[];
+} = {};
 
 interface LifecycleProps {
   container: HTMLElement | string;
@@ -182,16 +187,20 @@ export async function loadAppModule(appConfig: AppConfig) {
 
   switch (loadScriptMode) {
     case 'import':
-      await loadAndAppendCssAssets(appAssets);
+      await loadAndAppendCssAssets([
+        ...appAssets.cssList,
+        ...getRemovedImportInjectionByType(['LINK', 'STYLE'], importCachedAssets[name] || []),
+      ]);
       lifecycle = await loadScriptByImport(appAssets.jsList);
+      // Not to handle script element temporarily.
       break;
     case 'fetch':
-      await loadAndAppendCssAssets(appAssets);
+      await loadAndAppendCssAssets(appAssets.cssList);
       lifecycle = await loadScriptByFetch(appAssets.jsList, appSandbox);
       break;
     default:
       await Promise.all([
-        loadAndAppendCssAssets(appAssets),
+        loadAndAppendCssAssets(appAssets.cssList),
         loadAndAppendJsAssets(appAssets, { sandbox: appSandbox, fetch, scriptAttributes }),
       ]);
       lifecycle =
@@ -292,7 +301,7 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
       }
     } else if (appConfig.status === UNMOUNTED) {
       if (!appConfig.cached) {
-        await loadAndAppendCssAssets(appConfig.appAssets || { cssList: [], jsList: [] });
+        await loadAndAppendCssAssets(appConfig?.appAssets?.cssList || []);
       }
       await mountMicroApp(appConfig.name);
     } else if (appConfig.status === NOT_MOUNTED) {
@@ -323,7 +332,17 @@ export async function unmountMicroApp(appName: string) {
   if (appConfig && (appConfig.status === MOUNTED || appConfig.status === LOADING_ASSETS || appConfig.status === NOT_MOUNTED)) {
     // remove assets if app is not cached
     const { shouldAssetsRemove } = getAppConfig(appName)?.configuration || globalConfiguration;
-    emptyAssets(shouldAssetsRemove, !appConfig.cached && appConfig.name);
+    const removedAssets = emptyAssets(shouldAssetsRemove, !appConfig.cached && appConfig.name);
+
+    /**
+    * Since es module natively imported twice may never excute twice. https://dmitripavlutin.com/javascript-module-import-twice/
+    * Cache all child's removed assets, then append them when app is mounted for the second time.
+    * Only cache removed assets when app's loadScriptMode is import which may not cause break change.
+    */
+    if (appConfig.loadScriptMode === 'import') {
+      importCachedAssets[appName] = removedAssets;
+    }
+
     updateAppConfig(appName, { status: UNMOUNTED });
     if (!appConfig.cached && appConfig.appSandbox) {
       appConfig.appSandbox.clear();
