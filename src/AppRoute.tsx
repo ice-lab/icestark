@@ -5,7 +5,7 @@ import { unloadMicroApp, BaseConfig, createMicroApp } from './apps';
 import { converArray2String } from './util/helpers';
 import { PathData } from './util/checkActive';
 import { callCapturedEventListeners, resetCapturedEventListeners } from './util/capturedListeners';
-import * as isEqual from 'lodash.isequal';
+import isEqual from 'lodash.isequal';
 
 interface AppRouteState {
   showComponent: boolean;

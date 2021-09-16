@@ -1,5 +1,5 @@
 import * as React from 'react';
-import * as urlParse from 'url-parse';
+import urlParse from 'url-parse';
 import { AppRouteProps, AppRouteComponentProps, CompatibleAppConfig } from './AppRoute';
 import appHistory from './appHistory';
 import renderComponent from './util/renderComponent';
