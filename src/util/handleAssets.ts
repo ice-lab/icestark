@@ -726,7 +726,7 @@ export function createSandbox(sandbox?: boolean | SandboxProps | SandboxConstruc
  */
 type RemovedAssetType = 'SCRIPT' | 'LINK' | 'STYLE';
 
-export function getRemovedImportInjectionByType(types: RemovedAssetType[], assets: HTMLElement[]): Asset[] {
+export function filterRemovedAseets(types: RemovedAssetType[], assets: HTMLElement[]): Asset[] {
   return assets
     .reduce((pre, element) => {
       // escape stamped element

@@ -9,7 +9,7 @@ import {
   loadAndAppendCssAssets,
   loadAndAppendJsAssets,
   emptyAssets,
-  getRemovedImportInjectionByType,
+  filterRemovedAseets,
   Assets,
 } from './util/handleAssets';
 import { setCache } from './util/cache';
@@ -189,7 +189,7 @@ export async function loadAppModule(appConfig: AppConfig) {
     case 'import':
       await loadAndAppendCssAssets([
         ...appAssets.cssList,
-        ...getRemovedImportInjectionByType(['LINK', 'STYLE'], importCachedAssets[name] || []),
+        ...filterRemovedAseets(['LINK', 'STYLE'], importCachedAssets[name] || []),
       ]);
       lifecycle = await loadScriptByImport(appAssets.jsList);
       // Not to handle script element temporarily.
