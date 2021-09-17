@@ -477,7 +477,7 @@ describe('appendAssets', () => {
       'http://icestark.com/css/index.css',
       'http://icestark.com/js/test1.js',
     ]);
-    Promise.all([loadAndAppendCssAssets(assets), loadAndAppendJsAssets(assets, {
+    Promise.all([loadAndAppendCssAssets(assets.cssList), loadAndAppendJsAssets(assets, {
       scriptAttributes: ['crossorigin=anonymous', 'nomodule=false', 'type=module', 'src=http://xxxx.js']
     })])
       .then(() => {
@@ -519,7 +519,7 @@ describe('appendAssets', () => {
     const assets = getUrlAssets([
       'http://icestark.com/js/index.js'
     ]);
-    Promise.all([loadAndAppendCssAssets(assets), loadAndAppendJsAssets(assets, {
+    Promise.all([loadAndAppendCssAssets(assets.cssList), loadAndAppendJsAssets(assets, {
       scriptAttributes: (url) => {
         if (url.includes('//icestark.com/js/index.js')) {
           return ['crossorigin=anonymous']
@@ -552,7 +552,7 @@ describe('appendAssets', () => {
       'http://icestark.com/css/index.css',
       'http://icestark.com/js/test1.js',
     ]);
-    Promise.all([loadAndAppendCssAssets(assets), loadAndAppendJsAssets(assets, {})])
+    Promise.all([loadAndAppendCssAssets(assets.cssList), loadAndAppendJsAssets(assets, {})])
   });
 
   test('recordAssets', () => {
@@ -617,7 +617,14 @@ describe('appendCSS', () => {
   test('appendLink -> success', () => {
     const div = document.createElement('div');
 
-    appendCSS(div, '/test.css', 'icestark-css-0')
+    appendCSS(
+      div,
+      {
+        type: AssetTypeEnum.EXTERNAL,
+        content: '/test.css'
+      },
+      'icestark-css-0'
+    )
       .then(() => {
         expect(div.innerHTML).toContain('id="icestark-css-0"');
         expect(div.innerHTML).toContain('/test.css');
@@ -655,7 +662,14 @@ describe('appendCSS', () => {
 
     const div = document.createElement('div');
 
-    appendCSS(div, '/test.css', 'icestark-css-0')
+    appendCSS(
+      div,
+      {
+        type: AssetTypeEnum.EXTERNAL,
+        content: '/test.css'
+      },
+      'icestark-css-0'
+    )
       .then(() => {
         expect(div.innerHTML).toContain('id="icestark-css-0"');
         expect(div.innerHTML).toContain('/test.css');
