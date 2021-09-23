@@ -10,7 +10,7 @@ hide_table_of_contents: false
 
 ## Announcing icestark 2.6.0
 
-非常期待地告诉大家，在 [2.6.0](https://github.com/ice-lab/icestark/pull/369) 这个版本中，我们支持了 es module 模块类型的微应用。也就是说，如果您使用 [vite](https://vitejs.dev/) 或者 [icejs vite 模式](https://ice.work/docs/guide/basic/vite/) 开发的应用，可以使用 icestark 来构建您的微应用。
+非常期待地告诉大家，在 [2.6.0](https://github.com/ice-lab/icestark/pull/369) 这个版本中，我们支持了 es module 模块类型的微应用。也就是说，如果您使用 [Vite](https://vitejs.dev/) 或者 [icejs Vite 模式](https://ice.work/docs/guide/basic/Vite/) 开发的应用，可以使用 icestark 来构建您的微应用。
 
 本次更新主要包括：
 - [支持 es module 类型微应用](#支持-es-module-类型微应用)
@@ -22,13 +22,13 @@ hide_table_of_contents: false
 
 ### 支持 es module 类型微应用
 
-[es module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules) 模块规范是面向未来的模块规范，诸如 [vite](https://vitejs.dev/)、[snowpack](https://www.snowpack.dev/) 等原生支持 es module 的构建工具的产生，以及 [现代浏览器](https://web.dev/publish-modern-javascript/) 对 es module 语法的支持，相信未来会有越来越多的微应用构建在 native es module 之上。相比传统的构建工具（比如 webpack），这些新型的构建工具或多或少地带来了以下优势：
+[es module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules) 模块规范是面向未来的模块规范，诸如 [Vite](https://vitejs.dev/)、[snowpack](https://www.snowpack.dev/) 等原生支持 es module 的构建工具的产生，以及 [现代浏览器](https://web.dev/publish-modern-javascript/) 对 es module 语法的支持，相信未来会有越来越多的微应用构建在 native es module 之上。相比传统的构建工具（比如 webpack），这些新型的构建工具或多或少地带来了以下优势：
 
 + **由于无需打包的特性，服务器启动时间超快**
 + **项目大小不再成为服务器启动速度的限制因素**
 + **HMR 始终保持快速更新**
 
-随着 [icejs](https://ice.work/) 支持 [vite](https://ice.work/docs/guide/basic/vite/) 模式，icestark 也为大家带来了 es module 类型微应用的支持。
+随着 [icejs](https://ice.work/) 支持 [Vite](https://ice.work/docs/guide/basic/Vite/) 模式，icestark 也为大家带来了 es module 类型微应用的支持。
 
 框架应用接入 es module 微应用的方式非常简单，配置 `loadScriptMode: import` 来支持 es module 类型微应用的加载。
 
@@ -49,14 +49,14 @@ hide_table_of_contents: false
 </AppRouter>
 ```
 
-对于 vite 应用的 icestark 适配，可参考 [其他框架接入微应用 - vite 应用](http://localhost:3000/docs/guide/use-child/others#vite-%E5%BA%94%E7%94%A8) 进行配置。后期，我们将提供 vite plugin 能力，使 vite 应用的接入非常简单。
+对于 Vite 应用的 icestark 适配，可参考 [其他框架接入微应用 - Vite 应用](http://localhost:3000/docs/guide/use-child/others#Vite-%E5%BA%94%E7%94%A8) 进行配置。后期，我们将提供 Vite plugin 能力，使 Vite 应用的接入非常简单。
 
-对于 ice.js 子应用，只需将 [`build-plugin-icestark`](https://ice.work/docs/guide/advanced/icestark) 升级到最新版本，并开启 [icejs vite 模式](https://ice.work/docs/guide/basic/vite)，即可完成改造工作。
+对于 ice.js 子应用，只需将 [`build-plugin-icestark`](https://ice.work/docs/guide/advanced/icestark) 升级到最新版本，并开启 [icejs Vite 模式](https://ice.work/docs/guide/basic/Vite)，即可完成改造工作。
 
 
 ### es module 微应用的常见问题解答
 
-#### 框架应用需要是 vite 应用吗？
+#### 框架应用需要是 Vite 应用吗？
 
 **不需要**。框架应用可以使用 webpack 等非 es module 构建工具，无需对框架应用进行任何构建上的改造。对于框架应用，唯一需要做的是：升级最新的 icestark 版本，并设置 es module 微应用的加载方式（`loadScriptMode` 字段） 设置为 `import` 即可。
 
@@ -135,5 +135,5 @@ export function unmount () {
 
 我们会持续扩展 icestark 的能力，提升微前端体验。在接下来的版本中，我们会：
 
-+ 为 vite 微应用提供对应的改造插件
++ 为 Vite 微应用提供对应的改造插件
 + 优化开发者开发体验，dev 下提供关键路径的 log 信息
