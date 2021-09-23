@@ -3,7 +3,7 @@ import * as path from 'path';
 import { FetchMock } from 'jest-fetch-mock';
 import Sandbox from '@ice/sandbox';
 import { AssetTypeEnum } from '../src/util/handleAssets';
-import { loadBundle } from '../src/util/loader';
+import { loadScriptByFetch } from '../src/util/loaders';
 import { setCache } from '../src/util/cache';
 
 describe('loader', () => {
@@ -15,7 +15,7 @@ describe('loader', () => {
 
   test('load js bundle', async () => {
     (fetch as FetchMock).mockResponseOnce(jsBundleSource.toString());
-    const lifecycle: any = await loadBundle([{
+    const lifecycle: any = await loadScriptByFetch([{
       content: '//icesk.com/index.js',
       type: AssetTypeEnum.EXTERNAL,
     }]);
@@ -24,7 +24,7 @@ describe('loader', () => {
 
   test('load js bundle with sandbox', async () => {
     (fetch as FetchMock).mockResponseOnce(jsBundleSource.toString());
-    const lifecycle: any = await loadBundle([{
+    const lifecycle: any = await loadScriptByFetch([{
       content: '//icesk.com/index.js',
       type: AssetTypeEnum.EXTERNAL,
     }], new Sandbox());

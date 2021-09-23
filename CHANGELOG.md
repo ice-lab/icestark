@@ -2,6 +2,13 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
+## 2.6.0
+
+- [feat] support native es module micro-applications. ([#346, #260](https://github.com/ice-lab/icestark/issues/346))
+- [feat] handle `<base />` element and re-execute DOM Parser to enable `<app-root></app-root>` of Angular.([#368](https://github.com/ice-lab/icestark/pull/368))
+- [refact] change `module: commonjs` to `module: esnext`.
+- [fix] assign to `location.hash` never trigger `onRouteChange` twice. ([#353](https://github.com/ice-lab/icestark/issues/353))
+
 ## 2.5.3
 
 - [fix] `setBasename` before `createMicroApp` may be covered for empty activePath.
