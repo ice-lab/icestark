@@ -279,18 +279,18 @@ app.prepare().then(() => {
 
 修改 `src/app/app-routing.module.ts` 文件，使其在 icestark 中拥有正确的基准路由。
 
-```ts
+```diff
 // src/app/app-routing.module.ts
 
-import { APP_BASE_HREF } from '@angular/common';
-import getBasename from '@ice/stark-app/lib/getBasename';
-import isInIcestark from '@ice/stark-app/lib/isInIcestark';
++ import { APP_BASE_HREF } from '@angular/common';
++ import getBasename from '@ice/stark-app/lib/getBasename';
++ import isInIcestark from '@ice/stark-app/lib/isInIcestark';
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule],
   // 修改 anglur 应用的 basename
-  providers: [{ provide: APP_BASE_HREF, useValue: isInIcestark() ? getBasename() : '/' }]
++  providers: [{ provide: APP_BASE_HREF, useValue: isInIcestark() ? getBasename() : '/' }]
 })
 export class AppRoutingModule { }
 ```
@@ -437,7 +437,7 @@ https://github.com/maoxiaoke/icestark-angular-12
 import { createApp } from 'vue'
 + import type { App as Root} from 'vue';
 import App from './App.vue'
-- import isInIcestark from '@ice/stark-app/lib/isInIcestark';
++ import isInIcestark from '@ice/stark-app/lib/isInIcestark';
 
 - createApp(App).mount('#app');
 
@@ -484,4 +484,4 @@ export default defineConfig({
 
 ### 配置基准路由
 
-对于基准路由的配置，可以依照 [React 微应用接入](/docs/guide/use-child/react#2-%E5%AE%9A%E4%B9%89%E5%9F%BA%E5%87%86%E8%B7%AF%E7%94%B1) 和 [Vue 微应用接入](docs/guide/use-child/vue#2-%E5%AE%9A%E4%B9%89%E5%9F%BA%E5%87%86%E8%B7%AF%E7%94%B1) 相同的方式改造接入。
+对于基准路由的配置，可以依照 [React 微应用接入](/docs/guide/use-child/react#2-%E5%AE%9A%E4%B9%89%E5%9F%BA%E5%87%86%E8%B7%AF%E7%94%B1) 和 [Vue 微应用接入](/docs/guide/use-child/vue#2-%E5%AE%9A%E4%B9%89%E5%9F%BA%E5%87%86%E8%B7%AF%E7%94%B1) 相同的方式改造接入。
