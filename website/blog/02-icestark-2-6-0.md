@@ -10,27 +10,27 @@ hide_table_of_contents: false
 
 ## Announcing icestark 2.6.0
 
-非常期待地告诉大家，在 [2.6.0](https://github.com/ice-lab/icestark/pull/369) 这个版本中，我们支持了 es module 模块类型的微应用。也就是说，如果您使用 [Vite](https://vitejs.dev/) 或者 [icejs Vite 模式](https://ice.work/docs/guide/basic/Vite/) 开发的应用，可以使用 icestark 来构建您的微应用。
+非常高兴地告诉大家，在 [2.6.0](https://github.com/ice-lab/icestark/pull/369) 这个版本中，我们支持了 ES modules 模块类型的微应用。也就是说，如果您使用 [Vite](https://vitejs.dev/) 或者 [icejs Vite 模式](https://ice.work/docs/guide/basic/Vite/) 开发的应用，可以使用 icestark 来构建您的微前端架构。
 
 本次更新主要包括：
-- [支持 es module 类型微应用](#支持-es-module-类型微应用)
-- [支持 Angular 微应用](#支持-angular-微应用)
+- [支持 ES modules 类型微应用](#支持-ES-modules-类型微应用)
+- [完善 Angular 微应用支持](#支持-angular-微应用)
 - [修复 location.hash 赋值 onRouteChange 触发两次的错误](#修复对-locationhash-赋值-onroutechange-触发两次的错误)
 - [对项目配置的改造](#对项目配置的改造)
 
 <!--truncate-->
 
-### 支持 es module 类型微应用
+### 支持 ES modules 类型微应用
 
-[es module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules) 模块规范是面向未来的模块规范，诸如 [Vite](https://vitejs.dev/)、[snowpack](https://www.snowpack.dev/) 等原生支持 es module 的构建工具的产生，以及 [现代浏览器](https://web.dev/publish-modern-javascript/) 对 es module 语法的支持，相信未来会有越来越多的微应用构建在 native es module 之上。相比传统的构建工具（比如 webpack），这些新型的构建工具或多或少地带来了以下优势：
+[ES modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules) 模块规范是面向未来的模块规范，诸如 [Vite](https://vitejs.dev/)、[snowpack](https://www.snowpack.dev/) 等原生支持 ES modules 的构建工具的产生，以及 [现代浏览器](https://web.dev/publish-modern-javascript/) 对 ES modules 语法的支持，相信未来会有越来越多的微应用构建在 native ES modules 之上。相比传统的构建工具（比如 webpack），这些新型的构建工具或多或少地带来了以下优势：
 
 + **由于无需打包的特性，服务器启动时间超快**
 + **项目大小不再成为服务器启动速度的限制因素**
 + **HMR 始终保持快速更新**
 
-随着 [icejs](https://ice.work/) 支持 [Vite](https://ice.work/docs/guide/basic/Vite/) 模式，icestark 也为大家带来了 es module 类型微应用的支持。
+随着 [icejs](https://ice.work/) 支持 [Vite](https://ice.work/docs/guide/basic/Vite/) 模式，icestark 也为大家带来了 ES modules 类型微应用的支持。
 
-框架应用接入 es module 微应用的方式非常简单，配置 `loadScriptMode: import` 来支持 es module 类型微应用的加载。
+框架应用接入 ES modules 微应用的方式非常简单，配置 `loadScriptMode: import` 来支持 ES modules 类型微应用的加载。
 
 ```diff
 <AppRouter>
@@ -38,7 +38,7 @@ hide_table_of_contents: false
     title="商家平台"
 +   loadScriptMode="import"
     url={[
-      '//unpkg.com/icestark-child-seller/build/js/index.js', // 资源 es module 入口
+      '//unpkg.com/icestark-child-seller/build/js/index.js', // 资源 ES modules 入口
       '//unpkg.com/icestark-child-seller/build/css/index.css',
     ]}
   />
@@ -54,29 +54,29 @@ hide_table_of_contents: false
 对于 ice.js 子应用，只需将 [`build-plugin-icestark`](https://ice.work/docs/guide/advanced/icestark) 升级到最新版本，并开启 [icejs Vite 模式](https://ice.work/docs/guide/basic/Vite)，即可完成改造工作。
 
 
-### es module 微应用的常见问题解答
+### ES modules 微应用的常见问题解答
 
 #### 框架应用需要是 Vite 应用吗？
 
-**不需要**。框架应用可以使用 webpack 等非 es module 构建工具，无需对框架应用进行任何构建上的改造。对于框架应用，唯一需要做的是：升级最新的 icestark 版本，并设置 es module 微应用的加载方式（`loadScriptMode` 字段） 设置为 `import` 即可。
+**不需要**。框架应用可以使用 webpack 等非 ES modules 构建工具，无需对框架应用进行任何构建上的改造。对于框架应用，唯一需要做的是：升级最新的 icestark 版本，并设置 ES modules 微应用的加载方式（`loadScriptMode` 字段） 设置为 `import` 即可。
 
 #### 支持沙箱模式吗？
 
 暂不支持沙箱模式。
 
-#### 为什么要使用 es module 微应用
+#### 为什么要使用 ES modules 微应用
 
-除了本地开发的优秀体验，由于 es module 脚本[只执行一次](https://dmitripavlutin.com/javascript-module-import-twice/)的策略，微应用二次加载的速度基本没有延迟。
+除了本地开发的优秀体验，由于 ES modules 脚本[只执行一次](https://dmitripavlutin.com/javascript-module-import-twice/)的策略，微应用二次加载的速度基本没有延迟，极高地提升二次加载体验。
 
 #### 浏览器的版本支持
 
-由于 icestark 内部使用 [dynamic import](https://github.com/tc39/proposal-dynamic-import) 来支持 es module 应用，因此支持 chrome 63 版本以上的浏览器。
+由于 icestark 内部使用 [dynamic import](https://github.com/tc39/proposal-dynamic-import) 来支持 ES modules 应用，因此支持 chrome 63 版本以上的浏览器。
 
 :::tip
-有关使用 es module 的其他疑问，欢迎通过 [issue](https://github.com/ice-lab/icestark/issues) 或 [discussion](https://github.com/ice-lab/icestark/discussions) 告知我们。
+有关使用 ES modules 的其他疑问，欢迎通过 [issue](https://github.com/ice-lab/icestark/issues) 或 [discussion](https://github.com/ice-lab/icestark/discussions) 告知我们。
 :::
 
-### 支持 Angular 微应用
+### 完善 Angular 微应用
 
 Angular 1.x 应用我们建议通过 [entry](/docs/guide/concept/child#2-entry) 方式接入，因为我们没有比较好的方式来定义 [生命周期函数](/docs/guide/concept/child#生命周期)。在 Angular 5.x 及以上的版本，我们可以通过 [bootstrapModule](https://angular.io/api/core/PlatformRef#bootstrapModule) 获取到 NgModule 实例。因此可以通过下面的方式定义生命周期函数：
 
@@ -112,7 +112,7 @@ export function unmount () {
 
 ### 对项目配置的改造
 
-由于 icestark 内部使用 [dynamic import](https://github.com/tc39/proposal-dynamic-import) 来支持 es module 应用，因此需要对 icestark 工程进行一些适配，保证 dynamic import 不会被转译。项目 `tsconfig.json` 的改动如下：
+由于 icestark 内部使用 [dynamic import](https://github.com/tc39/proposal-dynamic-import) 来支持 ES modules 应用，因此需要对 icestark 工程进行一些适配，保证 dynamic import 不会被转译。项目 `tsconfig.json` 的改动如下：
 
 ```js
 {
@@ -129,7 +129,7 @@ export function unmount () {
 }
 ```
 
-也就是说，之前版本的 icestark 的默认产物是 commonjs 规范；2.6.0 的版本的默认产物会是 es module 规范。
+也就是说，之前版本的 icestark 的默认产物是 commonjs 规范；2.6.0 的版本的默认产物会是 ES modules 规范。
 
 ## 后续的版本计划
 
