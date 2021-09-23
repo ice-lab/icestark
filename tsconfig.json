@@ -1,13 +1,25 @@
 {
   "compilerOptions": {
     "target": "es5",
+    "module": "esnext",
+    "moduleResolution": "Node",
     "jsx": "react",
     "experimentalDecorators": true,
     "declaration": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "lib"
+    "outDir": "lib",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
   },
   "include": ["src/*"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "ts-node": {
+    // these options are overrides used only by ts-node
+    // same as our --compilerOptions flag and our TS_NODE_COMPILER_OPTIONS environment variable
+    // https://github.com/TypeStrong/ts-node/issues/922#issuecomment-673155000
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
 }

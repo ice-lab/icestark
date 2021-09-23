@@ -1,4 +1,4 @@
-import * as urlParse from 'url-parse';
+import urlParse from 'url-parse';
 import {
   routingEventsListeningTo,
   isInCapturedEventListeners,

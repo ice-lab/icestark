@@ -98,20 +98,6 @@ const filterRemoveCSS = (cssList: string[]) => {
   });
 };
 
-/**
- * support react module render
- */
-const defaultMount = () => {
-  console.error('[icestark module] Please export mount function');
-};
-
-/**
- * default unmount function
- */
-const defaultUnmount = () => {
-  console.error('[icestark module] Please export unmount function');
-};
-
 function createSandbox(sandbox: ISandbox, deps?: object) {
   let moduleSandbox = null;
 
@@ -233,8 +219,13 @@ export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) 
     return Promise.reject(new Error(errMsg));
   }
 
-  const mount = targetModule.mount || moduleInfo?.mount || defaultMount;
+  const mount = targetModule.mount || moduleInfo?.mount;
+  const unmount = targetModule.unmount || moduleInfo?.unmount;
   const component = moduleInfo.default || moduleInfo;
+
+  if (!mount || !unmount) {
+    console.error('[icestark module] Please export mount/unmount function');
+  }
 
   // append css before mount module
   const cssList = filterAppendCSS(moduleCSS);
@@ -244,6 +235,7 @@ export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) 
 
   return {
     mount,
+    unmount,
     component,
   };
 };
@@ -263,13 +255,15 @@ export const unmoutModule = (targetModule: StarkModule, targetNode: HTMLElement)
   const { name } = targetModule;
   const moduleInfo = importModules[name]?.moduleInfo;
   const moduleSandbox = importModules[name]?.moduleSandbox;
-  const unmount = targetModule.unmount || moduleInfo?.unmount || defaultUnmount;
+  const unmount = targetModule.unmount || moduleInfo?.unmount;
   const cssList = filterRemoveCSS(importModules[name]?.moduleCSS);
   removeCSS(name, document, cssList);
   if (moduleSandbox?.clear) {
     moduleSandbox.clear();
   }
 
-  return unmount(targetNode);
+  if (unmount && targetNode) {
+    return unmount(targetNode);
+  }
 };
 

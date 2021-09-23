@@ -68,6 +68,13 @@ export const isObject = checkTypes('Object');
 export const isUndefined = checkTypes('Undefined');
 
 /**
+* Checks if value is an element
+*/
+export const isElement = (element: unknown): element is HTMLElement => {
+  return element instanceof Element || element instanceof HTMLDocument;
+};
+
+/**
  * convert path to unique string.
  */
 export const converArray2String = (list: string | object | string[] | object[]): string => {
@@ -148,4 +155,15 @@ export const shouldSetBasename = (activePath?: ActivePath, basenmae?: string): a
   }
 
   return true;
+};
+
+/**
+ * Turns concurrent traversing to sequential travsersing.
+ */
+export const asyncForEach = async <T> (arr: T[], callback: (item: T, index: number) => Promise<void>): Promise<void> => {
+  for (let idx = 0; idx < arr.length; ++idx) {
+    // All async promises run sequentially. So disable the following lint.
+    // eslint-disable-next-line no-await-in-loop
+    await callback(arr[idx], idx);
+  }
 };

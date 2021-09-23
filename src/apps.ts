@@ -1,5 +1,5 @@
 import Sandbox, { SandboxConstructor, SandboxProps } from '@ice/sandbox';
-import * as isEmpty from 'lodash.isempty';
+import isEmpty from 'lodash.isempty';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
 import checkUrlActive, { ActivePath, PathOption, formatPath } from './util/checkActive';
 import {
@@ -9,16 +9,22 @@ import {
   loadAndAppendCssAssets,
   loadAndAppendJsAssets,
   emptyAssets,
+  filterRemovedAssets,
   Assets,
 } from './util/handleAssets';
 import { setCache } from './util/cache';
-import { loadBundle } from './util/loader';
+import { loadScriptByFetch, loadScriptByImport } from './util/loaders';
 import { getLifecyleByLibrary, getLifecyleByRegister } from './util/getLifecycle';
-import { mergeFrameworkBaseToPath, getAppBasename, isFunction, shouldSetBasename } from './util/helpers';
+import { mergeFrameworkBaseToPath, getAppBasename, shouldSetBasename } from './util/helpers';
 import globalConfiguration from './util/globalConfiguration';
+
 import type { StartConfiguration } from './util/globalConfiguration';
 
 export type ScriptAttributes = string[] | ((url: string) => string[]);
+
+const importCachedAssets: {
+  [index: string]: HTMLElement[];
+} = {};
 
 interface LifecycleProps {
   container: HTMLElement | string;
@@ -51,7 +57,7 @@ export interface BaseConfig extends PathOption {
    * @deprecated
    */
   umd?: boolean;
-  loadScriptMode?: 'fetch' | 'script';
+  loadScriptMode?: 'fetch' | 'script' | 'import';
   checkActive?: (url: string) => boolean;
   appAssets?: Assets;
   props?: object;
@@ -163,7 +169,7 @@ export async function loadAppModule(appConfig: AppConfig) {
   let lifecycle: ModuleLifeCycle = {};
   onLoadingApp(appConfig);
   const appSandbox = createSandbox(appConfig.sandbox) as Sandbox;
-  const { url, container, entry, entryContent, name, scriptAttributes = [] } = appConfig;
+  const { url, container, entry, entryContent, name, scriptAttributes = [], umd } = appConfig;
   const appAssets = url ? getUrlAssets(url) : await getEntryAssets({
     root: container,
     entry,
@@ -174,25 +180,35 @@ export async function loadAppModule(appConfig: AppConfig) {
   });
   updateAppConfig(appConfig.name, { appAssets, appSandbox });
 
-  /*
-  * we support two ways to acquire javascript assets, `fetch` or `<script />` element.
-  * Whereas js assets may formated as `umd` or `self-executing js bundle`.
-  * `umd` is a deprecated field, which indicates "an umd javascript bundle, acquired by fetch".
-  */
-  if (appConfig.umd || appConfig.loadScriptMode === 'fetch') {
-    await loadAndAppendCssAssets(appAssets);
-    lifecycle = await loadBundle(appAssets.jsList, appSandbox);
-  } else {
-    await Promise.all([
-      loadAndAppendCssAssets(appAssets),
-      loadAndAppendJsAssets(appAssets, { sandbox: appSandbox, fetch, scriptAttributes }),
-    ]);
+  /**
+   * LoadScriptMode has the first priority
+   */
+  const loadScriptMode = appConfig.loadScriptMode ?? (umd ? 'fetch' : 'script');
 
-    lifecycle =
-      getLifecyleByLibrary() ||
-      getLifecyleByRegister() ||
-      {};
+  switch (loadScriptMode) {
+    case 'import':
+      await loadAndAppendCssAssets([
+        ...appAssets.cssList,
+        ...filterRemovedAssets(importCachedAssets[name] || [], ['LINK', 'STYLE']),
+      ]);
+      lifecycle = await loadScriptByImport(appAssets.jsList);
+      // Not to handle script element temporarily.
+      break;
+    case 'fetch':
+      await loadAndAppendCssAssets(appAssets.cssList);
+      lifecycle = await loadScriptByFetch(appAssets.jsList, appSandbox);
+      break;
+    default:
+      await Promise.all([
+        loadAndAppendCssAssets(appAssets.cssList),
+        loadAndAppendJsAssets(appAssets, { sandbox: appSandbox, fetch, scriptAttributes }),
+      ]);
+      lifecycle =
+        getLifecyleByLibrary() ||
+        getLifecyleByRegister() ||
+        {};
   }
+
   if (isEmpty(lifecycle)) {
     console.error('[@ice/stark] microapp should export mount/unmout or register registerAppEnter/registerAppLeave.');
   }
@@ -285,7 +301,7 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
       }
     } else if (appConfig.status === UNMOUNTED) {
       if (!appConfig.cached) {
-        await loadAndAppendCssAssets(appConfig.appAssets || { cssList: [], jsList: [] });
+        await loadAndAppendCssAssets(appConfig?.appAssets?.cssList || []);
       }
       await mountMicroApp(appConfig.name);
     } else if (appConfig.status === NOT_MOUNTED) {
@@ -316,7 +332,17 @@ export async function unmountMicroApp(appName: string) {
   if (appConfig && (appConfig.status === MOUNTED || appConfig.status === LOADING_ASSETS || appConfig.status === NOT_MOUNTED)) {
     // remove assets if app is not cached
     const { shouldAssetsRemove } = getAppConfig(appName)?.configuration || globalConfiguration;
-    emptyAssets(shouldAssetsRemove, !appConfig.cached && appConfig.name);
+    const removedAssets = emptyAssets(shouldAssetsRemove, !appConfig.cached && appConfig.name);
+
+    /**
+    * Since es module natively imported twice may never excute twice. https://dmitripavlutin.com/javascript-module-import-twice/
+    * Cache all child's removed assets, then append them when app is mounted for the second time.
+    * Only cache removed assets when app's loadScriptMode is import which may not cause break change.
+    */
+    if (appConfig.loadScriptMode === 'import') {
+      importCachedAssets[appName] = removedAssets;
+    }
+
     updateAppConfig(appName, { status: UNMOUNTED });
     if (!appConfig.cached && appConfig.appSandbox) {
       appConfig.appSandbox.clear();
