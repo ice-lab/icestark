@@ -13,6 +13,7 @@ module.exports = getESLintConfig('react-ts', {
     'react/static-property-placement': 'off',
     '@iceworks/best-practices/recommend-functional-component': 'off',
     '@iceworks/best-practices/recommend-polyfill': 'off',
+    'no-nested-ternary': 'warn',
   },
 });
 
