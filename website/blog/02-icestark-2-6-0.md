@@ -17,6 +17,7 @@ hide_table_of_contents: false
 - [完善 Angular 微应用支持](#支持-angular-微应用)
 - [修复 location.hash 赋值 onRouteChange 触发两次的错误](#修复对-locationhash-赋值-onroutechange-触发两次的错误)
 - [对项目配置的改造](#对项目配置的改造)
+- [ice.js 插件支持 ES modules 资源](#ice.js-插件支持-ES-modules-资源)
 
 <!--truncate-->
 
@@ -130,6 +131,31 @@ export function unmount () {
 ```
 
 也就是说，之前版本的 icestark 的默认产物是 commonjs 规范；2.6.0 的版本的默认产物会是 ES modules 规范。
+
+### ice.js 插件支持 ES modules 资源
+
+[ice.js](https://ice.work/) 可通过定制插件 [build-plugin-icestark](https://ice.work/docs/guide/advanced/icestark) 快速接入 icestark。在该插件的最新版本中，我们支持开启 [Vite 模式](https://ice.work/docs/guide/basic/vite) 的 ice.js 应用快速接入。
+
+首先，需要将 `build-plugin-icestark` 升级至最新版本：
+
+```shell
+npm i build-plugin-icestark@latest -D
+```
+
+并将 `ice.js` 升级至 2.x 版本。详见[升级指南](https://ice.work/docs/guide/upgrade#%E4%BB%8E-icejs-1x-%E5%8D%87%E7%BA%A7)。
+
+然后，在微应用的构建配置（`build.json`）中，修改成 `Vite` 模式：
+
+```diff
++ "vite": true,
+"plugins": [
+  ["build-plugin-icestark", {
++    "type": "child"
+-    "umd": true
+  }],
+]
+```
+
 
 ## 后续的版本计划
 
