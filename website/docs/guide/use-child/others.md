@@ -422,6 +422,20 @@ export class AppComponent {
 }
 ```
 
+### 使用 entry 或 entryContent 接入
+
+由于 Angular 默认渲染在 `<app-root></app-root>` 节点，因此建议通过 [entry](/docs/guide/concept/child#2-entry) 或 [entryContent](https://micro-frontends.ice.work/docs/guide/concept/child#3-entrycontent) 的方式接入。比如 Angular 应用部署在 `http://localhost:3333`，则框架应用配置建议配置如下：
+
+```js
+<AppRouter>
+  <AppRoute
+    title="Angular 应用"
+    entry="http://localhost:3333"
+  />
+  ...
+</AppRouter>
+```
+
 ### 示例 Repo
 
 https://github.com/maoxiaoke/icestark-angular-12
