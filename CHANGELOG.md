@@ -2,6 +2,10 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
+## 2.6.1
+
+- [fix] wrap `import` using `new Function` to avoid compiler error under chrome61 & ie. ([#404](https://github.com/ice-lab/icestark/issues/404))
+
 ## 2.6.0
 
 - [feat] support native es module micro-applications. ([#346, #260](https://github.com/ice-lab/icestark/issues/346))

@@ -86,10 +86,24 @@ export async function loadScriptByImport(jsList: Asset[]): Promise<null | Module
         id: `${PREFIX}-js-module-${index}`,
       });
     } else {
-      const { mount: maybeMount, unmount: maybeUnmount } = await import(/* webpackIgnore: true */ /* @vite-ignore */js.content);
-      if (maybeMount && maybeUnmount) {
-        mount = maybeMount;
-        unmount = maybeUnmount;
+      try {
+        /**
+        * `import` will cause error under chrome 61 and ie.
+        * Then use `new Function` to escape compile error.
+        * Inspired by [dynamic-import-polyfill](https://github.com/GoogleChromeLabs/dynamic-import-polyfill)
+        */
+        // eslint-disable-next-line no-new-func
+        const dynamicImport = new Function('url', 'return import(url)');
+        const { mount: maybeMount, unmount: maybeUnmount } = await dynamicImport(js.content);
+
+        if (maybeMount && maybeUnmount) {
+          mount = maybeMount;
+          unmount = maybeUnmount;
+        }
+      } catch (e) {
+        Promise.reject(
+          new Error('[icestark] You are not support to use `loadScriptMode = import` where dynamic import is not supported by browsers.'),
+        );
       }
     }
   });
