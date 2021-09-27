@@ -24,8 +24,9 @@ const data = [
     url: '/docs/guide/advanced/performance',
   },
   {
-    title: '简单易用',
-    desc: '提供多种开箱即用的工具和不断改进的报错信息，可以身心愉悦地开发并调试您的微前端应用',
+    title: '支持 ES modules',
+    desc: '支持 ES modules 类型的应用，享受极致开发体验的同时，渐进式地迁移至 ES modules 应用',
+    url: '/docs/guide/use-child/others#vite-应用',
   },
   {
     title: '支持微模块',
@@ -48,7 +49,7 @@ function Feature() {
           <div className={styles.content}>
             <h3>{item.title}</h3>
             <span>{item.desc}</span>
-            <div style={{ flex: 1 }}></div>
+            <div style={{ flex: 1 }} />
             { item.url && (
               <p>{'Documentation >'}</p>
             ) }
