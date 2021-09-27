@@ -1,0 +1,1 @@
+(self.webpackChunksite=self.webpackChunksite||[]).push([[713],{7485:function(n){"use strict";n.exports=JSON.parse('{"v-2":{"allTagsPath":"/blog/tags","slug":"v-2","name":"v2","count":3,"permalink":"/blog/tags/v-2"},"announcement":{"allTagsPath":"/blog/tags","slug":"announcement","name":"announcement","count":3,"permalink":"/blog/tags/announcement"}}')}}]);
