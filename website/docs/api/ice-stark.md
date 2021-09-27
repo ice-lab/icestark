@@ -47,7 +47,7 @@ interface AppConfig {
   entryContent?: string;
   basename?: string;
   umd?: boolean;
-  loadScriptMode?: 'fetch' | 'script';
+  loadScriptMode?: 'fetch' | 'script' | 'import';
   checkActive?: (url: string) => boolean;
   appAssets?: Assets;
   props?: object;
@@ -214,9 +214,9 @@ export function mount(props) {
 
 ### loadScriptMode <Badge text="2.0.0+" />
 
-微应用 JavaScript 资源加载方式。当值 `fetch` 时，会通过 `window.fetch` (若AppRouter 提供了 `fetch` 参数，则会使用自定义 `fetch`) 请求资源；值为 `script`，会使用 `<script />` 标签加载资源，选填。
+微应用 JavaScript 资源加载方式。当值 `fetch` 时，会通过 `window.fetch` (若AppRouter 提供了 `fetch` 参数，则会使用自定义 `fetch`) 请求资源；值为 `script`，会使用 `<script />` 标签加载资源；值为 `import`，则支持 es module 类型微应用。选填。
 
-- 类型： `fetch | script`
+- 类型： `fetch | script | import`
 - 默认值：`script`
 
 ### scriptAttributes <Badge text="2.4.0+" />
