@@ -57,6 +57,21 @@ export interface ILifecycleProps {
   customProps?: object;
 }
 
+function isAssetExist(element: HTMLScriptElement | HTMLLIElement, type: 'script' | 'link') {
+  const urlAlias = type === 'script' ? 'src' : 'href';
+
+  return Array.from(document.getElementsByTagName(type))
+    .some((item) => {
+      if (
+        item[urlAlias]
+        && element[urlAlias] === item[urlAlias]
+      ) {
+        return true;
+      }
+      return false;
+    });
+}
+
 /**
  * Create link/style element and append to root
  */
@@ -235,6 +250,10 @@ export function appendExternalScript(asset: string | Asset,
       scriptAttributes,
     });
 
+    if (isAssetExist(element, 'script')) {
+      resolve();
+    }
+
     element.addEventListener(
       'error',
       () => reject(new Error(`js asset loaded error: ${content || asset}`)),
@@ -266,7 +285,7 @@ export function getUrlAssets(urls: string | string[]) {
     }
   });
 
-  return removeDuplicateResources({ jsList, cssList });
+  return { jsList, cssList };
 }
 
 export function fetchScripts(jsList: Asset[], fetch: Fetch = defaultFetch) {
@@ -364,26 +383,6 @@ export function replaceNodeWithComment(node: HTMLElement, comment: string): void
     node.parentNode.appendChild(commentNode);
     node.parentNode.removeChild(node);
   }
-}
-
-export function removeDuplicateResources(assets: Assets): Assets {
-  const getExternalContent = (type: 'script' | 'link') => {
-    const urlAlias = type === 'script' ? 'src' : 'href';
-
-    return Array.from(document.getElementsByTagName(type))
-      .filter((item) => item[urlAlias] && item.getAttribute(PREFIX) === STATIC)
-      .map((item) => item[urlAlias]);
-  };
-
-  const includes = (externalContent: string[]) => (asset: Asset) => asset.type === AssetTypeEnum.INLINE || !externalContent.includes(asset.content);
-
-  const externalScriptContent = getExternalContent('script');
-  const externalStyleContent = getExternalContent('link');
-
-  return {
-    jsList: assets.jsList.filter(includes(externalScriptContent)),
-    cssList: assets.cssList.filter(includes(externalStyleContent)),
-  };
 }
 
 /**
@@ -508,10 +507,10 @@ export function processHtml(html: string, entry?: string): ProcessedContent {
 
   return {
     html: domContent.getElementsByTagName('html')[0],
-    assets: removeDuplicateResources({
+    assets: {
       jsList: processedJSAssets,
       cssList: processedCSSAssets,
-    }),
+    },
   };
 }
 
