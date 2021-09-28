@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.3
+
+- [fix] avoid unmounting when `<MicroModule>` has not yet been mounted.
+
 ## 1.4.2
 
 - [feat] append sourceURL to js resources to make sourcemaps work.

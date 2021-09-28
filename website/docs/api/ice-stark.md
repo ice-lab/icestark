@@ -47,7 +47,7 @@ interface AppConfig {
   entryContent?: string;
   basename?: string;
   umd?: boolean;
-  loadScriptMode?: 'fetch' | 'script';
+  loadScriptMode?: 'fetch' | 'script' | 'import';
   checkActive?: (url: string) => boolean;
   appAssets?: Assets;
   props?: object;
@@ -214,9 +214,9 @@ export function mount(props) {
 
 ### loadScriptMode <Badge text="2.0.0+" />
 
-微应用 JavaScript 资源加载方式。当值 `fetch` 时，会通过 `window.fetch` (若AppRouter 提供了 `fetch` 参数，则会使用自定义 `fetch`) 请求资源；值为 `script`，会使用 `<script />` 标签加载资源，选填。
+微应用 JavaScript 资源加载方式。当值 `fetch` 时，会通过 `window.fetch` (若AppRouter 提供了 `fetch` 参数，则会使用自定义 `fetch`) 请求资源；值为 `script`，会使用 `<script />` 标签加载资源；值为 `import`，则支持 es module 类型微应用。选填。
 
-- 类型： `fetch | script`
+- 类型： `fetch | script | import`
 - 默认值：`script`
 
 ### scriptAttributes <Badge text="2.4.0+" />
@@ -242,6 +242,106 @@ export function mount(props) {
 }
 ```
 
+
+## StartConfiguration
+
+`StartConfiguration` 定义 icestark 运行时可选的参数配置，包含一些常见的 Hooks 以及自定义配置。类型定义如下：
+
+```ts
+onAppEnter?: (appConfig: AppConfig) => void;
+onAppLeave?: (appConfig: AppConfig) => void;
+onLoadingApp?: (appConfig: AppConfig) => void;
+onFinishLoading?: (appConfig: AppConfig) => void;
+onError?: (err: Error) => void;
+onActiveApps?: (appConfigs: AppConfig[]) => void;
+fetch?: Fetch;
+shouldAssetsRemove?: (
+  assetUrl?: string,
+  element?: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement,
+) => boolean;
+onRouteChange?: (
+  url: string,
+  pathname: string,
+  query: object,
+  hash?: string,
+  type?: RouteType | 'init' | 'popstate' | 'hashchange',
+) => void;
+prefetch?: Prefetch;
+basename?: string;
+```
+
+各字段详细介绍如下：
+
+### onActiveApps
+
+微应用开始被激活的回调（选填）
+
+- 类型：`Function(appConfig[])`
+- 默认值：`-`
+
+### onAppEnter
+
+微应用渲染前的回调（选填）
+
+- 类型：`Function(appConfig)`
+- 默认值：`-`
+
+### onAppLeave
+
+微应用卸载前的回调（选填）
+
+- 类型：`Function(appConfig)`
+- 默认值：`-`
+
+### onLoadingApp
+
+微应用开始加载的回调（选填）
+
+- 类型：`Function(appConfig)`
+- 默认值：`-`
+
+### onFinishLoading
+
+微应用结束加载的回调（选填）
+
+- 类型：`Function(appConfig)`
+- 默认值：`-`
+
+### onError
+
+微应用加载过程发生错误的回调（选填）
+
+- 类型：`Function(error)`
+- 默认值：`-`
+
+### shouldAssetsRemove
+
+判断页面资源是否持久化保留（选填）
+
+- 类型：`Function(assetUrl, element)`
+- 默认值：`() => true`
+
+### fetch
+
+自定义 fetch（选填）。
+
+- 类型：`Function(assetUrl)`
+- 默认值：`window.fetch`
+
+### prefetch
+
+预加载微应用资源（选填）。
+
+- 类型：`Boolean | string[] | Function(app)`
+- 默认值：`undefined`
+
+### basename <Badge text="2.5.0+" />
+
+- 微应用路由匹配统一添加 basename，选填
+- 类型：`string`
+- 默认值：`''`
+
+
 ## React 组件
 
 对于 React 用户，我们封装了底层 API 的部分能力，以便用户可以通过 React 组件的方式快速接入 icestark。了解更多请移步 [主应用接入 - React](/docs/guide/use-layout/react)。
@@ -254,7 +354,38 @@ import { AppRouter, AppRoute } from '@ice/stark';
 
 ### AppRouter
 
-定位微应用渲染节点，包含如下 `props` 属性：
+定位微应用渲染节点，其 props 参数扩展至 [StartConfiguration](#startconfiguration)。类型定义如下：
+
+```ts
+interface AppRouterProps extends StartConfiguration {
+  ErrorComponent?: React.ComponentType | React.ReactElement;
+  LoadingComponent?: React.ComponentType | React.ReactElement;
+  NotFoundComponent?: React.ComponentType | React.ReactElement;
+}
+```
+
+新增字段介绍如下：
+
+#### ErrorComponent
+
+传入一个 React Component，在微应用加载过程中出现错误时渲染（可选）。
+
+- 类型：`React.ComponentType | React.ReactElement`
+- 默认值：`-`
+
+#### LoadingComponent
+
+传入一个 React Component，在微应用加载过程中时渲染（可选）。
+
+- 类型：`React.ComponentType | React.ReactElement`
+- 默认值：`-`
+
+#### NotFoundComponent
+
+传入一个 React Component，在无匹配路由时渲染（可选）。
+
+- 类型：`React.ComponentType | React.ReactElement`
+- 默认值：`-`
 
 ### AppRoute
 
@@ -325,72 +456,62 @@ removeMicroApps(['app1', 'app2']);
 
 ### start
 
-通过 `start` 开始劫持路由变化，触发微应用的挂载/卸载，`start(options?)`。
+通过 `start` 开始劫持路由变化，触发微应用的挂载/卸载。类型定义如下：
 
-启动微应用对于可以配置的参数：
+```js
+function start(options?: StartConfiguration): void
+```
 
-#### onActiveApps
+入参为 [StartConfiguration](#startconfiguration)。示例如下：
 
-微应用开始被激活的回调（选填）
-- 类型：`Function(appConfig[])`
-- 默认值：`-`
+```js
+registerMicroApps([
+  {
+    name: 'app1',
+    activePath: ['/', '/message', '/about'],
+    container: appContainer,
+    url: ['//unpkg.com/icestark-child-common/build/js/index.js'],
+  }
+])
 
-#### onAppEnter
-
-微应用渲染前的回调（选填）
-
-- 类型：`Function(appConfig)`
-- 默认值：`-`
-
-#### onAppLeave
-
-微应用卸载前的回调（选填）
-- 类型：`Function(appConfig)`
-- 默认值：`-`
-
-#### onLoadingApp
-
-微应用开始加载的回调（选填）
-- 类型：`Function(appConfig)`
-- 默认值：`-`
-
-#### onFinishLoading
-
-微应用结束加载的回调（选填）
-- 类型：`Function(appConfig)`
-- 默认值：`-`
-
-#### shouldAssetsRemove
-
-判断页面资源是否持久化保留（选填）
-
-- 类型：`Function(assetUrl, element)`
-- 默认值：`() => true`
-
-#### fetch
-
-自定义 fetch（选填）。
-
-- 类型：`Function(assetUrl)`
-- 默认值：`window.fetch`
-
-#### prefetch
-
-预加载微应用资源（选填）。
-
-- 类型：`Boolean | string[] | Function(app)`
-- 默认值：`undefined`
-
-#### basename <Badge text="2.5.0+" />
-
-- 微应用路由匹配统一添加 basename，选填
-- 类型：`string`
-- 默认值：`''`
+start({
+  onAppEnter: (appConfig) => {
+    console.log(`${appConfig.name} entered.`)
+  }
+})
+```
 
 ### createMicroApp <Badge text="2.0.0+" />
 
-手动加载微应用，`createMicroApp(appConfig: AppConfig)`
-AppConfig 同 `regsiterMicroApps` 配置项，手动加载的情况下一般不包含路由相关配置：activePath、hashType、excat、strict、sensitive
+手动加载微应用，类型定义如下：
+
+```ts
+function createMicroApp(app: string | AppConfig, appLifecyle?: AppLifecylceOptions, configuration?: StartConfiguration): Promise<MicroApp>
+```
+
+使用该 api 的通用场景是无需 icestark 提供的运行时能力，手动指定在某行为下触发渲染微应用。示例如下：
+
+```js
+const App = () => {
+  const container = useRef(null);
+
+  useEffect(() => {
+    createMicroApp({
+      name: 'microApp',
+      url: ['//unpkg.com/icestark-child-common/build/js/index.js'],
+      container: container.current,
+    })
+    return () => {
+      unmountMicroApp('microApp')
+    }
+  }, [])
+
+  return (
+    <div ref>
+  )
+}
+```
+
 
 ### unmountMicroApp <Badge text="2.0.0+" />
 
