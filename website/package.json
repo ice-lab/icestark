@@ -40,7 +40,7 @@
   "devDependencies": {
     "@easyops-cn/docusaurus-search-local": "^0.17.0",
     "@iceworks/spec": "^1.3.2",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "fs-extra": "^10.0.0",
     "glob": "^7.1.7",
     "gray-matter": "^4.0.3",
