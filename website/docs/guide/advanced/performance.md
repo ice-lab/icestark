@@ -108,5 +108,30 @@ prefetchApps([{
 :::
 
 
+## 页面懒加载
+
+现代框架大多支持 webpack [Dynamic Imports](https://webpack.js.org/guides/code-splitting/#dynamic-imports)，简单来说，就是只有访问某页面时，页面的脚本和样式资源才会加载。比如在 React 中的用法：
+
+```js
+import React from 'react';
+import { Switch, Route } from 'react-router-dom';
+
+function App () {
+  return (
+    <Switch>
+      <Route path="/a" component={React.lazy(() => import('./A'))} ></Route>
+      <Route path="/b" component={React.lazy(() => import('./B'))} ></Route>
+      ...
+    </Switch>
+  >
+}
+```
+
+> 更多介绍可参考 [React.lazy](https://reactjs.org/docs/code-splitting.html#reactlazy)
+
+在 Vue 中的用法
+
+
+
 
 

@@ -542,9 +542,9 @@ export default defineConfig({
 
 ### 框架应用加载 Vite 应用
 
-框架应用需要通过 `loadScriptMode: import` 来加载 ES modules 类型微应用（Vite 应用）。
+框架应用需要通过 `loadScriptMode: import` 来加载 ES modules 类型微应用（Vite 应用）。同时由于 Vite 应用在 dev 下注入 HMR 相关的代码，因此建议通过 [entry 方式](http://localhost:3000/docs/guide/concept/child#2-entry) 接入，保证开发和生产的配置一致性。
 
-```js
+```diff
 export default class App extends React.Component {
   render() {
     return (
@@ -553,10 +553,7 @@ export default class App extends React.Component {
           <AppRoute
             title="商家平台"
 +           loadScriptMode="import" // 指定加载 ES modules 类型微应用
-            url={[
-              '//unpkg.com/icestark-child-seller/build/js/index.js',
-              '//unpkg.com/icestark-child-seller/build/css/index.css',
-            ]}
++           entry="https://icestark-child-seller"
           />
           <AppRoute
             path="/user"
@@ -569,7 +566,9 @@ export default class App extends React.Component {
 }
 ```
 
-
 ### 示例 Repo
 
-+ [icestark-vite-vue](https://github.com/maoxiaoke/icestark-vite-vue) 使用 vite + vue3 + vueRouter 创建的 icestark 微应用
++ [icestark-vite-vue](https://github.com/maoxiaoke/icestark-vite-vue) 使用 Vite + Vue3 + VueRouter 创建的 icestark 微应用
++ [icestark-vite-react](https://github.com/maoxiaoke/icestark-vite-react) 使用 Vite + React 创建的 icestark 微应用
++ [icestark-vite-framework](https://github.com/maoxiaoke/icestark-vite-framework) 使用 ice.js Vite 模式创建的 icestark 框架应用
+
