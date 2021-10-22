@@ -443,9 +443,11 @@ https://github.com/maoxiaoke/icestark-angular-12
 
 ## Vite 应用
 
-### 入口文件定义生命周期函数
+icestark 在 [v2.6.0](/blog/02-icestark-2-6-0) 版本开始支持 ES modules 类型微应用的加载。由于目前 [Vite](https://vitejs.dev/) 是目前最为流行的基于 ES modules 的构建工具，因此本章节介绍 Vite 应用接入 icestark 的具体步骤。
 
-在 Vite 应用的入口文件（Vue 应用通常是 `main.t|js`，React 应用通常是 `app.t|jsx`）定义生命周期函数，以 Vue 应用为例：
+### 定义生命周期函数
+
+首先，在 Vite 应用的入口文件（Vue 应用通常是 `main.t|js`，React 应用通常是 `app.t|jsx`）定义生命周期函数，以 Vue 应用为例：
 
 ```diff
 import { createApp } from 'vue'
@@ -453,19 +455,25 @@ import { createApp } from 'vue'
 import App from './App.vue'
 + import isInIcestark from '@ice/stark-app/lib/isInIcestark';
 
+
 - createApp(App).mount('#app');
 
 + let vue: Root<Element> | null = null;
 
+// 不在 icestark context，保持独立运行
 + if (!isInIcestark()) {
 +  createApp(App).mount('#app');
 + }
 
+
+// 导出 mount 生命周期函数
 + export function mount({ container }: { container: Element}) {
 +  vue = createApp(App);
 +  vue.mount(container);
 + }
 
+
+// 导出 unmout 生命周期函数
 + export function unmount() {
 +  if (vue) {
 +    vue.unmount();
@@ -475,11 +483,19 @@ import App from './App.vue'
 
 ### 修改 Vite 配置文件
 
-由于 Vite 默认情况下，会移除入口文件的导出。因此，我们需要进一步修改配置文件 `vite.config.js`，增加 `build` 配置属性。
+Vite 应用默认使用根目录下的 `index.html` 作为入口文件，并通过解析 `index.html` 的 `<script />` 标签生成一个 “虚拟的” 脚本资源入口文件，会导致 icestark 无法获取导出的生命周期函数。
+
+我们提供两种方式修改 Vite 配置文件，使得 icestark 可以正确获取生命周期函数。用户可以根据自己的实际情况进行选择。
+
+1. 使用 [Vite Lib 模式](https://vitejs.dev/guide/build.html#library-mode)
+
+Vite Lib 模式可以完全指定入口文件。这种方式的缺点是 Vite 会只输出应用的样式和脚本文件，如果应用需要单独运行，还需要手动提供 `index.html` 文件。
+
+配置如下：
 
 ```diff
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
 
 export default defineConfig({
   plugins: [vue()],
@@ -496,6 +512,64 @@ export default defineConfig({
 })
 ```
 
+2. 使用 [vite-plugin-index-html](https://www.npmjs.com/package/vite-plugin-index-html) 插件
+
+为了解决 Vite Lib 模式产生的问题，我们提供了 [vite-plugin-index-html](https://www.npmjs.com/package/vite-plugin-index-html) 插件，这个插件提供了类似 [html-webpack-plugin](https://webpack.js.org/plugins/html-webpack-plugin/) 的能力。
+
+在使用这个插件时，需要指定应用的入口文件（Vue 应用通常是 `main.t|js`，React 应用通常是 `app.t|jsx`））。使用如下：
+
+
+```diff
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
++ import htmlPlugin from 'vite-plugin-index-html';
+
+
+export default defineConfig({
+  plugins: [
+    vue(),
++   htmlPlugin({
++     input: './src/main.ts'
++   })
+  ],
+
+})
+```
+
 ### 配置基准路由
 
 对于基准路由的配置，可以依照 [React 微应用接入](/docs/guide/use-child/react#2-%E5%AE%9A%E4%B9%89%E5%9F%BA%E5%87%86%E8%B7%AF%E7%94%B1) 和 [Vue 微应用接入](/docs/guide/use-child/vue#2-%E5%AE%9A%E4%B9%89%E5%9F%BA%E5%87%86%E8%B7%AF%E7%94%B1) 相同的方式改造接入。
+
+### 框架应用加载 Vite 应用
+
+框架应用需要通过 `loadScriptMode: import` 来加载 ES modules 类型微应用（Vite 应用）。
+
+```js
+export default class App extends React.Component {
+  render() {
+    return (
+      <BasicLayout>
+        <AppRouter>
+          <AppRoute
+            title="商家平台"
++           loadScriptMode="import" // 指定加载 ES modules 类型微应用
+            url={[
+              '//unpkg.com/icestark-child-seller/build/js/index.js',
+              '//unpkg.com/icestark-child-seller/build/css/index.css',
+            ]}
+          />
+          <AppRoute
+            path="/user"
+            //...
+          />
+        </AppRouter>
+      </BasicLayout>
+    );
+  }
+}
+```
+
+
+### 示例 Repo
+
++ [icestark-vite-vue](https://github.com/maoxiaoke/icestark-vite-vue) 使用 vite + vue3 + vueRouter 创建的 icestark 微应用
