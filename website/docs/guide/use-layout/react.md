@@ -127,7 +127,7 @@ ReactDOM.render(<App />, document.getElementById('root'));
 
 - umd：默认 `false`，标识微应用是否为 umd 类型
 - sandbox：默认 `false`，是否开启 js 沙箱模式
-- cache：默认 `false`，切换后是否缓存微应用，可能会引起内存占用过大问题，不建议开启
+- cached：默认 `false`，切换后是否缓存微应用，可能会引起内存占用过大问题，不建议开启
 - hashType：默认 `false`，标识微应用的路由是否为 hash 模式
 
 更多参数请参考 [API 介绍 AppRoute](/docs/api/ice-stark#approute)。

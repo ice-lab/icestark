@@ -212,6 +212,14 @@ export function mount(props) {
 }
 ```
 
+### cached
+
+是否开启微应用切换时缓存（选填）。详细用法见 [性能优化](/docs/guide/advanced/performance#cached)
+
+- 类型：`boolean`
+- 默认值：`false`
+
+
 ### loadScriptMode <Badge text="2.0.0+" />
 
 微应用 JavaScript 资源加载方式。当值 `fetch` 时，会通过 `window.fetch` (若AppRouter 提供了 `fetch` 参数，则会使用自定义 `fetch`) 请求资源；值为 `script`，会使用 `<script />` 标签加载资源；值为 `import`，则支持 es module 类型微应用。选填。

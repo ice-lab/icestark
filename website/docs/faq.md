@@ -316,3 +316,30 @@ const Routes = () => {
 
 **不需要**。框架应用可以使用 webpack 等非 ES modules 构建工具，无需对框架应用进行任何构建上的改造。对于框架应用，唯一需要做的是：升级最新的 icestark 版本，并设置 ES modules 微应用的加载方式（loadScriptMode 字段） 设置为 import 即可。
 
+
+## 切换微应用，框架应用样式丢失
+
+通常情况是框架应用开启了 webpack [Dynamic Imports](https://webpack.js.org/guides/code-splitting/#dynamic-imports) 能力，可以通过 [shouldAssetsRemove](http://localhost:3000/docs/api/ice-stark#shouldassetsremove) 防止错误地移除框架应用的样式资源。
+
+```js
+// src/App.jsx
+import { AppRouter, AppRoute } from '@ice/stark';
+
+const App = () => {
+  render() {
+    return (
+      <AppRouter
+        shouldAssetsRemove={(url, element) => {
+          // 如果请求主应用静态资源，返回 false
+          if (url.includes('www.framework.com')) {
+            return false;
+          }
+          return true;
+        }}
+        >
+        ...
+      </AppRouter>
+    );
+  }
+}
+```
