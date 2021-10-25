@@ -33,7 +33,32 @@ import {
 
 ## AppConfig
 
-`AppConfig` 定义一个微应用的结构，类型定义如下：
+`AppConfig` 定义一个微应用的结构，使用方式如下：
+
+```js
+// 1. 传递给 AppRoute 的 props
+<AppRoute
+  name="seller"
+  activePath="/seller"
+  url={[
+    '/js/index.js',
+    '/css/index.js'
+  ]}
+>
+
+// 2. Api 方式通过 `registerMicroApps` 注册
+
+registerMicroApps([{
+  name="seller"
+  activePath="/seller"
+  url={[
+    '/js/index.js',
+    '/css/index.js'
+  ]}
+}])
+```
+
+`AppConfig` 类型定义如下：
 
 ```ts
 interface AppConfig {
