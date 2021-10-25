@@ -18,7 +18,7 @@ order: 3
 
 ## create-react-app 应用
 
-> 基于 create-react-app 4.x
+> 基于 [create-react-app 4.x](https://create-react-app.dev/)
 
 改造步骤如下：
 
@@ -80,6 +80,10 @@ module.exports = function (webpackEnv) {
   }
 }
 ```
+
+### 示例 Repo
+
+https://github.com/maoxiaoke/icestark-cra-child
 
 
 ## nuxt.js 应用
@@ -197,6 +201,10 @@ export default defineConfig({
   ],
 });
 ```
+
+### 示例 Repo
+
+https://github.com/maoxiaoke/icestark-umi-child
 
 ## next.js 应用
 
