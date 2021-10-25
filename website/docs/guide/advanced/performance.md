@@ -65,28 +65,26 @@ import { AppRouter, AppRoute } from '@ice/stark';
 import BasicLayout from '@/layouts/BasicLayout';
 
 const App = () => {
-  render() {
-    return (
-      <BasicLayout>
-        <AppRouter
-          prefetch
-          // or prefetch={['waiter']}
-          // or prefetch={(app) => app.name === 'waiter'}
-          >
-          <AppRoute
-            name="waiter"
-            path="/waiter"
-            title="商家平台"
-            url={[
-              'https://iceworks.oss-cn-hangzhou.aliyuncs.com/icestark/child-waiter-vue/dist/js/app.js',
-              'https://iceworks.oss-cn-hangzhou.aliyuncs.com/icestark/child-waiter-vue/dist/css/app.css',
-            ]}
-          />
-          ...
-        </AppRouter>
-      </BasicLayout>
-    );
-  }
+  return (
+    <BasicLayout>
+      <AppRouter
+        prefetch
+        // or prefetch={['waiter']}
+        // or prefetch={(app) => app.name === 'waiter'}
+        >
+        <AppRoute
+          name="waiter"
+          path="/waiter"
+          title="商家平台"
+          url={[
+            'https://iceworks.oss-cn-hangzhou.aliyuncs.com/icestark/child-waiter-vue/dist/js/app.js',
+            'https://iceworks.oss-cn-hangzhou.aliyuncs.com/icestark/child-waiter-vue/dist/css/app.css',
+          ]}
+        />
+        ...
+      </AppRouter>
+    </BasicLayout>
+  );
 }
 ```
 
@@ -107,6 +105,40 @@ prefetchApps([{
 有关 <code>prefetch</code> 的更多讨论或反馈，请移步 <a href="https://github.com/ice-lab/icestark/issues/188">RFC-prefetch</a>
 :::
 
+## cached
+
+icestark 提供微应用切换时缓存的能力。在开启该字段后，icestark 不会清理上个微应用的静态资源，不再重复执行脚本资源，以加快微应用二次加载的执行速度。若需要开启该能力，需配置：
+
+```js
+// src/App.jsx
+import { AppRouter, AppRoute } from '@ice/stark';
+
+const App = () => {
+  return (
+    <AppRouter>
+      <AppRoute
+        name="waiter"
+        path="/waiter"
+        title="商家平台",
+        cached
+        url={[
+          'https://iceworks.oss-cn-hangzhou.aliyuncs.com/icestark/child-waiter-vue/dist/js/app.js',
+          'https://iceworks.oss-cn-hangzhou.aliyuncs.com/icestark/child-waiter-vue/dist/css/app.css',
+        ]}
+      />
+      ...
+    </AppRouter>
+  );
+}
+```
+
+当需要使用 `cached` 能力时，保证已了解该能力带来的副作用：
+
+1. 由于微应用在切换时不会卸载样式资源，可能会导致样式污染
+
+一般来说，微应用之间的样式通过 [CSS Modules](https://github.com/css-modules/css-modules) 不会造成样式的大量污染，需要警惕的是三方组件库（比如 AntD、Fusion）产生的污染，尤其当某一微应用全局修改了组件库的样式。
+
+2. 在开启沙箱能力时，可能会导致内存泄露问题
 
 ## 页面懒加载
 
@@ -151,8 +183,7 @@ Dynamic Imports 可以大幅减少主 bunlde 的代码体积，从而提升微�
 
 ```js
 // webpack.config.js
-
-{
+module.exports = {
   ...
   output: {
     publicPath: 'https://www.cdn.example/'
@@ -163,7 +194,8 @@ Dynamic Imports 可以大幅减少主 bunlde 的代码体积，从而提升微�
 若静态资源存放在服务器，则配置：
 
 ```js
-{
+// webpack.config.js
+module.exports = {
   ...
   output: {
     publicPath: 'https://www.seller.com/'
@@ -180,63 +212,78 @@ icestark 内部会在微应用卸载时，同时卸载微应用的样式资源�
 import { AppRouter, AppRoute } from '@ice/stark';
 
 const App = () => {
-  render() {
-    return (
-      <AppRouter
-        shouldAssetsRemove={(url, element) => {
-          // 如果请求主应用静态资源，返回 false
-          if (url.includes('www.framework.com')) {
-            return false;
-          }
-          return true;
-        }}
-        >
-        ...
-      </AppRouter>
-    );
-  }
+  return (
+    <AppRouter
+      shouldAssetsRemove={(url, element) => {
+        // 如果请求主应用静态资源，返回 false
+        if (url.includes('www.framework.com')) {
+          return false;
+        }
+        return true;
+      }}
+      >
+      ...
+    </AppRouter>
+  );
 }
 ```
 
-## cached
+## 依赖外置
 
-icestark 提供微应用切换时缓存的能力。在开启该字段后，icestark 不会清理上个微应用的静态资源，不再重复执行脚本资源，以加快微应用二次加载的执行速度。若需要开启该能力，需配置：
+通常框架应用和微应用会共有一些基础依赖，比如 `React`、`ReactDOM`、组件库等。可以适当考虑微应用外置掉这些基础依赖，由框架应用统一加载。比如，通过 [webpack Externals](https://webpack.js.org/configuration/externals) 外置微应用的基础依赖：
 
 ```js
-// src/App.jsx
-import { AppRouter, AppRoute } from '@ice/stark';
-
-const App = () => {
-  render() {
-    return (
-      <AppRouter>
-        <AppRoute
-          name="waiter"
-          path="/waiter"
-          title="商家平台",
-          cached
-          url={[
-            'https://iceworks.oss-cn-hangzhou.aliyuncs.com/icestark/child-waiter-vue/dist/js/app.js',
-            'https://iceworks.oss-cn-hangzhou.aliyuncs.com/icestark/child-waiter-vue/dist/css/app.css',
-          ]}
-        />
-        ...
-      </AppRouter>
-    );
-  }
-}
+// webpack.config.js
+mmodule.exports = {
+  // ...
+  externals: {
+    'react': 'React',
+    'react-dom': 'ReactDOM',
+    'antd': 'antd'
+  },
+};
 ```
 
-当需要使用 `cached` 能力时，保证已了解该能力带来的副作用：
+并在框架应用的 `index.html` 中加载基础依赖的 cdn 版本。
 
-1. 由于微应用在切换时不会卸载样式资源，可能会导致样式污染
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width" />
+    <title>icestark Framework App</title>
+  </head>
 
-一般来说，微应用之间的样式通过 [CSS Modules](https://github.com/css-modules/css-modules) 不会造成样式的大量污染，需要警惕的是三方组件库（比如 AntD、Fusion）产生的污染，尤其当某一微应用全局修改了组件库的样式。
+  <body>
+    <div id="root"></div>
+    <!-- 在框架应用中加载基础依赖 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.0/cjs/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.0/cjs/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/antd/4.17.0-alpha.8/antd.min.js"></script>
 
-2. 在开启沙箱能力时，可能会导致内存泄露问题
+    <!-- 加载框架应用的脚本资源 -->
+    <script src="//ice.alicdn.com/icestark/layout-app/build/js/index.js"></script>
+  </body>
+</html>
+```
 
+## LoadingComponent
 
+微应用之间切换造成的空白画面让人难以接受，为了降低页面空白造成的视觉冲击，可以在微应用的切换时添加一个 “过渡” 动画：
 
+```js
+import Loading from './Loading';
 
-
+const App = () => {
+  return (
+    <AppRouter
+      LoadingComponent={Loading}
+      >
+      ...
+    </AppRouter>
+  );
+}
+```
 

@@ -47,7 +47,6 @@ import {
 >
 
 // 2. Api 方式通过 `registerMicroApps` 注册
-
 registerMicroApps([{
   name="seller"
   activePath="/seller"

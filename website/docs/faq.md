@@ -88,7 +88,9 @@ const apps = [{
 
 ## 应用启用 lazy 后，chunk 加载失败
 
-多个微应用均开启 lazy 加载页面，建议通过开启 sandbox 隔离微应用 windows 全局变量。如果无法开启 sandbox，则需要在主应用 `onAppLeave` 的阶段清空 webpackJsonp 配置：
+1. 可能是  webpack runtimes 发生冲突
+
+通常发生在多个微应用均开启 lazy 加载页面，这种情况建议开启 sandbox 隔离微应用 windows 全局变量。如果无法开启 sandbox，则需要在主应用 `onAppLeave` 的阶段清空 webpackJsonp 配置：
 
 ```js
 const onAppLeave = (appConfig) => {
@@ -96,9 +98,26 @@ const onAppLeave = (appConfig) => {
 };
 ```
 
-主应用和微应用均开启 lazy 的情况下，需要通过配置 `webpack.output.jsonpFunction` 来隔离两个应用的全局变量名称，详见 [webpack 配置](https://webpack.js.org/configuration/output/#outputjsonpfunction)。
+> 若使用 webpack5 构建应用，则 webpack5 会默认使用 package.json 的 name 作为 [uniqueName](https://webpack.js.org/blog/2020-10-10-webpack-5-release/#automatic-unique-naming)，因此也无需在 onAppLeave 阶段移除 window.webpackJsonp，可排除该因素影响。
 
-## `Error: Invariant failed: You should not use <withRouter(Navigation) /> outside a <Router>`
+
+2. 没有配置 publicPath
+
+由于未配置 [publicPath](https://webpack.js.org/configuration/output/#outputpublicpath)，可能会导致 webpack 加载了错误的静态地址。比如，静态资源打包发送到 CDN 服务上，则可配置：
+
+```js
+// webpack.config.js
+module.exports = {
+  ...
+  output: {
+    publicPath: 'https://www.cdn.example/'
+  }
+}
+```
+
+
+
+## Error: Invariant failed: You should not use `<withRouter(Navigation) />` outside a `<Router>`
 
 因为 jsx 嵌套层级的关系，在主应用的 Layout 里没法使用 react-router 提供的 API，比如 `withRouter`, `Link`, `useParams` 等，具体参考文档 [主应用中路由跳转](/docs/guide/use-layout/react#主应用中路由跳转)。
 
