@@ -243,6 +243,10 @@ export function appendExternalScript(asset: string | Asset,
       return;
     }
 
+    if (isAssetExist(element, 'script')) {
+      resolve();
+    }
+
     setAttributeForScriptNode(element, {
       module,
       id,
@@ -250,9 +254,19 @@ export function appendExternalScript(asset: string | Asset,
       scriptAttributes,
     });
 
-    if (isAssetExist(element, 'script')) {
-      resolve();
-    }
+    /**
+    * For JavaScript runtime error may not fire error event (https://github.com/ice-lab/icestark/issues/419).
+    * While window.onerror is supported to catch JavaScript runtime error.
+    */
+    const rejectRuntimeError = (event: ErrorEvent) => {
+      if (event?.filename === (content || asset)) {
+        reject(new Error(`js asset runtime error: ${event?.message}`));
+      }
+
+      window.removeEventListener('error', rejectRuntimeError);
+    };
+
+    window.addEventListener('error', rejectRuntimeError);
 
     element.addEventListener(
       'error',
