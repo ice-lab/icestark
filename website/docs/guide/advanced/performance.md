@@ -203,9 +203,9 @@ module.exports = {
 }
 ```
 
-2. 如果框架应用同样配置了 Dynamic Imports，配置 [shouldAssetsRemove](http://localhost:3000/docs/api/ice-stark#shouldassetsremove)
+2. 如果主应用同样配置了 Dynamic Imports，配置 [shouldAssetsRemove](http://localhost:3000/docs/api/ice-stark#shouldassetsremove)
 
-icestark 内部会在微应用卸载时，同时卸载微应用的样式资源，防止样式污染。因此，如若框架应用配置了 Dynamic Imports，可以通过 [shouldAssetsRemove](http://localhost:3000/docs/api/ice-stark#shouldassetsremove) 防止错误地移除框架应用的样式资源。
+icestark 内部会在微应用卸载时，同时卸载微应用的样式资源，防止样式污染。因此，如若主应用配置了 Dynamic Imports，可以通过 [shouldAssetsRemove](http://localhost:3000/docs/api/ice-stark#shouldassetsremove) 防止错误地移除主应用的样式资源。
 
 ```js
 // src/App.jsx
@@ -230,7 +230,7 @@ const App = () => {
 
 ## 依赖外置
 
-通常框架应用和微应用会共有一些基础依赖，比如 `React`、`ReactDOM`、组件库等。可以适当考虑微应用外置掉这些基础依赖，由框架应用统一加载。比如，通过 [webpack Externals](https://webpack.js.org/configuration/externals) 外置微应用的基础依赖：
+通常主应用和微应用会共有一些基础依赖，比如 `React`、`ReactDOM`、组件库等。可以适当考虑微应用外置掉这些基础依赖，由主应用统一加载。比如，通过 [webpack Externals](https://webpack.js.org/configuration/externals) 外置微应用的基础依赖：
 
 ```js
 // webpack.config.js
@@ -244,7 +244,7 @@ mmodule.exports = {
 };
 ```
 
-并在框架应用的 `index.html` 中加载基础依赖的 cdn 版本。
+并在主应用的 `index.html` 中加载基础依赖的 cdn 版本。
 
 ```html
 <!DOCTYPE html>
@@ -258,12 +258,12 @@ mmodule.exports = {
 
   <body>
     <div id="root"></div>
-    <!-- 在框架应用中加载基础依赖 -->
+    <!-- 在主应用中加载基础依赖 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.0/cjs/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.0/cjs/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/antd/4.17.0-alpha.8/antd.min.js"></script>
 
-    <!-- 加载框架应用的脚本资源 -->
+    <!-- 加载主应用的脚本资源 -->
     <script src="//ice.alicdn.com/icestark/layout-app/build/js/index.js"></script>
   </body>
 </html>

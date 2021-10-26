@@ -432,7 +432,7 @@ export class AppComponent {
 
 ### 使用 entry 或 entryContent 接入
 
-由于 Angular 默认渲染在 `<app-root></app-root>` 节点，因此建议通过 [entry](/docs/guide/concept/child#2-entry) 或 [entryContent](https://micro-frontends.ice.work/docs/guide/concept/child#3-entrycontent) 的方式接入。比如 Angular 应用部署在 `http://localhost:3333`，则框架应用配置建议配置如下：
+由于 Angular 默认渲染在 `<app-root></app-root>` 节点，因此建议通过 [entry](/docs/guide/concept/child#2-entry) 或 [entryContent](https://micro-frontends.ice.work/docs/guide/concept/child#3-entrycontent) 的方式接入。比如 Angular 应用部署在 `http://localhost:3333`，则主应用配置建议配置如下：
 
 ```js
 <AppRouter>
@@ -548,9 +548,9 @@ export default defineConfig({
 
 对于基准路由的配置，可以依照 [React 微应用接入](/docs/guide/use-child/react#2-%E5%AE%9A%E4%B9%89%E5%9F%BA%E5%87%86%E8%B7%AF%E7%94%B1) 和 [Vue 微应用接入](/docs/guide/use-child/vue#2-%E5%AE%9A%E4%B9%89%E5%9F%BA%E5%87%86%E8%B7%AF%E7%94%B1) 相同的方式改造接入。
 
-### 框架应用加载 Vite 应用
+### 主应用加载 Vite 应用
 
-框架应用需要通过 `loadScriptMode: import` 来加载 ES modules 类型微应用（Vite 应用）。同时由于 Vite 应用在 dev 下注入 HMR 相关的代码，因此建议通过 [entry 方式](http://localhost:3000/docs/guide/concept/child#2-entry) 接入，保证开发和生产的配置一致性。
+主应用需要通过 `loadScriptMode: import` 来加载 ES modules 类型微应用（Vite 应用）。同时由于 Vite 应用在 dev 下注入 HMR 相关的代码，因此建议通过 [entry 方式](http://localhost:3000/docs/guide/concept/child#2-entry) 接入，保证开发和生产的配置一致性。
 
 ```diff
 export default class App extends React.Component {
@@ -578,5 +578,5 @@ export default class App extends React.Component {
 
 + [icestark-vite-vue](https://github.com/maoxiaoke/icestark-vite-vue) 使用 Vite + Vue3 + VueRouter 创建的 icestark 微应用
 + [icestark-vite-react](https://github.com/maoxiaoke/icestark-vite-react) 使用 Vite + React 创建的 icestark 微应用
-+ [icestark-vite-framework](https://github.com/maoxiaoke/icestark-vite-framework) 使用 ice.js Vite 模式创建的 icestark 框架应用
++ [icestark-vite-framework](https://github.com/maoxiaoke/icestark-vite-framework) 使用 ice.js Vite 模式创建的 icestark 主应用
 
