@@ -25,15 +25,15 @@ icestark 支持两种声明生命周期的方式。分别通过全局注册的 `
 
 ```js
 import ReactDOM from 'react-dom';
-import { getMountNode, registerAppEnter, registerAppLeave } from '@ice/stark-app';
+import { registerAppEnter, registerAppLeave } from '@ice/stark-app';
 import App from './App';
 
-registerAppEnter(() => {
-  ReactDOM.render(<App />, getMountNode());
+registerAppEnter((props) => {
+  ReactDOM.render(<App />, props.container);
 });
 
-registerAppLeave(() => {
-  ReactDOM.unmountComponentAtNode(getMountNode());
+registerAppLeave((props) => {
+  ReactDOM.unmountComponentAtNode(props.container);
 });
 ```
 
