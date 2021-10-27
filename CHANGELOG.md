@@ -2,6 +2,12 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
+## 2.6.2
+
+- [fix] avoid to append duplicate assets. ([#331](https://github.com/ice-lab/icestark/issues/331))
+- [fix] bind `pushState` to global. ([#426](https://github.com/ice-lab/icestark/issues/426))
+- [fix] prefetch apps using `window.fetch` by default.
+
 ## 2.6.1
 
 - [fix] wrap `import` using `new Function` to avoid compiler error under chrome61 & ie. ([#404](https://github.com/ice-lab/icestark/issues/404))

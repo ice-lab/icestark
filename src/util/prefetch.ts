@@ -102,7 +102,7 @@ export function doPrefetch(
   }
 }
 
-export function prefetchApps(apps: AppConfig[], fetch: Fetch) {
+export function prefetchApps(apps: AppConfig[], fetch: Fetch = window.fetch) {
   if (apps && Array.isArray(apps)) {
     apps.forEach(prefetchIdleTask(fetch));
   }

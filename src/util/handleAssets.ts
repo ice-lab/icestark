@@ -57,6 +57,21 @@ export interface ILifecycleProps {
   customProps?: object;
 }
 
+function isAssetExist(element: HTMLScriptElement | HTMLLIElement, type: 'script' | 'link') {
+  const urlAlias = type === 'script' ? 'src' : 'href';
+
+  return Array.from(document.getElementsByTagName(type))
+    .some((item) => {
+      if (
+        item[urlAlias]
+        && element[urlAlias] === item[urlAlias]
+      ) {
+        return true;
+      }
+      return false;
+    });
+}
+
 /**
  * Create link/style element and append to root
  */
@@ -234,6 +249,11 @@ export function appendExternalScript(asset: string | Asset,
       src: content || (asset as string),
       scriptAttributes,
     });
+
+    if (isAssetExist(element, 'script')) {
+      resolve();
+      return;
+    }
 
     element.addEventListener(
       'error',
