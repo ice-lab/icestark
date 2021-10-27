@@ -61,7 +61,7 @@ icestark 内置了基于 `@ice/sandbox` 的沙箱隔离，通过 `sandbox` 属�
 ```js
 <AppRoute
   sandbox
-  path="/seller"
+  activePath="/seller"
   title="商家平台"
   url={[
     '//unpkg.com/icestark-child-seller/build/js/index.js',

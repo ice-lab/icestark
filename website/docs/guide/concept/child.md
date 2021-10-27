@@ -25,15 +25,15 @@ icestark 支持两种声明生命周期的方式。分别通过全局注册的 `
 
 ```js
 import ReactDOM from 'react-dom';
-import { getMountNode, registerAppEnter, registerAppLeave } from '@ice/stark-app';
+import { registerAppEnter, registerAppLeave } from '@ice/stark-app';
 import App from './App';
 
-registerAppEnter(() => {
-  ReactDOM.render(<App />, getMountNode());
+registerAppEnter((props) => {
+  ReactDOM.render(<App />, props.container);
 });
 
-registerAppLeave(() => {
-  ReactDOM.unmountComponentAtNode(getMountNode());
+registerAppLeave((props) => {
+  ReactDOM.unmountComponentAtNode(props.container);
 });
 ```
 
@@ -63,7 +63,7 @@ icestark 通过微应用入口字段的配置进行应用的渲染，因此这�
 ```js
 const apps = [{
   url: ['https://example.com/a.js', 'https://example.com/a.css'],
-  path: '/foo'
+  activePath: '/foo'
   // ...
 }]
 ```
@@ -78,7 +78,7 @@ const apps = [{
 ```js
 const apps = [{
   entry: 'https://example.com/a.html',
-  path: '/foo'
+  activePath: '/foo'
   // ...
 }]
 ```
@@ -97,7 +97,7 @@ entry 对应 html url, icestark 对 `entry` 的处理包含以下步骤：
 ```js
 const apps = [{
   entryContent: '<!DOCTYPE html><html><body><script src=""></body></html>',
-  path: '/foo'
+  activePath: '/foo'
   // ...
 }]
 ```

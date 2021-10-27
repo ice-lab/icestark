@@ -1,5 +1,9 @@
 module.exports = {
-  title: 'icestark',
+  title: 'ICESTARK',
+  logo: {
+    alt: 'icestark',
+    src: 'img/logo.png',
+  },
   items: [
     {
       type: 'search',

@@ -88,7 +88,9 @@ const apps = [{
 
 ## 应用启用 lazy 后，chunk 加载失败
 
-多个微应用均开启 lazy 加载页面，建议通过开启 sandbox 隔离微应用 windows 全局变量。如果无法开启 sandbox，则需要在主应用 `onAppLeave` 的阶段清空 webpackJsonp 配置：
+1. 可能是  webpack runtimes 发生冲突
+
+通常发生在多个微应用均开启 lazy 加载页面，这种情况建议开启 sandbox 隔离微应用 windows 全局变量。如果无法开启 sandbox，则需要在主应用 `onAppLeave` 的阶段清空 webpackJsonp 配置：
 
 ```js
 const onAppLeave = (appConfig) => {
@@ -96,9 +98,26 @@ const onAppLeave = (appConfig) => {
 };
 ```
 
-主应用和微应用均开启 lazy 的情况下，需要通过配置 `webpack.output.jsonpFunction` 来隔离两个应用的全局变量名称，详见 [webpack 配置](https://webpack.js.org/configuration/output/#outputjsonpfunction)。
+> 若使用 webpack5 构建应用，则 webpack5 会默认使用 package.json 的 name 作为 [uniqueName](https://webpack.js.org/blog/2020-10-10-webpack-5-release/#automatic-unique-naming)，因此也无需在 onAppLeave 阶段移除 window.webpackJsonp，可排除该因素影响。
 
-## `Error: Invariant failed: You should not use <withRouter(Navigation) /> outside a <Router>`
+
+2. 没有配置 publicPath
+
+由于未配置 [publicPath](https://webpack.js.org/configuration/output/#outputpublicpath)，可能会导致 webpack 加载了错误的静态地址。比如，静态资源打包发送到 CDN 服务上，则可配置：
+
+```js
+// webpack.config.js
+module.exports = {
+  ...
+  output: {
+    publicPath: 'https://www.cdn.example/'
+  }
+}
+```
+
+
+
+## Error: Invariant failed: You should not use `<withRouter(Navigation) />` outside a `<Router>`
 
 因为 jsx 嵌套层级的关系，在主应用的 Layout 里没法使用 react-router 提供的 API，比如 `withRouter`, `Link`, `useParams` 等，具体参考文档 [主应用中路由跳转](/docs/guide/use-layout/react#主应用中路由跳转)。
 
@@ -134,7 +153,7 @@ const appConfig: IAppConfig = {
     Layout: FrameworkLayout,
     getApps: async () => {
       const apps = [{
-        path: '/seller',
+        activePath: '/seller',
         title: '商家平台',
         sandbox: true,
 +       hashType: true,
@@ -143,7 +162,7 @@ const appConfig: IAppConfig = {
           '//dev.g.alicdn.com/nazha/ice-child-react/0.0.1/css/index.css',
         ],
       }, {
-        path: '/waiter',
+        activePath: '/waiter',
         title: '小二平台',
         sandbox: true,
 +       hashType: true,
@@ -299,7 +318,7 @@ import { renderNotFound, isInIcestark, getBasename } from '@ice/stark-app';
 const Routes = () => {
   return (
     <Router basename={isInIcestark() ? getBasename(): '/'}>
-      <Route componet={Detail} path="/detail" exact>
+      <Route component={Detail} activePath="/detail" exact>
       <Route component={isInIcestark() ? () => renderNotFound() : NotFound}>
     </Route>
   )
@@ -307,3 +326,39 @@ const Routes = () => {
 ```
 
 这样，不会导致微应用正常加载，但微应用路由没有匹配成功时导致的页面空白，而会显示 404 页面。这样，我们能清晰地知道，在 icestark 执行环境下，需要修改[微应用的 basename](/docs/guide/use-child/react#2-定义基准路由)，使得微应用可以与当前路由匹配上。
+
+## Vite 微应用支持沙箱吗
+
+暂不支持沙箱。
+
+## 接入 Vite 微应用，主应用需要升级为 Vite 应用吗
+
+**不需要**。主应用可以使用 webpack 等非 ES modules 构建工具，无需对主应用进行任何构建上的改造。对于主应用，唯一需要做的是：升级最新的 icestark 版本，并设置 ES modules 微应用的加载方式（loadScriptMode 字段） 设置为 import 即可。
+
+
+## 切换微应用，主应用样式丢失
+
+通常情况是主应用开启了 webpack [Dynamic Imports](https://webpack.js.org/guides/code-splitting/#dynamic-imports) 能力，可以通过 [shouldAssetsRemove](http://localhost:3000/docs/api/ice-stark#shouldassetsremove) 防止错误地移除主应用的样式资源。
+
+```js
+// src/App.jsx
+import { AppRouter, AppRoute } from '@ice/stark';
+
+const App = () => {
+  render() {
+    return (
+      <AppRouter
+        shouldAssetsRemove={(url, element) => {
+          // 如果请求主应用静态资源，返回 false
+          if (url.includes('www.framework.com')) {
+            return false;
+          }
+          return true;
+        }}
+        >
+        ...
+      </AppRouter>
+    );
+  }
+}
+```

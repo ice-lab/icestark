@@ -39,5 +39,6 @@ module.exports = {
   api: [
     'api/ice-stark',
     'api/ice-stark-app',
+    'api/stark-module',
   ],
 };

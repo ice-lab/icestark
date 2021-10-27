@@ -33,7 +33,33 @@ import {
 
 ## AppConfig
 
-`AppConfig` 定义一个微应用的结构，类型定义如下：
+`AppConfig` 定义一个微应用的结构，使用方式如下：
+
+```js
+// 1. 传递给 AppRoute 的 props
+<AppRouter>
+  <AppRoute
+    name="seller"
+    activePath="/seller"
+    url={[
+      '/js/index.js',
+      '/css/index.js'
+    ]}
+  />
+</AppRouter>
+
+// 2. Api 方式通过 `registerMicroApps` 注册
+registerMicroApps([{
+  name="seller"
+  activePath="/seller"
+  url={[
+    '/js/index.js',
+    '/css/index.js'
+  ]}
+}])
+```
+
+`AppConfig` 类型定义如下：
 
 ```ts
 interface AppConfig {
@@ -211,6 +237,14 @@ export function mount(props) {
   ...
 }
 ```
+
+### cached
+
+是否开启微应用切换时缓存（选填）。详细用法见 [性能优化](/docs/guide/advanced/performance#cached)
+
+- 类型：`boolean`
+- 默认值：`false`
+
 
 ### loadScriptMode <Badge text="2.0.0+" />
 

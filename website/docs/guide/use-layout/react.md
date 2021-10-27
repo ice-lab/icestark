@@ -36,6 +36,7 @@ export default class App extends React.Component {
       <BasicLayout>
         <AppRouter>
           <AppRoute
+            activePath="/seller"
             title="商家平台"
             url={[
               '//unpkg.com/icestark-child-seller/build/js/index.js',
@@ -43,7 +44,7 @@ export default class App extends React.Component {
             ]}
           />
           <AppRoute
-            path="/user"
+            activePath="/user"
             //...
           />
         </AppRouter>
@@ -78,28 +79,28 @@ ReactDOM.render(<App />, document.getElementById('root'));
 
 #### 路由与微应用的映射关系
 
-通过 path 和 exact 两个属性配置微应用的匹配规则，建立路由和微应用的映射关系。
+通过 activePath 和 exact 两个属性配置微应用的匹配规则，建立路由和微应用的映射关系。
 
 ```js
 // 匹配符合 /seller/* 的所有路由
 <AppRoute
-  path="/seller"
+  activePath="/seller"
 />
 
 // 仅完全匹配 /seller 这一个路由
 <AppRoute
-  path="/seller"
+  activePath="/seller"
   exact
 />
 
 // 匹配符合 /seller/* 以及 /user/* 的所有路由
 <AppRoute
-  path={['/seller', '/user']}
+  activePath={['/seller', '/user']}
 />
 
 // 匹配 /seller 这一个路由以及符合 /user/* 的所有路由
 <AppRoute
-  path={[
+  activePath={[
     { path: '/seller', exact: true },
     { path: '/user', exact: false },
   ]}
@@ -112,7 +113,7 @@ ReactDOM.render(<App />, document.getElementById('root'));
 
 ```js
 <AppRoute
-  path="/foo"
+  activePath="/foo"
   render={() => {
     return <iframe src="" />;
   }}
@@ -127,7 +128,7 @@ ReactDOM.render(<App />, document.getElementById('root'));
 
 - umd：默认 `false`，标识微应用是否为 umd 类型
 - sandbox：默认 `false`，是否开启 js 沙箱模式
-- cache：默认 `false`，切换后是否缓存微应用，可能会引起内存占用过大问题，不建议开启
+- cached：默认 `false`，切换后是否缓存微应用，可能会引起内存占用过大问题，不建议开启
 - hashType：默认 `false`，标识微应用的路由是否为 hash 模式
 
 更多参数请参考 [API 介绍 AppRoute](/docs/api/ice-stark#approute)。
@@ -142,8 +143,8 @@ ReactDOM.render(<App />, document.getElementById('root'));
 ```js
 <FrameworkLayout>
   <AppRouter>
-    <AppRoute path="/seller" url={[]} />
-    <AppRoute path="*" component={() => {
+    <AppRoute activePath="/seller" url={[]} />
+    <AppRoute activePath="*" component={() => {
       return <ReactRouter></ReactRouter>
     }} />
   </AppRouter>
@@ -192,10 +193,10 @@ export default class App extends React.Component {
     return (
       <BasicLayout>
         <AppRouter>
-          <AppRoute path="/seller" />
-          <AppRoute path="/user" />
+          <AppRoute activePath="/seller" />
+          <AppRoute activePath="/user" />
 +          <AppRoute
-+            path="*"
++            activePath="*"
 +            render={() => {
 +              return (
 +                <Router>
@@ -233,7 +234,7 @@ export default class App extends React.Component {
             return (
               <AppRoute
                 key={idx}
-                path={item.path}
+                activePath={item.path}
                 title={item.title}
                 url={item.url}
               />
@@ -304,7 +305,7 @@ export default class App extends React.Component {
         >
           {/* 注意：path/url/entry 等配置信息配置在组件外层，AppRouter 的直接子元素上 */}
           <AuthAppRoute
-            path={['/', '/message', '/about']}
+            activePath={['/', '/message', '/about']}
             exact
             title="主页"
             url={[

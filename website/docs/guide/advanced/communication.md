@@ -1,3 +1,5 @@
+import Badge from '../../../src/components/Badge'
+
 # 应用间通信
 
 通过 `@ice/stark-data` 这个包可以很简单的实现应用间通信，比如全局切换语言微应用响应的场景。`@ice/stark-data` 支持状态共享和事件监听响应两种方式。
@@ -79,6 +81,50 @@ import { event } from '@ice/stark-data';
 
 event.emit('freshMessage');
 ```
+
+## props <Badge text="2.0.0+" />
+
+icestark 还支持通过 [props](http://localhost:3000/docs/api/ice-stark#props) 将主应用数据传递给微应用。
+
+### 示例
+
+主应用向微应用统一注入用户信息。
+
+在主应用中通过 [props](http://localhost:3000/docs/api/ice-stark#props) 配置用户信息。
+
+```js
+// src/App.jsx
+import { AppRouter, AppRoute } from '@ice/stark';
+
+const App = () => {
+  return (
+    <AppRouter>
+      <AppRoute
+        name="waiter"
+        activePath="/waiter"
+        title="商家平台",
+        props={{
+          userId: 'xxxxx'
+        }}
+        url={[
+          'https://iceworks.oss-cn-hangzhou.aliyuncs.com/icestark/child-waiter-vue/dist/js/app.js',
+          'https://iceworks.oss-cn-hangzhou.aliyuncs.com/icestark/child-waiter-vue/dist/css/app.css',
+        ]}
+      />
+      ...
+    </AppRouter>
+  );
+}
+```
+
+微应用可以通过[生命周期函数](/docs/guide/concept/child#生命周期)获取到该数据：
+
+```js
+export function mount({ container, customProps }) {
+  ReactDOM.render(<App { ...customProps } />, props.container);
+}
+```
+
 
 ## 其他
 

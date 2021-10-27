@@ -158,8 +158,27 @@ export default function ExampleComponent(props) {
   ...
   ]
 }
-
 ```
+
+##### filenameStrategy
+
+默认情况，所有模块构建资源会平铺在构建目录下。通过该配置，可自定义产物目录结构，比如：
+
+```json
+{
+  "plugins": [
+    ...
+    ["build-plugin-stark-module", {
+      "outputDir": "build",
+      "filenameStrategy": "modules/[name]"
+    }],
+  ...
+  ]
+}
+```
+
+上述配置会将产物构建值 `build/modules` 目录下，文件名为 `ModuleA.js` 、`ModuleB.js`。
+
 
 ## 已有项目改造为微模块
 
@@ -355,6 +374,27 @@ const App = () => {
 
 值得注意的是，若微模块导出了生命周期，其优先级高于自定义生命周期。
 
+### 注册本地模块
+
+在一些场景下，需要支持直接渲染内建模块，可以通过 `render` 属性直接渲染一个本地模块。
+
+```js
+import LocalComponent from './localComponent';
+
+registerModules([{
+  name: 'moduleName',
+  render: () => LocalComponent,
+}]);
+
+const App = () => {
+  return (
+    <div>
+      <MicroModule moduleName="moduleName" />
+    </div>
+  );
+}
+```
+
 ### 性能优化
 
 通常情况下，为了减少模块体积，希望抽离一些公共的三方库。
@@ -451,3 +491,7 @@ const App = () => {
   return <MicroModule moduleInfo={moduleInfo} />;
 }
 ```
+
+## API
+
+请移步 [API -> @ice/stark-module](http://localhost:3000/docs/api/stark-module)
