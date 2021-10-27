@@ -555,6 +555,37 @@ describe('appendAssets', () => {
     Promise.all([loadAndAppendCssAssets(assets.cssList), loadAndAppendJsAssets(assets, {})])
   });
 
+  test('appendAssets - duplicate', done => {
+    emptyAssets(() => true, true);
+    const assets = getUrlAssets([
+      'http://icestark.com/js/index.js',
+      'http://icestark.com/js/index.js',
+      'http://icestark.com/css/index.css',
+      'http://icestark.com/js/test1.js',
+      'http://icestark.com/js/test1.js',
+    ]);
+    Promise.all([loadAndAppendCssAssets(assets.cssList), loadAndAppendJsAssets(assets, {})])
+      .then(() => {
+        const scripts = document.getElementsByTagName('script');
+        const styleSheets = document.getElementsByTagName('link');
+
+        expect(scripts.length).toBe(2);
+        expect(styleSheets.length).toBe(1);
+
+        emptyAssets(() => true, true);
+
+        done();
+    });
+
+    const links = Array.from(document.getElementsByTagName('link') || []);
+    const scripts = Array.from(document.getElementsByTagName('script') || [])
+    const linksAndScripts = links.concat(scripts as any);
+    for (let i = 0; i < linksAndScripts.length; i++) {
+      (linksAndScripts[i] as HTMLLinkElement | HTMLScriptElement).dispatchEvent(new Event('load'));
+    }
+
+  });
+
   test('recordAssets', () => {
     const jsElement = document.createElement('script');
     jsElement.id = 'icestark-script';

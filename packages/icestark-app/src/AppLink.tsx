@@ -23,7 +23,10 @@ const AppLink = (props: AppLinkProps) => {
           return false;
         }
 
-        const changeState = window.history[replace ? 'replaceState' : 'pushState'];
+        /*
+        * Bind `replaceState` and `pushState` to window to avoid illegal invocation error
+         */
+        const changeState = window.history[replace ? 'replaceState' : 'pushState'].bind(window);
 
         changeState({}, null, linkTo);
       }}
