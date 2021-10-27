@@ -10,7 +10,7 @@ import { registerMicroApps, start } from '@ice/stark';
 registerMicroApps([
   {
     name: 'waiter',
-   	path: '/waiter',
+   	activePath: '/waiter',
     title: '商家平台',
     sandbox: true,
     url: [
@@ -20,7 +20,7 @@ registerMicroApps([
   },
   {
     name: 'seller',
-   	path: '/seller',
+   	activePath: '/seller',
     title: '小二平台',
     sandbox: true,
     url: [
@@ -74,7 +74,7 @@ const App = () => {
         >
         <AppRoute
           name="waiter"
-          path="/waiter"
+          activePath="/waiter"
           title="商家平台"
           url={[
             'https://iceworks.oss-cn-hangzhou.aliyuncs.com/icestark/child-waiter-vue/dist/js/app.js',
@@ -118,7 +118,7 @@ const App = () => {
     <AppRouter>
       <AppRoute
         name="waiter"
-        path="/waiter"
+        activePath="/waiter"
         title="商家平台",
         cached
         url={[

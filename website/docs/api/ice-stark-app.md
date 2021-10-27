@@ -25,10 +25,10 @@ import isInIcestark from '@ice/stark-app/lib/isInIcestark';
 
 ## getBasename
 
-配置微应用 `React Router` 中的 `basename` 参数的方法，根据 `AppRoute` 中的 `basename` 或者 `path` 配置生成最终结果
+配置微应用 `React Router` 中的 `basename` 参数的方法，根据 `AppRoute` 中的 `basename` 或者 `activePath` 配置生成最终结果
 
 - 类型：`function`
-- 默认值：`() => basename || (Array.isArray(path) ? path[0] : path)) || "/"`
+- 默认值：`() => basename || (Array.isArray(activePath) ? activePath[0] : activePath)) || "/"`
 
 ## getMountNode
 

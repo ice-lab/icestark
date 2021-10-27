@@ -101,7 +101,7 @@ const App = () => {
     <AppRouter>
       <AppRoute
         name="waiter"
-        path="/waiter"
+        activePath="/waiter"
         title="商家平台",
         props={{
           userId: 'xxxxx'

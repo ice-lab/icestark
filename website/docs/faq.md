@@ -153,7 +153,7 @@ const appConfig: IAppConfig = {
     Layout: FrameworkLayout,
     getApps: async () => {
       const apps = [{
-        path: '/seller',
+        activePath: '/seller',
         title: '商家平台',
         sandbox: true,
 +       hashType: true,
@@ -162,7 +162,7 @@ const appConfig: IAppConfig = {
           '//dev.g.alicdn.com/nazha/ice-child-react/0.0.1/css/index.css',
         ],
       }, {
-        path: '/waiter',
+        activePath: '/waiter',
         title: '小二平台',
         sandbox: true,
 +       hashType: true,
@@ -318,7 +318,7 @@ import { renderNotFound, isInIcestark, getBasename } from '@ice/stark-app';
 const Routes = () => {
   return (
     <Router basename={isInIcestark() ? getBasename(): '/'}>
-      <Route componet={Detail} path="/detail" exact>
+      <Route component={Detail} activePath="/detail" exact>
       <Route component={isInIcestark() ? () => renderNotFound() : NotFound}>
     </Route>
   )

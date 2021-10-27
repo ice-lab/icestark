@@ -226,7 +226,7 @@ module.exports = {
 ```js
 <AppRoute
   name="seller",
-  path="/seller"
+  activePath="/seller"
 >
 </AppRoute>
 ```
@@ -236,7 +236,7 @@ module.exports = {
 ```js
 <AppRoute
   name="seller",
-  path="/seller" ,
+  activePath="/seller" ,
   entry="http://localhost:3001/seller"  // 入口 html 地址
 >
 </AppRoute>
@@ -559,12 +559,13 @@ export default class App extends React.Component {
       <BasicLayout>
         <AppRouter>
           <AppRoute
+            activePath="/seller"
             title="商家平台"
 +           loadScriptMode="import" // 指定加载 ES modules 类型微应用
 +           entry="https://icestark-child-seller"
           />
           <AppRoute
-            path="/user"
+            activePath="/user"
             //...
           />
         </AppRouter>
