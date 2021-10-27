@@ -37,14 +37,16 @@ import {
 
 ```js
 // 1. 传递给 AppRoute 的 props
-<AppRoute
-  name="seller"
-  activePath="/seller"
-  url={[
-    '/js/index.js',
-    '/css/index.js'
-  ]}
->
+<AppRouter>
+  <AppRoute
+    name="seller"
+    activePath="/seller"
+    url={[
+      '/js/index.js',
+      '/css/index.js'
+    ]}
+  />
+</AppRouter>
 
 // 2. Api 方式通过 `registerMicroApps` 注册
 registerMicroApps([{

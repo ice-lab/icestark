@@ -10,6 +10,13 @@ toc: menu
 import { MicroModule, registerModule } from '@ice/stark-module';
 ```
 
+对于使用非 React 的用户，我们建议您直接从 `lib` 目录下导入这些方法。
+
+```js
+// 对于使用 Vue、Angular 的用户
+import { mountModule, unmountModule } from '@ice/stark-module/lib/modules';
+```
+
 ## ModuleInfo
 
 `ModuleInfo` 是一个类型接口，用于定义一个微模块结构。接口定义如下：
@@ -121,3 +128,32 @@ registerModules([
 
 clearModules();
 ```
+
+## mountModule
+
+挂载模块，提供自定义组件能力。
+
+```js
+import { mountModule, unmoutModule } from '@ice/stark-module';
+
+const moduleInfo = {
+  name: 'moduleName',
+  url: 'https://localhost/module.js',
+};
+
+const ModuleComponent = () => {
+  const renderNode = useRef(null);
+  useEffect(() => {
+    mountModule(moduleInfo, renderNode, {});
+    return () => {
+      unmoutModule(moduleInfo, renderNode);
+    }
+  }, []);
+  return (<div ref={renderNode}></div>);
+};
+```
+
+## unmoutModule
+
+卸载模块，提供自定义组件能力，见 [mountModule](#mountModule)。
+
