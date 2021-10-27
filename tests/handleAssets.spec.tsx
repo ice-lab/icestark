@@ -644,8 +644,6 @@ describe('appendAssets', () => {
   });
 });
 
-
-
 describe('appendCSS', () => {
   test('appendLink -> success', () => {
     const div = document.createElement('div');
