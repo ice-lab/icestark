@@ -252,6 +252,7 @@ export function appendExternalScript(asset: string | Asset,
 
     if (isAssetExist(element, 'script')) {
       resolve();
+      return;
     }
 
     element.addEventListener(
