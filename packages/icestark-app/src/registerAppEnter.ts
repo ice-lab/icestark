@@ -1,6 +1,11 @@
 import { setCache } from './cache';
 
-export default (callback?: () => void): void => {
+export interface LifecycleProps {
+  container: HTMLElement | string;
+  customProps?: object;
+}
+
+export default (callback?: (props: LifecycleProps) => void): void => {
   if (!callback) return;
 
   if (typeof callback !== 'function') {

@@ -1,6 +1,7 @@
 import { setCache } from './cache';
+import type { LifecycleProps } from './registerAppEnter';
 
-export default (callback?: () => void): void => {
+export default (callback?: (props: LifecycleProps) => void): void => {
   if (!callback) return;
 
   if (typeof callback !== 'function') {
