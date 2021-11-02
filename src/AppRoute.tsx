@@ -1,7 +1,7 @@
 import * as React from 'react';
 import renderComponent from './util/renderComponent';
 import { AppHistory } from './appHistory';
-import { unloadMicroApp, BaseConfig, createMicroApp } from './apps';
+import { unloadMicroApp, unmountMicroApp, BaseConfig, createMicroApp } from './apps';
 import { converArray2String } from './util/helpers';
 import { PathData } from './util/checkActive';
 import { callCapturedEventListeners, resetCapturedEventListeners } from './util/capturedListeners';
@@ -149,7 +149,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   unmountApp = () => {
-    const { name, onAppLeave } = this.props;
+    const { name, onAppLeave, sandbox } = this.props;
 
     // Trigger app leave
     if (typeof onAppLeave === 'function') {
@@ -157,7 +157,11 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     }
 
     if (!this.validateRender()) {
-      unloadMicroApp(name);
+      if (sandbox) {
+        unmountMicroApp(name);
+      } else {
+        unloadMicroApp(name);
+      }
     }
   };
 
