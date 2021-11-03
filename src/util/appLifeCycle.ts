@@ -6,28 +6,6 @@ export enum AppLifeCycleEnum {
   AppLeave = 'appLeave',
 }
 
-export function cacheApp(cacheKey: string) {
-  [AppLifeCycleEnum.AppEnter, AppLifeCycleEnum.AppLeave].forEach(lifeCycle => {
-    const lifeCycleCacheKey = `cache_${cacheKey}_${lifeCycle}`;
-    if (getCache(lifeCycle)) {
-      setCache(lifeCycleCacheKey, getCache(lifeCycle));
-    } else if (getCache(lifeCycleCacheKey)) {
-      // set cache to current lifeCycle
-      setCache(lifeCycle, getCache(lifeCycleCacheKey));
-    }
-  });
-}
-
-export function deleteCache(cacheKey: string) {
-  [AppLifeCycleEnum.AppEnter, AppLifeCycleEnum.AppLeave].forEach(lifeCycle => {
-    setCache(`cache_${cacheKey}_${lifeCycle}`, null);
-  });
-}
-
-export function isCached(cacheKey: string) {
-  return !!getCache(`cache_${cacheKey}_${AppLifeCycleEnum.AppEnter}`);
-}
-
 export function callAppEnter() {
   const appEnterKey = AppLifeCycleEnum.AppEnter;
   const registerAppEnterCallback = getCache(appEnterKey);

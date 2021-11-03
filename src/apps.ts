@@ -169,7 +169,7 @@ export async function loadAppModule(appConfig: AppConfig) {
   let lifecycle: ModuleLifeCycle = {};
   onLoadingApp(appConfig);
   const appSandbox = createSandbox(appConfig.sandbox) as Sandbox;
-  const { url, container, entry, entryContent, name, scriptAttributes = [], umd } = appConfig;
+  const { url, container, entry, entryContent, name, scriptAttributes = [], umd, cached } = appConfig;
   const appAssets = url ? getUrlAssets(url) : await getEntryAssets({
     root: container,
     entry,
@@ -179,6 +179,8 @@ export async function loadAppModule(appConfig: AppConfig) {
     fetch,
   });
   updateAppConfig(appConfig.name, { appAssets, appSandbox });
+
+  const cacheId = cached ? name : undefined;
 
   /**
    * LoadScriptMode has the first priority
@@ -190,18 +192,18 @@ export async function loadAppModule(appConfig: AppConfig) {
       await loadAndAppendCssAssets([
         ...appAssets.cssList,
         ...filterRemovedAssets(importCachedAssets[name] || [], ['LINK', 'STYLE']),
-      ]);
+      ], { cacheId });
       lifecycle = await loadScriptByImport(appAssets.jsList);
       // Not to handle script element temporarily.
       break;
     case 'fetch':
-      await loadAndAppendCssAssets(appAssets.cssList);
+      await loadAndAppendCssAssets(appAssets.cssList, { cacheId });
       lifecycle = await loadScriptByFetch(appAssets.jsList, appSandbox);
       break;
     default:
       await Promise.all([
-        loadAndAppendCssAssets(appAssets.cssList),
-        loadAndAppendJsAssets(appAssets, { sandbox: appSandbox, fetch, scriptAttributes }),
+        loadAndAppendCssAssets(appAssets.cssList, { cacheId }),
+        loadAndAppendJsAssets(appAssets, { sandbox: appSandbox, fetch, scriptAttributes, cacheId }),
       ]);
       lifecycle =
         getLifecyleByLibrary() ||
@@ -359,9 +361,13 @@ export async function unloadMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   if (appConfig) {
     unmountMicroApp(appName);
-    delete appConfig.mount;
-    delete appConfig.unmount;
-    delete appConfig.appAssets;
+
+    if (!appConfig.cached) {
+      delete appConfig.mount;
+      delete appConfig.unmount;
+      delete appConfig.appAssets;
+    }
+
     updateAppConfig(appName, { status: NOT_LOADED });
   } else {
     console.log(`[icestark] can not find app ${appName} when call unloadMicroApp`);
