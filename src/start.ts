@@ -22,7 +22,6 @@ interface OriginalStateFunction {
   (state: any, title: string, url?: string): void;
 }
 
-
 let started = false;
 const originalPush: OriginalStateFunction = window.history.pushState;
 const originalReplace: OriginalStateFunction = window.history.replaceState;

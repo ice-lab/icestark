@@ -651,8 +651,8 @@ export function emptyAssets(
 
 export function checkCacheKey(node: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement, cacheKey: string|boolean) {
   return (typeof cacheKey === 'boolean' && cacheKey)
-    || !node.getAttribute('cache')
-    || node.getAttribute('cache') === cacheKey;
+    || !node.getAttribute('data-cache')
+    || node.getAttribute('data-cache') === cacheKey;
 }
 
 /**
@@ -663,10 +663,8 @@ export function checkCacheKey(node: HTMLElement | HTMLLinkElement | HTMLStyleEle
  */
 export async function loadAndAppendCssAssets(
   cssList: Array<Asset | HTMLElement>,
-  {
-    cacheId,
-  }: {
-    cacheId: string;
+  options?: {
+    cacheId?: string;
   },
 ) {
   const cssRoot: HTMLElement = document.getElementsByTagName('head')[0];
@@ -676,7 +674,7 @@ export async function loadAndAppendCssAssets(
     cssList.map((asset, index) => appendCSS(asset, {
       root: cssRoot,
       id: `${PREFIX}-css-${index}`,
-      cacheId,
+      cacheId: options?.cacheId,
     })),
   );
 }
