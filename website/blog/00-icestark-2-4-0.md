@@ -127,7 +127,7 @@ icestark 于前两周上线独立[官网](https://micro-frontends.ice.work/)。�
 
 ![](https://img.alicdn.com/imgextra/i1/O1CN01dp76nB2A5fPvnBB6O_!!6000000008152-0-tps-956-186.jpg)
 
-3. 以及更明显的 [FAQ 入口](/icestark-site/docs/faq)。
+3. 以及更明显的 [FAQ 入口](/docs/faq)。
 
 ### 提供 [ice](https://ice.work/) 用户消费框架应用传递的 props
 
