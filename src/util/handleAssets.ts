@@ -75,11 +75,16 @@ function isAssetExist(element: HTMLScriptElement | HTMLLIElement, type: 'script'
 /**
  * Create link/style element and append to root
  */
-export function appendCSS(
-  root: HTMLElement | ShadowRoot,
-  asset: Asset | HTMLElement,
-  id: string,
-): Promise<void> {
+export function appendCSS(asset: Asset | HTMLElement,
+  {
+    root,
+    id,
+    cacheId,
+  }: {
+    root?: HTMLElement | ShadowRoot;
+    id?: string;
+    cacheId?: string;
+  }): Promise<void> {
   return new Promise<void>(async (resolve, reject) => {
     if (!root) reject(new Error('no root element for css asset'));
 
@@ -96,6 +101,7 @@ export function appendCSS(
       styleElement.innerHTML = content;
       styleElement.id = id;
       styleElement.setAttribute(PREFIX, DYNAMIC);
+      cacheId && styleElement.setAttribute('data-cache', cacheId);
       root.appendChild(styleElement);
       resolve();
       return;
@@ -112,6 +118,7 @@ export function appendCSS(
         styleElement.innerHTML = await cachedStyleContent[content];
         styleElement.id = id;
         styleElement.setAttribute(PREFIX, DYNAMIC);
+        cacheId && styleElement.setAttribute('data-cache', cacheId);
         root.appendChild(styleElement);
         useExternalLink = false;
         resolve();
@@ -126,6 +133,7 @@ export function appendCSS(
       element.id = id;
       element.rel = 'stylesheet';
       element.href = content;
+      cacheId && element.setAttribute('data-cache', cacheId);
 
       element.addEventListener(
         'error',
@@ -150,18 +158,20 @@ function setAttributeForScriptNode(element: HTMLScriptElement, {
   id,
   src,
   scriptAttributes,
+  cacheId,
 }: {
   module: boolean;
   id: string;
   src: string;
   scriptAttributes: ScriptAttributes;
+  cacheId?: string;
 }) {
   /*
   * stamped by icestark for recycle when needed.
   */
   element.setAttribute(PREFIX, DYNAMIC);
+  cacheId && element.setAttribute('data-cache', cacheId);
   element.id = id;
-
 
   element.type = module ? 'module' : 'text/javascript';
   element.src = src;
@@ -219,10 +229,12 @@ export function appendExternalScript(asset: string | Asset,
     id,
     root = document.getElementsByTagName('head')[0],
     scriptAttributes = [],
+    cacheId,
   }: {
     id: string;
     root?: HTMLElement | ShadowRoot;
     scriptAttributes?: ScriptAttributes;
+    cacheId?: string;
   }): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     const { type, content, module } = (asset as Asset);
@@ -233,6 +245,7 @@ export function appendExternalScript(asset: string | Asset,
       element.innerHTML = content;
       element.id = id;
       element.setAttribute(PREFIX, DYNAMIC);
+      cacheId && element.setAttribute('data-cache', cacheId);
       module && (element.type = 'module');
       root.appendChild(element);
 
@@ -248,6 +261,7 @@ export function appendExternalScript(asset: string | Asset,
       id,
       src: content || (asset as string),
       scriptAttributes,
+      cacheId,
     });
 
     if (isAssetExist(element, 'script')) {
@@ -637,21 +651,8 @@ export function emptyAssets(
 
 export function checkCacheKey(node: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement, cacheKey: string|boolean) {
   return (typeof cacheKey === 'boolean' && cacheKey)
-    || !node.getAttribute('cache')
-    || node.getAttribute('cache') === cacheKey;
-}
-
-/**
- * cache all assets loaded by current sub-application
- */
-export function cacheAssets(cacheKey: string): void {
-  const assetsList = getAssetsNode();
-  assetsList.forEach((assetsNode) => {
-    // set cache key if asset attributes without prefix=static and cache
-    if (assetsNode.getAttribute(PREFIX) !== STATIC && !assetsNode.getAttribute('cache')) {
-      assetsNode.setAttribute('cache', cacheKey);
-    }
-  });
+    || !node.getAttribute('data-cache')
+    || node.getAttribute('data-cache') === cacheKey;
 }
 
 /**
@@ -660,12 +661,21 @@ export function cacheAssets(cacheKey: string): void {
  * @export
  * @param {Assets} assets
  */
-export async function loadAndAppendCssAssets(cssList: Array<Asset | HTMLElement>) {
+export async function loadAndAppendCssAssets(
+  cssList: Array<Asset | HTMLElement>,
+  options?: {
+    cacheId?: string;
+  },
+) {
   const cssRoot: HTMLElement = document.getElementsByTagName('head')[0];
 
   // load css content
   await Promise.all(
-    cssList.map((asset, index) => appendCSS(cssRoot, asset, `${PREFIX}-css-${index}`)),
+    cssList.map((asset, index) => appendCSS(asset, {
+      root: cssRoot,
+      id: `${PREFIX}-css-${index}`,
+      cacheId: options?.cacheId,
+    })),
   );
 }
 
@@ -683,10 +693,12 @@ export async function loadAndAppendJsAssets(
     sandbox,
     fetch = defaultFetch,
     scriptAttributes = [],
+    cacheId,
   }: {
     sandbox?: Sandbox;
     fetch?: Fetch;
     scriptAttributes?: ScriptAttributes;
+    cacheId?: string;
   },
 ) {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
@@ -712,6 +724,7 @@ export async function loadAndAppendJsAssets(
         root: jsRoot,
         scriptAttributes,
         id: `${PREFIX}-js-${index}`,
+        cacheId,
       }));
     }, Promise.resolve());
     return;
@@ -722,6 +735,7 @@ export async function loadAndAppendJsAssets(
       root: jsRoot,
       scriptAttributes,
       id: `${PREFIX}-js-${index}`,
+      cacheId,
     })),
   );
 }

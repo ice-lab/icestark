@@ -4,7 +4,12 @@ import { AppHistory } from './appHistory';
 import { unloadMicroApp, BaseConfig, createMicroApp } from './apps';
 import { converArray2String } from './util/helpers';
 import { PathData } from './util/checkActive';
-import { callCapturedEventListeners, resetCapturedEventListeners } from './util/capturedListeners';
+import {
+  callCapturedEventListeners,
+  resetCapturedEventListeners,
+  retrieveCaptureEventListeners,
+  storeCaptureEventListeners,
+} from './util/capturedListeners';
 import isEqual from 'lodash.isequal';
 
 interface AppRouteState {
@@ -133,8 +138,13 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   }
 
   mountApp = () => {
-    resetCapturedEventListeners();
-    const { onAppEnter } = this.props;
+    const { onAppEnter, name, cached } = this.props;
+
+    if (cached) {
+      retrieveCaptureEventListeners(name);
+    } else {
+      resetCapturedEventListeners();
+    }
 
     // Trigger app enter
     if (typeof onAppEnter === 'function') {
@@ -149,7 +159,11 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   unmountApp = () => {
-    const { name, onAppLeave } = this.props;
+    const { name, onAppLeave, cached } = this.props;
+
+    if (cached) {
+      storeCaptureEventListeners(name);
+    }
 
     // Trigger app leave
     if (typeof onAppLeave === 'function') {

@@ -9,10 +9,12 @@ export const routingEventsListeningTo = [
   CapturedEventNameEnum.POPSTATE,
 ];
 
-const capturedEventListeners = {
+let capturedEventListeners = {
   [CapturedEventNameEnum.POPSTATE]: [],
   [CapturedEventNameEnum.HASHCHANGE]: [],
 };
+
+const eventListenersStore = new Map();
 
 let historyEvent = null;
 
@@ -83,4 +85,18 @@ export function removeCapturedEventListeners(eventName, listenerFn) {
 export function resetCapturedEventListeners() {
   capturedEventListeners[CapturedEventNameEnum.POPSTATE] = [];
   capturedEventListeners[CapturedEventNameEnum.HASHCHANGE] = [];
+}
+
+export function storeCaptureEventListeners(id: string) {
+  eventListenersStore.set(id, {
+    ...capturedEventListeners,
+  });
+}
+
+export function retrieveCaptureEventListeners(id: string) {
+  if (eventListenersStore.has(id)) {
+    capturedEventListeners = eventListenersStore.get(id);
+  } else {
+    resetCapturedEventListeners();
+  }
 }

@@ -169,7 +169,7 @@ export async function loadAppModule(appConfig: AppConfig) {
   let lifecycle: ModuleLifeCycle = {};
   onLoadingApp(appConfig);
   const appSandbox = createSandbox(appConfig.sandbox) as Sandbox;
-  const { url, container, entry, entryContent, name, scriptAttributes = [], umd } = appConfig;
+  const { url, container, entry, entryContent, name, scriptAttributes = [], umd, cached } = appConfig;
   const appAssets = url ? getUrlAssets(url) : await getEntryAssets({
     root: container,
     entry,
@@ -179,6 +179,8 @@ export async function loadAppModule(appConfig: AppConfig) {
     fetch,
   });
   updateAppConfig(appConfig.name, { appAssets, appSandbox });
+
+  const cacheId = cached ? name : undefined;
 
   /**
    * LoadScriptMode has the first priority
@@ -190,18 +192,18 @@ export async function loadAppModule(appConfig: AppConfig) {
       await loadAndAppendCssAssets([
         ...appAssets.cssList,
         ...filterRemovedAssets(importCachedAssets[name] || [], ['LINK', 'STYLE']),
-      ]);
+      ], { cacheId });
       lifecycle = await loadScriptByImport(appAssets.jsList);
       // Not to handle script element temporarily.
       break;
     case 'fetch':
-      await loadAndAppendCssAssets(appAssets.cssList);
+      await loadAndAppendCssAssets(appAssets.cssList, { cacheId });
       lifecycle = await loadScriptByFetch(appAssets.jsList, appSandbox);
       break;
     default:
       await Promise.all([
-        loadAndAppendCssAssets(appAssets.cssList),
-        loadAndAppendJsAssets(appAssets, { sandbox: appSandbox, fetch, scriptAttributes }),
+        loadAndAppendCssAssets(appAssets.cssList, { cacheId }),
+        loadAndAppendJsAssets(appAssets, { sandbox: appSandbox, fetch, scriptAttributes, cacheId }),
       ]);
       lifecycle =
         getLifecyleByLibrary() ||
@@ -257,63 +259,159 @@ export function getAppConfigForLoad(app: string | AppConfig, options?: AppLifecy
   return getAppConfig(name);
 }
 
-export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppLifecylceOptions, configuration?: StartConfiguration) {
-  const appConfig = getAppConfigForLoad(app, appLifecyle);
-  const appName = appConfig && appConfig.name;
+function registerAppBeforeLoad(app: AppConfig, options?: AppLifecylceOptions) {
+  const { name } = app;
+  const appIndex = getAppNames().indexOf(name);
 
-  if (appConfig && appName) {
-    // add configuration to every micro app
-    const userConfiguration = globalConfiguration;
-    Object.keys(configuration || {}).forEach((key) => {
-      userConfiguration[key] = configuration[key];
-    });
-    updateAppConfig(appName, { configuration: userConfiguration });
-
-    const { container, basename, activePath } = appConfig;
-
-    if (container) {
-      setCache('root', container);
-    }
-
-    const { basename: frameworkBasename } = userConfiguration;
-
-    if (shouldSetBasename(activePath, basename)) {
-      setCache('basename', getAppBasename(activePath, frameworkBasename, basename));
-    }
-
-    // check status of app
-    if (appConfig.status === NOT_LOADED || appConfig.status === LOAD_ERROR) {
-      if (appConfig.title) document.title = appConfig.title;
-      updateAppConfig(appName, { status: LOADING_ASSETS });
-      let lifeCycle: ModuleLifeCycle = {};
-      try {
-        lifeCycle = await loadAppModule(appConfig);
-        // in case of app status modified by unload event
-        if (getAppStatus(appName) === LOADING_ASSETS) {
-          updateAppConfig(appName, { ...lifeCycle, status: NOT_MOUNTED });
-        }
-      } catch (err) {
-        userConfiguration.onError(err);
-        updateAppConfig(appName, { status: LOAD_ERROR });
-      }
-      if (lifeCycle.mount) {
-        await mountMicroApp(appConfig.name);
-      }
-    } else if (appConfig.status === UNMOUNTED) {
-      if (!appConfig.cached) {
-        await loadAndAppendCssAssets(appConfig?.appAssets?.cssList || []);
-      }
-      await mountMicroApp(appConfig.name);
-    } else if (appConfig.status === NOT_MOUNTED) {
-      await mountMicroApp(appConfig.name);
-    } else {
-      console.info(`[icestark] current status of app ${appName} is ${appConfig.status}`);
-    }
-    return getAppConfig(appName);
+  if (appIndex === -1) {
+    registerMicroApp(app, options);
   } else {
-    console.error(`[icestark] fail to get app config of ${appName}`);
+    updateAppConfig(name, app);
   }
-  return null;
+
+  return getAppConfig(name);
+}
+
+async function loadApp(app: MicroApp) {
+  const { title, name, configuration } = app;
+
+  if (title) {
+    document.title = title;
+  }
+
+  updateAppConfig(name, { status: LOADING_ASSETS });
+
+
+  let lifeCycle: ModuleLifeCycle = {};
+  try {
+    lifeCycle = await loadAppModule(app);
+    // in case of app status modified by unload event
+    if (getAppStatus(name) === LOADING_ASSETS) {
+      updateAppConfig(name, { ...lifeCycle, status: NOT_MOUNTED });
+    }
+  } catch (err) {
+    configuration.onError(err);
+    updateAppConfig(name, { status: LOAD_ERROR });
+  }
+  if (lifeCycle.mount) {
+    await mountMicroApp(name);
+  }
+}
+
+function mergeThenUpdateConfiguration(name: string, configuration: StartConfiguration) {
+  const cfgs = globalConfiguration;
+  Object.keys(configuration || {}).forEach((key) => {
+    cfgs[key] = configuration[key];
+  });
+
+  updateAppConfig(name, { configuration: cfgs });
+}
+
+export async function createMicroApp(
+  app: string | AppConfig,
+  appLifecyle?: AppLifecylceOptions,
+  configuration?: StartConfiguration,
+) {
+  const appName = typeof app === 'string' ? app : app.name;
+
+  if (typeof app !== 'string') {
+    registerAppBeforeLoad(app, appLifecyle);
+  }
+
+  mergeThenUpdateConfiguration(appName, configuration);
+
+  const appConfig = getAppConfig(appName);
+
+  if (!(appConfig && appName)) {
+    console.error(`[icestark] fail to get app config of ${appName}`);
+    return null;
+  }
+
+  const { container, basename, activePath, configuration: userConfiguration } = appConfig;
+
+  if (container) {
+    setCache('root', container);
+  }
+
+  const { basename: frameworkBasename } = userConfiguration;
+
+  if (shouldSetBasename(activePath, basename)) {
+    setCache('basename', getAppBasename(activePath, frameworkBasename, basename));
+  }
+
+  switch (appConfig.status) {
+    case NOT_LOADED:
+    case LOAD_ERROR:
+      await loadApp(appConfig);
+      break;
+    case UNMOUNTED:
+      if (!appConfig.cached) {
+        await loadAndAppendCssAssets(appConfig?.appAssets?.cssList || [], {
+          cacheId: appName,
+        });
+      }
+      if (appConfig.entry || appConfig.entryContent) {
+        getEntryAssets({
+          root: container,
+          entry: appConfig.entry,
+          href: location.href,
+          entryContent: appConfig.entryContent,
+          assetsCacheKey: appConfig.name,
+          fetch,
+        });
+      }
+      await mountMicroApp(appConfig.name);
+      break;
+    case NOT_MOUNTED:
+      await mountMicroApp(appConfig.name);
+      break;
+    default:
+      break;
+  }
+
+  // check status of app
+  // if (appConfig.status === NOT_LOADED || appConfig.status === LOAD_ERROR) {
+  //   if (appConfig.title) document.title = appConfig.title;
+  //   updateAppConfig(appName, { status: LOADING_ASSETS });
+  //   let lifeCycle: ModuleLifeCycle = {};
+  //   try {
+  //     lifeCycle = await loadAppModule(appConfig);
+  //     // in case of app status modified by unload event
+  //     if (getAppStatus(appName) === LOADING_ASSETS) {
+  //       updateAppConfig(appName, { ...lifeCycle, status: NOT_MOUNTED });
+  //     }
+  //   } catch (err) {
+  //     userConfiguration.onError(err);
+  //     updateAppConfig(appName, { status: LOAD_ERROR });
+  //   }
+  //   if (lifeCycle.mount) {
+  //     await mountMicroApp(appConfig.name);
+  //   }
+  // } else if (appConfig.status === UNMOUNTED) {
+  //   if (!appConfig.cached) {
+  //     await loadAndAppendCssAssets(appConfig?.appAssets?.cssList || [], {
+  //       cacheId: appName,
+  //     });
+  //   }
+
+  //   if (appConfig.entry || appConfig.entryContent) {
+  //     getEntryAssets({
+  //       root: container,
+  //       entry: appConfig.entry,
+  //       href: location.href,
+  //       entryContent: appConfig.entryContent,
+  //       assetsCacheKey: appConfig.name,
+  //       fetch,
+  //     });
+  //   }
+
+  //   await mountMicroApp(appConfig.name);
+  // } else if (appConfig.status === NOT_MOUNTED) {
+  //   await mountMicroApp(appConfig.name);
+  // } else {
+  //   console.info(`[icestark] current status of app ${appName} is ${appConfig.status}`);
+  // }
+  return getAppConfig(appName);
 }
 
 export async function mountMicroApp(appName: string) {
@@ -359,10 +457,13 @@ export async function unloadMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   if (appConfig) {
     unmountMicroApp(appName);
-    delete appConfig.mount;
-    delete appConfig.unmount;
-    delete appConfig.appAssets;
-    updateAppConfig(appName, { status: NOT_LOADED });
+
+    if (!appConfig.cached) {
+      delete appConfig.mount;
+      delete appConfig.unmount;
+      delete appConfig.appAssets;
+      updateAppConfig(appName, { status: NOT_LOADED });
+    }
   } else {
     console.log(`[icestark] can not find app ${appName} when call unloadMicroApp`);
   }
