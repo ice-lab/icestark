@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import Sandbox, { SandboxConstructor, SandboxProps } from '@ice/sandbox';
 import isEmpty from 'lodash.isempty';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
@@ -192,17 +193,29 @@ export async function loadAppModule(appConfig: AppConfig) {
       await loadAndAppendCssAssets([
         ...appAssets.cssList,
         ...filterRemovedAssets(importCachedAssets[name] || [], ['LINK', 'STYLE']),
-      ], { cacheId });
+      ], {
+        cacheId,
+        cache: appSandbox && !appSandbox.sandboxDisabled,
+        fetch,
+      });
       lifecycle = await loadScriptByImport(appAssets.jsList);
       // Not to handle script element temporarily.
       break;
     case 'fetch':
-      await loadAndAppendCssAssets(appAssets.cssList, { cacheId });
+      await loadAndAppendCssAssets(appAssets.cssList, {
+        cacheId,
+        cache: appSandbox && !appSandbox.sandboxDisabled,
+        fetch,
+      });
       lifecycle = await loadScriptByFetch(appAssets.jsList, appSandbox);
       break;
     default:
       await Promise.all([
-        loadAndAppendCssAssets(appAssets.cssList, { cacheId }),
+        loadAndAppendCssAssets(appAssets.cssList, {
+          cacheId,
+          cache: appSandbox && !appSandbox.sandboxDisabled,
+          fetch,
+        }),
         loadAndAppendJsAssets(appAssets, { sandbox: appSandbox, fetch, scriptAttributes, cacheId }),
       ]);
       lifecycle =
@@ -346,8 +359,10 @@ export async function createMicroApp(
       break;
     case UNMOUNTED:
       if (!appConfig.cached) {
-        await loadAndAppendCssAssets(appConfig?.appAssets?.cssList || [], {
+        await loadAndAppendCssAssets((appConfig?.appAssets?.cssList || []) as any, {
           cacheId: appName,
+          cache: !!((appConfig.loadScriptMode === 'fetch') || appConfig.sandbox || appConfig.umd),
+          fetch: userConfiguration.fetch,
         });
       }
       if (appConfig.entry || appConfig.entryContent) {
@@ -369,48 +384,6 @@ export async function createMicroApp(
       break;
   }
 
-  // check status of app
-  // if (appConfig.status === NOT_LOADED || appConfig.status === LOAD_ERROR) {
-  //   if (appConfig.title) document.title = appConfig.title;
-  //   updateAppConfig(appName, { status: LOADING_ASSETS });
-  //   let lifeCycle: ModuleLifeCycle = {};
-  //   try {
-  //     lifeCycle = await loadAppModule(appConfig);
-  //     // in case of app status modified by unload event
-  //     if (getAppStatus(appName) === LOADING_ASSETS) {
-  //       updateAppConfig(appName, { ...lifeCycle, status: NOT_MOUNTED });
-  //     }
-  //   } catch (err) {
-  //     userConfiguration.onError(err);
-  //     updateAppConfig(appName, { status: LOAD_ERROR });
-  //   }
-  //   if (lifeCycle.mount) {
-  //     await mountMicroApp(appConfig.name);
-  //   }
-  // } else if (appConfig.status === UNMOUNTED) {
-  //   if (!appConfig.cached) {
-  //     await loadAndAppendCssAssets(appConfig?.appAssets?.cssList || [], {
-  //       cacheId: appName,
-  //     });
-  //   }
-
-  //   if (appConfig.entry || appConfig.entryContent) {
-  //     getEntryAssets({
-  //       root: container,
-  //       entry: appConfig.entry,
-  //       href: location.href,
-  //       entryContent: appConfig.entryContent,
-  //       assetsCacheKey: appConfig.name,
-  //       fetch,
-  //     });
-  //   }
-
-  //   await mountMicroApp(appConfig.name);
-  // } else if (appConfig.status === NOT_MOUNTED) {
-  //   await mountMicroApp(appConfig.name);
-  // } else {
-  //   console.info(`[icestark] current status of app ${appName} is ${appConfig.status}`);
-  // }
   return getAppConfig(appName);
 }
 

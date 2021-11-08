@@ -98,6 +98,8 @@ export function appendCSS(asset: Asset | HTMLElement,
 
     if (type && type === AssetTypeEnum.INLINE) {
       const styleElement: HTMLStyleElement = document.createElement('style');
+      styleElement.id = id;
+      styleElement.setAttribute(PREFIX, DYNAMIC);
       styleElement.innerHTML = content;
       styleElement.id = id;
       styleElement.setAttribute(PREFIX, DYNAMIC);
@@ -661,13 +663,25 @@ export function checkCacheKey(node: HTMLElement | HTMLLinkElement | HTMLStyleEle
  * @export
  * @param {Assets} assets
  */
-export async function loadAndAppendCssAssets(
-  cssList: Array<Asset | HTMLElement>,
-  options?: {
-    cacheId?: string;
-  },
-) {
+export async function loadAndAppendCssAssets(cssList: Asset[], options?: {
+  cache?: boolean;
+  fetch?: Fetch;
+  cacheId?: string;
+}) {
   const cssRoot: HTMLElement = document.getElementsByTagName('head')[0];
+
+  if (options?.cache) {
+    const cssContents = await fetchStyles(cssList, fetch);
+
+    cssContents.forEach((content, index) => appendCSS(
+      { content, type: AssetTypeEnum.INLINE }, {
+        root: cssRoot,
+        id: `${PREFIX}-css-${index}`,
+        cacheId: options?.cacheId,
+      },
+    ));
+    return;
+  }
 
   // load css content
   await Promise.all(
