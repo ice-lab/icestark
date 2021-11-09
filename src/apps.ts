@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import Sandbox, { SandboxConstructor, SandboxProps } from '@ice/sandbox';
 import isEmpty from 'lodash.isempty';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
@@ -352,16 +351,18 @@ export async function createMicroApp(
     setCache('basename', getAppBasename(activePath, frameworkBasename, basename));
   }
 
+  const isAssetCache = !!((appConfig.loadScriptMode === 'fetch') || appConfig.sandbox || appConfig.umd);
+
   switch (appConfig.status) {
     case NOT_LOADED:
     case LOAD_ERROR:
       await loadApp(appConfig);
       break;
     case UNMOUNTED:
-      if (!appConfig.cached) {
+      if (!appConfig.cached || isAssetCache) {
         await loadAndAppendCssAssets((appConfig?.appAssets?.cssList || []) as any, {
           cacheId: appName,
-          cache: !!((appConfig.loadScriptMode === 'fetch') || appConfig.sandbox || appConfig.umd),
+          cache: isAssetCache,
           fetch: userConfiguration.fetch,
         });
       }
@@ -403,7 +404,13 @@ export async function unmountMicroApp(appName: string) {
   if (appConfig && (appConfig.status === MOUNTED || appConfig.status === LOADING_ASSETS || appConfig.status === NOT_MOUNTED)) {
     // remove assets if app is not cached
     const { shouldAssetsRemove } = getAppConfig(appName)?.configuration || globalConfiguration;
-    const removedAssets = emptyAssets(shouldAssetsRemove, !appConfig.cached && appConfig.name);
+
+    const isAssetCache = !!(appConfig.loadScriptMode === 'fetch') || appConfig.sandbox || appConfig.umd;
+
+    const removedAssets = emptyAssets(
+      shouldAssetsRemove,
+      (isAssetCache || !appConfig.cached) && appConfig.name,
+    );
 
     /**
     * Since es module natively imported twice may never excute twice. https://dmitripavlutin.com/javascript-module-import-twice/
