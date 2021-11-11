@@ -494,4 +494,4 @@ const App = () => {
 
 ## API
 
-请移步 [API -> @ice/stark-module](http://localhost:3000/docs/api/stark-module)
+请移步 [API -> @ice/stark-module](/docs/api/stark-module)
