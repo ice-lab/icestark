@@ -10,7 +10,7 @@ hide_table_of_contents: false
 
 ## Announcing icestark 2.6.0
 
-非常高兴地告诉大家，在 [2.6.0](https://github.com/ice-lab/icestark/pull/369) 这个版本中，我们支持了 ES modules 模块类型的微应用。也就是说，如果您使用 [Vite](https://vitejs.dev/) 或者 [icejs Vite 模式](https://ice.work/docs/guide/basic/Vite/) 开发的应用，可以使用 icestark 来构建您的微前端架构。
+非常高兴地告诉大家，在 [2.6.0](https://github.com/ice-lab/icestark/pull/369) 这个版本中，我们支持了 ES modules 模块类型的微应用。也就是说，如果您使用 [Vite](https://vitejs.dev/) 或者 [icejs Vite 模式](https://ice.work/docs/guide/basic/vite/) 开发的应用，可以使用 icestark 来构建您的微前端架构。
 
 本次更新主要包括：
 - [支持 ES modules 类型微应用](#支持-ES-modules-类型微应用)
@@ -29,7 +29,7 @@ hide_table_of_contents: false
 + **项目大小不再成为服务器启动速度的限制因素**
 + **HMR 始终保持快速更新**
 
-随着 [icejs](https://ice.work/) 支持 [Vite](https://ice.work/docs/guide/basic/Vite/) 模式，icestark 也为大家带来了 ES modules 类型微应用的支持。
+随着 [icejs](https://ice.work/) 支持 [Vite](https://ice.work/docs/guide/basic/vite/) 模式，icestark 也为大家带来了 ES modules 类型微应用的支持。
 
 框架应用接入 ES modules 微应用的方式非常简单，配置 `loadScriptMode: import` 来支持 ES modules 类型微应用的加载。
 
@@ -50,9 +50,9 @@ hide_table_of_contents: false
 </AppRouter>
 ```
 
-对于 Vite 应用的 icestark 适配，可参考 [其他框架接入微应用 - Vite 应用](http://localhost:3000/docs/guide/use-child/others#Vite-%E5%BA%94%E7%94%A8) 进行配置。后期，我们将提供 Vite plugin 能力，使 Vite 应用的接入非常简单。
+对于 Vite 应用的 icestark 适配，可参考 [其他框架接入微应用 - Vite 应用](/docs/guide/use-child/others#Vite-%E5%BA%94%E7%94%A8) 进行配置。后期，我们将提供 Vite plugin 能力，使 Vite 应用的接入非常简单。
 
-对于 ice.js 子应用，只需将 [`build-plugin-icestark`](https://ice.work/docs/guide/advanced/icestark) 升级到最新版本，并开启 [icejs Vite 模式](https://ice.work/docs/guide/basic/Vite)，即可完成改造工作。
+对于 ice.js 子应用，只需将 [`build-plugin-icestark`](https://ice.work/docs/guide/advanced/icestark) 升级到最新版本，并开启 [icejs Vite 模式](https://ice.work/docs/guide/basic/vite)，即可完成改造工作。
 
 
 ### ES modules 微应用的常见问题解答
@@ -108,7 +108,7 @@ export function unmount () {
 
 ### 修复对 location.hash 赋值 onRouteChange 触发两次的错误
 
-由于对 `window.location.hash` 进行赋值，会触发 popstate 和 hashchange 两个事件，导致钩子函数 [onRouteChange](http://localhost:3000/docs/api/ice-stark#startconfiguration) 触发两次。版本 2.6.0 修复了这个问题。
+由于对 `window.location.hash` 进行赋值，会触发 popstate 和 hashchange 两个事件，导致钩子函数 [onRouteChange](/docs/api/ice-stark#startconfiguration) 触发两次。版本 2.6.0 修复了这个问题。
 
 
 ### 对项目配置的改造

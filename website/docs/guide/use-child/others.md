@@ -550,7 +550,7 @@ export default defineConfig({
 
 ### 主应用加载 Vite 应用
 
-主应用需要通过 `loadScriptMode: import` 来加载 ES modules 类型微应用（Vite 应用）。同时由于 Vite 应用在 dev 下注入 HMR 相关的代码，因此建议通过 [entry 方式](http://localhost:3000/docs/guide/concept/child#2-entry) 接入，保证开发和生产的配置一致性。
+主应用需要通过 `loadScriptMode: import` 来加载 ES modules 类型微应用（Vite 应用）。同时由于 Vite 应用在 dev 下注入 HMR 相关的代码，因此建议通过 [entry 方式](/docs/guide/concept/child#2-entry) 接入，保证开发和生产的配置一致性。
 
 ```diff
 export default class App extends React.Component {
