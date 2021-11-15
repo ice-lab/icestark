@@ -369,48 +369,6 @@ export async function createMicroApp(
       break;
   }
 
-  // check status of app
-  // if (appConfig.status === NOT_LOADED || appConfig.status === LOAD_ERROR) {
-  //   if (appConfig.title) document.title = appConfig.title;
-  //   updateAppConfig(appName, { status: LOADING_ASSETS });
-  //   let lifeCycle: ModuleLifeCycle = {};
-  //   try {
-  //     lifeCycle = await loadAppModule(appConfig);
-  //     // in case of app status modified by unload event
-  //     if (getAppStatus(appName) === LOADING_ASSETS) {
-  //       updateAppConfig(appName, { ...lifeCycle, status: NOT_MOUNTED });
-  //     }
-  //   } catch (err) {
-  //     userConfiguration.onError(err);
-  //     updateAppConfig(appName, { status: LOAD_ERROR });
-  //   }
-  //   if (lifeCycle.mount) {
-  //     await mountMicroApp(appConfig.name);
-  //   }
-  // } else if (appConfig.status === UNMOUNTED) {
-  //   if (!appConfig.cached) {
-  //     await loadAndAppendCssAssets(appConfig?.appAssets?.cssList || [], {
-  //       cacheId: appName,
-  //     });
-  //   }
-
-  //   if (appConfig.entry || appConfig.entryContent) {
-  //     getEntryAssets({
-  //       root: container,
-  //       entry: appConfig.entry,
-  //       href: location.href,
-  //       entryContent: appConfig.entryContent,
-  //       assetsCacheKey: appConfig.name,
-  //       fetch,
-  //     });
-  //   }
-
-  //   await mountMicroApp(appConfig.name);
-  // } else if (appConfig.status === NOT_MOUNTED) {
-  //   await mountMicroApp(appConfig.name);
-  // } else {
-  //   console.info(`[icestark] current status of app ${appName} is ${appConfig.status}`);
-  // }
   return getAppConfig(appName);
 }
 
@@ -418,6 +376,10 @@ export async function mountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   // check current url before mount
   if (appConfig && appConfig.checkActive(window.location.href) && appConfig.status !== MOUNTED) {
+    if (appConfig.cached) {
+      appConfig.appSandbox.resume();
+    }
+
     if (appConfig.mount) {
       await appConfig.mount({ container: appConfig.container, customProps: appConfig.props });
     }
@@ -442,9 +404,9 @@ export async function unmountMicroApp(appName: string) {
     }
 
     updateAppConfig(appName, { status: UNMOUNTED });
-    if (!appConfig.cached && appConfig.appSandbox) {
+    if (appConfig.appSandbox) {
       appConfig.appSandbox.clear();
-      appConfig.appSandbox = null;
+      // appConfig.appSandbox = null;
     }
     if (appConfig.unmount) {
       await appConfig.unmount({ container: appConfig.container, customProps: appConfig.props });
