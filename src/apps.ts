@@ -392,6 +392,10 @@ export async function mountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   // check current url before mount
   if (appConfig && appConfig.checkActive(window.location.href) && appConfig.status !== MOUNTED) {
+    if (appConfig.cached) {
+      appConfig.appSandbox.resume();
+    }
+
     if (appConfig.mount) {
       await appConfig.mount({ container: appConfig.container, customProps: appConfig.props });
     }
@@ -422,9 +426,9 @@ export async function unmountMicroApp(appName: string) {
     }
 
     updateAppConfig(appName, { status: UNMOUNTED });
-    if (!appConfig.cached && appConfig.appSandbox) {
+    if (appConfig.appSandbox) {
       appConfig.appSandbox.clear();
-      appConfig.appSandbox = null;
+      // appConfig.appSandbox = null;
     }
     if (appConfig.unmount) {
       await appConfig.unmount({ container: appConfig.container, customProps: appConfig.props });

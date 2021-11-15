@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0
+
+- [feat] support for multiple sanbox instances.
+
 ## 1.1.2
 
 - [fix] hijacked eventListener were not been removed after sandbox unload. ([#295](https://github.com/ice-lab/icestark/issues/295))
