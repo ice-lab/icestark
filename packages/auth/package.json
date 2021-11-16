@@ -1,0 +1,33 @@
+{
+  "name": "@ice/stark-auth",
+  "version": "1.0.0",
+  "description": "Auth solution for icestark",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "build": "rm -rf lib && tsc",
+    "watch": "tsc -w",
+    "prepublishOnly": "npm run test && npm run build"
+  },
+  "keywords": [
+    "icestark",
+    "auth",
+    "micro-frontends",
+    "microfrontends"
+  ],
+  "bugs": {
+    "url": "https://github.com/ice-lab/icestark/issues"
+  },
+  "homepage": "https://github.com/ice-lab/icestark",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ice-lab/icestark.git"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^4.4.4"
+  }
+}
