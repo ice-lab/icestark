@@ -351,6 +351,8 @@ export async function unmountMicroApp(appName: string) {
     if (appConfig.unmount) {
       await appConfig.unmount({ container: appConfig.container, customProps: appConfig.props });
     }
+
+    setCache('root', null);
   }
 }
 
