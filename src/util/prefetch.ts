@@ -22,10 +22,12 @@ interface RequestIdleCallbackDeadline {
 
 declare global {
   interface Window {
+    // @ts-ignore how merge existing property
     requestIdleCallback: ((
       callback: ((deadline: RequestIdleCallbackDeadline) => void),
       opts?: RequestIdleCallbackOptions,
     ) => RequestIdleCallbackHandle);
+    // @ts-ignore how merge existing property
     cancelIdleCallback: ((handle: RequestIdleCallbackHandle) => void);
   }
 }
@@ -34,6 +36,7 @@ declare global {
  * polyfill/shim for the `requestIdleCallback` and `cancelIdleCallback`.
  * https://github.com/pladaria/requestidlecallback-polyfill/blob/master/index.js
  */
+// @ts-ignore how merge existing property
 window.requestIdleCallback =
   window.requestIdleCallback ||
   function (cb) {
