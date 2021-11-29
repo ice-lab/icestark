@@ -16,8 +16,11 @@ import {
   appendExternalScript,
   getUrlAssets,
   isAbsoluteUrl,
+  replaceImportIdentifier,
 } from '../src/util/handleAssets';
 import { setCache } from '../src/util/cache';
+
+const originalLocation = window.location;
 
 const tempHTML =
   '<!DOCTYPE html>' +
@@ -119,7 +122,7 @@ describe('getComment', () => {
 });
 
 describe('processHtml', () => {
-  test('processHtml', () => {
+  test('processHtml - basic', () => {
     expect(processHtml(undefined).html.innerHTML).toBe('');
 
     const { html, assets: {jsList, cssList} } = processHtml(tempHTML);
@@ -155,7 +158,6 @@ describe('processHtml', () => {
     expect(jsList[5].type).toBe(AssetTypeEnum.EXTERNAL);
     expect(jsList[5].content).toContain('//g.alicdn.com/test.min.js');
 
-
     // script inline assets
     expect(jsList[0].type).toBe(AssetTypeEnum.INLINE);
     expect(jsList[0].content).toContain('console.log()');
@@ -163,7 +165,70 @@ describe('processHtml', () => {
     expect(jsList[4].content).toContain('window.g_config');
 
   });
+
+  test('processHtml - entry', () => {
+    const { html } = processHtml(tempHTML, "https://localhost:3333");
+    const div = document.createElement('div');
+    div.appendChild(html);
+    const content = div.innerHTML;
+
+    expect(content).toContain('<!--link https://localhost:3333/test.css processed by @ice/stark-->');
+    expect(content).toContain('<!--link https://localhost:3333/index.css processed by @ice/stark-->');
+    expect(content).not.toContain('href="/index.css"');
+    expect(content).not.toContain('href="index.css"');
+
+    expect(content).not.toContain('base href="https://localhost:3333"')
+  });
+
+  test('processHtml - baseElement - absolute', () => {
+    let localHtml = tempHTML.replace('<head>', '<head> <base href="https://localhost:3334">')
+
+    const { html, assets } = processHtml(localHtml);
+    const div = document.createElement('div');
+    div.appendChild(html);
+    const content = div.innerHTML;
+
+    expect(content).toContain('<!--link https://localhost:3334/test.css processed by @ice/stark-->');
+    expect(content).toContain('<!--link https://localhost:3334/index.css processed by @ice/stark-->');
+    expect(content).not.toContain('href="/index.css"');
+    expect(content).not.toContain('href="index.css"');
+
+    expect(content).not.toContain('base href="https://localhost:3333"')
+  });
+
+  test('processHtml - baseElement - relative', () => {
+    let localHtml = tempHTML.replace('<head>', '<head> <base href="./a/b">')
+
+    const { html } = processHtml(localHtml, "https://localhost:3334");
+    const div = document.createElement('div');
+    div.appendChild(html);
+    const content = div.innerHTML;
+
+    expect(content).toContain('<!--link https://localhost:3334/a/test.css processed by @ice/stark-->');
+    expect(content).toContain('<!--link https://localhost:3334/index.css processed by @ice/stark-->');
+    expect(content).not.toContain('href="/index.css"');
+    expect(content).not.toContain('href="index.css"');
+
+    expect(content).not.toContain('base href="https://localhost:3334"')
+  });
+
+  test('processHtml - baseElement - relative', () => {
+    let localHtml = tempHTML.replace('<head>', '<head> <base href="/">')
+
+    const { html } = processHtml(localHtml, "https://localhost:3334/a/b/index.html");
+    const div = document.createElement('div');
+    div.appendChild(html);
+    const content = div.innerHTML;
+
+    expect(content).toContain('<!--link https://localhost:3334/test.css processed by @ice/stark-->');
+    expect(content).toContain('<!--link https://localhost:3334/index.css processed by @ice/stark-->');
+    expect(content).not.toContain('href="/index.css"');
+    expect(content).not.toContain('href="index.css"');
+
+    expect(content).not.toContain('base href="https://localhost:3333"')
+  });
 });
+
 
 describe('appendExternalScript', () => {
   test('appendExternalScript -> inline', () => {
@@ -171,14 +236,22 @@ describe('appendExternalScript', () => {
 
     expect.assertions(1);
     return expect(
-      appendExternalScript(div, { type: AssetTypeEnum.INLINE, content: 'console.log()' }, [], 'js-id'),
+      appendExternalScript({ type: AssetTypeEnum.INLINE, content: 'console.log()' }, {
+        root: div,
+        scriptAttributes: [],
+        id: 'js-id'
+      }),
     ).resolves.toBeUndefined();
   });
 
   test('appendExternalScript -> url', () => {
     const div = document.createElement('div');
 
-    appendExternalScript(div, '/test.js', [], 'js-id')
+    appendExternalScript('/test.js', {
+      root: div,
+      scriptAttributes: [],
+      id: 'js-id'
+    })
       .then(() => expect(div.innerHTML).toContain('/test.js'))
       .catch(() => {});
     const scripts = div.getElementsByTagName('script');
@@ -190,7 +263,11 @@ describe('appendExternalScript', () => {
   test('appendExternalScript -> EXTERNAL success', () => {
     const div = document.createElement('div');
 
-    appendExternalScript(div, { type: AssetTypeEnum.EXTERNAL, content: '/test.js' }, [], 'js-id')
+    appendExternalScript({ type: AssetTypeEnum.EXTERNAL, content: '/test.js' }, {
+      root: div,
+      scriptAttributes: [],
+      id: 'js-id'
+    })
       .then(() => expect(div.innerHTML).toContain('/test.js'))
       .catch(() => {});
 
@@ -203,7 +280,11 @@ describe('appendExternalScript', () => {
   test('appendExternalScript -> EXTERNAL error', () => {
     const div = document.createElement('div');
 
-    appendExternalScript(div, { type: AssetTypeEnum.EXTERNAL, content: '/test.js' }, [], 'js-id').catch(err =>
+    appendExternalScript({ type: AssetTypeEnum.EXTERNAL, content: '/test.js' }, {
+      root: div,
+      scriptAttributes: [],
+      id: 'js-id'
+    }).catch(err =>
       expect(err.message).toContain('js asset loaded error: '),
     );
 
@@ -278,6 +359,11 @@ describe('getEntryAssets', () => {
       '    <div id="App">' +
       '    </div>' +
       '    <script crossorigin="anonymous" src="/test.js"></script>' +
+      '    <script type="module" src="/es-module.js"></script>' +
+      '    <script type="module">' +
+      '      import add from "./add.js"' +
+      '      console.log(add(1, 2));' +
+      '    </script>' +
       '    <script' +
       '      crossorigin="anonymous"' +
       '      src="/test.min.js"' +
@@ -310,25 +396,40 @@ describe('getEntryAssets', () => {
       ],
       jsList: [
         {
+          module: false,
           content: '      console.log()      console.log(1 > 2);console.log(1 < 2)    ',
           type: AssetTypeEnum.INLINE,
         },
         {
+          module: false,
           content: '//g.alicdn.com/1.1/test/index.js',
           type: AssetTypeEnum.EXTERNAL,
         },
         {
+          module: false,
           content: 'http://icestark.com/test.js',
           type: AssetTypeEnum.EXTERNAL,
         },
         {
+          module: true,
+          content: 'http://icestark.com/es-module.js',
+          type: AssetTypeEnum.EXTERNAL,
+        },
+        {
+          module: true,
+          content: '      import add from "http://icestark.com/add.js"      console.log(add(1, 2));    ',
+          type: AssetTypeEnum.INLINE,
+        },
+        {
+          module: false,
           content: 'http://icestark.com/test.min.js',
           type: AssetTypeEnum.EXTERNAL,
         },
         {
+          module: false,
           content: 'http://icestark.com/index.js',
           type: AssetTypeEnum.EXTERNAL,
-        },
+        }
       ],
     });
     const html = div.innerHTML;
@@ -376,8 +477,8 @@ describe('appendAssets', () => {
       'http://icestark.com/css/index.css',
       'http://icestark.com/js/test1.js',
     ]);
-    Promise.all([loadAndAppendCssAssets(assets, {}), loadAndAppendJsAssets(assets, {
-      scriptAttributes: ['crossorigin=anonymous', 'nomodule=false', 'src=http://xxxx.js']
+    Promise.all([loadAndAppendCssAssets(assets.cssList, {}), loadAndAppendJsAssets(assets, {
+      scriptAttributes: ['crossorigin=anonymous', 'nomodule=false', 'type=module', 'src=http://xxxx.js']
     })])
       .then(() => {
         const jsElement0 = document.getElementById('icestark-js-0') as HTMLScriptElement;
@@ -391,6 +492,7 @@ describe('appendAssets', () => {
         expect(jsElement1.getAttribute('icestark')).toEqual('dynamic');
         expect(jsElement0.crossOrigin).toEqual('anonymous');
         expect(jsElement0.noModule).toEqual(false);
+        expect(jsElement0.type).toEqual('module');
         expect(jsElement0.getAttribute('src')).toEqual('http://icestark.com/js/index.js');
 
         recordAssets();
@@ -417,7 +519,7 @@ describe('appendAssets', () => {
     const assets = getUrlAssets([
       'http://icestark.com/js/index.js'
     ]);
-    Promise.all([loadAndAppendCssAssets(assets, {}), loadAndAppendJsAssets(assets, {
+    Promise.all([loadAndAppendCssAssets(assets.cssList, {}), loadAndAppendJsAssets(assets, {
       scriptAttributes: (url) => {
         if (url.includes('//icestark.com/js/index.js')) {
           return ['crossorigin=anonymous']
@@ -450,7 +552,38 @@ describe('appendAssets', () => {
       'http://icestark.com/css/index.css',
       'http://icestark.com/js/test1.js',
     ]);
-    Promise.all([loadAndAppendCssAssets(assets, {}), loadAndAppendJsAssets(assets, {})])
+    Promise.all([loadAndAppendCssAssets(assets.cssList, {}), loadAndAppendJsAssets(assets, {})])
+  });
+
+  test('appendAssets - duplicate', done => {
+    emptyAssets(() => true, true);
+    const assets = getUrlAssets([
+      'http://icestark.com/js/index.js',
+      'http://icestark.com/js/index.js',
+      'http://icestark.com/css/index.css',
+      'http://icestark.com/js/test1.js',
+      'http://icestark.com/js/test1.js',
+    ]);
+    Promise.all([loadAndAppendCssAssets(assets.cssList, {}), loadAndAppendJsAssets(assets, {})])
+      .then(() => {
+        const scripts = document.getElementsByTagName('script');
+        const styleSheets = document.getElementsByTagName('link');
+
+        expect(scripts.length).toBe(2);
+        expect(styleSheets.length).toBe(1);
+
+        emptyAssets(() => true, true);
+
+        done();
+    });
+
+    const links = Array.from(document.getElementsByTagName('link') || []);
+    const scripts = Array.from(document.getElementsByTagName('script') || [])
+    const linksAndScripts = links.concat(scripts as any);
+    for (let i = 0; i < linksAndScripts.length; i++) {
+      (linksAndScripts[i] as HTMLLinkElement | HTMLScriptElement).dispatchEvent(new Event('load'));
+    }
+
   });
 
   test('recordAssets', () => {
@@ -515,7 +648,14 @@ describe('appendCSS', () => {
   test('appendLink -> success', () => {
     const div = document.createElement('div');
 
-    appendCSS(div, '/test.css', 'icestark-css-0')
+    appendCSS(
+      div,
+      {
+        type: AssetTypeEnum.EXTERNAL,
+        content: '/test.css'
+      },
+      'icestark-css-0'
+    )
       .then(() => {
         expect(div.innerHTML).toContain('id="icestark-css-0"');
         expect(div.innerHTML).toContain('/test.css');
@@ -553,7 +693,14 @@ describe('appendCSS', () => {
 
     const div = document.createElement('div');
 
-    appendCSS(div, '/test.css', 'icestark-css-0')
+    appendCSS(
+      div,
+      {
+        type: AssetTypeEnum.EXTERNAL,
+        content: '/test.css'
+      },
+      'icestark-css-0'
+    )
       .then(() => {
         expect(div.innerHTML).toContain('id="icestark-css-0"');
         expect(div.innerHTML).toContain('/test.css');
@@ -569,7 +716,6 @@ describe('appendCSS', () => {
   });
 });
 
-
 describe('isAbsoluteUrl', () => {
   test('isAbsoluteUrl', () => {
     expect(isAbsoluteUrl('https://www.baidu.com/')).toBe(true);
@@ -582,3 +728,30 @@ describe('isAbsoluteUrl', () => {
   })
 });
 
+describe('replaceImportIdentifier', () => {
+  test('relative-path', () => {
+    const source = `
+      import RefreshRuntime from "/@react-refresh"
+      RefreshRuntime.injectIntoGlobalHook(window)
+      window.$RefreshReg$ = () => {}
+      window.$RefreshSig$ = () => (type) => type
+      window.__vite_plugin_react_preamble_installed__ = true
+    `
+    const target = replaceImportIdentifier(source, 'http://localhost:3000')
+    expect(target).toContain('import RefreshRuntime from "http://localhost:3000/@react-refresh"')
+    expect(target).toContain('window.__vite_plugin_react_preamble_installed__ = true')
+  })
+
+  test('absolute-path', () => {
+    const source = `
+      import RefreshRuntime from "http://localhost:3000/@react-refresh"
+      RefreshRuntime.injectIntoGlobalHook(window)
+      window.$RefreshReg$ = () => {}
+      window.$RefreshSig$ = () => (type) => type
+      window.__vite_plugin_react_preamble_installed__ = true
+    `
+    const target = replaceImportIdentifier(source, 'http://localhost:3333')
+    expect(target).toContain('import RefreshRuntime from "http://localhost:3000/@react-refresh"')
+    expect(target).toContain('window.__vite_plugin_react_preamble_installed__ = true')
+  })
+});

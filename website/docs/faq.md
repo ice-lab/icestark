@@ -88,7 +88,9 @@ const apps = [{
 
 ## 应用启用 lazy 后，chunk 加载失败
 
-多个微应用均开启 lazy 加载页面，建议通过开启 sandbox 隔离微应用 windows 全局变量。如果无法开启 sandbox，则需要在主应用 `onAppLeave` 的阶段清空 webpackJsonp 配置：
+1. 可能是  webpack runtimes 发生冲突
+
+通常发生在多个微应用均开启 lazy 加载页面，这种情况建议开启 sandbox 隔离微应用 windows 全局变量。如果无法开启 sandbox，则需要在主应用 `onAppLeave` 的阶段清空 webpackJsonp 配置：
 
 ```js
 const onAppLeave = (appConfig) => {
@@ -96,9 +98,26 @@ const onAppLeave = (appConfig) => {
 };
 ```
 
-主应用和微应用均开启 lazy 的情况下，需要通过配置 `webpack.output.jsonpFunction` 来隔离两个应用的全局变量名称，详见 [webpack 配置](https://webpack.js.org/configuration/output/#outputjsonpfunction)。
+> 若使用 webpack5 构建应用，则 webpack5 会默认使用 package.json 的 name 作为 [uniqueName](https://webpack.js.org/blog/2020-10-10-webpack-5-release/#automatic-unique-naming)，因此也无需在 onAppLeave 阶段移除 window.webpackJsonp，可排除该因素影响。
 
-## `Error: Invariant failed: You should not use <withRouter(Navigation) /> outside a <Router>`
+
+2. 没有配置 publicPath
+
+由于未配置 [publicPath](https://webpack.js.org/configuration/output/#outputpublicpath)，可能会导致 webpack 加载了错误的静态地址。比如，静态资源打包发送到 CDN 服务上，则可配置：
+
+```js
+// webpack.config.js
+module.exports = {
+  ...
+  output: {
+    publicPath: 'https://www.cdn.example/'
+  }
+}
+```
+
+
+
+## Error: Invariant failed: You should not use `<withRouter(Navigation) />` outside a `<Router>`
 
 因为 jsx 嵌套层级的关系，在主应用的 Layout 里没法使用 react-router 提供的 API，比如 `withRouter`, `Link`, `useParams` 等，具体参考文档 [主应用中路由跳转](/docs/guide/use-layout/react#主应用中路由跳转)。
 
@@ -134,7 +153,7 @@ const appConfig: IAppConfig = {
     Layout: FrameworkLayout,
     getApps: async () => {
       const apps = [{
-        path: '/seller',
+        activePath: '/seller',
         title: '商家平台',
         sandbox: true,
 +       hashType: true,
@@ -143,7 +162,7 @@ const appConfig: IAppConfig = {
           '//dev.g.alicdn.com/nazha/ice-child-react/0.0.1/css/index.css',
         ],
       }, {
-        path: '/waiter',
+        activePath: '/waiter',
         title: '小二平台',
         sandbox: true,
 +       hashType: true,
@@ -280,10 +299,71 @@ proxy sandbox is not support by current browser
 此外，我们并不推荐添加诸如 <a href="https://github.com/GoogleChrome/proxy-polyfill">proxy-polyfill</a> 等 polyfill 方法来支持 icestark 沙箱。因为目前实现 Proxy 的 polyfill 都不是完备的（有缺陷的），icestark 沙箱在实现上使用了 <code>has</code> trap，而这个 trap 目前无法在 polyfill 中实现。更多有关 Proxy 的内容，可参考 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy</a>。
 :::
 
-## Script Error 的解决方法
+## 如何解决 Script Error
 
-“ Script error. ” 是一个常见错误，但由于该错误不提供完整的报错信息（错误堆栈），问题排查往往无从下手。icestark 的 [scriptAttributes](/docs/api/ice-stark#scriptattributes) 参数支持为加载的 `<script />` 资源添加 `crossorigin="anonymous"` 来解决这个问题。具体可参考 [scriptAttributes](/docs/api/ice-stark#scriptattributes)。
+“Script error.” 是一个常见错误，但由于该错误不提供完整的报错信息（错误堆栈），问题排查往往无从下手。icestark 的 [scriptAttributes](/docs/api/ice-stark#scriptattributes) 参数支持为加载的 `<script />` 资源添加 `crossorigin="anonymous"` 来解决这个问题。具体可参考 [scriptAttributes](/docs/api/ice-stark#scriptattributes)。
 
 :::tip
 想了解更多有关 Script Error 的问题，可以参考 <a href="https://help.aliyun.com/document_detail/88579.html">“Script error.”的产生原因和解决办法</a>
 :::
+
+
+## 页面空白，控制台没有错误
+
+遇到页面空白，而控制台又没有错误的情况，有可能是因为 **微应用已经正常加载，但微应用路由没有匹配成功**。因此我们建议微应用增加一个默认路由：
+
+```js
+import { renderNotFound, isInIcestark, getBasename } from '@ice/stark-app';
+
+const Routes = () => {
+  return (
+    <Router basename={isInIcestark() ? getBasename(): '/'}>
+      <Route component={Detail} activePath="/detail" exact>
+      <Route component={isInIcestark() ? () => renderNotFound() : NotFound}>
+    </Route>
+  )
+}
+```
+
+这样，不会导致微应用正常加载，但微应用路由没有匹配成功时导致的页面空白，而会显示 404 页面。这样，我们能清晰地知道，在 icestark 执行环境下，需要修改[微应用的 basename](/docs/guide/use-child/react#2-定义基准路由)，使得微应用可以与当前路由匹配上。
+
+## Vite 微应用支持沙箱吗
+
+暂不支持沙箱。
+
+## 接入 Vite 微应用，主应用需要升级为 Vite 应用吗
+
+**不需要**。主应用可以使用 webpack 等非 ES modules 构建工具，无需对主应用进行任何构建上的改造。对于主应用，唯一需要做的是：升级最新的 icestark 版本，并设置 ES modules 微应用的加载方式（loadScriptMode 字段） 设置为 import 即可。
+
+
+## 切换微应用，主应用样式丢失
+
+通常情况是主应用开启了 webpack [Dynamic Imports](https://webpack.js.org/guides/code-splitting/#dynamic-imports) 能力，可以通过 [shouldAssetsRemove](/docs/api/ice-stark#shouldassetsremove) 防止错误地移除主应用的样式资源。
+
+```js
+// src/App.jsx
+import { AppRouter, AppRoute } from '@ice/stark';
+
+const App = () => {
+  render() {
+    return (
+      <AppRouter
+        shouldAssetsRemove={(url, element) => {
+          // 如果请求主应用静态资源，返回 false
+          if (url.includes('www.framework.com')) {
+            return false;
+          }
+          return true;
+        }}
+        >
+        ...
+      </AppRouter>
+    );
+  }
+}
+```
+
+## 主应用路由之间跳转导致重复渲染
+
+如果主应用需要包含路由页面，在 [React 主应用接入](/docs/guide/use-layout/react#主应用中如何包含路由页面) 我们推荐将主应用路由作为一个 `fallback` 微应用来使用。但由于在主应用路由切换时，上层组件状态改变会导致 `fallback` 应用重复渲染，因此推荐使用 [React.memo](https://reactjs.org/docs/react-api.html#reactmemo) 防止 React 组件重复渲染。具体示例可参考 [主应用中如何包含路由页面](/docs/guide/use-layout/react#主应用中如何包含路由页面)
+

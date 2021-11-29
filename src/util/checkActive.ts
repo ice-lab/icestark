@@ -1,5 +1,5 @@
-import * as pathToRegexp from 'path-to-regexp';
-import * as urlParse from 'url-parse';
+import pathToRegexp from 'path-to-regexp';
+import urlParse from 'url-parse';
 import { isFunction, toArray, isObject, addLeadingSlash } from './helpers';
 
 /**

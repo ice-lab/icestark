@@ -1,5 +1,5 @@
 import * as React from 'react';
-import * as urlParse from 'url-parse';
+import urlParse from 'url-parse';
 import { AppRouteProps, AppRouteComponentProps, CompatibleAppConfig } from './AppRoute';
 import appHistory from './appHistory';
 import renderComponent from './util/renderComponent';
@@ -70,7 +70,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   constructor(props) {
     super(props);
     this.state = {
-      url: location.href,
+      url: '',
       appLoading: '',
       started: false,
     };
@@ -166,9 +166,10 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   handleRouteChange = (url: string, type: RouteType | 'init' | 'popstate'): void => {
     if (!this.unmounted && url !== this.state.url) {
       this.setState({ url });
+
+      const { pathname, query, hash } = urlParse(url, true);
+      this.props.onRouteChange(pathname, query, hash, type);
     }
-    const { pathname, query, hash } = urlParse(url, true);
-    this.props.onRouteChange(pathname, query, hash, type);
   };
 
   loadingApp = (app: AppConfig) => {

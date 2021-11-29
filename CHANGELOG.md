@@ -2,6 +2,23 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
+## 2.6.2
+
+- [fix] avoid to append duplicate assets. ([#331](https://github.com/ice-lab/icestark/issues/331))
+- [fix] bind `pushState` to global. ([#426](https://github.com/ice-lab/icestark/issues/426))
+- [fix] prefetch apps using `window.fetch` by default.
+
+## 2.6.1
+
+- [fix] wrap `import` using `new Function` to avoid compiler error under chrome61 & ie. ([#404](https://github.com/ice-lab/icestark/issues/404))
+
+## 2.6.0
+
+- [feat] support native es module micro-applications. ([#346, #260](https://github.com/ice-lab/icestark/issues/346))
+- [feat] handle `<base />` element and re-execute DOM Parser to enable `<app-root></app-root>` of Angular.([#368](https://github.com/ice-lab/icestark/pull/368))
+- [refact] change `module: commonjs` to `module: esnext`.
+- [fix] assign to `location.hash` never trigger `onRouteChange` twice. ([#353](https://github.com/ice-lab/icestark/issues/353))
+
 ## 2.5.3
 
 - [fix] `setBasename` before `createMicroApp` may be covered for empty activePath.
