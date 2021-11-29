@@ -392,7 +392,7 @@ export async function mountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   // check current url before mount
   if (appConfig && appConfig.checkActive(window.location.href) && appConfig.status !== MOUNTED) {
-    if (appConfig.cached) {
+    if (appConfig.appSandbox && appConfig.cached) {
       appConfig.appSandbox.resume();
     }
 
