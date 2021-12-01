@@ -16,7 +16,7 @@ import { setCache } from './util/cache';
 import { loadScriptByFetch, loadScriptByImport } from './util/loaders';
 import { getLifecyleByLibrary, getLifecyleByRegister } from './util/getLifecycle';
 import { mergeFrameworkBaseToPath, getAppBasename, shouldSetBasename } from './util/helpers';
-import globalConfiguration from './util/globalConfiguration';
+import globalConfiguration, { temporaryState } from './util/globalConfiguration';
 
 import type { StartConfiguration } from './util/globalConfiguration';
 
@@ -185,13 +185,19 @@ export async function loadAppModule(appConfig: AppConfig) {
    */
   const loadScriptMode = appConfig.loadScriptMode ?? (umd ? 'fetch' : 'script');
 
+  const cacheCss = temporaryState.shouldAssetsRemoveConfigured
+    ? false
+    : (appConfig.loadScriptMode !== 'script')
+      ? true
+      : (appSandbox && !appSandbox.sandboxDisabled);
+
   switch (loadScriptMode) {
     case 'import':
       await loadAndAppendCssAssets([
         ...appAssets.cssList,
         ...filterRemovedAssets(importCachedAssets[name] || [], ['LINK', 'STYLE']),
       ], {
-        cache: true,
+        cacheCss,
         fetch,
       });
       lifecycle = await loadScriptByImport(appAssets.jsList);
@@ -199,7 +205,7 @@ export async function loadAppModule(appConfig: AppConfig) {
       break;
     case 'fetch':
       await loadAndAppendCssAssets(appAssets.cssList, {
-        cache: true,
+        cacheCss,
         fetch,
       });
       lifecycle = await loadScriptByFetch(appAssets.jsList, appSandbox);
@@ -207,7 +213,7 @@ export async function loadAppModule(appConfig: AppConfig) {
     default:
       await Promise.all([
         loadAndAppendCssAssets(appAssets.cssList, {
-          cache: appSandbox && !appSandbox.sandboxDisabled,
+          cacheCss,
           fetch,
         }),
         loadAndAppendJsAssets(appAssets, { sandbox: appSandbox, fetch, scriptAttributes }),
@@ -313,7 +319,7 @@ export async function createMicroApp(app: string | AppConfig, appLifecyle?: AppL
         await loadAndAppendCssAssets(
           appConfig?.appAssets?.cssList || [],
           {
-            cache: !!((appConfig.loadScriptMode === 'fetch') || appConfig.sandbox || appConfig.umd),
+            cacheCss: !!((appConfig.loadScriptMode === 'fetch') || appConfig.sandbox || appConfig.umd),
             fetch: userConfiguration.fetch,
           },
         );

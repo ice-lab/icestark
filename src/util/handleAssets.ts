@@ -663,26 +663,34 @@ export function cacheAssets(cacheKey: string): void {
  * @param {Assets} assets
  */
 export async function loadAndAppendCssAssets(cssList: Array<Asset | HTMLElement>, {
-  cache = false,
+  cacheCss = false,
   fetch = defaultFetch,
 }: {
-  cache?: boolean;
+  cacheCss?: boolean;
   fetch?: Fetch;
 }) {
   const cssRoot: HTMLElement = document.getElementsByTagName('head')[0];
 
-  if (cache) {
-    const cssContents = await fetchStyles(cssList as Asset[], fetch);
+  if (cacheCss) {
+    // No need to cache css when running into `<style />` & `<link />`
+    const needCachedCss = cssList.filter((css) => !isElement(css));
 
-    cssContents.forEach((content, index) => appendCSS(
-      cssRoot,
-      { content, type: AssetTypeEnum.INLINE }, `${PREFIX}-css-${index}`,
-    ));
-    return;
+    const cssContents = await fetchStyles(
+      needCachedCss as Asset[],
+      fetch,
+    );
+
+    return await Promise.all([
+      ...cssContents.map((content, index) => appendCSS(
+        cssRoot,
+        { content, type: AssetTypeEnum.INLINE }, `${PREFIX}-css-${index}`,
+      )),
+      ...cssList.filter((css) => isElement(css)).map((asset, index) => appendCSS(cssRoot, asset, `${PREFIX}-css-${index}`)),
+    ]);
   }
 
   // load css content
-  await Promise.all(
+  return await Promise.all(
     cssList.map((asset, index) => appendCSS(cssRoot, asset, `${PREFIX}-css-${index}`)),
   );
 }

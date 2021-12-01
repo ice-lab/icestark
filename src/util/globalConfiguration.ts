@@ -45,3 +45,8 @@ const globalConfiguration: StartConfiguration = {
 };
 
 export default globalConfiguration;
+
+// todos: remove it from 3.x
+export const temporaryState = {
+  shouldAssetsRemoveConfigured: false,
+};
