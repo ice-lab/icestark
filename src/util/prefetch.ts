@@ -8,6 +8,27 @@ export type Prefetch =
  | string[]
  | ((app: AppConfig) => boolean);
 
+/**
+ * https://github.com/microsoft/TypeScript/issues/21309#issuecomment-376338415
+ */
+type RequestIdleCallbackHandle = any;
+interface RequestIdleCallbackOptions {
+  timeout: number;
+}
+interface RequestIdleCallbackDeadline {
+  readonly didTimeout: boolean;
+  timeRemaining: (() => number);
+}
+
+declare global {
+  interface Window {
+    requestIdleCallback: ((
+      callback: ((deadline: RequestIdleCallbackDeadline) => void),
+      opts?: RequestIdleCallbackOptions,
+    ) => RequestIdleCallbackHandle);
+    cancelIdleCallback: ((handle: RequestIdleCallbackHandle) => void);
+  }
+}
 
 /**
  * polyfill/shim for the `requestIdleCallback` and `cancelIdleCallback`.
@@ -25,8 +46,7 @@ window.requestIdleCallback =
         },
       });
     }, 1);
-  // TypeScript > 4.x no longer supports merging window's properties types like before.
-  } as any as typeof window.requestIdleCallback;
+  };
 
 window.cancelIdleCallback =
   window.cancelIdleCallback ||
