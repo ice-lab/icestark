@@ -188,7 +188,21 @@ import BasicLayout from '@/layouts/BasicLayout';
 +import Home from './pages/Home';
 +import Login from './pages/Login';
 
-export default class App extends React.Component {
++const FrameworkRouter = () => {
++  return (
++    <Router>
++      <Switch>
++        <Route path="/login" component={Login} />
++        <Route path="/" exact component={Home} />
++        <Route path="*" exact component={NotFound} />
++      </Switch>
++    </Router>
++  )
++};
+
++const FrameworkRouterMemo = React.memo(FrameworkRoutes);
+
+export default App = () => {
   render() {
     return (
       <BasicLayout>
@@ -197,17 +211,7 @@ export default class App extends React.Component {
           <AppRoute activePath="/user" />
 +          <AppRoute
 +            activePath="*"
-+            render={() => {
-+              return (
-+                <Router>
-+                  <Switch>
-+                    <Route path="/login" component={Login} />
-+                    <Route path="/" exact component={Home} />
-+                    <Route path="*" exact component={NotFound} />
-+                  </Switch>
-+                </Router>
-+              );
-+            }}
++            render={() => <FrameworkRouterMemo />}
 +          />
         </AppRouter>
       </BasicLayout>
@@ -215,6 +219,7 @@ export default class App extends React.Component {
   }
 }
 ```
+
 
 ### 通过数据驱动注册微应用列表
 

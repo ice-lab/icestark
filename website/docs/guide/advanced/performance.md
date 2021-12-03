@@ -203,9 +203,9 @@ module.exports = {
 }
 ```
 
-2. 如果主应用同样配置了 Dynamic Imports，配置 [shouldAssetsRemove](http://localhost:3000/docs/api/ice-stark#shouldassetsremove)
+2. 如果主应用同样配置了 Dynamic Imports，配置 [shouldAssetsRemove](/docs/api/ice-stark#shouldassetsremove)
 
-icestark 内部会在微应用卸载时，同时卸载微应用的样式资源，防止样式污染。因此，如若主应用配置了 Dynamic Imports，可以通过 [shouldAssetsRemove](http://localhost:3000/docs/api/ice-stark#shouldassetsremove) 防止错误地移除主应用的样式资源。
+icestark 内部会在微应用卸载时，同时卸载微应用的样式资源，防止样式污染。因此，如若主应用配置了 Dynamic Imports，可以通过 [shouldAssetsRemove](/docs/api/ice-stark#shouldassetsremove) 防止错误地移除主应用的样式资源。
 
 ```js
 // src/App.jsx
@@ -227,6 +227,10 @@ const App = () => {
   );
 }
 ```
+
+:::tip
+我们强烈建议使用 `shouldAssetsRemove` 只针对主应用的资源进行相关的配置（微应用的静态资源可交由 icestark 进行加载与卸载）。
+:::
 
 ## 依赖外置
 

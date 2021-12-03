@@ -338,7 +338,7 @@ const Routes = () => {
 
 ## 切换微应用，主应用样式丢失
 
-通常情况是主应用开启了 webpack [Dynamic Imports](https://webpack.js.org/guides/code-splitting/#dynamic-imports) 能力，可以通过 [shouldAssetsRemove](http://localhost:3000/docs/api/ice-stark#shouldassetsremove) 防止错误地移除主应用的样式资源。
+通常情况是主应用开启了 webpack [Dynamic Imports](https://webpack.js.org/guides/code-splitting/#dynamic-imports) 能力，可以通过 [shouldAssetsRemove](/docs/api/ice-stark#shouldassetsremove) 防止错误地移除主应用的样式资源。
 
 ```js
 // src/App.jsx
@@ -362,3 +362,8 @@ const App = () => {
   }
 }
 ```
+
+## 主应用路由之间跳转导致重复渲染
+
+如果主应用需要包含路由页面，在 [React 主应用接入](/docs/guide/use-layout/react#主应用中如何包含路由页面) 我们推荐将主应用路由作为一个 `fallback` 微应用来使用。但由于在主应用路由切换时，上层组件状态改变会导致 `fallback` 应用重复渲染，因此推荐使用 [React.memo](https://reactjs.org/docs/react-api.html#reactmemo) 防止 React 组件重复渲染。具体示例可参考 [主应用中如何包含路由页面](/docs/guide/use-layout/react#主应用中如何包含路由页面)
+
