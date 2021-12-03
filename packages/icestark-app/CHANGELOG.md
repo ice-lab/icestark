@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.3
+
+- [fix] add missing props for `registerAppEnter` & `registerAppLeave`.
+
 ## 1.4.2
 
 - [fix] Bind history to window when using `AppLink`. ([#428](https://github.com/ice-lab/icestark/pull/428))
