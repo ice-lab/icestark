@@ -189,8 +189,15 @@ export const getModules = function () {
 /**
  * get import modules
  */
-export const getImportModules = function (name: string = '') {
-  return name ? importModules[name] || {} : importModules;
+ export const getImportModules = function () {
+  return importModules;
+};
+
+/**
+ * get import module by name
+ */
+export const getImportModuleByName = function(name: string = '') {
+  return name ? importModules[name] : {};
 };
 
 /**
