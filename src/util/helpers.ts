@@ -167,3 +167,33 @@ export const asyncForEach = async <T> (arr: T[], callback: (item: T, index: numb
     await callback(arr[idx], idx);
   }
 };
+
+export function normalizeMsg(msg: string, args: string[]) {
+  if (args.length === 0) {
+    return msg;
+  }
+
+  return msg.replace(/\{(\d+)\}/g, (match, p1) => {
+    const idx = p1[0];
+    if (typeof args[idx] === 'string' || typeof args[idx] === 'number') {
+      return args[idx];
+    }
+    return match;
+  });
+}
+
+export function formatErrMessage(code: string | number, msg?: string, ...args: string[]) {
+  return `icestark minified message #${code}: ${
+    normalizeMsg(
+      msg ? `${msg}. ` : '',
+      args,
+    )}See https://micro-frontends.ice.work/error?code=${code}${
+    args.length ? `&arg=${args.join('&arg=')}` : ''
+  }`;
+}
+
+export const log = {
+  info: console.log,
+  error: console.error,
+  warn: console.warn,
+};
