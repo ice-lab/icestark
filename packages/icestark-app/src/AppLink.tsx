@@ -1,6 +1,5 @@
 import * as React from 'react';
 import formatUrl from './util/formatUrl';
-import removeTrailingSlash from './util/removeTrailingSlash';
 
 interface To {
   /**
@@ -28,7 +27,7 @@ export type AppLinkProps = {
 const AppLink = (props: AppLinkProps) => {
   const { to, hashType, replace, message, children, ...rest } = props;
 
-  const _to = typeof to === 'object' ? removeTrailingSlash(to.pathname) + to.search : to;
+  const _to = typeof to === 'object' ? (to.pathname + to.search) : to;
   const _state = typeof to === 'object' ? to.state : {};
 
   const linkTo = formatUrl(_to, hashType);
@@ -36,7 +35,7 @@ const AppLink = (props: AppLinkProps) => {
     <a
       {...rest}
       href={linkTo}
-      onClick={e => {
+      onClick={(e) => {
         e.preventDefault();
         // eslint-disable-next-line no-alert
         if (message && window.confirm(message) === false) {

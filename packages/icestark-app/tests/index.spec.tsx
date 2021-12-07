@@ -13,7 +13,6 @@ import {
 import { setCache, getCache } from '../src/cache';
 import formatUrl from '../src/util/formatUrl';
 import normalizeArgs from '../src/util/normalizeArgs';
-import removeTrailingSlash from '../src/util/removeTrailingSlash';
 
 const namespace = 'ICESTARK';
 
@@ -160,15 +159,6 @@ describe('normalizeArgs', () => {
     expect(normalizeArgs({ framework: 'icestark' }, false)).toEqual([{ framework: 'icestark' }, false]);
 
     expect(normalizeArgs()).toEqual([{}, undefined]);
+    expect(normalizeArgs(null)).toEqual([null, undefined]);
   })
 });
-
-describe('removeTrailingSlash', () => {
-  test('removeTrailingSlash', () => {
-    expect(removeTrailingSlash('/seller/detail')).toBe('/seller/detail');
-    expect(removeTrailingSlash('/seller/detail/')).toBe('/seller/detail');
-
-    expect(removeTrailingSlash('/')).toBe('');
-  })
-});
-

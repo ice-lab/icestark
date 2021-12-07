@@ -13,9 +13,9 @@ const appHistory = {
   replace: (url: string, state?: object | boolean, hashType?: boolean) => {
     const [_state, _hashType] = normalizeArgs(state, hashType);
     window.history.replaceState(
-      state ?? {},
+      _state ?? {},
       null,
-      formatUrl(url, hashType),
+      formatUrl(url, _hashType),
     );
   },
 };
