@@ -9,6 +9,6 @@ const normalizeArgs = (state?: object | boolean, hashType?: boolean): [object, b
   }
 
   return [{}, hashType];
-}
+};
 
 export default normalizeArgs;
