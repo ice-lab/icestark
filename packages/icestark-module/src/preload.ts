@@ -1,6 +1,5 @@
 import { StarkModule, execModule, getModules, ISandbox, getImportedModules } from './modules';
 
-
 /**
  * https://github.com/microsoft/TypeScript/issues/21309#issuecomment-376338415
  */
