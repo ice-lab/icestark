@@ -1,14 +1,17 @@
 import formatUrl from './util/formatUrl';
+import normalizeArgs from './util/normalizeArgs';
 
 const appHistory = {
-  push: (url: string, hashType?: boolean, state?: object) => {
+  push: (url: string, state?: object | boolean, hashType?: boolean) => {
+    const [_state, _hashType] = normalizeArgs(state, hashType);
     window.history.pushState(
-      state ?? {},
+      _state ?? {},
       null,
-      formatUrl(url, hashType),
+      formatUrl(url, _hashType),
     );
   },
-  replace: (url: string, hashType?: boolean, state?: object) => {
+  replace: (url: string, state?: object | boolean, hashType?: boolean) => {
+    const [_state, _hashType] = normalizeArgs(state, hashType);
     window.history.replaceState(
       state ?? {},
       null,
