@@ -50,7 +50,7 @@ import isInIcestark from '@ice/stark-app/lib/isInIcestark';
 
 #### appHistory.push
 
-- 类型定义：` (url: string, hashType?: boolean, state?: object) => void`
+- 类型定义：` (url: string, state?: object, hashType?: boolean) => void`
 
 代码示例一：跳转 url 页面
 
@@ -76,27 +76,19 @@ export default class SelfLink extends React.Component {
 代码示例二：传递 `state`
 
 ```js
-import React from 'react';
-import { appHistory } from '@ice/stark-app';
+appHistory.push('/home?name=ice', { framework: 'icestark' });
+```
 
-export default class SelfLink extends React.Component {
-  render() {
-    return (
-      <span
-        onClick={() => {
-          appHistory.push('/home?name=ice', undefined, { framework: 'icestark' });
-        }}
-      >
-        selfLink
-      </span>
-    );
-  }
+代码示例三：设置为 hash 路由模式
+
+```js
+appHistory.push('/home?name=ice', {}, true);
 }
 ```
 
 #### appHistory.replace
 
-- 函数类型定义：- 类型定义：` (url: string, hashType?: boolean, state?: object) => void`
+- 函数类型定义：- 类型定义：` (url: string, state?: object, hashType?: boolean) => void`
 - 代码示例参考 `appHistory.push`
 
 ## AppLink
