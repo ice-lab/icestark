@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { unmoutModule, loadModule, getModules, registerModules, ISandbox, StarkModule } from './modules';
+import { shallowCompare } from './assist';
 
 /**
  * Render Component, compatible with Component and <Component>
@@ -13,20 +14,24 @@ export function renderComponent(Component: any, props = {}): React.ReactElement 
   );
 }
 
+interface State {
+  loading: boolean;
+}
+
 /**
- * default render compoent, mount all modules
+ * default render component, mount all modules
  */
-export default class MicroModule extends React.Component<any, { loading: boolean }> {
+export default class MicroModule extends React.Component<any, State> {
+  static defaultProps = {
+    loadingComponent: null,
+    handleError: () => {},
+  };
+
   private moduleInfo = null;
 
   private mountNode = null;
 
   private unmout = false;
-
-  static defaultProps = {
-    loadingComponent: null,
-    handleError: () => {},
-  };
 
   constructor(props) {
     super(props);
@@ -40,53 +45,95 @@ export default class MicroModule extends React.Component<any, { loading: boolean
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.moduleInfo !== this.props.moduleInfo || prevProps.moduleName !== this.props.moduleName) {
+    if (!shallowCompare(prevProps.moduleInfo || {}, this.props.moduleInfo || {})) {
       this.mountModule();
     }
   }
 
   componentWillUnmount() {
     try {
-      unmoutModule(this.moduleInfo, this.mountNode);
+      if (!this.validateRender()) {
+        unmoutModule(this.moduleInfo, this.mountNode);
+      }
       this.unmout = true;
     } catch (error) {
-      console.log('[icestark] error occurred when unmount module');
+      console.log('[icestark] error occurred when unmount module', error);
     }
+  }
+
+  getModuleInfo() {
+    const { moduleInfo } = this.props;
+    this.moduleInfo = moduleInfo || getModules().filter((m) => m.name === this.props.moduleName)[0];
+    if (!this.moduleInfo) {
+      console.error(`[icestark] Can't find ${this.props.moduleName} module in modules config`);
+    }
+  }
+
+  validateRender() {
+    const { render } = this.moduleInfo || {};
+
+    if (render && typeof render !== 'function') {
+      console.error('[icestark]: render should be funtion');
+    }
+    return render && typeof render === 'function';
   }
 
   async mountModule() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { sandbox, moduleInfo, wrapperClassName, wrapperStyle, loadingComponent, handleError, ...rest } = this.props;
-    this.moduleInfo = moduleInfo || getModules().filter(m => m.name === this.props.moduleName)[0];
+
     if (!this.moduleInfo) {
       console.error(`Can't find ${this.props.moduleName} module in modules config`);
       return;
     }
-    this.setState({ loading: true });
-    try {
-      const { mount, component } =  await loadModule(this.moduleInfo, sandbox);
-      const lifecycleMount = mount;
-      this.setState({ loading: false });
-      if (lifecycleMount && component) {
-        if (this.unmout) {
-          unmoutModule(this.moduleInfo, this.mountNode);
-        } else {
-          lifecycleMount(component, this.mountNode, rest);
+    /**
+     * if `render` was provided, render immediately
+    */
+    if (!this.validateRender()) {
+      this.setState({ loading: true });
+
+      try {
+        const { mount, component } = await loadModule(this.moduleInfo, sandbox);
+        const lifecycleMount = mount;
+
+        !this.unmout && this.setState({ loading: false });
+        if (lifecycleMount && component) {
+          if (this.unmout) {
+            unmoutModule(this.moduleInfo, this.mountNode);
+          } else {
+            lifecycleMount(component, this.mountNode, rest);
+          }
         }
+      } catch (err) {
+        this.setState({ loading: false });
+        handleError(err);
       }
-    } catch (err) {
-      this.setState({ loading: false });
-      handleError(err);
     }
   }
 
   render() {
+    /**
+    * make sure moudleInfo is up to date.
+    */
+    this.getModuleInfo();
+
     const { loading } = this.state;
+    const { render } = this.moduleInfo || {};
+
     const { wrapperClassName, wrapperStyle, loadingComponent } = this.props;
-    return loading ? loadingComponent
-      : <div className={wrapperClassName} style={wrapperStyle} ref={ref => this.mountNode = ref} />;
+    return loading
+      ? loadingComponent
+      : (
+        <div
+          className={wrapperClassName}
+          style={wrapperStyle}
+          ref={(ref) => { this.mountNode = ref; }}
+        >
+          { this.moduleInfo && this.validateRender() && render() }
+        </div>
+      );
   }
-};
+}
 
 /**
  * Render Modules, compatible with Render and <Render>
@@ -105,4 +152,4 @@ export function renderModules(modules: StarkModule[], render: any, componentProp
 
   console.warn('Please set render Component, try use MicroModule and mount first module');
   return <MicroModule moduleName={modules[0]?.name} {...componentProps} />;
-};
+}

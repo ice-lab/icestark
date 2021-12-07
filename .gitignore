@@ -15,3 +15,8 @@ coverage/
 lib/
 
 build/
+
+# Docusaurus Generated files
+.docusaurus
+.cache-loader
+.vscode/launch.json

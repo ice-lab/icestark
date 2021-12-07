@@ -1,17 +1,21 @@
-import Sandbox, { SandboxProps, SandboxContructor } from '@ice/sandbox';
+import Sandbox, { SandboxProps, SandboxConstructor } from '@ice/sandbox';
 import ModuleLoader from './loader';
 import { Runtime, parseRuntime, RuntimeInstance } from './runtimeHelper';
 import { resolveEvent, dispatchEvent } from './eventHelper';
 
 export interface StarkModule {
   name: string;
-  url: string|string[];
+  url?: string|string[];
+  /**
+   * you are not expected to use it without the wrapper `<MicroModule />`
+   */
+  render?: (props: StarkModule) => any;
   runtime?: Runtime;
   mount?: (Component: any, targetNode: HTMLElement, props?: any) => void;
   unmount?: (targetNode: HTMLElement) => void;
-};
+}
 
-export type ISandbox = boolean | SandboxProps | SandboxContructor;
+export type ISandbox = boolean | SandboxProps | SandboxConstructor;
 
 let globalModules = [];
 let importModules = {};
@@ -21,19 +25,53 @@ const cssStorage = {};
 const IS_CSS_REGEX = /\.css(\?((?!\.js$).)+)?$/;
 export const moduleLoader = new ModuleLoader();
 
-export const registerModules = (modules: StarkModule[]) => {
-  globalModules = modules;
-};
-
 export const registerRuntimes = (runtime: string | RuntimeInstance[]) => {
   return parseRuntime(runtime);
 };
 
+/**
+ * remove module
+ * @param name
+ */
+export const removeModule = (name?: string) => {
+  globalModules = globalModules.filter((m) => m.name !== name);
+  delete importModules[name];
+  moduleLoader.removeTask(name);
+};
+
+/**
+ * clear modules
+ */
 export const clearModules = () => {
   // reset module info
   globalModules = [];
   importModules = {};
   moduleLoader.clearTask();
+};
+
+/**
+ * registerModule
+ * @param module
+ * @returns
+ */
+export const registerModule = (module: StarkModule) => {
+  if (!module.url && !module.render) {
+    console.error('[icestark module] url and render cannot both be empty. name: %s', module.name);
+    return;
+  }
+  const hasRegistered = globalModules.filter((m) => m.name === module.name).length;
+
+  /*
+  * If a module registers many times, the former registration will be removed.
+  */
+  if (hasRegistered) {
+    removeModule(module.name);
+  }
+  globalModules.push(module);
+};
+
+export const registerModules = (modules: StarkModule[]) => {
+  modules.forEach((m) => registerModule(m));
 };
 
 // if css link already loaded, record load count
@@ -61,20 +99,6 @@ const filterRemoveCSS = (cssList: string[]) => {
   });
 };
 
-/**
- * support react module render
- */
-const defaultMount = () => {
-  console.error('[icestark module] Please export mount function');
-};
-
-/**
- * default unmount function
- */
-const defaultUnmount = () => {
-  console.error('[icestark module] Please export unmount function');
-};
-
 function createSandbox(sandbox: ISandbox, deps?: object) {
   let moduleSandbox = null;
 
@@ -100,7 +124,7 @@ function createSandbox(sandbox: ISandbox, deps?: object) {
 export const parseUrlAssets = (assets: string | string[]) => {
   const jsList = [];
   const cssList = [];
-  (Array.isArray(assets) ? assets : [assets]).forEach(url => {
+  (Array.isArray(assets) ? assets : [assets]).forEach((url) => {
     const isCss: boolean = IS_CSS_REGEX.test(url);
     if (isCss) {
       cssList.push(url);
@@ -117,8 +141,8 @@ export function appendCSS(
   name: string,
   url: string,
   root: HTMLElement | ShadowRoot = document.getElementsByTagName('head')[0],
-): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
+): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
     if (!root) reject(new Error(`no root element for css assert: ${url}`));
 
     const element: HTMLLinkElement = document.createElement('link');
@@ -148,10 +172,10 @@ export function removeCSS(name: string, node?: HTMLElement | Document, removeLis
   const linkList: NodeListOf<HTMLElement> = (node || document).querySelectorAll(
     `link[module=${name}]`,
   );
-  linkList.forEach(link => {
+  linkList.forEach((link) => {
     // check link href if it is in remove list
     // compatible with removeList is undefined
-    if (removeList && removeList.includes(link.getAttribute('href')) || !removeList) {
+    if ((removeList && removeList.includes(link.getAttribute('href'))) || !removeList) {
       link.parentNode.removeChild(link);
     }
   });
@@ -185,23 +209,28 @@ export const execModule = async (targetModule: StarkModule, sandbox?: ISandbox) 
   if (runtime) {
     deps = await parseRuntime(runtime);
   }
+
   try {
     const { jsList, cssList } = parseUrlAssets(url);
     moduleSandbox = createSandbox(sandbox, deps);
     const moduleInfo = await moduleLoader.execModule({ name, url: jsList }, moduleSandbox, deps);
 
-    dispatchEvent(name, { detail: { state: 'LOADED' }});
+    dispatchEvent(name, { detail: { state: 'LOADED' } });
 
-    return importModules[name] = {
+    importModules[name] = {
+      ...importModules[name],
       moduleInfo,
       moduleSandbox,
       moduleCSS: cssList,
       state: 'LOADED',
     };
   } catch (e) {
-    dispatchEvent(name, { detail: { state: 'LOAD_ERROR' }});
-    return importModules[name] = {};
+    dispatchEvent(name, { detail: { state: 'LOAD_ERROR' } });
+    // eslint-disable-next-line require-atomic-updates
+    importModules[name] = {};
   }
+
+  return importModules[name];
 };
 
 /**
@@ -218,8 +247,13 @@ export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) 
     return Promise.reject(new Error(errMsg));
   }
 
-  const mount = targetModule.mount || moduleInfo?.mount || defaultMount;
+  const mount = targetModule.mount || moduleInfo?.mount;
+  const unmount = targetModule.unmount || moduleInfo?.unmount;
   const component = moduleInfo.default || moduleInfo;
+
+  if (!mount || !unmount) {
+    console.error('[icestark module] Please export mount/unmount function');
+  }
 
   // append css before mount module
   const cssList = filterAppendCSS(moduleCSS);
@@ -229,6 +263,7 @@ export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) 
 
   return {
     mount,
+    unmount,
     component,
   };
 };
@@ -248,13 +283,15 @@ export const unmoutModule = (targetModule: StarkModule, targetNode: HTMLElement)
   const { name } = targetModule;
   const moduleInfo = importModules[name]?.moduleInfo;
   const moduleSandbox = importModules[name]?.moduleSandbox;
-  const unmount = targetModule.unmount || moduleInfo?.unmount || defaultUnmount;
+  const unmount = targetModule.unmount || moduleInfo?.unmount;
   const cssList = filterRemoveCSS(importModules[name]?.moduleCSS);
   removeCSS(name, document, cssList);
   if (moduleSandbox?.clear) {
     moduleSandbox.clear();
   }
 
-  return unmount(targetNode);
+  if (unmount && targetNode) {
+    return unmount(targetNode);
+  }
 };
 

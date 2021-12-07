@@ -1,13 +1,15 @@
 import * as React from 'react';
-import * as urlParse from 'url-parse';
+import urlParse from 'url-parse';
 import { AppRouteProps, AppRouteComponentProps, CompatibleAppConfig } from './AppRoute';
 import appHistory from './appHistory';
 import renderComponent from './util/renderComponent';
 import { ICESTSRK_ERROR, ICESTSRK_NOT_FOUND } from './util/constant';
-import { setCache } from './util/cache';
-import start, { unload, Fetch, defaultFetch } from './start';
-import { matchActivePath, PathData, addLeadingSlash } from './util/matchPath';
-import { AppConfig } from './apps';
+import start, { unload } from './start';
+import { AppConfig, MicroApp } from './apps';
+import { doPrefetch, Prefetch } from './util/prefetch';
+import checkActive, { AppRoutePath, formatPath } from './util/checkActive';
+import { converArray2String, isFunction, mergeFrameworkBaseToPath } from './util/helpers';
+import type { Fetch } from './util/globalConfiguration';
 
 type RouteType = 'pushState' | 'replaceState';
 
@@ -23,12 +25,16 @@ export interface AppRouterProps {
   NotFoundComponent?: React.ComponentType | React.ReactElement;
   onAppEnter?: (appConfig: CompatibleAppConfig) => void;
   onAppLeave?: (appConfig: CompatibleAppConfig) => void;
+  onLoadingApp?: (appConfig: CompatibleAppConfig) => void;
+  onFinishLoading?: (appConfig: CompatibleAppConfig) => void;
+  onError?: (err: Error) => void;
   shouldAssetsRemove?: (
     assetUrl?: string,
     element?: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement,
   ) => boolean;
   basename?: string;
   fetch?: Fetch;
+  prefetch?: Prefetch;
 }
 
 interface AppRouterState {
@@ -37,58 +43,55 @@ interface AppRouterState {
   started: boolean;
 }
 
-export function converArray2String(list: string | (string | PathData)[]) {
-  if (Array.isArray(list)) {
-    return list.map((item) => {
-      if (Object.prototype.toString.call(item) === '[object Object]') {
-        return Object.keys(item).map((key) => `${key}:${item[key]}`).join(',');
-      }
-      return item;
-    }).join(',');
-  }
-  return String(list);
-}
-
 export default class AppRouter extends React.Component<AppRouterProps, AppRouterState> {
-
-  private unmounted: boolean = false;
-
-  private err: string = ''; // js assets load err
-
-  private appKey: string = '';
-
   static defaultProps = {
     onRouteChange: () => {},
     // eslint-disable-next-line react/jsx-filename-extension
-    ErrorComponent: ({ err }) => <div>{ err || 'Error' }</div>,
+    ErrorComponent: ({ err }: { err: string | Error}) => <div>{ typeof err === 'string' ? err : err?.message }</div>,
     LoadingComponent: <div>Loading...</div>,
     NotFoundComponent: <div>NotFound</div>,
     shouldAssetsRemove: () => true,
     onAppEnter: () => {},
     onAppLeave: () => {},
+    onLoadingApp: () => {},
+    onFinishLoading: () => {},
+    onError: () => {},
     basename: '',
-    fetch: defaultFetch,
+    fetch: window.fetch,
+    prefetch: false,
   };
 
-  constructor(props: AppRouterProps) {
+  private unmounted = false;
+
+  private err: string | Error = '';
+
+  private appKey = '';
+
+  constructor(props) {
     super(props);
     this.state = {
-      url: location.href,
+      url: '',
       appLoading: '',
       started: false,
     };
+
+    const { fetch, prefetch: strategy, children } = props;
+
+    if (strategy) {
+      this.prefetch(strategy, children, fetch);
+    }
   }
 
   componentDidMount() {
     // render NotFoundComponent eventListener
     window.addEventListener('icestark:not-found', this.triggerNotFound);
 
-    /* lifecycle `componentWillUnmount` of pre-rendering executes later then
+    /** lifecycle `componentWillUnmount` of pre-rendering executes later then
      * `constructor` and `componentWilllMount` of next-rendering, whereas `start` should be invoked before `unload`.
      * status `started` used to make sure parent's `componentDidMount` to be invoked eariler then child's,
      * for mounting child component needs global configuration be settled.
      */
-    const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch } = this.props;
+    const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch, basename } = this.props;
     start({
       shouldAssetsRemove,
       onAppLeave,
@@ -98,6 +101,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       onError: this.triggerError,
       reroute: this.handleRouteChange,
       fetch,
+      basename,
     });
     this.setState({ started: true });
   }
@@ -110,12 +114,42 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   }
 
   /**
+   * prefetch for resources.
+   * no worry to excute `prefetch` many times, for all prefetched resources have been cached, and never request twice.
+   */
+  prefetch = (strategy: Prefetch, children: React.ReactNode, fetch: Fetch = window.fetch) => {
+    const apps: AppConfig[] = React.Children
+      /**
+       * we can do prefetch for url, entry and entryContent.
+       */
+      .map(children, (childElement) => {
+        if (React.isValidElement(childElement)) {
+          const { url, entry, entryContent, name, path } = childElement.props as AppRouteProps;
+          if (url || entry || entryContent) {
+            return {
+              ...childElement.props,
+              /**
+               * name of AppRoute may be not provided, use `path` instead.
+              */
+              name: name || converArray2String(path),
+            };
+          }
+        }
+        return false;
+      })
+      .filter(Boolean);
+
+    doPrefetch(apps as MicroApp[], strategy, fetch);
+  };
+
+  /**
    * Trigger Error
    */
   triggerError = (err): void => {
     // if AppRouter is unmounted, cancel all operations
     if (this.unmounted) return;
 
+    this.props.onError(err);
     this.err = err;
     this.setState({ url: ICESTSRK_ERROR });
   };
@@ -132,23 +166,26 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   handleRouteChange = (url: string, type: RouteType | 'init' | 'popstate'): void => {
     if (!this.unmounted && url !== this.state.url) {
       this.setState({ url });
+
+      const { pathname, query, hash } = urlParse(url, true);
+      this.props.onRouteChange(pathname, query, hash, type);
     }
-    const { pathname, query, hash } = urlParse(url, true);
-    this.props.onRouteChange(pathname, query, hash, type);
   };
 
   loadingApp = (app: AppConfig) => {
     if (this.unmounted) return;
+    this.props.onLoadingApp(app);
     this.setState({ appLoading: app.name });
-  }
+  };
 
   finishLoading = (app: AppConfig) => {
     if (this.unmounted) return;
+    this.props.onFinishLoading(app);
     const { appLoading } = this.state;
     if (appLoading === app.name) {
       this.setState({ appLoading: '' });
     }
-  }
+  };
 
   render() {
     const {
@@ -156,7 +193,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       ErrorComponent,
       LoadingComponent,
       children,
-      basename: appBasename,
+      basename: frameworkBasename,
     } = this.props;
     const { url, appLoading, started } = this.state;
 
@@ -171,28 +208,40 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       return renderComponent(ErrorComponent, { err: this.err });
     }
 
-    let match = null;
+    let match = false;
     let element: React.ReactElement;
-    let routerPath = null;
-    React.Children.forEach(children, child => {
-      if (match == null && React.isValidElement(child)) {
-        const { path } = child.props;
-        routerPath = appBasename
-          ? [].concat(path).map((pathStr: string | PathData) => `${addLeadingSlash(appBasename)}${(pathStr as PathData).value || pathStr}`)
-          : path;
+
+    React.Children.forEach(children, (child) => {
+      if (!match && React.isValidElement(child)) {
+        const { path, activePath, exact, strict, sensitive, hashType } = child.props;
+
+        const compatPath = mergeFrameworkBaseToPath(
+          formatPath(activePath || path, {
+            exact,
+            strict,
+            sensitive,
+            hashType,
+          }),
+          frameworkBasename,
+        );
+
         element = child;
-        match = matchActivePath(url, {
-          ...child.props,
-          path: routerPath,
-        });
+
+        match = checkActive(compatPath)(url);
       }
     });
 
 
     if (match) {
-      const { path, basename, name } = element.props as AppRouteProps;
-      setCache('basename', `${appBasename}${basename || (Array.isArray(path) ? (path[0] as PathData).value || path[0] : path)}`);
-      this.appKey = name || converArray2String(path);
+      const { name, activePath, path } = element.props as AppRouteProps;
+
+      if (isFunction(activePath) && !name) {
+        const err = new Error('[icestark]: name is required in AppConfig');
+        console.error(err);
+        return renderComponent(ErrorComponent, { err });
+      }
+
+      this.appKey = name || converArray2String((activePath || path) as AppRoutePath);
       const componentProps: AppRouteComponentProps = {
         location: urlParse(url, true),
         match,
@@ -208,7 +257,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
             cssLoading: appLoading === this.appKey,
             onAppEnter: this.props.onAppEnter,
             onAppLeave: this.props.onAppLeave,
-            path: routerPath,
           })}
         </div>
       );

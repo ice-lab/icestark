@@ -29,9 +29,9 @@ declare global {
   */
 window.requestIdleCallback =
    window.requestIdleCallback ||
-   function(cb) {
+   function (cb) {
      const start = Date.now();
-     return setTimeout(function() {
+     return setTimeout(() => {
        cb({
          didTimeout: false,
          timeRemaining() {
@@ -43,19 +43,18 @@ window.requestIdleCallback =
 
 window.cancelIdleCallback =
    window.cancelIdleCallback ||
-   function(id) {
+   function (id) {
      clearTimeout(id);
    };
 
-
-export function preloadModules (modules: StarkModule[] | string[], sandbox?: ISandbox): void {
+export function preloadModules(modules: StarkModule[] | string[], sandbox?: ISandbox): void {
   if (!modules?.length) {
     return;
   }
-  modules.forEach(module => {
-    const moduleInfo: StarkModule = typeof module === 'string' ? getModules().filter(m => m.name === module)[0] : module;
+  modules.forEach((module) => {
+    const moduleInfo: StarkModule = typeof module === 'string' ? getModules().filter((m) => m.name === module)[0] : module;
     if (!moduleInfo) {
-      console.error(`Can't find module in modules config`);
+      console.error('Can\'t find module in modules config');
       return;
     }
     const notImported = !Object.keys(getImportedModules()).includes(moduleInfo.name);

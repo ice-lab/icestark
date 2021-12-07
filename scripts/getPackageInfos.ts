@@ -14,7 +14,7 @@ export interface IPackageInfo {
 function checkVersionExists(pkg: string, version: string): Promise<boolean> {
   return urllib.request(
     `https://registry.npmjs.com/${pkg}/${version}`,
-    { dataType: 'json', timeout: TIMEOUT }
+    { dataType: 'json', timeout: TIMEOUT },
   ).then((res) => res.status === 200).catch(() => false);
 }
 
@@ -27,13 +27,11 @@ export async function getPackageInfos(targetDir: string, isMonorepos: boolean): 
     const packageFolders: string[] = isMonorepos ? readdirSync(targetDir).filter((filename) => filename[0] !== '.') : [''];
     console.log('[PUBLISH] Start check with following packages:');
     await Promise.all(packageFolders.map(async (packageFolder) => {
-
       const directory = join(targetDir, packageFolder);
       const packageInfoPath = join(directory, 'package.json');
 
       // Process package info.
       if (existsSync(packageInfoPath)) {
-
         const packageInfo = JSON.parse(readFileSync(packageInfoPath, 'utf8'));
         const packageName = packageInfo.name || packageFolder;
 

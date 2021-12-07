@@ -1,4 +1,4 @@
-import * as urlParse from 'url-parse';
+import urlParse from 'url-parse';
 import {
   routingEventsListeningTo,
   isInCapturedEventListeners,
@@ -11,55 +11,17 @@ import {
 import { AppConfig, getMicroApps, createMicroApp, unmountMicroApp, clearMicroApps } from './apps';
 import { emptyAssets, recordAssets } from './util/handleAssets';
 import { LOADING_ASSETS, MOUNTED } from './util/constant';
+import { doPrefetch } from './util/prefetch';
+import globalConfiguration, { RouteType, StartConfiguration } from './util/globalConfiguration';
 
 if (!window?.fetch) {
   throw new Error('[icestark] window.fetch not found, you need polyfill it');
 }
 
-export const defaultFetch = window?.fetch.bind(window);
-
-export type Fetch = typeof window.fetch | ((url: string) => Promise<Response>);
-
-export interface StartConfiguration {
-  shouldAssetsRemove?: (
-    assetUrl?: string,
-    element?: HTMLElement | HTMLLinkElement | HTMLStyleElement | HTMLScriptElement,
-  ) => boolean;
-  onRouteChange?: (
-    url: string,
-    pathname: string,
-    query: object,
-    hash?: string,
-    type?: RouteType | 'init' | 'popstate' | 'hashchange',
-  ) => void;
-  onAppEnter?: (appConfig: AppConfig) => void;
-  onAppLeave?: (appConfig: AppConfig) => void;
-  onLoadingApp?: (appConfig: AppConfig) => void;
-  onFinishLoading?:  (appConfig: AppConfig) => void;
-  onError?: (err: Error) => void;
-  onActiveApps?: (appConfigs: AppConfig[]) => void;
-  reroute?: (url: string, type: RouteType | 'init' | 'popstate'| 'hashchange') => void;
-  fetch?: Fetch;
-}
-
-const globalConfiguration: StartConfiguration = {
-  shouldAssetsRemove: () => true,
-  onRouteChange: () => {},
-  onAppEnter: () => {},
-  onAppLeave: () => {},
-  onLoadingApp: () => {},
-  onFinishLoading: () => {},
-  onError: () => {},
-  onActiveApps: () => {},
-  reroute,
-  fetch: defaultFetch,
-};
-
 interface OriginalStateFunction {
   (state: any, title: string, url?: string): void;
 }
 
-type RouteType = 'pushState' | 'replaceState';
 
 let started = false;
 const originalPush: OriginalStateFunction = window.history.pushState;
@@ -79,12 +41,12 @@ const urlChange = (event: PopStateEvent | HashChangeEvent): void => {
 
 let lastUrl = null;
 
-export function reroute (url: string, type: RouteType | 'init' | 'popstate'| 'hashchange' ) {
+export function reroute(url: string, type: RouteType | 'init' | 'popstate'| 'hashchange') {
   const { pathname, query, hash } = urlParse(url, true);
   // trigger onRouteChange when url is changed
   if (lastUrl !== url) {
     globalConfiguration.onRouteChange(url, pathname, query, hash, type);
-  
+
     const unmountApps = [];
     const activeApps = [];
     getMicroApps().forEach((microApp: AppConfig) => {
@@ -111,13 +73,13 @@ export function reroute (url: string, type: RouteType | 'init' | 'popstate'| 'ha
           globalConfiguration.onAppEnter(activeApp);
         }
         await createMicroApp(activeApp);
-      }))
+      })),
     ).then(() => {
       callCapturedEventListeners();
     });
   }
   lastUrl = url;
-};
+}
 
 /**
  * Hijack window.history
@@ -191,11 +153,21 @@ function start(options?: StartConfiguration) {
     return;
   }
   started = true;
+
   recordAssets();
+
   // update globalConfiguration
+  globalConfiguration.reroute = reroute;
   Object.keys(options || {}).forEach((configKey) => {
     globalConfiguration[configKey] = options[configKey];
   });
+
+  const { prefetch, fetch } = globalConfiguration;
+  if (prefetch) {
+    doPrefetch(getMicroApps(), prefetch, fetch);
+  }
+
+  // hajack history & eventListener
   hijackHistory();
   hijackEventListener();
 

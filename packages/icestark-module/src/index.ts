@@ -1,5 +1,6 @@
 import {
   StarkModule,
+  registerModule,
   registerModules,
   getModules,
   mountModule,
@@ -12,6 +13,7 @@ import { preloadModules } from './prefetch';
 export {
   StarkModule,
   MicroModule,
+  registerModule,
   registerModules,
   clearModules,
   getModules,

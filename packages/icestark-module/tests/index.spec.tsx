@@ -4,7 +4,7 @@ import '@testing-library/jest-dom/extend-expect';
 import { render } from '@testing-library/react';
 import * as fs from 'fs';
 import * as path from 'path';
-import Sandbox, { SandboxContructor } from '@ice/sandbox';
+import Sandbox, { SandboxConstructor } from '@ice/sandbox';
 
 import {
   getModules,
@@ -14,6 +14,8 @@ import {
   mountModule,
   unmoutModule,
   removeCSS,
+  registerModule,
+  registerModules,
 } from '../src/modules';
 import MicroModule, { renderModules, renderComponent } from '../src/MicroModule';
 
@@ -21,7 +23,6 @@ import MicroModule, { renderModules, renderComponent } from '../src/MicroModule'
  * support react module render
  */
 const defaultMount = (Component: any, targetNode: HTMLElement, props?: any) => {
-  console.warn('Please set mount, try run react mount function');
   ReactDOM.render(renderComponent(Component, props), targetNode);
 };
 
@@ -29,7 +30,6 @@ const defaultMount = (Component: any, targetNode: HTMLElement, props?: any) => {
  * default unmount function
  */
 const defaultUnmount = (targetNode: HTMLElement) => {
-  console.warn('Please set unmount, try run react unmount function');
   ReactDOM.unmountComponentAtNode(targetNode);
 };
 
@@ -64,7 +64,6 @@ describe('render modules', () => {
     };
   });
 
-  
   test('fallback render', (next) => {
     const Component = renderModules(modules, null, {});
     const { container, unmount } = render(Component);
@@ -134,7 +133,7 @@ describe('render modules', () => {
   test('mountModule with custom sandbox', (next) => {
     const moduleInfo = { name: 'customSandbox', url: '//localhost', mount: defaultMount, unmount: defaultUnmount };
     const div = document.createElement('div');
-    mountModule(moduleInfo, div, {}, (Sandbox as SandboxContructor));
+    mountModule(moduleInfo, div, {}, (Sandbox as SandboxConstructor));
     setTimeout(() => {
       expect(div.innerHTML).toBe('<div><h2>404</h2></div>');
       unmoutModule(moduleInfo, div);

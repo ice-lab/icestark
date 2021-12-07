@@ -2,6 +2,61 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
+## 2.6.2
+
+- [fix] avoid to append duplicate assets. ([#331](https://github.com/ice-lab/icestark/issues/331))
+- [fix] bind `pushState` to global. ([#426](https://github.com/ice-lab/icestark/issues/426))
+- [fix] prefetch apps using `window.fetch` by default.
+
+## 2.6.1
+
+- [fix] wrap `import` using `new Function` to avoid compiler error under chrome61 & ie. ([#404](https://github.com/ice-lab/icestark/issues/404))
+
+## 2.6.0
+
+- [feat] support native es module micro-applications. ([#346, #260](https://github.com/ice-lab/icestark/issues/346))
+- [feat] handle `<base />` element and re-execute DOM Parser to enable `<app-root></app-root>` of Angular.([#368](https://github.com/ice-lab/icestark/pull/368))
+- [refact] change `module: commonjs` to `module: esnext`.
+- [fix] assign to `location.hash` never trigger `onRouteChange` twice. ([#353](https://github.com/ice-lab/icestark/issues/353))
+
+## 2.5.3
+
+- [fix] `setBasename` before `createMicroApp` may be covered for empty activePath.
+
+## 2.5.2
+
+- [fix] `createMicroApp` without `activePath` cause error.
+
+## 2.5.1
+
+- [hotfix] keep the misunderstanding `basename=''` working fine with `<AppRoute />`.
+
+## 2.5.0
+
+- [feat] `path` is deprecated and using the more powerful `activePath` instead. ([#299, #297, #209](https://github.com/ice-lab/icestark/issues/299))
+- [feat] debug mirco-frontends are accessiable by using source maps, even in sandbox. ([#259](https://github.com/ice-lab/icestark/issues/259))
+- [fix] call callCapturedEventListeners later to prevent double Prompt. ([#325](https://github.com/ice-lab/icestark/issues/325))
+- [refact] refactor url-matching algorithm.
+
+
+## 2.4.0
+
+- [feat] support appending extra attributes for scripts when using `loadScriptMode = script`. ([#276](https://github.com/ice-lab/icestark/issues/276))
+- [fix] unexpectable sandbox's cleaning up when load modules. ([#293](https://github.com/ice-lab/icestark/issues/293))
+- [fix] missing `ErrorComponent` causes React rendering's error. ([#312](https://github.com/ice-lab/icestark/issues/312))
+
+## 2.3.2
+
+- [refact] compatible with sandbox spell error.
+
+## 2.3.1
+
+- [fix] parse `library` the right way if `library` is an array. ([#287](https://github.com/ice-lab/icestark/issues/287))
+
+## 2.3.0
+
+- [feat] support `prefetch` sub-application, which let your micro application fly. ([#188](https://github.com/ice-lab/icestark/issues/188))
+
 ## 2.2.2
 
 - [fix] `basename` of `AppRouter` makes effect. ([#241](https://github.com/ice-lab/icestark/issues/241))

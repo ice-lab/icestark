@@ -1,6 +1,6 @@
 import { setCache } from './cache';
 
-function setBasename (base: string) {
+function setBasename(base: string) {
   return setCache('basename', base);
 }
 
