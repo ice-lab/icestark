@@ -1,8 +1,12 @@
 # Changelog
 
+## 1.5.0
+
+- [feat] `appHistory` and `<Link />` can both take state. ([#478](https://github.com/ice-lab/icestark/pull/428))
+
 ## 1.4.2
 
-- [fix] Bind history to window when using `AppLink`. ([#428](https://github.com/ice-lab/icestark/pull/428))
+- [fix] bind history to window when using `AppLink`. ([#428](https://github.com/ice-lab/icestark/pull/428))
 
 ## 1.4.1
 
