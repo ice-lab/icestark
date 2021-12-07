@@ -1,7 +1,9 @@
 // `hashType' was relocated to the third argument.
+const isDev = process.env.NODE_ENV === 'development';
+
 const normalizeArgs = (state?: object | boolean, hashType?: boolean): [object, boolean] => {
   if (typeof state === 'boolean') {
-    console.warn('[icestark]: hashType was relocated to the third argument.');
+    isDev && console.warn('[icestark]: hashType was relocated to the third argument.');
     return [{}, hashType ?? state];
   }
   if (typeof state === 'object') {
