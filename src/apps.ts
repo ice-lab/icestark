@@ -205,7 +205,7 @@ export async function loadAppModule(appConfig: AppConfig) {
         cacheCss,
         fetch,
       });
-      lifecycle = await loadScriptByFetch(appAssets.jsList, appSandbox);
+      lifecycle = await loadScriptByFetch(appAssets.jsList, appSandbox, fetch);
       break;
     default:
       await Promise.all([
