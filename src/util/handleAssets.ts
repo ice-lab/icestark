@@ -704,28 +704,14 @@ export async function loadAndAppendCssAssets(cssList: Array<Asset | HTMLElement>
 export async function loadAndAppendJsAssets(
   assets: Assets,
   {
-    sandbox,
-    fetch = defaultFetch,
     scriptAttributes = [],
   }: {
-    sandbox?: Sandbox;
-    fetch?: Fetch;
     scriptAttributes?: ScriptAttributes;
   },
 ) {
   const jsRoot: HTMLElement = document.getElementsByTagName('head')[0];
 
   const { jsList } = assets;
-
-  // handle scripts
-  if (sandbox && !sandbox.sandboxDisabled) {
-    const jsContents = await fetchScripts(jsList, fetch);
-    // excute code by order
-    jsContents.forEach((script) => {
-      sandbox.execScriptInSandbox(script);
-    });
-    return;
-  }
 
   // dispose inline script
   const hasInlineScript = jsList.find((asset) => asset.type === AssetTypeEnum.INLINE);

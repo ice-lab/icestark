@@ -183,13 +183,10 @@ export async function loadAppModule(appConfig: AppConfig) {
   /**
    * LoadScriptMode has the first priority
    */
-  const loadScriptMode = appConfig.loadScriptMode ?? (umd ? 'fetch' : 'script');
+  const sandboxEnabled = appSandbox && !appSandbox.sandboxDisabled;
+  const loadScriptMode = appConfig.loadScriptMode ?? (umd || sandboxEnabled ? 'fetch' : 'script');
 
-  const cacheCss = temporaryState.shouldAssetsRemoveConfigured
-    ? false
-    : (loadScriptMode !== 'script')
-      ? true
-      : (appSandbox && !appSandbox.sandboxDisabled);
+  const cacheCss = temporaryState.shouldAssetsRemoveConfigured ? false : (loadScriptMode !== 'script');
 
   switch (loadScriptMode) {
     case 'import':
@@ -216,7 +213,7 @@ export async function loadAppModule(appConfig: AppConfig) {
           cacheCss,
           fetch,
         }),
-        loadAndAppendJsAssets(appAssets, { sandbox: appSandbox, fetch, scriptAttributes }),
+        loadAndAppendJsAssets(appAssets, { scriptAttributes }),
       ]);
       lifecycle =
         getLifecyleByLibrary() ||
