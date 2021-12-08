@@ -150,7 +150,7 @@ const unHijackEventListener = (): void => {
 function start(options?: StartConfiguration) {
   // See https://github.com/ice-lab/icestark/issues/373#issuecomment-971366188
   // todos: remove it from 3.x
-  if (options?.shouldAssetsRemove) {
+  if (options?.shouldAssetsRemove && !temporaryState.shouldAssetsRemoveConfigured) {
     temporaryState.shouldAssetsRemoveConfigured = true;
   }
 

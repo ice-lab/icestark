@@ -92,7 +92,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
      */
     const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch, basename } = this.props;
     start({
-      shouldAssetsRemove,
       onAppLeave,
       onAppEnter,
       onLoadingApp: this.loadingApp,
@@ -101,7 +100,9 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       reroute: this.handleRouteChange,
       fetch,
       basename,
+      ...(shouldAssetsRemove ? { shouldAssetsRemove } : {}),
     });
+
     this.setState({ started: true });
   }
 

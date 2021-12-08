@@ -670,21 +670,31 @@ export async function loadAndAppendCssAssets(cssList: Array<Asset | HTMLElement>
   const cssRoot: HTMLElement = document.getElementsByTagName('head')[0];
 
   if (cacheCss) {
-    // No need to cache css when running into `<style />`
-    const needCachedCss = cssList.filter((css) => !isElement(css));
+    let useLinks = false;
+    let cssContents = null;
 
-    const cssContents = await fetchStyles(
-      needCachedCss as Asset[],
-      fetch,
-    );
+    try {
+      // No need to cache css when running into `<style />`
+      const needCachedCss = cssList.filter((css) => !isElement(css));
+      cssContents = await fetchStyles(
+        needCachedCss as Asset[],
+        fetch,
+      );
+    } catch (e) {
+      useLinks = true;
+    }
 
-    return await Promise.all([
-      ...cssContents.map((content, index) => appendCSS(
-        cssRoot,
-        { content, type: AssetTypeEnum.INLINE }, `${PREFIX}-css-${index}`,
-      )),
-      ...cssList.filter((css) => isElement(css)).map((asset, index) => appendCSS(cssRoot, asset, `${PREFIX}-css-${index}`)),
-    ]);
+    // Try hard to avoid break-change if fetching links error.
+    // And supposed to be remove from 3.x
+    if (!useLinks) {
+      return await Promise.all([
+        ...cssContents.map((content, index) => appendCSS(
+          cssRoot,
+          { content, type: AssetTypeEnum.INLINE }, `${PREFIX}-css-${index}`,
+        )),
+        ...cssList.filter((css) => isElement(css)).map((asset, index) => appendCSS(cssRoot, asset, `${PREFIX}-css-${index}`)),
+      ]);
+    }
   }
 
   // load css content
