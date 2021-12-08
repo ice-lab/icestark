@@ -293,15 +293,18 @@ async function loadApp(app: MicroApp) {
 
 function mergeThenUpdateAppConfig(name: string, configuration?: StartConfiguration) {
   const appConfig = getAppConfig(name);
+
+  if (!appConfig) {
+    return;
+  }
+
   const { umd, sandbox } = appConfig;
 
+  // Generate appSandbox
   const appSandbox = createSandbox(sandbox) as Sandbox;
 
   // Merge loadScriptMode
   const sandboxEnabled = sandbox && !appSandbox.sandboxDisabled;
-  /**
-   * LoadScriptMode has the first priority
-   */
   const loadScriptMode = appConfig.loadScriptMode ?? (umd || sandboxEnabled ? 'fetch' : 'script');
 
   // Merge global configuration
