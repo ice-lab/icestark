@@ -115,7 +115,10 @@ describe('app start', () => {
     await createMicroApp('app');
     expect(status).toBe(MOUNTED);
 
-    const errorApp = await createMicroApp('app-error');
-    expect(errorApp).toBe(null);
+    async function test () {
+      throw new Error('aaa')
+    }
+
+    expect(createMicroApp('app-error')).rejects.toThrowError('[icestark] fail to get app config of app-error');
   })
 });
