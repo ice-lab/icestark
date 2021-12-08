@@ -187,7 +187,7 @@ export async function loadAppModule(appConfig: AppConfig) {
 
   const cacheCss = temporaryState.shouldAssetsRemoveConfigured
     ? false
-    : (appConfig.loadScriptMode !== 'script')
+    : (loadScriptMode !== 'script')
       ? true
       : (appSandbox && !appSandbox.sandboxDisabled);
 

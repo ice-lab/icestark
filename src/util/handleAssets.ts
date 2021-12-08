@@ -96,8 +96,6 @@ export function appendCSS(
       styleElement.id = id;
       styleElement.setAttribute(PREFIX, DYNAMIC);
       styleElement.innerHTML = content;
-      styleElement.id = id;
-      styleElement.setAttribute(PREFIX, DYNAMIC);
       root.appendChild(styleElement);
       resolve();
       return;
