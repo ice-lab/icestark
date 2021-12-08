@@ -31,6 +31,8 @@ interface LifecycleProps {
   customProps?: object;
 }
 
+type LoadScriptMode = 'fetch' | 'script' | 'import';
+
 export interface ModuleLifeCycle {
   mount?: (props: LifecycleProps) => Promise<void> | void;
   unmount?: (props: LifecycleProps) => Promise<void> | void;
@@ -57,7 +59,7 @@ export interface BaseConfig extends PathOption {
    * @deprecated
    */
   umd?: boolean;
-  loadScriptMode?: 'fetch' | 'script' | 'import';
+  loadScriptMode?: LoadScriptMode;
   checkActive?: (url: string) => boolean;
   appAssets?: Assets;
   props?: object;
@@ -249,7 +251,7 @@ function combineLifecyle(lifecycle: ModuleLifeCycle, appConfig: AppConfig) {
   return combinedLifecyle;
 }
 
-function shouldCacheCss(mode) {
+function shouldCacheCss(mode: LoadScriptMode) {
   return temporaryState.shouldAssetsRemoveConfigured ? false : (mode !== 'script');
 }
 
@@ -308,10 +310,10 @@ function mergeThenUpdateAppConfig(name: string, configuration?: StartConfigurati
   const loadScriptMode = appConfig.loadScriptMode ?? (umd || sandboxEnabled ? 'fetch' : 'script');
 
   // Merge global configuration
-  const cfgs = globalConfiguration;
-  Object.keys(configuration || {}).forEach((key) => {
-    cfgs[key] = configuration[key];
-  });
+  const cfgs = {
+    ...globalConfiguration,
+    ...configuration,
+  };
 
   updateAppConfig(name, {
     appSandbox,
@@ -335,7 +337,7 @@ export async function createMicroApp(
 
   const appConfig = getAppConfig(appName);
 
-  if (!(appConfig && appName)) {
+  if (!appConfig || !appName) {
     console.error(`[icestark] fail to get app config of ${appName}`);
     return null;
   }
