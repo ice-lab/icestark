@@ -670,7 +670,7 @@ export async function loadAndAppendCssAssets(cssList: Array<Asset | HTMLElement>
   const cssRoot: HTMLElement = document.getElementsByTagName('head')[0];
 
   if (cacheCss) {
-    // No need to cache css when running into `<style />` & `<link />`
+    // No need to cache css when running into `<style />`
     const needCachedCss = cssList.filter((css) => !isElement(css));
 
     const cssContents = await fetchStyles(
