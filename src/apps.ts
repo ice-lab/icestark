@@ -298,10 +298,10 @@ function mergeThenUpdateAppConfig(name: string, configuration?: StartConfigurati
   const loadScriptMode = appConfig.loadScriptMode ?? (umd || sandboxEnabled ? 'fetch' : 'script');
 
   // Merge global configuration
-  const cfgs = { ...globalConfiguration };
-  Object.keys(configuration || {}).forEach((key) => {
-    cfgs[key] = configuration[key];
-  });
+  const cfgs = {
+    ...globalConfiguration,
+    ...configuration,
+  };
 
   updateAppConfig(name, {
     appSandbox,
@@ -326,9 +326,8 @@ export async function createMicroApp(
   const appConfig = getAppConfig(appName);
 
   if (!appConfig || !appName) {
-    const err = new Error(`[icestark] fail to get app config of ${appName}`);
-    (configuration?.onError || globalConfiguration?.onError)(err);
-    throw err;
+    console.error(`[icestark] fail to get app config of ${appName}`);
+    return null;
   }
 
   const { container, basename, activePath, configuration: userConfiguration } = appConfig;
