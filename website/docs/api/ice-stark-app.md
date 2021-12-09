@@ -50,8 +50,9 @@ import isInIcestark from '@ice/stark-app/lib/isInIcestark';
 
 #### appHistory.push
 
-- 类型：`function`
-- 代码示例：
+- 类型定义：` (url: string, state?: object, hashType?: boolean) => void`
+
+代码示例一：跳转 url 页面
 
 ```js
 import React from 'react';
@@ -62,7 +63,7 @@ export default class SelfLink extends React.Component {
     return (
       <span
         onClick={() => {
-          appHistory.push('/home');
+          appHistory.push('/home?name=ice');
         }}
       >
         selfLink
@@ -72,20 +73,33 @@ export default class SelfLink extends React.Component {
 }
 ```
 
+代码示例二：传递 `state`
+
+```js
+appHistory.push('/home?name=ice', { framework: 'icestark' });
+```
+
+代码示例三：设置为 hash 路由模式
+
+```js
+appHistory.push('/home?name=ice', {}, true);
+}
+```
+
 #### appHistory.replace
 
-- 类型：`function`
+- 函数类型定义：- 类型定义：` (url: string, state?: object, hashType?: boolean) => void`
 - 代码示例参考 `appHistory.push`
 
 ## AppLink
 
-提供声明式的，可访问的导航，表示本次跳转需要重新加载静态资源。微应用内部跳转仍然使用 `Link`
+提供声明式的，可访问的导航，表示本次跳转需要重新加载静态资源。微应用内部跳转仍然使用 `Link`。
 
 #### to
 
 目标路径，同 `Link` 中的 `to` 保持一致 ，必填
 
-- 类型：`string`
+- 类型：`string | object`
 - 默认值：`-`
 
 #### replace
@@ -109,7 +123,7 @@ export default class SelfLink extends React.Component {
 - 类型：`boolean`
 - 默认值：`false`
 
-代码示例：
+代码示例一：`to` 为字符串，传递 query 参数
 
 ```js
 import React from 'react';
@@ -117,17 +131,46 @@ import { Link } from 'react-router-dom';
 import { AppLink } from '@ice/stark';
 
 export default class SelfLink extends React.Component {
-  // 商家平台代码
   render() {
     return (
       <div>
-        <AppLink to="/waiter/list">使用 AppLink 跳转到小二平台的列表页</AppLink>
+        // 应用间路由跳转，并携带 query 查询参数
+        <AppLink to="/waiter/list?name=ice">使用 AppLink 跳转到小二平台的列表页</AppLink>
         <Link to="/detail">跳转到商家平台详情页</Link>
       </div>
     );
   }
 }
 ```
+
+代码示例二：`to` 为简单对象，传递 state
+
+```js
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { AppLink } from '@ice/stark';
+
+export default class SelfLink extends React.Component {
+  render() {
+    return (
+      <div>
+        // 应用间路由跳转，并传递 state、query
+        <AppLink
+          to={{
+            pathname: '/waiter/list',
+            search: '?name=ice',
+            state: {
+              framework: 'icestark'
+            }
+          }}
+          >使用 AppLink 跳转到小二平台的列表页</AppLink>
+        <Link to="/detail">跳转到商家平台详情页</Link>
+      </div>
+    );
+  }
+}
+```
+
 
 ## registerAppEnter
 

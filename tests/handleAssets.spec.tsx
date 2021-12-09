@@ -477,7 +477,7 @@ describe('appendAssets', () => {
       'http://icestark.com/css/index.css',
       'http://icestark.com/js/test1.js',
     ]);
-    Promise.all([loadAndAppendCssAssets(assets.cssList), loadAndAppendJsAssets(assets, {
+    Promise.all([loadAndAppendCssAssets(assets.cssList, {}), loadAndAppendJsAssets(assets, {
       scriptAttributes: ['crossorigin=anonymous', 'nomodule=false', 'type=module', 'src=http://xxxx.js']
     })])
       .then(() => {
@@ -519,7 +519,7 @@ describe('appendAssets', () => {
     const assets = getUrlAssets([
       'http://icestark.com/js/index.js'
     ]);
-    Promise.all([loadAndAppendCssAssets(assets.cssList), loadAndAppendJsAssets(assets, {
+    Promise.all([loadAndAppendCssAssets(assets.cssList, {}), loadAndAppendJsAssets(assets, {
       scriptAttributes: (url) => {
         if (url.includes('//icestark.com/js/index.js')) {
           return ['crossorigin=anonymous']
@@ -552,7 +552,7 @@ describe('appendAssets', () => {
       'http://icestark.com/css/index.css',
       'http://icestark.com/js/test1.js',
     ]);
-    Promise.all([loadAndAppendCssAssets(assets.cssList), loadAndAppendJsAssets(assets, {})])
+    Promise.all([loadAndAppendCssAssets(assets.cssList, {}), loadAndAppendJsAssets(assets, {})])
   });
 
   test('appendAssets - duplicate', done => {
@@ -564,7 +564,7 @@ describe('appendAssets', () => {
       'http://icestark.com/js/test1.js',
       'http://icestark.com/js/test1.js',
     ]);
-    Promise.all([loadAndAppendCssAssets(assets.cssList), loadAndAppendJsAssets(assets, {})])
+    Promise.all([loadAndAppendCssAssets(assets.cssList, {}), loadAndAppendJsAssets(assets, {})])
       .then(() => {
         const scripts = document.getElementsByTagName('script');
         const styleSheets = document.getElementsByTagName('link');

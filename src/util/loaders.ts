@@ -35,8 +35,8 @@ function executeScripts(scripts: string[], sandbox?: Sandbox, globalwindow: Wind
 /**
  * load bundle
  */
-export function loadScriptByFetch(jsList: Asset[], sandbox?: Sandbox) {
-  return fetchScripts(jsList)
+export function loadScriptByFetch(jsList: Asset[], sandbox?: Sandbox, fetch = window.fetch) {
+  return fetchScripts(jsList, fetch)
     .then((scriptTexts) => {
       const globalwindow = getGobalWindow(sandbox);
 
@@ -86,6 +86,7 @@ export async function loadScriptByImport(jsList: Asset[]): Promise<null | Module
         id: `${PREFIX}-js-module-${index}`,
       });
     } else {
+      let dynamicImport = null;
       try {
         /**
         * `import` will cause error under chrome 61 and ie.
@@ -93,17 +94,24 @@ export async function loadScriptByImport(jsList: Asset[]): Promise<null | Module
         * Inspired by [dynamic-import-polyfill](https://github.com/GoogleChromeLabs/dynamic-import-polyfill)
         */
         // eslint-disable-next-line no-new-func
-        const dynamicImport = new Function('url', 'return import(url)');
-        const { mount: maybeMount, unmount: maybeUnmount } = await dynamicImport(js.content);
-
-        if (maybeMount && maybeUnmount) {
-          mount = maybeMount;
-          unmount = maybeUnmount;
-        }
+        dynamicImport = new Function('url', 'return import(url)');
       } catch (e) {
-        Promise.reject(
+        return Promise.reject(
           new Error('[icestark] You are not support to use `loadScriptMode = import` where dynamic import is not supported by browsers.'),
         );
+      }
+
+      try {
+        if (dynamicImport) {
+          const { mount: maybeMount, unmount: maybeUnmount } = await dynamicImport(js.content);
+
+          if (maybeMount && maybeUnmount) {
+            mount = maybeMount;
+            unmount = maybeUnmount;
+          }
+        }
+      } catch (e) {
+        return Promise.reject(e);
       }
     }
   });
