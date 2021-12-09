@@ -16,7 +16,7 @@ import { setCache } from './util/cache';
 import { loadScriptByFetch, loadScriptByImport } from './util/loaders';
 import { getLifecyleByLibrary, getLifecyleByRegister } from './util/getLifecycle';
 import { mergeFrameworkBaseToPath, getAppBasename, shouldSetBasename } from './util/helpers';
-import globalConfiguration from './util/globalConfiguration';
+import globalConfiguration, { temporaryState } from './util/globalConfiguration';
 
 import type { StartConfiguration } from './util/globalConfiguration';
 
@@ -30,6 +30,8 @@ interface LifecycleProps {
   container: HTMLElement | string;
   customProps?: object;
 }
+
+type LoadScriptMode = 'fetch' | 'script' | 'import';
 
 export interface ModuleLifeCycle {
   mount?: (props: LifecycleProps) => Promise<void> | void;
@@ -57,7 +59,7 @@ export interface BaseConfig extends PathOption {
    * @deprecated
    */
   umd?: boolean;
-  loadScriptMode?: 'fetch' | 'script' | 'import';
+  loadScriptMode?: LoadScriptMode;
   checkActive?: (url: string) => boolean;
   appAssets?: Assets;
   props?: object;
@@ -168,8 +170,7 @@ export async function loadAppModule(appConfig: AppConfig) {
 
   let lifecycle: ModuleLifeCycle = {};
   onLoadingApp(appConfig);
-  const appSandbox = createSandbox(appConfig.sandbox) as Sandbox;
-  const { url, container, entry, entryContent, name, scriptAttributes = [], umd } = appConfig;
+  const { url, container, entry, entryContent, name, scriptAttributes = [], loadScriptMode, appSandbox } = appConfig;
   const appAssets = url ? getUrlAssets(url) : await getEntryAssets({
     root: container,
     entry,
@@ -178,30 +179,37 @@ export async function loadAppModule(appConfig: AppConfig) {
     assetsCacheKey: name,
     fetch,
   });
-  updateAppConfig(appConfig.name, { appAssets, appSandbox });
 
-  /**
-   * LoadScriptMode has the first priority
-   */
-  const loadScriptMode = appConfig.loadScriptMode ?? (umd ? 'fetch' : 'script');
+  updateAppConfig(appConfig.name, { appAssets });
+
+  const cacheCss = shouldCacheCss(loadScriptMode);
 
   switch (loadScriptMode) {
     case 'import':
       await loadAndAppendCssAssets([
         ...appAssets.cssList,
         ...filterRemovedAssets(importCachedAssets[name] || [], ['LINK', 'STYLE']),
-      ]);
+      ], {
+        cacheCss,
+        fetch,
+      });
       lifecycle = await loadScriptByImport(appAssets.jsList);
       // Not to handle script element temporarily.
       break;
     case 'fetch':
-      await loadAndAppendCssAssets(appAssets.cssList);
-      lifecycle = await loadScriptByFetch(appAssets.jsList, appSandbox);
+      await loadAndAppendCssAssets(appAssets.cssList, {
+        cacheCss,
+        fetch,
+      });
+      lifecycle = await loadScriptByFetch(appAssets.jsList, appSandbox, fetch);
       break;
     default:
       await Promise.all([
-        loadAndAppendCssAssets(appAssets.cssList),
-        loadAndAppendJsAssets(appAssets, { sandbox: appSandbox, fetch, scriptAttributes }),
+        loadAndAppendCssAssets(appAssets.cssList, {
+          cacheCss,
+          fetch,
+        }),
+        loadAndAppendJsAssets(appAssets, { scriptAttributes }),
       ]);
       lifecycle =
         getLifecyleByLibrary() ||
@@ -241,6 +249,10 @@ function combineLifecyle(lifecycle: ModuleLifeCycle, appConfig: AppConfig) {
     }
   });
   return combinedLifecyle;
+}
+
+function shouldCacheCss(mode: LoadScriptMode) {
+  return temporaryState.shouldAssetsRemoveConfigured ? false : (mode !== 'script');
 }
 
 function registerAppBeforeLoad(app: AppConfig, options?: AppLifecylceOptions) {
@@ -336,7 +348,7 @@ export async function createMicroApp(
     setCache('root', container);
   }
 
-  const { basename: frameworkBasename } = userConfiguration;
+  const { basename: frameworkBasename, fetch } = userConfiguration;
 
   if (shouldSetBasename(activePath, basename)) {
     setCache('basename', getAppBasename(activePath, frameworkBasename, basename));
@@ -349,7 +361,10 @@ export async function createMicroApp(
       break;
     case UNMOUNTED:
       if (!appConfig.cached) {
-        await loadAndAppendCssAssets(appConfig?.appAssets?.cssList || []);
+        await loadAndAppendCssAssets(appConfig?.appAssets?.cssList || [], {
+          cacheCss: shouldCacheCss(appConfig.loadScriptMode),
+          fetch,
+        });
       }
       await mountMicroApp(appConfig.name);
       break;

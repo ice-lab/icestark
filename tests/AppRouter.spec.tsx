@@ -7,7 +7,6 @@ import * as React from 'react';
 import { render } from '@testing-library/react';
 import { AppRouter, AppRoute } from '../src/index';
 
-
 const delay = (milliscond: number) => new Promise(resolve => setTimeout(resolve, milliscond));
 
 describe('AppRouter', () => {
@@ -94,7 +93,6 @@ describe('AppRouter', () => {
 
     await delay(1000);
     expect(container.innerHTML).toContain('商家平台')
-
     unmount();
   })
 

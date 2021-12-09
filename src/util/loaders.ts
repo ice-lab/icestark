@@ -35,8 +35,8 @@ function executeScripts(scripts: string[], sandbox?: Sandbox, globalwindow: Wind
 /**
  * load bundle
  */
-export function loadScriptByFetch(jsList: Asset[], sandbox?: Sandbox) {
-  return fetchScripts(jsList)
+export function loadScriptByFetch(jsList: Asset[], sandbox?: Sandbox, fetch = window.fetch) {
+  return fetchScripts(jsList, fetch)
     .then((scriptTexts) => {
       const globalwindow = getGobalWindow(sandbox);
 
