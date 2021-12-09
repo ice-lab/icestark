@@ -27,7 +27,7 @@ export type AppLinkProps = {
 const AppLink = (props: AppLinkProps) => {
   const { to, hashType, replace, message, children, ...rest } = props;
 
-  const _to = typeof to === 'object' ? (to.pathname + to.search) : to;
+  const _to = typeof to === 'object' ? `${to.pathname}${to.search ?? ''}` : to;
   const _state = typeof to === 'object' ? to.state : {};
 
   const linkTo = formatUrl(_to, hashType);
