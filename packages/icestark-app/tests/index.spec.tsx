@@ -12,6 +12,7 @@ import {
 } from '../src/index';
 import { setCache, getCache } from '../src/cache';
 import formatUrl from '../src/util/formatUrl';
+import normalizeArgs from '../src/util/normalizeArgs';
 
 const namespace = 'ICESTARK';
 
@@ -146,4 +147,18 @@ describe('formatUrl', () => {
 
     expect(formatUrl('/seller', true)).toBe('#/seller');
   })
-})
+});
+
+describe('normalizeArgs', () => {
+  test('normalizeArgs', () => {
+    expect(normalizeArgs(true)).toEqual([{}, true]);
+    expect(normalizeArgs(false, true)).toEqual([{}, true]);
+
+    expect(normalizeArgs({ framework: 'icestark' })).toEqual([{ framework: 'icestark' }, undefined]);
+    expect(normalizeArgs({ framework: 'icestark' }, true)).toEqual([{ framework: 'icestark' }, true]);
+    expect(normalizeArgs({ framework: 'icestark' }, false)).toEqual([{ framework: 'icestark' }, false]);
+
+    expect(normalizeArgs()).toEqual([{}, undefined]);
+    expect(normalizeArgs(null)).toEqual([null, undefined]);
+  })
+});
