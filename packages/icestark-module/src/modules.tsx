@@ -189,14 +189,14 @@ export const getModules = function () {
 /**
  * get import modules
  */
- export const getImportModules = function () {
+ export const getAllImportedModules = function () {
   return importModules;
 };
 
 /**
  * get import module by name
  */
-export const getImportModuleByName = function(name: string = '') {
+export const getImportedModule = function(name: string = '') {
   return name ? importModules[name] : {};
 };
 
