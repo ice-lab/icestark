@@ -10,14 +10,12 @@ hide_table_of_contents: false
 
 ## Announcing icestark 2.7.0
 
-非常高兴地告诉大家，在 [2.6.0](https://github.com/ice-lab/icestark/pull/369) 这个版本中，我们支持了 ES modules 模块类型的微应用。也就是说，如果您使用 [Vite](https://vitejs.dev/) 或者 [icejs Vite 模式](https://ice.work/docs/guide/basic/vite/) 开发的应用，可以使用 icestark 来构建您的微前端架构。
+本次更新为大家带来了应用的细节优化，更新主要包括：
 
-本次更新主要包括：
-- [支持 ES modules 类型微应用](#支持-ES-modules-类型微应用)
-- [完善 Angular 微应用支持](#支持-angular-微应用)
-- [修复 location.hash 赋值 onRouteChange 触发两次的错误](#修复对-locationhash-赋值-onroutechange-触发两次的错误)
-- [对项目配置的改造](#对项目配置的改造)
-- [ice.js 插件支持 ES modules 资源](#ice.js-插件支持-ES-modules-资源)
+- [缓存 css 资源](#缓存-css-资源)
+- [为 Vite 应用的开发者提供便捷的接入插件](#为-vite-应用的开发者提供便捷的接入插件)
+- [appHistory 支持传递 state](#apphistory-支持传递-state)
+- [常规的错误修复](#常规的错误修复)
 
 <!--truncate-->
 
@@ -41,10 +39,60 @@ hide_table_of_contents: false
 + 配置了 [shouldAssetsRemove](/docs/api/ice-stark#shouldassetsremove)
 + fetch 样式资源失败，使用原方式处理样式资源
 
+### 为 Vite 应用的开发者提供便捷的接入插件
+
+满足使用 Vite 官方应用的用户便捷地接入 icestark，我们提供了 [vite-plugin-index-html](https://github.com/alibaba/ice/tree/master/packages/vite-plugin-index-html) Vite 插件。该插件提供了类似 [webpack-html-plugin](https://github.com/jantimon/html-webpack-plugin) 的能力，会将 Vite 生成的虚拟入口，替换成用户指定的入口。
+
+用户可按照我们的 [教程](/docs/guide/use-child/others#vite-应用) 接入。
+
+该插件的简单用法如下：
+
+```diff
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
++ import htmlPlugin from 'vite-plugin-index-html';
+export default defineConfig({
+  plugins: [
+    vue(),
++   htmlPlugin({
++     input: './src/main.ts', // 指定确定的入口文件
++     preserveEntrySignatures: "exports-only", // 确保入口文件导出生命周期函数
++   })
+  ],
+})
+```
+
+### appHistory 支持传递 state
+
+为满足用户通过 [history state](https://developer.mozilla.org/en-US/docs/Web/API/History/state) 传参的诉求，[appHistory](/docs/api/ice-stark-app#apphistory) 和 [`<AppLink />`](docs/api/ice-stark-app#applink) 可通过第二个参数传递 state。用法如下：
+
+```js
+appHistory.push('/home?name=ice', { framework: 'icestark' });
+
+<AppLink
+  to={{
+    pathname: '/waiter/list',
+    search: '?name=ice',
+    state: {
+      framework: 'icestark'
+    }
+  }}
+  >
+  使用 AppLink 进行页面跳转
+</AppLink>
+```
+
+### 常规的错误修复
+
+- [x] 修复 [registerAppEnter](/docs/api/ice-stark-app/#registerappenter) 以及 [registerAppLeave](/docs/api/ice-stark-app/#registerAppLeave) 类型问题
+- [x] 加载 esm 应用时，提供更精确的错误提示，[#466](https://github.com/ice-lab/icestark/issues/466)
+- [x] 修复 AppLink 丢失 global 绑定可能导致的 Illegal invocation 问题，[#426](https://github.com/ice-lab/icestark/issues/426)
+- [x] 修复使用 ice.js 插件 [build-plugin-icestark](https://ice.work/docs/guide/advanced/icestark/) 导致切换主应用路由是，造成重复渲染，[#427](https://github.com/ice-lab/icestark/issues/427)
 
 ## 后续的版本计划
 
 我们会持续扩展 icestark 的能力，提升微前端体验。在接下来的版本中，我们会：
 
-+ 为 Vite 微应用提供对应的改造插件
-+ 优化开发者开发体验，dev 下提供关键路径的 log 信息
++ 我们会结合官网，提供详尽的报错指引
++ 提供官方的权限控制实践 ([rfcs](https://github.com/ice-lab/icestark/issues/396))
++ 以及样式隔离方案 ([rfcs](https://github.com/ice-lab/icestark/issues/413))
