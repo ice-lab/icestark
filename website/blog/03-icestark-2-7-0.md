@@ -64,7 +64,7 @@ export default defineConfig({
 
 ### appHistory 支持传递 state
 
-为满足用户通过 [history state](https://developer.mozilla.org/en-US/docs/Web/API/History/state) 传参的诉求，[appHistory](/docs/api/ice-stark-app#apphistory) 和 [`<AppLink />`](docs/api/ice-stark-app#applink) 可通过第二个参数传递 state。用法如下：
+为满足用户通过 [history state](https://developer.mozilla.org/en-US/docs/Web/API/History/state) 传参的诉求，[appHistory](/docs/api/ice-stark-app#apphistory) 和 [`<AppLink />`](/docs/api/ice-stark-app#applink) 可通过第二个参数传递 state。用法如下：
 
 ```js
 appHistory.push('/home?name=ice', { framework: 'icestark' });
