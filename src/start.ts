@@ -12,7 +12,8 @@ import { AppConfig, getMicroApps, createMicroApp, unmountMicroApp, clearMicroApp
 import { emptyAssets, recordAssets } from './util/handleAssets';
 import { LOADING_ASSETS, MOUNTED } from './util/constant';
 import { doPrefetch } from './util/prefetch';
-import globalConfiguration, { RouteType, StartConfiguration } from './util/globalConfiguration';
+import globalConfiguration, { temporaryState } from './util/globalConfiguration';
+import type { RouteType, StartConfiguration } from './util/globalConfiguration';
 
 if (!window?.fetch) {
   throw new Error('[icestark] window.fetch not found, you need polyfill it');
@@ -21,7 +22,6 @@ if (!window?.fetch) {
 interface OriginalStateFunction {
   (state: any, title: string, url?: string): void;
 }
-
 
 let started = false;
 const originalPush: OriginalStateFunction = window.history.pushState;
@@ -148,6 +148,12 @@ const unHijackEventListener = (): void => {
 };
 
 function start(options?: StartConfiguration) {
+  // See https://github.com/ice-lab/icestark/issues/373#issuecomment-971366188
+  // todos: remove it from 3.x
+  if (options?.shouldAssetsRemove && !temporaryState.shouldAssetsRemoveConfigured) {
+    temporaryState.shouldAssetsRemoveConfigured = true;
+  }
+
   if (started) {
     console.log('icestark has been already started');
     return;
