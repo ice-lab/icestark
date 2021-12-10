@@ -196,8 +196,13 @@ export const getModules = function () {
 /**
  * get import module by name
  */
-export const getImportedModule = function(name: string = '') {
-  return name ? importModules[name] : {};
+export const getImportedModule = function(name: string) {
+  if (typeof name !== 'string') {
+    console.error(`[icestark-module]: should be string, but get ${typeof name}`);
+    return;
+  }
+
+  return importModules[name];
 };
 
 /**
@@ -246,11 +251,15 @@ export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) 
     await Promise.all(cssList.map((css: string) => appendCSS(name, css)));
   }
 
+  if (typeof moduleInfo.component !== 'undefined') {
+    console.warn('[icestark module] The export function name called component is conflict, please change it or it will be ignored.');
+  }
+
   return {
+    ...moduleInfo,
     mount,
     unmount,
     component,
-    moduleInfo,
   };
 };
 
