@@ -189,14 +189,14 @@ export const getModules = function () {
 /**
  * get import modules
  */
- export const getAllImportedModules = function () {
+export const getAllImportedModules = function () {
   return importModules;
 };
 
 /**
  * get import module by name
  */
-export const getImportedModule = function(name: string) {
+export const getImportedModule = function (name: string) {
   if (typeof name !== 'string') {
     console.error(`[icestark-module]: should be string, but get ${typeof name}`);
     return;
@@ -266,7 +266,6 @@ export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) 
 /**
  * mount module function
  */
-export const mountModule = async (targetModule: StarkModule, targetNode: HTMLElement, props: any = {}, sandbox?: ISandbox) => {
 export const mountModule = async (
   targetModule: StarkModule,
   targetNode: HTMLElement,
