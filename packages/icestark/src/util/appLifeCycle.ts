@@ -7,7 +7,7 @@ export enum AppLifeCycleEnum {
 }
 
 export function cacheApp(cacheKey: string) {
-  [AppLifeCycleEnum.AppEnter, AppLifeCycleEnum.AppLeave].forEach(lifeCycle => {
+  [AppLifeCycleEnum.AppEnter, AppLifeCycleEnum.AppLeave].forEach((lifeCycle) => {
     const lifeCycleCacheKey = `cache_${cacheKey}_${lifeCycle}`;
     if (getCache(lifeCycle)) {
       setCache(lifeCycleCacheKey, getCache(lifeCycle));
@@ -19,7 +19,7 @@ export function cacheApp(cacheKey: string) {
 }
 
 export function deleteCache(cacheKey: string) {
-  [AppLifeCycleEnum.AppEnter, AppLifeCycleEnum.AppLeave].forEach(lifeCycle => {
+  [AppLifeCycleEnum.AppEnter, AppLifeCycleEnum.AppLeave].forEach((lifeCycle) => {
     setCache(`cache_${cacheKey}_${lifeCycle}`, null);
   });
 }

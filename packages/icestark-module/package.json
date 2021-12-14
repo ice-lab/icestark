@@ -6,9 +6,7 @@
   "scripts": {
     "build": "rm -rf lib && tsc",
     "watch": "tsc -w",
-    "prepublishOnly": "npm run test && npm run build",
-    "test": "NODE_ENV=unittest jest",
-    "coverage": "codecov"
+    "prepublishOnly": "npm run test && npm run build"
   },
   "repository": {
     "type": "git",
@@ -27,29 +25,14 @@
     "url": "https://github.com/ice-lab/icestark/issues"
   },
   "homepage": "https://github.com/ice-lab/icestark#readme",
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-    }
-  },
   "peerDependencies": {
     "react": ">=15.0.0",
     "react-dom": ">=15.0.0"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^5.5.0",
-    "@testing-library/react": "^10.0.3",
-    "codecov": "^3.4.0",
-    "jest": "^25.2.7",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "ts-jest": "^25.3.1",
     "typescript": "^3.8.3"
-  },
-  "jest": {
-    "coverageDirectory": "./coverage/",
-    "collectCoverage": true,
-    "preset": "ts-jest"
   },
   "dependencies": {
     "@ice/sandbox": "^1.1.0"

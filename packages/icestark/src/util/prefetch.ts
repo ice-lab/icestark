@@ -1,6 +1,6 @@
 import { fetchScripts, fetchStyles, getUrlAssets, getEntryAssets } from './handleAssets';
-import { NOT_LOADED } from '../util/constant';
-import type { Fetch } from '../util/globalConfiguration';
+import { NOT_LOADED } from './constant';
+import type { Fetch } from './globalConfiguration';
 import type { MicroApp, AppConfig } from '../apps';
 
 export type Prefetch =
@@ -22,10 +22,12 @@ interface RequestIdleCallbackDeadline {
 
 declare global {
   interface Window {
+    // @ts-ignore
     requestIdleCallback: ((
       callback: ((deadline: RequestIdleCallbackDeadline) => void),
       opts?: RequestIdleCallbackOptions,
     ) => RequestIdleCallbackHandle);
+    // @ts-ignore
     cancelIdleCallback: ((handle: RequestIdleCallbackHandle) => void);
   }
 }
@@ -34,6 +36,7 @@ declare global {
  * polyfill/shim for the `requestIdleCallback` and `cancelIdleCallback`.
  * https://github.com/pladaria/requestidlecallback-polyfill/blob/master/index.js
  */
+// @ts-ignore
 window.requestIdleCallback =
   window.requestIdleCallback ||
   function (cb) {

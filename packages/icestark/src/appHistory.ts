@@ -1,6 +1,6 @@
 export interface AppHistory {
-  push(path: string): void;
-  replace(path: string): void;
+  push: (path: string) => void;
+  replace: (path: string) => void;
 }
 
 const appHistory: AppHistory = {
