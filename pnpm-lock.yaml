@@ -14,13 +14,11 @@ importers:
       '@types/node': ^12.0.0
       codecov: ^3.4.0
       eslint: ^7.31.0
-      execa: '4'
       fs-extra: ^10.0.0
       husky: ^2.2.0
       jest: ^24.7.1
       jest-fetch-mock: ^2.1.2
       lint-staged: ^10.5.3
-      lodash.kebabcase: ^4.1.1
       npm-run-all: ^4.1.5
       rimraf: ^3.0.2
       stylelint: ^10.1.0
@@ -28,7 +26,6 @@ importers:
       ts-node: ^10.2.1
       typescript: ^4.3.5
       urllib: ^2.38.0
-      yargs-parser: ^21.0.0
     devDependencies:
       '@commitlint/cli': 7.6.1
       '@commitlint/config-conventional': 7.6.0
@@ -40,13 +37,11 @@ importers:
       '@types/node': 12.20.37
       codecov: 3.8.3
       eslint: 7.32.0
-      execa: 4.1.0
       fs-extra: 10.0.0
       husky: 2.7.0
       jest: 24.9.0
       jest-fetch-mock: 2.1.2
       lint-staged: 10.5.4
-      lodash.kebabcase: 4.1.1
       npm-run-all: 4.1.5
       rimraf: 3.0.2
       stylelint: 10.1.0
@@ -54,7 +49,6 @@ importers:
       ts-node: 10.4.0_861e5f60dcd52a8caaf61940af2ee565
       typescript: 4.5.4
       urllib: 2.38.0
-      yargs-parser: 21.0.0
 
   packages/icestark:
     specifiers:
@@ -4625,10 +4619,6 @@ packages:
     resolution: {integrity: sha1-QVxEePK8wwEgwizhDtMib30+GOA=, tarball: lodash.isequal/download/lodash.isequal-4.5.0.tgz}
     dev: false
 
-  /lodash.kebabcase/4.1.1:
-    resolution: {integrity: sha1-hImxyw0p/4gZXM7KRI/21swpXDY=, tarball: lodash.kebabcase/download/lodash.kebabcase-4.1.1.tgz}
-    dev: true
-
   /lodash.memoize/4.1.2:
     resolution: {integrity: sha1-vMbEmkKihA7Zl/Mj6tpezRguC/4=, tarball: lodash.memoize/download/lodash.memoize-4.1.2.tgz}
     dev: true
@@ -7583,11 +7573,6 @@ packages:
     dependencies:
       camelcase: 5.3.1
       decamelize: 1.2.0
-    dev: true
-
-  /yargs-parser/21.0.0:
-    resolution: {integrity: sha512-z9kApYUOCwoeZ78rfRYYWdiU/iNL6mwwYlkkZfJoyMR1xps+NEBX5X7XmRpxkZHhXJ6+Ey00IwKxBBSW9FIjyA==, tarball: yargs-parser/download/yargs-parser-21.0.0.tgz}
-    engines: {node: '>=12'}
     dev: true
 
   /yargs/13.3.2:
