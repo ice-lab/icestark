@@ -5,8 +5,8 @@
   "description": "Icestark is a JavaScript library for multiple projects, Ice workbench solution.",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "setup": "rm -rf node_modules && rm -rf ./packages/*/node_modules && pnpm i",
-    "build": "run-s build-icestark build-sandbox build-app build-moudle build-data",
+    "setup": "rm -rf node_modules && rm -rf ./packages/*/node_modules && pnpm i && npm run build",
+    "build": "run-s build-icestark build-sandbox build-app build-module build-data",
     "build-icestark": "ts-node ./scripts/build.ts --icestark",
     "build-sandbox": "ts-node ./scripts/build.ts --sandbox",
     "build-app": "ts-node ./scripts/build.ts --icestark-app",
@@ -17,8 +17,7 @@
     "prepublishOnly": "run-s lint test build",
     "lint": "eslint --cache --ext .js,.jsx,.ts,.tsx ./",
     "test": "NODE_ENV=unittest jest",
-    "coverage": "codecov",
-    "testa": "ts-node ./scripts/build.ts"
+    "coverage": "codecov"
   },
   "license": "MIT",
   "bugs": {
@@ -49,8 +48,11 @@
     "@testing-library/react": "^9.3.2",
     "@types/jest": "^24.0.12",
     "@types/node": "^12.0.0",
+    "@types/fs-extra": "^9.0.13",
     "codecov": "^3.4.0",
     "eslint": "^7.31.0",
+    "execa": "4",
+    "fs-extra": "^10.0.0",
     "husky": "^2.2.0",
     "jest": "^24.7.1",
     "jest-fetch-mock": "^2.1.2",
@@ -62,6 +64,7 @@
     "ts-jest": "^24.0.2",
     "ts-node": "^10.2.1",
     "typescript": "^4.3.5",
+    "urllib": "^2.38.0",
     "yargs-parser": "^21.0.0"
   },
   "jest": {
@@ -73,11 +76,5 @@
     "setupFiles": [
       "./setupJest.ts"
     ]
-  },
-  "dependencies": {
-    "@types/fs-extra": "^9.0.13",
-    "execa": "4",
-    "fs-extra": "^10.0.0",
-    "urllib": "^2.38.0"
   }
 }

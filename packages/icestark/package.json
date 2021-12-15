@@ -3,7 +3,6 @@
   "version": "2.7.0",
   "description": "Icestark is a JavaScript library for multiple projects, Ice workbench solution.",
   "scripts": {
-    "publish:packages": "ts-node ./scripts/publish.ts",
     "build": "rm -rf lib && tsc",
     "watch": "tsc -w",
     "prepublishOnly": "cd ../../../../ && npm run prepublishOnly"
