@@ -69,6 +69,7 @@
     "collectCoverage": true,
     "preset": "ts-jest",
     "automock": false,
+    "testMatch": [ "**/__tests__/**/*.ts?(x)", "**/?(*.)+(spec|test).ts?(x)" ],
     "setupFiles": [
       "./setupJest.ts"
     ]
