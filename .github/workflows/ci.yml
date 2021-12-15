@@ -15,20 +15,28 @@ jobs:
     - uses: actions/checkout@v2
     - name: Set branch name
       run: echo >>$GITHUB_ENV BRANCH_NAME=${GITHUB_REF#refs/heads/}
+
     - name: Echo branch name
       run: echo ${BRANCH_NAME}
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 6
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
         registry-url: https://registry.npmjs.org/
-    - run: npm run install:deps
-    - run: npm run lint
-    - run: npm run test
-    - run: npm run coverage
+
+    - run: pnpm run setup
+    - run: pnpm run lint
+    - run: pnpm run test
+    - run: pnpm run coverage
       env:
         CI: true
-    - run: npm run publish:packages
+    - run: pnpm run publish:packages
       env:
         NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 

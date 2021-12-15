@@ -6,8 +6,7 @@
     "publish:packages": "ts-node ./scripts/publish.ts",
     "build": "rm -rf lib && tsc",
     "watch": "tsc -w",
-    "prepublishOnly": "npm run lint && npm run test && npm run build",
-    "lint": "eslint --cache --ext .ts,.tsx ./ && tsc --noEmit"
+    "prepublishOnly": "cd ../../../../ && npm run prepublishOnly"
   },
   "main": "lib/index.js",
   "module": "lib/index.js",
