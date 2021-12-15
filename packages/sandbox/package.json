@@ -6,7 +6,7 @@
   "scripts": {
     "build": "rm -rf lib && tsc",
     "watch": "tsc -w",
-    "prepublishOnly": "npm run test && npm run build"
+    "prepublishOnly": "cd ../../../../ && npm run prepublishOnly"
   },
   "repository": {
     "type": "git",
