@@ -5,25 +5,28 @@ import { join } from 'path';
 import { spawnSync } from 'child_process';
 import { IPackageInfo, getPackageInfos } from './getPackageInfos';
 
-if (process.env.BRANCH_NAME !== 'master') {
+const semverReg = /^\d+\.\d+\.\d+$/;
+
+if (process.env.BRANCH_NAME === 'master') {
   console.log('The current branch forbids publishing.', process.env.BRANCH_NAME);
   process.exit(0);
 }
 
-function publish(pkg: string, version: string, directory: string): void {
-  console.log('[PUBLISH]', `${pkg}@${version}`);
-  console.log('[PUBLISH]', directory);
+function publishBeta(pkg: string, version: string, directory: string): void {
+  console.log('[PUBLISH BETA]', `${pkg}@${version}`);
+  console.log('[PUBLISH BETA]', directory);
   spawnSync('npm', [
     'publish',
-    // use default registry
+    " --tag='beta'",
   ], {
     stdio: 'inherit',
     cwd: directory,
+    shell: true,
   });
 }
 
 // Entry
-console.log('[PUBLISH] Start:');
+console.log('[PUBLISH BETA] Start:');
 
 getPackageInfos(join(__dirname, '../packages'), true)
   .then((packageInfos: IPackageInfo[]) => {
@@ -31,11 +34,18 @@ getPackageInfos(join(__dirname, '../packages'), true)
     // Publish
     for (let j = 0; j < packageInfos.length; j++) {
       const { name, directory, localVersion, shouldPublish } = packageInfos[j];
+      const conformedSemver = semverReg.test(localVersion);
       if (shouldPublish) {
+        if (conformedSemver) {
+          console.log(`Package ${name} expects to provide a semver version., instead of ${localVersion}`);
+          continue;
+        }
+
         publishedCount++;
         console.log(`--- ${name}@${localVersion} ---`);
-        publish(name, localVersion, directory);
+        publishBeta(name, localVersion, directory);
       }
     }
-    console.log(`[PUBLISH] Complete (count=${publishedCount}).`);
+    console.log(`[PUBLISH BETA] Complete (count=${publishedCount}).`);
   });
+
