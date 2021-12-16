@@ -5,7 +5,9 @@
   "scripts": {
     "build": "rm -rf lib && tsc",
     "watch": "tsc -w",
-    "prepublishOnly": "cd ../../../../ && npm run prepublishOnly"
+    "test": "NODE_ENV=unittest jest",
+    "lint": "eslint --ext .js,.jsx,.ts,.tsx ./",
+    "prepublishOnly": "run-s lint test build"
   },
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -29,5 +31,15 @@
   },
   "devDependencies": {
     "typescript": "^3.4.4"
+  },
+  "jest": {
+    "coverageDirectory": "./coverage/",
+    "collectCoverage": true,
+    "preset": "ts-jest",
+    "automock": false,
+    "testMatch": [ "**/__tests__/**/*.ts?(x)", "**/?(*.)+(spec|test).ts?(x)" ],
+    "setupFiles": [
+      "../../setupJest.ts"
+    ]
   }
 }

@@ -14,7 +14,7 @@
     "build-data": "cd packages/icestark-data && npm run build",
     "clean": "rimraf packages/*/lib",
     "publish:packages": "ts-node ./scripts/publish.ts",
-    "prepublishOnly": "run-s lint test build",
+    "publish:beta": "ts-node ./scripts/beta.ts",
     "lint": "eslint --cache --ext .js,.jsx,.ts,.tsx ./",
     "test": "NODE_ENV=unittest jest",
     "coverage": "codecov"
