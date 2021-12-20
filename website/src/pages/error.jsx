@@ -7,6 +7,7 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import AreaWrapper from '../components/AreaWrapper';
 
 const codes = require.context('../codes', false, /\.jsx$/);
+const URLSearchParams = typeof window !== 'undefined' ? window.URLSearchParams : require('url').URLSearchParams;
 
 export default function Error(props) {
   const searchs = new URLSearchParams(props.location.search);

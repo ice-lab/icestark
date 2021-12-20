@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/extend-expect';
-import { formatErrMessage } from '../src/util/helpers';
+import { formatErrMessage } from '../src/util/error';
 
 describe('helpers', () => {
   test('formatErrMessage', () => {

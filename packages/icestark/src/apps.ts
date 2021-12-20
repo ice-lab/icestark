@@ -15,7 +15,8 @@ import {
 import { setCache } from './util/cache';
 import { loadScriptByFetch, loadScriptByImport } from './util/loaders';
 import { getLifecyleByLibrary, getLifecyleByRegister } from './util/getLifecycle';
-import { mergeFrameworkBaseToPath, getAppBasename, shouldSetBasename, log, formatErrMessage, isDev } from './util/helpers';
+import { mergeFrameworkBaseToPath, getAppBasename, shouldSetBasename, log, isDev } from './util/helpers';
+import { ErrorCode, formatErrMessage } from './util/error';
 import globalConfiguration, { temporaryState } from './util/globalConfiguration';
 
 import type { StartConfiguration } from './util/globalConfiguration';
@@ -164,7 +165,11 @@ export function updateAppConfig(appName: string, config) {
   });
 }
 
-// load app js assets
+/**
+ * Core logic to load micro apps
+ * @param appConfig
+ * @returns
+ */
 export async function loadAppModule(appConfig: AppConfig) {
   const { onLoadingApp, onFinishLoading, fetch } = getAppConfig(appConfig.name)?.configuration || globalConfiguration;
 
@@ -184,43 +189,48 @@ export async function loadAppModule(appConfig: AppConfig) {
 
   const cacheCss = shouldCacheCss(loadScriptMode);
 
-  switch (loadScriptMode) {
-    case 'import':
-      await loadAndAppendCssAssets([
-        ...appAssets.cssList,
-        ...filterRemovedAssets(importCachedAssets[name] || [], ['LINK', 'STYLE']),
-      ], {
-        cacheCss,
-        fetch,
-      });
-      lifecycle = await loadScriptByImport(appAssets.jsList);
-      // Not to handle script element temporarily.
-      break;
-    case 'fetch':
-      await loadAndAppendCssAssets(appAssets.cssList, {
-        cacheCss,
-        fetch,
-      });
-      lifecycle = await loadScriptByFetch(appAssets.jsList, appSandbox, fetch);
-      break;
-    default:
-      await Promise.all([
-        loadAndAppendCssAssets(appAssets.cssList, {
+  // eslint-disable-next-line no-useless-catch
+  try {
+    switch (loadScriptMode) {
+      case 'import':
+        await loadAndAppendCssAssets([
+          ...appAssets.cssList,
+          ...filterRemovedAssets(importCachedAssets[name] || [], ['LINK', 'STYLE']),
+        ], {
           cacheCss,
           fetch,
-        }),
-        loadAndAppendJsAssets(appAssets, { scriptAttributes }),
-      ]);
-      lifecycle =
-        getLifecyleByLibrary() ||
-        getLifecyleByRegister() ||
-        {};
+        });
+        lifecycle = await loadScriptByImport(appAssets.jsList);
+        // Not to handle script element temporarily.
+        break;
+      case 'fetch':
+        await loadAndAppendCssAssets(appAssets.cssList, {
+          cacheCss,
+          fetch,
+        });
+        lifecycle = await loadScriptByFetch(appAssets.jsList, appSandbox, fetch);
+        break;
+      default:
+        await Promise.all([
+          loadAndAppendCssAssets(appAssets.cssList, {
+            cacheCss,
+            fetch,
+          }),
+          loadAndAppendJsAssets(appAssets, { scriptAttributes }),
+        ]);
+        lifecycle =
+          getLifecyleByLibrary() ||
+          getLifecyleByRegister() ||
+          {};
+    }
+  } catch (e) {
+    throw e;
   }
 
   if (isEmpty(lifecycle)) {
     log.error(
       formatErrMessage(
-        1,
+        ErrorCode.EMPTY_LIFECYCLES,
         isDev && 'Unable to retrieve lifecycles of {0} after loading it',
         appConfig.name,
       ),
@@ -432,11 +442,12 @@ export async function unloadMicroApp(appName: string) {
     delete appConfig.appAssets;
     updateAppConfig(appName, { status: NOT_LOADED });
   } else {
-    log.error(
+    throw new Error(
       formatErrMessage(
-        3,
-        isDev && 'Can not find app {0} when call unloadMicroApp',
+        ErrorCode.CANNOT_FIND_APP,
+        isDev && 'Can not find app {0} when call {1}',
         appName,
+        'unloadMicroApp',
       ),
     );
   }
@@ -450,7 +461,14 @@ export function removeMicroApp(appName: string) {
     unloadMicroApp(appName);
     microApps.splice(appIndex, 1);
   } else {
-    console.log(`[icestark] can not find app ${appName} when call removeMicroApp`);
+    throw new Error(
+      formatErrMessage(
+        ErrorCode.CANNOT_FIND_APP,
+        isDev && 'Can not find app {0} when call {1}',
+        appName,
+        'removeMicroApp',
+      ),
+    );
   }
 }
 
