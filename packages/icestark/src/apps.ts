@@ -442,7 +442,7 @@ export async function unloadMicroApp(appName: string) {
     delete appConfig.appAssets;
     updateAppConfig(appName, { status: NOT_LOADED });
   } else {
-    throw new Error(
+    log.error(
       formatErrMessage(
         ErrorCode.CANNOT_FIND_APP,
         isDev && 'Can not find app {0} when call {1}',
@@ -461,7 +461,7 @@ export function removeMicroApp(appName: string) {
     unloadMicroApp(appName);
     microApps.splice(appIndex, 1);
   } else {
-    throw new Error(
+    log.error(
       formatErrMessage(
         ErrorCode.CANNOT_FIND_APP,
         isDev && 'Can not find app {0} when call {1}',
