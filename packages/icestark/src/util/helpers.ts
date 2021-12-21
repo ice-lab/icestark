@@ -167,3 +167,9 @@ export const asyncForEach = async <T> (arr: T[], callback: (item: T, index: numb
     await callback(arr[idx], idx);
   }
 };
+
+export const log = {
+  info: console.log,
+  error: console.error,
+  warn: console.warn,
+};
