@@ -1,6 +1,7 @@
 {
-  "name": "@ice/stark",
+  "name": "icestark-monorepo",
   "version": "2.7.1",
+  "private": true,
   "description": "Icestark is a JavaScript library for multiple projects, Ice workbench solution.",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
