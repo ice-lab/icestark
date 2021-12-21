@@ -1,11 +1,10 @@
 import '@testing-library/jest-dom/extend-expect';
 import Sandbox from '../src/index';
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('sandbox: excapeSandbox', () => {
   const sandbox = new Sandbox({});
-  const delay = (time) => new Promise<void>((resolve) => setTimeout(() => resolve(), time));
 
   test('execute script in sandbox', () => {
     sandbox.execScriptInSandbox('window.a = 1;expect(window.a).toBe(1);');
@@ -19,8 +18,7 @@ describe('sandbox: excapeSandbox', () => {
   test('capture global event', async () => {
     sandbox.execScriptInSandbox(`
       setInterval(() => {expect(1).toBe(2)}, 100);
-      setTimeout(() => { expect(1).toBe(2)}, 100)`
-    );
+      setTimeout(() => { expect(1).toBe(2)}, 100)`);
     sandbox.clear();
     // delay 1000 ms for timeout
     await delay(1000);
@@ -121,7 +119,7 @@ describe('eval in sandbox', () => {
             eval('console.log(value);');
           }
           bar(1);
-        `
+        `,
       );
     } catch (e) {
       error = e.message;
