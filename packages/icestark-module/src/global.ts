@@ -1,6 +1,5 @@
 // fork: https://github.com/systemjs/systemjs/blob/master/src/extras/global.js
 
-import { propertyChecker } from './utils';
 // safari unpredictably lists some new globals first or second in object order
 let firstGlobalProp;
 let secondGlobalProp;
@@ -15,17 +14,15 @@ function shouldSkipProperty(p, globalWindow) {
     || isIE11 && globalWindow[p] && typeof window !== 'undefined' && globalWindow[p].parent === window;
 }
 
-const validLibraryExportChecker = propertyChecker((property) => {
-  return property && property.mount && property.unmount;
-});
-export function getGlobalProp(globalWindow) {
+
+export function getGlobalProp(globalWindow, checker: (property: any) => boolean) {
   let cnt = 0;
   let lastProp = undefined;
   // eslint-disable-next-line no-restricted-syntax
   for (const p in globalWindow) {
     // do not check frames cause it could be removed during import
     if (shouldSkipProperty(p, globalWindow)) { continue; }
-    const isValidLibraryExport = validLibraryExportChecker(globalWindow[p]);
+    const isValidLibraryExport = checker(globalWindow[p]);
     if (isValidLibraryExport && (cnt === 0 && p !== firstGlobalProp || cnt === 1 && p !== secondGlobalProp)) { return p; }
     if (isValidLibraryExport) {
       lastProp = p;
@@ -38,7 +35,7 @@ export function getGlobalProp(globalWindow) {
     // polyfill for UC browser which lastprops will alway be window
     // eslint-disable-next-line no-restricted-syntax
     for (const p in globalWindow) {
-      if (!noteGlobalKeys.includes(p) && validLibraryExportChecker(globalWindow[p])) {
+      if (!noteGlobalKeys.includes(p) && checker(globalWindow[p])) {
         lastProp = p;
       }
     }

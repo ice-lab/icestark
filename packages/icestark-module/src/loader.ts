@@ -1,6 +1,7 @@
 import Sandbox from '@ice/sandbox';
 import { getGlobalProp, noteGlobalProps } from './global';
 import { StarkModule } from './modules';
+import { validLibraryExportChecker } from './utils';
 
 export interface ImportTask {
   [name: string]: Promise<string[]>;
@@ -69,7 +70,7 @@ export default class ModuleLoader {
             (0, eval)(source);
           }
           if (lastScript) {
-            libraryExport = getGlobalProp(globalWindow);
+            libraryExport = getGlobalProp(globalWindow, validLibraryExportChecker);
           }
         });
       } catch (err) {
