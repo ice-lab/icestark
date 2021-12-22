@@ -5,9 +5,9 @@
   "scripts": {
     "build": "rm -rf lib && tsc",
     "watch": "tsc -w",
-    "test": "NODE_ENV=unittest jest",
-    "lint": "eslint --ext .js,.jsx,.ts,.tsx ./",
-    "prepublishOnly": "run-s lint test build"
+    "test": "NODE_ENV=unittest pnpm jest",
+    "lint": "pnpm eslint --ext .js,.jsx,.ts,.tsx ./",
+    "prepublishOnly": "pnpm run-s lint test build"
   },
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
