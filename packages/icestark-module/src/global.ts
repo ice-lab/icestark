@@ -15,19 +15,20 @@ function shouldSkipProperty(p, globalWindow) {
 }
 
 
-export function getGlobalProp(globalWindow, checker: (property: any) => boolean) {
-  let cnt = 0;
+export function getGlobalProp(globalWindow, checker: (property: unknown) => boolean) {
+  let cnt = -1;
   let lastProp = undefined;
   // eslint-disable-next-line no-restricted-syntax
   for (const p in globalWindow) {
     // do not check frames cause it could be removed during import
     if (shouldSkipProperty(p, globalWindow)) { continue; }
-    const isValidLibraryExport = checker(globalWindow[p]);
-    if (isValidLibraryExport && (cnt === 0 && p !== firstGlobalProp || cnt === 1 && p !== secondGlobalProp)) { return p; }
-    if (isValidLibraryExport) {
-      lastProp = p;
-    }
     cnt++;
+    const isValidLibraryExport = checker(globalWindow[p]);
+    if (!isValidLibraryExport) {
+      continue;
+    }
+    if (cnt === 0 && p !== firstGlobalProp || cnt === 1 && p !== secondGlobalProp) { return p; }
+    lastProp = p;
   }
   if (lastProp !== lastGlobalProp) {
     return lastProp;
