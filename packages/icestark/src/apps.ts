@@ -189,42 +189,37 @@ export async function loadAppModule(appConfig: AppConfig) {
 
   const cacheCss = shouldCacheCss(loadScriptMode);
 
-  // eslint-disable-next-line no-useless-catch
-  try {
-    switch (loadScriptMode) {
-      case 'import':
-        await loadAndAppendCssAssets([
-          ...appAssets.cssList,
-          ...filterRemovedAssets(importCachedAssets[name] || [], ['LINK', 'STYLE']),
-        ], {
+  switch (loadScriptMode) {
+    case 'import':
+      await loadAndAppendCssAssets([
+        ...appAssets.cssList,
+        ...filterRemovedAssets(importCachedAssets[name] || [], ['LINK', 'STYLE']),
+      ], {
+        cacheCss,
+        fetch,
+      });
+      lifecycle = await loadScriptByImport(appAssets.jsList);
+      // Not to handle script element temporarily.
+      break;
+    case 'fetch':
+      await loadAndAppendCssAssets(appAssets.cssList, {
+        cacheCss,
+        fetch,
+      });
+      lifecycle = await loadScriptByFetch(appAssets.jsList, appSandbox, fetch);
+      break;
+    default:
+      await Promise.all([
+        loadAndAppendCssAssets(appAssets.cssList, {
           cacheCss,
           fetch,
-        });
-        lifecycle = await loadScriptByImport(appAssets.jsList);
-        // Not to handle script element temporarily.
-        break;
-      case 'fetch':
-        await loadAndAppendCssAssets(appAssets.cssList, {
-          cacheCss,
-          fetch,
-        });
-        lifecycle = await loadScriptByFetch(appAssets.jsList, appSandbox, fetch);
-        break;
-      default:
-        await Promise.all([
-          loadAndAppendCssAssets(appAssets.cssList, {
-            cacheCss,
-            fetch,
-          }),
-          loadAndAppendJsAssets(appAssets, { scriptAttributes }),
-        ]);
-        lifecycle =
+        }),
+        loadAndAppendJsAssets(appAssets, { scriptAttributes }),
+      ]);
+      lifecycle =
           getLifecyleByLibrary() ||
           getLifecyleByRegister() ||
           {};
-    }
-  } catch (e) {
-    throw e;
   }
 
   if (isEmpty(lifecycle)) {
