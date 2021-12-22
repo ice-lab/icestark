@@ -5,7 +5,7 @@
   "description": "Icestark is a JavaScript library for multiple projects, Ice workbench solution.",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "setup": "rm -rf node_modules && rm -rf ./packages/*/node_modules && pnpm i && npm run build",
+    "setup": "rm -rf node_modules && rm -rf ./packages/*/node_modules && pnpm i --registry=https://registry.npmmirror.com && npm run build",
     "build": "pnpm run clean && pnpm -r --filter ./packages run build",
     "watch": "pnpm -r --filter ./packages --parallel run watch",
     "clean": "rimraf packages/*/lib",
