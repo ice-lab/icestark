@@ -14,15 +14,20 @@ function shouldSkipProperty(p, globalWindow) {
     || isIE11 && globalWindow[p] && typeof window !== 'undefined' && globalWindow[p].parent === window;
 }
 
-export function getGlobalProp(globalWindow) {
-  let cnt = 0;
-  let lastProp;
+
+export function getGlobalProp(globalWindow, checker: (property: unknown) => boolean) {
+  let cnt = -1;
+  let lastProp = undefined;
   // eslint-disable-next-line no-restricted-syntax
   for (const p in globalWindow) {
     // do not check frames cause it could be removed during import
     if (shouldSkipProperty(p, globalWindow)) { continue; }
-    if (cnt === 0 && p !== firstGlobalProp || cnt === 1 && p !== secondGlobalProp) { return p; }
     cnt++;
+    const isValidLibraryExport = checker(globalWindow[p]);
+    if (!isValidLibraryExport) {
+      continue;
+    }
+    if (cnt === 0 && p !== firstGlobalProp || cnt === 1 && p !== secondGlobalProp) { return p; }
     lastProp = p;
   }
   if (lastProp !== lastGlobalProp) {
@@ -31,7 +36,7 @@ export function getGlobalProp(globalWindow) {
     // polyfill for UC browser which lastprops will alway be window
     // eslint-disable-next-line no-restricted-syntax
     for (const p in globalWindow) {
-      if (!noteGlobalKeys.includes(p)) {
+      if (!noteGlobalKeys.includes(p) && checker(globalWindow[p])) {
         lastProp = p;
       }
     }
