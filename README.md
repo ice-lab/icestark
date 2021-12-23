@@ -281,6 +281,67 @@ module.exports = {
 
 ## Contributors
 
+<table>
+<tr>
+    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
+        <a href=https://github.com/ClarkXia>
+            <img src=https://avatars.githubusercontent.com/u/4219965?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=ClarkXia/>
+            <br />
+            <sub style="font-size:14px"><b>ClarkXia</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
+        <a href=https://github.com/maoxiaoke>
+            <img src=https://avatars.githubusercontent.com/u/13417006?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=那吒/>
+            <br />
+            <sub style="font-size:14px"><b>那吒</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
+        <a href=https://github.com/daysai>
+            <img src=https://avatars.githubusercontent.com/u/18555391?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=daysai/>
+            <br />
+            <sub style="font-size:14px"><b>daysai</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
+        <a href=https://github.com/imsobear>
+            <img src=https://avatars.githubusercontent.com/u/2505411?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=大果/>
+            <br />
+            <sub style="font-size:14px"><b>大果</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
+        <a href=https://github.com/temper357>
+            <img src=https://avatars.githubusercontent.com/u/5419233?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=站稳/>
+            <br />
+            <sub style="font-size:14px"><b>站稳</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
+        <a href=https://github.com/alvinhui>
+            <img src=https://avatars.githubusercontent.com/u/4392234?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=许文涛/>
+            <br />
+            <sub style="font-size:14px"><b>许文涛</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
+        <a href=https://github.com/skyFi>
+            <img src=https://avatars.githubusercontent.com/u/12740180?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Skylor.Min/>
+            <br />
+            <sub style="font-size:14px"><b>Skylor.Min</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 90.0; height: 90.0">
+        <a href=https://github.com/liqupan>
+            <img src=https://avatars.githubusercontent.com/u/21078925?v=4 width="60;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=liqupan/>
+            <br />
+            <sub style="font-size:14px"><b>liqupan</b></sub>
+        </a>
+    </td>
+</tr>
+</table>
+
 Feel free to report any questions as an [issue](https://github.com/ice-lab/icestark/issues/new), we'd love to have your helping hand on `icestark`.
 
 If you're interested in `icestark`, see [CONTRIBUTING.md](https://github.com/alibaba/ice/blob/master/.github/CONTRIBUTING.md) for more information to learn how to get started.
