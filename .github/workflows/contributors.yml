@@ -1,6 +1,5 @@
 name: Add contributors
 on:
-  cron: '5 * * * *'
   push:
     branches:
       - ci/add-contributors
