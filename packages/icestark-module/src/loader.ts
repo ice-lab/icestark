@@ -76,7 +76,7 @@ export default class ModuleLoader {
       } catch (err) {
         console.error(err);
       }
-      const moduleInfo = libraryExport ? (globalWindow as any)[libraryExport] : ((globalWindow as any)[name] || {});
+      const moduleInfo = libraryExport ? (globalWindow as any)[libraryExport] : ((globalWindow as any)[name]);
       // remove moduleInfo from globalWindow in case of excute multi module in globalWindow
       if ((globalWindow as any)[libraryExport]) {
         delete globalWindow[libraryExport];
