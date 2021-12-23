@@ -2,7 +2,8 @@ import Sandbox from '@ice/sandbox';
 import { getGlobalProp, noteGlobalProps } from './global';
 import { Asset, fetchScripts, AssetTypeEnum, appendExternalScript } from './handleAssets';
 import { getLifecyleByLibrary, getLifecyleByRegister } from './getLifecycle';
-import { asyncForEach } from './helpers';
+import { asyncForEach, isDev } from './helpers';
+import { ErrorCode, formatErrMessage } from './error';
 import { PREFIX } from './constant';
 
 import type { ModuleLifeCycle } from '../apps';
@@ -97,7 +98,12 @@ export async function loadScriptByImport(jsList: Asset[]): Promise<null | Module
         dynamicImport = new Function('url', 'return import(url)');
       } catch (e) {
         return Promise.reject(
-          new Error('[icestark] You are not support to use `loadScriptMode = import` where dynamic import is not supported by browsers.'),
+          new Error(
+            formatErrMessage(
+              ErrorCode.UNSUPPORTED_IMPORT_BROWSER,
+              isDev && 'You can not use loadScriptMode = import where dynamic import is not supported by browsers.',
+            ),
+          ),
         );
       }
 

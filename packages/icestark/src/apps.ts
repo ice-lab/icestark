@@ -15,7 +15,8 @@ import {
 import { setCache } from './util/cache';
 import { loadScriptByFetch, loadScriptByImport } from './util/loaders';
 import { getLifecyleByLibrary, getLifecyleByRegister } from './util/getLifecycle';
-import { mergeFrameworkBaseToPath, getAppBasename, shouldSetBasename } from './util/helpers';
+import { mergeFrameworkBaseToPath, getAppBasename, shouldSetBasename, log, isDev } from './util/helpers';
+import { ErrorCode, formatErrMessage } from './util/error';
 import globalConfiguration, { temporaryState } from './util/globalConfiguration';
 
 import type { StartConfiguration } from './util/globalConfiguration';
@@ -164,7 +165,11 @@ export function updateAppConfig(appName: string, config) {
   });
 }
 
-// load app js assets
+/**
+ * Core logic to load micro apps
+ * @param appConfig
+ * @returns
+ */
 export async function loadAppModule(appConfig: AppConfig) {
   const { onLoadingApp, onFinishLoading, fetch } = getAppConfig(appConfig.name)?.configuration || globalConfiguration;
 
@@ -212,13 +217,19 @@ export async function loadAppModule(appConfig: AppConfig) {
         loadAndAppendJsAssets(appAssets, { scriptAttributes }),
       ]);
       lifecycle =
-        getLifecyleByLibrary() ||
-        getLifecyleByRegister() ||
-        {};
+          getLifecyleByLibrary() ||
+          getLifecyleByRegister() ||
+          {};
   }
 
   if (isEmpty(lifecycle)) {
-    console.error('[@ice/stark] microapp should export mount/unmout or register registerAppEnter/registerAppLeave.');
+    log.error(
+      formatErrMessage(
+        ErrorCode.EMPTY_LIFECYCLES,
+        isDev && 'Unable to retrieve lifecycles of {0} after loading it',
+        appConfig.name,
+      ),
+    );
   }
 
   onFinishLoading(appConfig);
@@ -426,7 +437,14 @@ export async function unloadMicroApp(appName: string) {
     delete appConfig.appAssets;
     updateAppConfig(appName, { status: NOT_LOADED });
   } else {
-    console.log(`[icestark] can not find app ${appName} when call unloadMicroApp`);
+    log.error(
+      formatErrMessage(
+        ErrorCode.CANNOT_FIND_APP,
+        isDev && 'Can not find app {0} when call {1}',
+        appName,
+        'unloadMicroApp',
+      ),
+    );
   }
 }
 
@@ -438,7 +456,14 @@ export function removeMicroApp(appName: string) {
     unloadMicroApp(appName);
     microApps.splice(appIndex, 1);
   } else {
-    console.log(`[icestark] can not find app ${appName} when call removeMicroApp`);
+    log.error(
+      formatErrMessage(
+        ErrorCode.CANNOT_FIND_APP,
+        isDev && 'Can not find app {0} when call {1}',
+        appName,
+        'removeMicroApp',
+      ),
+    );
   }
 }
 
