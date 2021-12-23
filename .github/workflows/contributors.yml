@@ -2,7 +2,7 @@ name: Add contributors
 on:
   push:
     branches:
-      - ci/add-contributors
+      - master
 
 jobs:
   add-contributors:
