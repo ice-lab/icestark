@@ -13,7 +13,7 @@ export default function Error(props) {
   const searchs = new URLSearchParams(props.location.search);
   const errCode = searchs.get('code');
   const { siteConfig } = useDocusaurusContext();
-  const searchsValues = [...searchs.values()].filter((c) => errCode !== c);
+  const searchsValues = Array.from(searchs.values()).filter((c) => errCode !== c);
 
   if (!errCode) {
     return (
