@@ -17,7 +17,7 @@ function shouldSkipProperty(p, globalWindow) {
 
 export function getGlobalProp(globalWindow, checker: (property: unknown) => boolean) {
   let cnt = -1;
-  let lastProp = undefined;
+  let lastProp;
   // eslint-disable-next-line no-restricted-syntax
   for (const p in globalWindow) {
     // do not check frames cause it could be removed during import
