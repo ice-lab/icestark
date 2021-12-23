@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.0
+
+- [fix] exports all library exports. ([#469](https://github.com/ice-lab/icestark/pull/469))
+
 ## 1.4.3
 
 - [fix] avoid unmounting when `<MicroModule>` has not yet been mounted.
