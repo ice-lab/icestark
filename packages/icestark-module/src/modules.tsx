@@ -1,6 +1,7 @@
 import Sandbox, { SandboxProps, SandboxConstructor } from '@ice/sandbox';
 import ModuleLoader from './loader';
 import { Runtime, parseRuntime, RuntimeInstance } from './runtimeHelper';
+import { cssStorage } from './storage/css';
 
 export interface StarkModule {
   name: string;
@@ -19,7 +20,7 @@ export type ISandbox = boolean | SandboxProps | SandboxConstructor;
 let globalModules = [];
 let importModules = {};
 // store css link
-const cssStorage = {};
+// const cssStorage = {};
 
 const IS_CSS_REGEX = /\.css(\?((?!\.js$).)+)?$/;
 export const moduleLoader = new ModuleLoader();
@@ -76,25 +77,17 @@ export const registerModules = (modules: StarkModule[]) => {
 // if css link already loaded, record load count
 const filterAppendCSS = (cssList: string[]) => {
   return (cssList || []).filter((cssLink) => {
-    if (cssStorage[cssLink]) {
-      cssStorage[cssLink] += 1;
-      return false;
-    } else {
-      cssStorage[cssLink] = 1;
-      return true;
+    if (cssStorage.isLoadedHold(cssLink)) {
+      cssStorage.count([cssLink]);
     }
+    return !cssStorage.isLoadedHold(cssLink);
   });
 };
 
 const filterRemoveCSS = (cssList: string[]) => {
+  cssStorage.decount(cssList);
   return (cssList || []).filter((cssLink) => {
-    if (cssStorage[cssLink] > 1) {
-      cssStorage[cssLink] -= 1;
-      return false;
-    } else {
-      delete cssStorage[cssLink];
-      return true;
-    }
+    return !cssStorage.isPendingHold(cssLink) && !cssStorage.isLoadedHold(cssLink);
   });
 };
 
@@ -142,23 +135,30 @@ export function appendCSS(
 ): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     if (!root) reject(new Error(`no root element for css assert: ${url}`));
+    if (cssStorage.isPendingHold(url)) {
+      cssStorage.subscribe(url, resolve);
+    } else {
+      cssStorage.count([url]);
+      const element: HTMLLinkElement = document.createElement('link');
+      element.setAttribute('module', name);
+      element.rel = 'stylesheet';
+      element.href = url;
 
-    const element: HTMLLinkElement = document.createElement('link');
-    element.setAttribute('module', name);
-    element.rel = 'stylesheet';
-    element.href = url;
-
-    element.addEventListener(
-      'error',
-      () => {
-        console.error(`css asset loaded error: ${url}`);
+      element.addEventListener(
+        'error',
+        () => {
+          console.error(`css asset loaded error: ${url}`);
+          cssStorage.pending2Loaded(url);
+          return resolve();
+        },
+        false,
+      );
+      element.addEventListener('load', () => {
+        cssStorage.pending2Loaded(url);
         return resolve();
-      },
-      false,
-    );
-    element.addEventListener('load', () => resolve(), false);
-
-    root.appendChild(element);
+      }, false);
+      root.appendChild(element);
+    }
   });
 }
 
@@ -248,6 +248,7 @@ export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) 
   // append css before mount module
   const cssList = filterAppendCSS(moduleCSS);
   if (cssList.length) {
+    // 3: pending2Loaded
     await Promise.all(cssList.map((css: string) => appendCSS(name, css)));
   }
 
