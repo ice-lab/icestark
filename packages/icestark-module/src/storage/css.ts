@@ -79,7 +79,7 @@ class CssStorage {
     }
     public subscribe(name: string, resolve) {
         if (this.subscriber.has(name)) {
-            this.subscriber.set(name, this.subscriber.get(name).push(resolve));
+            this.subscriber.get(name).push(resolve)
         } else {
             this.subscriber.set(name, [resolve]);
         }
