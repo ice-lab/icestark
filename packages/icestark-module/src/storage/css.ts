@@ -74,7 +74,7 @@ class CssStorage {
             resolves.forEach(resolve => {
                 resolve();
             });
-            this.subscriber.delete(name);
+            this.subscriber.clear(name);
         }
     }
     public subscribe(name: string, resolve) {
@@ -118,7 +118,7 @@ class CssStorage {
             if (count > 1) {
                 this.pending.set(name, count - 1);
             } else {
-                this.pending.delete(name);
+                this.pending.clear(name);
             }
         }
     }
@@ -132,7 +132,7 @@ class CssStorage {
             if (count > 1) {
                 this.loaded.set(name, count - 1);
             } else {
-                this.loaded.delete(name);
+                this.loaded.clear(name);
             }
         }
     }
