@@ -74,6 +74,7 @@ class CssStorage {
             resolves.forEach(resolve => {
                 resolve();
             });
+            this.subscriber.delete(name);
         }
     }
     public subscribe(name: string, resolve) {
