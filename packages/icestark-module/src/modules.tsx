@@ -16,10 +16,17 @@ export interface StarkModule {
 
 export type ISandbox = boolean | SandboxProps | SandboxConstructor;
 
+interface CssStorage {
+  [key: string]: {
+    count: number;
+    task: Promise<boolean>;
+  };
+}
+
 let globalModules = [];
 let importModules = {};
 // store css link
-const cssStorage = {};
+const cssStorage: CssStorage = {};
 
 const IS_CSS_REGEX = /\.css(\?((?!\.js$).)+)?$/;
 export const moduleLoader = new ModuleLoader();
@@ -73,23 +80,10 @@ export const registerModules = (modules: StarkModule[]) => {
   modules.forEach((m) => registerModule(m));
 };
 
-// if css link already loaded, record load count
-const filterAppendCSS = (cssList: string[]) => {
-  return (cssList || []).filter((cssLink) => {
-    if (cssStorage[cssLink]) {
-      cssStorage[cssLink] += 1;
-      return false;
-    } else {
-      cssStorage[cssLink] = 1;
-      return true;
-    }
-  });
-};
-
 const filterRemoveCSS = (cssList: string[]) => {
   return (cssList || []).filter((cssLink) => {
-    if (cssStorage[cssLink] > 1) {
-      cssStorage[cssLink] -= 1;
+    if (cssStorage[cssLink].count > 1) {
+      cssStorage[cssLink].count -= 1;
       return false;
     } else {
       delete cssStorage[cssLink];
@@ -139,8 +133,8 @@ export function appendCSS(
   name: string,
   url: string,
   root: HTMLElement | ShadowRoot = document.getElementsByTagName('head')[0],
-): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
+): Promise<boolean> {
+  return new Promise<boolean>((resolve, reject) => {
     if (!root) reject(new Error(`no root element for css assert: ${url}`));
 
     const element: HTMLLinkElement = document.createElement('link');
@@ -152,11 +146,11 @@ export function appendCSS(
       'error',
       () => {
         console.error(`css asset loaded error: ${url}`);
-        return resolve();
+        return resolve(true);
       },
       false,
     );
-    element.addEventListener('load', () => resolve(), false);
+    element.addEventListener('load', () => resolve(false), false);
 
     root.appendChild(element);
   });
@@ -245,11 +239,18 @@ export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) 
     console.error('[icestark module] Please export mount/unmount function');
   }
 
-  // append css before mount module
-  const cssList = filterAppendCSS(moduleCSS);
-  if (cssList.length) {
-    await Promise.all(cssList.map((css: string) => appendCSS(name, css)));
-  }
+  await Promise.all(
+    moduleCSS.map((css) => {
+      if (!cssStorage[css]) {
+        cssStorage[css] = {
+          count: 1,
+          task: appendCSS(name, css),
+        };
+      }
+      cssStorage[css].count += 1;
+      return cssStorage[css].task;
+    }),
+  );
 
   if (typeof moduleInfo.component !== 'undefined') {
     console.warn('[icestark module] The export function name called component is conflict, please change it or it will be ignored.');
