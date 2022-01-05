@@ -1,5 +1,4 @@
 English | [简体中文](https://ice-lab.github.io/icestark/)
-
 # icestark
 
 > Micro Frontends solution for large application. [Website Chinese docs](https://ice-lab.github.io/icestark/).

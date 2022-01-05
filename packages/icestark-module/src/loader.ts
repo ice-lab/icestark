@@ -1,6 +1,7 @@
 import Sandbox from '@ice/sandbox';
 import { getGlobalProp, noteGlobalProps } from './global';
 import { StarkModule } from './modules';
+import { isEsModule } from './utils';
 
 export interface ImportTask {
   [name: string]: Promise<string[]>;
@@ -69,13 +70,13 @@ export default class ModuleLoader {
             (0, eval)(source);
           }
           if (lastScript) {
-            libraryExport = getGlobalProp(globalWindow);
+            libraryExport = getGlobalProp(globalWindow, isEsModule);
           }
         });
       } catch (err) {
         console.error(err);
       }
-      const moduleInfo = libraryExport ? (globalWindow as any)[libraryExport] : ((globalWindow as any)[name] || {});
+      const moduleInfo = libraryExport ? (globalWindow as any)[libraryExport] : ((globalWindow as any)[name]);
       // remove moduleInfo from globalWindow in case of excute multi module in globalWindow
       if ((globalWindow as any)[libraryExport]) {
         delete globalWindow[libraryExport];
