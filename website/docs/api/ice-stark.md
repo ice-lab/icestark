@@ -63,7 +63,7 @@ registerMicroApps([{
 
 ```ts
 interface AppConfig {
-  name?: string;
+  name: string;
   url?: string | string[];
   activePath?: ActivePath;
   container?: HTMLElement;

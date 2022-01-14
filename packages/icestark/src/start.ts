@@ -13,10 +13,17 @@ import { emptyAssets, recordAssets } from './util/handleAssets';
 import { LOADING_ASSETS, MOUNTED } from './util/constant';
 import { doPrefetch } from './util/prefetch';
 import globalConfiguration, { temporaryState } from './util/globalConfiguration';
+import { ErrorCode, formatErrMessage } from './util/error';
+import { isDev } from './util/helpers';
 import type { RouteType, StartConfiguration } from './util/globalConfiguration';
 
 if (!window?.fetch) {
-  throw new Error('[icestark] window.fetch not found, you need polyfill it');
+  throw new Error(
+    formatErrMessage(
+      ErrorCode.UNSUPPORTED_FETCH,
+      isDev && 'window.fetch not found, you need to polyfill it!',
+    ),
+  );
 }
 
 interface OriginalStateFunction {

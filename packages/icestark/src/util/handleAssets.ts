@@ -3,8 +3,8 @@
 import urlParse from 'url-parse';
 import Sandbox, { SandboxProps, SandboxConstructor } from '@ice/sandbox';
 import { PREFIX, DYNAMIC, STATIC, IS_CSS_REGEX } from './constant';
-import { warn, error } from './message';
-import { toArray, isDev, formatMessage, builtInScriptAttributesMap, looseBoolean2Boolean, isElement } from './helpers';
+import { toArray, isDev, formatMessage, builtInScriptAttributesMap, looseBoolean2Boolean, isElement, log } from './helpers';
+import { formatErrMessage, ErrorCode } from './error';
 import type { Fetch } from './globalConfiguration';
 import type { ScriptAttributes } from '../apps';
 
@@ -130,7 +130,13 @@ export function appendCSS(
       element.addEventListener(
         'error',
         () => {
-          error(`css asset loaded error: ${content || asset}`);
+          log.error(
+            formatErrMessage(
+              ErrorCode.CSS_LOAD_ERROR,
+              isDev && 'The stylesheets loaded error: {0}',
+              (content || asset) as string,
+            ),
+          );
           return resolve();
         },
         false,
@@ -257,7 +263,17 @@ export function appendExternalScript(asset: string | Asset,
 
     element.addEventListener(
       'error',
-      () => reject(new Error(`js asset loaded error: ${content || asset}`)),
+      () => {
+        reject(
+          new Error(
+            formatErrMessage(
+              ErrorCode.JS_LOAD_ERROR,
+              isDev && 'The script resources loaded error: {0}',
+              (content || asset) as string,
+            ),
+          ),
+        );
+      },
       false,
     );
     element.addEventListener('load', () => resolve(), false);
@@ -537,7 +553,7 @@ export async function getEntryAssets({
   if (!cachedContent) {
     if (!htmlContent && entry) {
       if (!fetch) {
-        warn('Current environment does not support window.fetch, please use custom fetch');
+        log.warn('Current environment does not support window.fetch, please use custom fetch');
         throw new Error(
           `fetch ${entry} error: Current environment does not support window.fetch, please use custom fetch`,
         );
@@ -711,7 +727,7 @@ export async function loadAndAppendCssAssets(cssList: Array<Asset | HTMLElement>
  * @param {Sandbox} [sandbox]
  * @returns
  */
-export async function loadAndAppendJsAssets(
+export function loadAndAppendJsAssets(
   assets: Assets,
   {
     scriptAttributes = [],
@@ -727,17 +743,16 @@ export async function loadAndAppendJsAssets(
   const hasInlineScript = jsList.find((asset) => asset.type === AssetTypeEnum.INLINE);
   if (hasInlineScript) {
     // make sure js assets loaded in order if has inline scripts
-    await jsList.reduce((chain, asset, index) => {
+    return jsList.reduce((chain, asset, index) => {
       return chain.then(() => appendExternalScript(asset, {
         root: jsRoot,
         scriptAttributes,
         id: `${PREFIX}-js-${index}`,
       }));
     }, Promise.resolve());
-    return;
   }
 
-  await Promise.all(
+  return Promise.all(
     jsList.map((asset, index) => appendExternalScript(asset, {
       root: jsRoot,
       scriptAttributes,

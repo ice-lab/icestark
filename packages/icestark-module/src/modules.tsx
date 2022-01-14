@@ -4,7 +4,7 @@ import { Runtime, parseRuntime, RuntimeInstance } from './runtimeHelper';
 
 export interface StarkModule {
   name: string;
-  url?: string|string[];
+  url?: string | string[];
   /**
    * you are not expected to use it without the wrapper `<MicroModule />`
    */
@@ -61,8 +61,8 @@ export const registerModule = (module: StarkModule) => {
   const hasRegistered = globalModules.filter((m) => m.name === module.name).length;
 
   /*
-  * If a module registers many times, the former registration will be removed.
-  */
+   * If a module registers many times, the former registration will be removed.
+   */
   if (hasRegistered) {
     removeModule(module.name);
   }
@@ -135,7 +135,6 @@ export const parseUrlAssets = (assets: string | string[]) => {
   return { jsList, cssList };
 };
 
-
 export function appendCSS(
   name: string,
   url: string,
@@ -182,9 +181,28 @@ export function removeCSS(name: string, node?: HTMLElement | Document, removeLis
 
 /**
  * return globalModules
-*/
+ */
 export const getModules = function () {
   return globalModules || [];
+};
+
+/**
+ * get import modules
+ */
+export const getAllImportedModules = function () {
+  return importModules;
+};
+
+/**
+ * get import module by name
+ */
+export const getImportedModule = function (name: string) {
+  if (typeof name !== 'string') {
+    console.error(`[icestark-module]: should be string, but get ${typeof name}`);
+    return;
+  }
+
+  return importModules[name];
 };
 
 /**
@@ -233,7 +251,12 @@ export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) 
     await Promise.all(cssList.map((css: string) => appendCSS(name, css)));
   }
 
+  if (typeof moduleInfo.component !== 'undefined') {
+    console.warn('[icestark module] The export function name called component is conflict, please change it or it will be ignored.');
+  }
+
   return {
+    ...moduleInfo,
     mount,
     unmount,
     component,
@@ -243,7 +266,12 @@ export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) 
 /**
  * mount module function
  */
-export const mountModule = async (targetModule: StarkModule, targetNode: HTMLElement, props: any = {}, sandbox?: ISandbox) => {
+export const mountModule = async (
+  targetModule: StarkModule,
+  targetNode: HTMLElement,
+  props: any = {},
+  sandbox?: ISandbox,
+) => {
   const { mount, component } = await loadModule(targetModule, sandbox);
   return mount(component, targetNode, props);
 };
@@ -266,4 +294,3 @@ export const unmoutModule = (targetModule: StarkModule, targetNode: HTMLElement)
     return unmount(targetNode);
   }
 };
-
