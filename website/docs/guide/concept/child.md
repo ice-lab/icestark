@@ -68,7 +68,7 @@ const apps = [{
 }]
 ```
 
-### 2. entry
+### 2. entry <Badge text="推荐" />
 
 使用场景：
 
