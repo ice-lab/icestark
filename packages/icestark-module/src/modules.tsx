@@ -246,8 +246,9 @@ export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) 
           count: 1,
           task: appendCSS(name, css),
         };
+      } else {
+        cssStorage[css].count += 1;
       }
-      cssStorage[css].count += 1;
       return cssStorage[css].task;
     }),
   );
