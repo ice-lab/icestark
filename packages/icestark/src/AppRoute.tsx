@@ -130,9 +130,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   }
 
   componentWillUnmount() {
-    if (started) {
-      this.unmountApp();
-    }
+    this.unmountApp();
   }
 
   mountApp = () => {
@@ -159,7 +157,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       onAppLeave(genCompatibleAppConfig(this.props));
     }
 
-    if (!this.validateRender()) {
+    if (!this.validateRender() && started) {
       unloadMicroApp(name);
     }
   };
