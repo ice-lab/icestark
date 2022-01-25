@@ -5,6 +5,7 @@ import { unloadMicroApp, BaseConfig, createMicroApp } from './apps';
 import { converArray2String } from './util/helpers';
 import { PathData } from './util/checkActive';
 import { callCapturedEventListeners, resetCapturedEventListeners } from './util/capturedListeners';
+import { started } from './start';
 import isEqual from 'lodash.isequal';
 
 interface AppRouteState {
@@ -129,7 +130,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   }
 
   componentWillUnmount() {
-    this.unmountApp();
+    if (started) {
+      this.unmountApp();
+    }
   }
 
   mountApp = () => {

@@ -2,6 +2,10 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
+## 2.7.2
+
+- [fix] When icestark unloads, avoid re-triggering 'unloadMicroApp'. ([#521](https://github.com/ice-lab/icestark/issues/521))
+
 ## 2.7.1
 
 - [feat] improve DX a lot.
