@@ -57,7 +57,7 @@ export interface ILifecycleProps {
   customProps?: object;
 }
 
-function isAssetExist(element: HTMLScriptElement | HTMLLIElement, type: 'script' | 'link') {
+function isAssetExist(element: HTMLScriptElement | HTMLLinkElement, type: 'script' | 'link') {
   const urlAlias = type === 'script' ? 'src' : 'href';
 
   return Array.from(document.getElementsByTagName(type))
