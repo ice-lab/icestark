@@ -81,23 +81,31 @@ export const formatPath = (activePath?: ActivePath, options: PathOption = {}): P
  * @param activePath
  * @returns
  */
-const checkActive = (activePath?: PathData[] | ActiveFn) => {
+const checkActive = (activePath?: PathData[] | ActiveFn): (url?: string) => [boolean, number] => {
   // Always activate app when activePath is not specified.
   if (!activePath) {
-    return () => true;
+    return () => [true, 0];
   }
 
   // If pass fucntion to activePath, just returns
   if (isFunction(activePath)) {
-    return activePath;
+    return (url: string) => [activePath(url), 0];
   }
 
-  return (url: string) => activePath
-    .map((rule) => {
-      return (checkUrl: string) => matchPath(checkUrl, rule);
-    })
-    .some((functionalRule) => functionalRule(url));
+  return (url: string) => {
+    // Record matched index
+    let recordIdx = 0;
+    const ruleFnc = (path: PathData) => (checkUrl: string) => matchPath(checkUrl, path);
+    const isActive = activePath.some((path, index) => {
+      recordIdx = index;
+      return ruleFnc(path)(url);
+    });
+
+    return [isActive, recordIdx];
+  };
 };
+
+export type CheckActiveReturns = ReturnType<typeof checkActive>;
 
 export default checkActive;
 

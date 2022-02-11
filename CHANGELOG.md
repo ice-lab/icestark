@@ -2,9 +2,13 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
+## 2.7.3
+
+- [fix] set actual basename when `activePath` is an array. ([#526](https://github.com/ice-lab/icestark/issues/526))
+
 ## 2.7.2
 
-- [fix] When icestark unloads, avoid re-triggering 'unloadMicroApp'. ([#521](https://github.com/ice-lab/icestark/issues/521))
+- [fix] when icestark unloads, avoid re-triggering 'unloadMicroApp'. ([#521](https://github.com/ice-lab/icestark/issues/521))
 
 ## 2.7.1
 
