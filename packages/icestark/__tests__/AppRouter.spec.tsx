@@ -120,4 +120,30 @@ describe('AppRouter', () => {
 
     unmount();
   })
+
+
+  test('app-multi-paths', async () => {
+    (fetch as FetchMock).mockResponseOnce(umdSourceWithSetLibrary.toString());
+    const { container, unmount } = render(
+      <AppRouter>
+        <AppRoute
+          loadScriptMode="fetch"
+          name="seller"
+          path={["/seller", "/seller2"]}
+          title="小二"
+          url={[
+            '//icestark.com/index.js'
+          ]}
+        />
+      </AppRouter>
+    );
+    window.history.pushState({}, 'test', '/seller2');
+    expect(container.innerHTML).toContain('Loading')
+    expect(getCache('basename')).toBe('/seller2');
+
+    await delay(1000);
+    expect(container.innerHTML).toContain('商家平台')
+
+    unmount();
+  })
 })
