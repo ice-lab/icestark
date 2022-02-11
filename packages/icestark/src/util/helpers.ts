@@ -1,4 +1,4 @@
-import type { PathData, AppRoutePath, ActiveFn, ActivePath } from './checkActive';
+import type { PathData, AppRoutePath, ActiveFn, ActivePath, CheckActiveReturns } from './checkActive';
 
 export const isDev = process.env.NODE_ENV === 'development';
 
@@ -100,9 +100,14 @@ export function addLeadingSlash(path: string): string {
 * It's difficult to dig out the actual path url, so comes the
 * following function.
  */
-export const getActualUrlFromPath = (path: AppRoutePath): string => {
+export const pathData2String = (path: AppRoutePath, checkActive: CheckActiveReturns): string => {
   if (Array.isArray(path)) {
-    return (typeof path[0] === 'string' ? path[0] : path[0].value);
+    // Find the matched index to set basename for microapp
+    const idx = checkActive(window.location.href)[1] ?? 0;
+
+    return typeof path[idx] === 'string'
+      ? path[idx]
+      : (path[idx] as any).value;
   }
   if (isObject<PathData>(path)) {
     return path.value;
@@ -114,8 +119,8 @@ export const getActualUrlFromPath = (path: AppRoutePath): string => {
  * Get basename for micro apps to use handily.
  * A properly formatted basename has a leading slash, but not trailing slash.
  */
-export const getAppBasename = (path: AppRoutePath = '', frameworkBase?: string, appBase?: string): string => {
-  const actualPath = addLeadingSlash(getActualUrlFromPath(path));
+export const getAppBasename = (path = '', frameworkBase?: string, appBase?: string): string => {
+  const actualPath = addLeadingSlash(path);
 
   const leadingSlashFrameworkBase = frameworkBase && addLeadingSlash(frameworkBase);
   const leadingSlashAppBase = appBase && addLeadingSlash(appBase);

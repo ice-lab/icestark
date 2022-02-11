@@ -15,11 +15,12 @@ import {
 import { setCache } from './util/cache';
 import { loadScriptByFetch, loadScriptByImport } from './util/loaders';
 import { getLifecyleByLibrary, getLifecyleByRegister } from './util/getLifecycle';
-import { mergeFrameworkBaseToPath, getAppBasename, shouldSetBasename, log, isDev } from './util/helpers';
+import { mergeFrameworkBaseToPath, getAppBasename, pathData2String, shouldSetBasename, log, isDev } from './util/helpers';
 import { ErrorCode, formatErrMessage } from './util/error';
 import globalConfiguration, { temporaryState } from './util/globalConfiguration';
 
 import type { StartConfiguration } from './util/globalConfiguration';
+import type { CheckActiveReturns } from './util/checkActive';
 
 export type ScriptAttributes = string[] | ((url: string) => string[]);
 
@@ -61,7 +62,10 @@ export interface BaseConfig extends PathOption {
    */
   umd?: boolean;
   loadScriptMode?: LoadScriptMode;
-  checkActive?: (url: string) => boolean;
+  /**
+   * @private will be prefixed with `_` for it is internal.
+   */
+  checkActive?: CheckActiveReturns;
   appAssets?: Assets;
   props?: object;
   cached?: boolean;
@@ -353,7 +357,7 @@ export async function createMicroApp(
     return null;
   }
 
-  const { container, basename, activePath, configuration: userConfiguration } = appConfig;
+  const { container, basename, activePath, configuration: userConfiguration, checkActive } = appConfig;
 
   if (container) {
     setCache('root', container);
@@ -362,7 +366,8 @@ export async function createMicroApp(
   const { basename: frameworkBasename, fetch } = userConfiguration;
 
   if (shouldSetBasename(activePath, basename)) {
-    setCache('basename', getAppBasename(activePath, frameworkBasename, basename));
+    const pathString = pathData2String(activePath, checkActive);
+    setCache('basename', getAppBasename(pathString, frameworkBasename, basename));
   }
 
   switch (appConfig.status) {

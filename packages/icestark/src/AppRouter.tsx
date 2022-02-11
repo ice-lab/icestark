@@ -227,7 +227,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
         element = child;
 
-        match = checkActive(compatPath)(url);
+        match = checkActive(compatPath)(url)[0];
       }
     });
 
