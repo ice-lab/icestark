@@ -12,12 +12,10 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true
   },
-  "include": ["src/*"],
   "exclude": ["node_modules"],
   "ts-node": {
     // these options are overrides used only by ts-node
     // same as our --compilerOptions flag and our TS_NODE_COMPILER_OPTIONS environment variable
-    // https://github.com/TypeStrong/ts-node/issues/922#issuecomment-673155000
     "compilerOptions": {
       "module": "commonjs"
     }
