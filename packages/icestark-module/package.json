@@ -1,6 +1,6 @@
 {
   "name": "@ice/stark-module",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "toolkit for load standard micro-module",
   "main": "lib/index.js",
   "scripts": {
