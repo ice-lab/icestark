@@ -20,6 +20,8 @@ export const LOAD_ERROR = 'LOAD_ERROR';
 
 export const NOT_MOUNTED = 'NOT_MOUNTED';
 
+export const MOUNTING = 'MOUNTING';
+
 export const MOUNTED = 'MOUNTED';
 
 export const UNMOUNTED = 'UNMOUNTED';

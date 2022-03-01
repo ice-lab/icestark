@@ -10,7 +10,7 @@ import {
 } from './util/capturedListeners';
 import { AppConfig, getMicroApps, createMicroApp, unmountMicroApp, clearMicroApps } from './apps';
 import { emptyAssets, recordAssets } from './util/handleAssets';
-import { LOADING_ASSETS, MOUNTED } from './util/constant';
+import { LOADING_ASSETS, MOUNTED, MOUNTING } from './util/constant';
 import { doPrefetch } from './util/prefetch';
 import globalConfiguration, { temporaryState } from './util/globalConfiguration';
 import { ErrorCode, formatErrMessage } from './util/error';
@@ -71,12 +71,12 @@ export function reroute(url: string, type: RouteType | 'init' | 'popstate'| 'has
     Promise.all(
       // call unmount apps
       unmountApps.map(async (unmountApp) => {
-        if (unmountApp.status === MOUNTED || unmountApp.status === LOADING_ASSETS) {
+        if (unmountApp.status === MOUNTING || unmountApp.status === MOUNTED || unmountApp.status === LOADING_ASSETS) {
           globalConfiguration.onAppLeave(unmountApp);
         }
         await unmountMicroApp(unmountApp.name);
       }).concat(activeApps.map(async (activeApp) => {
-        if (activeApp.status !== MOUNTED) {
+        if (activeApp.status !== MOUNTED && activeApp.status !== MOUNTING) {
           globalConfiguration.onAppEnter(activeApp);
         }
         await createMicroApp(activeApp);

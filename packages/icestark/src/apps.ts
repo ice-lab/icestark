@@ -1,6 +1,6 @@
 import Sandbox, { SandboxConstructor, SandboxProps } from '@ice/sandbox';
 import isEmpty from 'lodash.isempty';
-import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
+import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTING, MOUNTED } from './util/constant';
 import checkUrlActive, { ActivePath, PathOption, formatPath } from './util/checkActive';
 import {
   createSandbox,
@@ -392,7 +392,12 @@ export async function createMicroApp(
 export async function mountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   // check current url before mount
-  if (appConfig && appConfig.checkActive(window.location.href) && appConfig.status !== MOUNTED) {
+  if (appConfig && appConfig.checkActive(window.location.href) && appConfig.status !== MOUNTED && appConfig.status !== MOUNTING) {
+    /**
+     * Avoid executing `window.history.replaceState()` on `mount`
+     * Solve the problem https://github.com/ice-lab/icestark/issues/538
+     */
+    updateAppConfig(appName, { status: MOUNTING });
     if (appConfig.mount) {
       await appConfig.mount({ container: appConfig.container, customProps: appConfig.props });
     }
@@ -402,7 +407,7 @@ export async function mountMicroApp(appName: string) {
 
 export async function unmountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
-  if (appConfig && (appConfig.status === MOUNTED || appConfig.status === LOADING_ASSETS || appConfig.status === NOT_MOUNTED)) {
+  if (appConfig && (appConfig.status === MOUNTED || appConfig.status === LOADING_ASSETS || appConfig.status === NOT_MOUNTED || appConfig.status === MOUNTING)) {
     // remove assets if app is not cached
     const { shouldAssetsRemove } = getAppConfig(appName)?.configuration || globalConfiguration;
     const removedAssets = emptyAssets(shouldAssetsRemove, !appConfig.cached && appConfig.name);
