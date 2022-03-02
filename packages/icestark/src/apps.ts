@@ -380,6 +380,7 @@ export async function createMicroApp(
       await mountMicroApp(appConfig.name);
       break;
     case NOT_MOUNTED:
+    case MOUNTING:
       await mountMicroApp(appConfig.name);
       break;
     default:
@@ -392,7 +393,7 @@ export async function createMicroApp(
 export async function mountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   // check current url before mount
-  if (appConfig && appConfig.checkActive(window.location.href) && appConfig.status !== MOUNTED && appConfig.status !== MOUNTING) {
+  if (appConfig && appConfig.checkActive(window.location.href) && [MOUNTING, MOUNTED].indexOf(appConfig.status) === -1) {
     /**
      * Avoid executing `window.history.replaceState()` on `mount`
      * Solve the problem https://github.com/ice-lab/icestark/issues/538
@@ -407,7 +408,7 @@ export async function mountMicroApp(appName: string) {
 
 export async function unmountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
-  if (appConfig && (appConfig.status === MOUNTED || appConfig.status === LOADING_ASSETS || appConfig.status === NOT_MOUNTED || appConfig.status === MOUNTING)) {
+  if (appConfig && [LOADING_ASSETS, NOT_MOUNTED, MOUNTING, MOUNTED].indexOf(appConfig.status) !== -1) {
     // remove assets if app is not cached
     const { shouldAssetsRemove } = getAppConfig(appName)?.configuration || globalConfiguration;
     const removedAssets = emptyAssets(shouldAssetsRemove, !appConfig.cached && appConfig.name);

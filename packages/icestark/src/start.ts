@@ -71,12 +71,12 @@ export function reroute(url: string, type: RouteType | 'init' | 'popstate'| 'has
     Promise.all(
       // call unmount apps
       unmountApps.map(async (unmountApp) => {
-        if (unmountApp.status === MOUNTING || unmountApp.status === MOUNTED || unmountApp.status === LOADING_ASSETS) {
+        if ([LOADING_ASSETS, MOUNTING, MOUNTED].indexOf(unmountApp.status) !== -1) {
           globalConfiguration.onAppLeave(unmountApp);
         }
         await unmountMicroApp(unmountApp.name);
       }).concat(activeApps.map(async (activeApp) => {
-        if (activeApp.status !== MOUNTED && activeApp.status !== MOUNTING) {
+        if ([MOUNTING, MOUNTED].indexOf(activeApp.status) === -1) {
           globalConfiguration.onAppEnter(activeApp);
         }
         await createMicroApp(activeApp);
