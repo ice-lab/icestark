@@ -83,7 +83,6 @@ export const registerModules = (modules: StarkModule[]) => {
 
 const filterRemoveCSS = (cssList: string[]) => {
   return (cssList || []).filter((cssLink) => {
-    // cssStorage[cssLink] may undefined, when unMount is earlier than exe js module  
     if (cssStorage[cssLink]?.count > 1) {
       cssStorage[cssLink].count -= 1;
       return false;
