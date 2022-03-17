@@ -1,7 +1,7 @@
 import Sandbox, { SandboxConstructor, SandboxProps } from '@ice/sandbox';
 import isEmpty from 'lodash.isempty';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
-import findActivePathIndex, { ActivePath, PathOption, formatPath } from './util/checkActive';
+import findActivePathCurry, { ActivePath, PathOption, formatPath } from './util/checkActive';
 import {
   createSandbox,
   getUrlAssets,
@@ -15,7 +15,7 @@ import {
 import { setCache } from './util/cache';
 import { loadScriptByFetch, loadScriptByImport } from './util/loaders';
 import { getLifecyleByLibrary, getLifecyleByRegister } from './util/getLifecycle';
-import { mergeFrameworkBaseToPath, getAppBasename, pathData2String, shouldSetBasename, log, isDev } from './util/helpers';
+import { mergeFrameworkBaseToPath, getAppBasename, shouldSetBasename, log, isDev } from './util/helpers';
 import { ErrorCode, formatErrMessage } from './util/error';
 import globalConfiguration, { temporaryState } from './util/globalConfiguration';
 
@@ -65,7 +65,7 @@ export interface BaseConfig extends PathOption {
   /**
    * @private will be prefixed with `_` for it is internal.
    */
-  checkActive?: CheckActiveReturns;
+  findActivePath?: CheckActiveReturns;
   appAssets?: Assets;
   props?: object;
   cached?: boolean;
@@ -135,13 +135,13 @@ export function registerMicroApp(appConfig: AppConfig, appLifecyle?: AppLifecylc
 
   const { basename: frameworkBasename } = globalConfiguration;
 
-  const checkActive = findActivePathIndex(mergeFrameworkBaseToPath(activePathArray, frameworkBasename));
+  const findActivePath = findActivePathCurry(mergeFrameworkBaseToPath(activePathArray, frameworkBasename));
 
   const microApp = {
     status: NOT_LOADED,
     ...appConfig,
     appLifecycle: appLifecyle,
-    checkActive,
+    findActivePath,
   };
 
   microApps.push(microApp);
@@ -357,17 +357,20 @@ export async function createMicroApp(
     return null;
   }
 
-  const { container, basename, activePath, configuration: userConfiguration, checkActive } = appConfig;
+  const { container, basename, activePath, configuration: userConfiguration, findActivePath } = appConfig;
 
   if (container) {
     setCache('root', container);
   }
 
-  const { basename: frameworkBasename, fetch } = userConfiguration;
+  const { fetch } = userConfiguration;
 
   if (shouldSetBasename(activePath, basename)) {
-    const pathString = pathData2String(activePath, checkActive);
-    setCache('basename', getAppBasename(pathString, frameworkBasename, basename));
+    let pathString = findActivePath(window.location.href);
+
+    // When use `createMicroApp` lonely, `activePath` maybe not provided.
+    pathString = typeof pathString === 'string' ? pathString : '';
+    setCache('basename', getAppBasename(pathString, basename));
   }
 
   switch (appConfig.status) {
@@ -397,7 +400,7 @@ export async function createMicroApp(
 export async function mountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   // check current url before mount
-  const shouldMount = appConfig?.mount && (appConfig?.checkActive(window.location.href) > -1);
+  const shouldMount = appConfig?.mount && appConfig?.findActivePath(window.location.href);
 
   if (shouldMount) {
     if (appConfig?.mount) {

@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/extend-expect';
-import findActivePathIndex, { matchPath, getPathname, formatPath } from '../src/util/checkActive';
+import findActivePath, { matchPath, getPathname, formatPath } from '../src/util/checkActive';
 
 describe('checkActive', () => {
   test('matchPath - path options', () => {
@@ -54,48 +54,48 @@ describe('checkActive', () => {
 
   test('checkActive', () => {
     // empty activePath
-    let checkFnc = findActivePathIndex();
-    expect(checkFnc('/test/123')).toEqual(0);
+    let checkFnc = findActivePath();
+    expect(checkFnc('/test/123')).toBeTruthy();
 
     // type `string`
-    checkFnc = findActivePathIndex(formatPath('/test', {}));
-    expect(checkFnc('/test/123')).toEqual(0);
+    checkFnc = findActivePath(formatPath('/test', {}));
+    expect(checkFnc('/test/123')).toEqual('/test');
 
-    checkFnc = findActivePathIndex(formatPath('/test', { exact: true }));
-    expect(checkFnc('/test/123')).toEqual(-1);
+    checkFnc = findActivePath(formatPath('/test', { exact: true }));
+    expect(checkFnc('/test/123')).toBeFalsy();
 
     // type `string[]`
-    checkFnc = findActivePathIndex(formatPath(['/test', '/seller'], {}));
-    expect(checkFnc('/test/123')).toEqual(0);
+    checkFnc = findActivePath(formatPath(['/test', '/seller'], {}));
+    expect(checkFnc('/test/123')).toEqual('/test');
 
-    checkFnc = findActivePathIndex(formatPath(['/test', '/seller'], { exact: true }));
-    expect(checkFnc('/test/123')).toEqual(-1);
+    checkFnc = findActivePath(formatPath(['/test', '/seller'], { exact: true }));
+    expect(checkFnc('/test/123')).toBeFalsy();
 
     // type `PathData`
-    checkFnc = findActivePathIndex(formatPath({ value: '/test' }, {}));
-    expect(checkFnc('/test/123')).toEqual(0);
+    checkFnc = findActivePath(formatPath({ value: '/test' }, {}));
+    expect(checkFnc('/test/123')).toEqual('/test');
 
-    checkFnc = findActivePathIndex(formatPath({ value: '/test', exact: true }, {}));
-    expect(checkFnc('/test/123')).toEqual(-1)
+    checkFnc = findActivePath(formatPath({ value: '/test', exact: true }, {}));
+    expect(checkFnc('/test/123')).toBeFalsy();
 
     // type `PathData[]`
-    checkFnc = findActivePathIndex([{ value: '/test' }, { value: '/seller' }]);
-    expect(checkFnc('/test/123')).toEqual(0);
+    checkFnc = findActivePath([{ value: '/test' }, { value: '/seller' }]);
+    expect(checkFnc('/test/123')).toEqual('/test');
 
     // type `MixedPathData`
-    checkFnc = findActivePathIndex(formatPath(['/test', { value: '/seller' }]));
-    expect(checkFnc('/test/123')).toEqual(0);
+    checkFnc = findActivePath(formatPath(['/test', { value: '/seller' }]));
+    expect(checkFnc('/test/123')).toEqual('/test');
 
     // type `ActiveFn`
-    checkFnc = findActivePathIndex((url: string) => url.includes('/test'));
-    expect(checkFnc('/test/123')).toEqual(0);
+    checkFnc = findActivePath((url: string) => url.includes('/test'));
+    expect(checkFnc('/test/123')).toBeTruthy();
 
     // `undefined`
-    checkFnc = findActivePathIndex(formatPath());
-    expect(checkFnc('/test/123')).toEqual(0);
+    checkFnc = findActivePath(formatPath());
+    expect(checkFnc('/test/123')).toBeTruthy();
 
     // matched idx
-    checkFnc = findActivePathIndex(formatPath(['/test', '/seller'], {}));
-    expect(checkFnc('/seller')).toEqual(1);
+    checkFnc = findActivePath(formatPath(['/test', '/seller'], {}));
+    expect(checkFnc('/seller')).toEqual('/seller');
   })
 });

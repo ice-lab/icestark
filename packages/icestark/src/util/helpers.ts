@@ -97,39 +97,19 @@ export function addLeadingSlash(path: string): string {
 }
 
 /**
-* It's difficult to dig out the actual path url, so comes the
-* following function.
- */
-export const pathData2String = (path: AppRoutePath, checkActive: CheckActiveReturns): string => {
-  if (Array.isArray(path)) {
-    // Find the matched index to set basename for microapp
-    const idx = checkActive(window.location.href);
-
-    return typeof path[idx] === 'string'
-      ? path[idx]
-      : (path[idx] as any).value;
-  }
-  if (isObject<PathData>(path)) {
-    return path.value;
-  }
-  return path;
-};
-
-/**
  * Get basename for micro apps to use handily.
  * A properly formatted basename has a leading slash, but not trailing slash.
  */
-export const getAppBasename = (path = '', frameworkBase?: string, appBase?: string): string => {
+export const getAppBasename = (path = '', appBase?: string): string => {
   const actualPath = addLeadingSlash(path);
 
-  const leadingSlashFrameworkBase = frameworkBase && addLeadingSlash(frameworkBase);
   const leadingSlashAppBase = appBase && addLeadingSlash(appBase);
 
   /**
   * It's preferable to use `??` bewteen leadingSlashAppBase and actualPath. But some
   * users already use the misunderstanding `basename=''`, which we have to keep things the way they are.
    */
-  return `${leadingSlashFrameworkBase}${leadingSlashAppBase || actualPath}`;
+  return `${leadingSlashAppBase || actualPath}`;
 };
 
 /**

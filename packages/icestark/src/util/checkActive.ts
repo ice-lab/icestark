@@ -81,33 +81,33 @@ export const formatPath = (activePath?: ActivePath, options: PathOption = {}): P
  * @param activePath
  * @returns
  */
-const findActivePathIndex = (activePath?: PathData[] | ActiveFn): (url?: string) => number => {
+const findActivePath = (activePath?: PathData[] | ActiveFn): (url?: string) => string | boolean => {
   // Always activate app when activePath is not specified.
   if (!activePath) {
-    return () => 0;
+    return () => true;
   }
 
   // If pass fucntion to activePath, just returns
   if (isFunction(activePath)) {
-    return (url: string) => (activePath(url) ? 0 : -1);
+    return (url: string) => activePath(url);
   }
 
   return (url: string) => {
     // Record matched index
-    let recordIdx = 0;
+    let matchedPath;
     const ruleFnc = (path: PathData) => (checkUrl: string) => matchPath(checkUrl, path);
-    const isActive = activePath.some((path, index) => {
-      recordIdx = index;
+    const isActive = activePath.some((path) => {
+      matchedPath = path?.value;
       return ruleFnc(path)(url);
     });
 
-    return isActive ? recordIdx : -1;
+    return isActive ? matchedPath : false;
   };
 };
 
-export type CheckActiveReturns = ReturnType<typeof findActivePathIndex>;
+export type CheckActiveReturns = ReturnType<typeof findActivePath>;
 
-export default findActivePathIndex;
+export default findActivePath;
 
 const HashPathDecoders = {
   hashbang: (path: string) => (path.charAt(0) === '!' ? path.substr(1) : path),

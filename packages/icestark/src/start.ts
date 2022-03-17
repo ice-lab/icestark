@@ -57,7 +57,7 @@ export function reroute(url: string, type: RouteType | 'init' | 'popstate'| 'has
     const unmountApps = [];
     const activeApps = [];
     getMicroApps().forEach((microApp: AppConfig) => {
-      const shouldBeActive = microApp.checkActive(url) > -1;
+      const shouldBeActive = !!microApp.findActivePath(url);
       if (shouldBeActive) {
         activeApps.push(microApp);
       } else {
