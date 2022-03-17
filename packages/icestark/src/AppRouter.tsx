@@ -7,7 +7,7 @@ import { ICESTSRK_ERROR, ICESTSRK_NOT_FOUND } from './util/constant';
 import start, { unload } from './start';
 import { AppConfig, MicroApp } from './apps';
 import { doPrefetch, Prefetch } from './util/prefetch';
-import checkActive, { AppRoutePath, formatPath } from './util/checkActive';
+import findActivePathIndex, { AppRoutePath, formatPath } from './util/checkActive';
 import { converArray2String, isFunction, mergeFrameworkBaseToPath } from './util/helpers';
 import type { Fetch } from './util/globalConfiguration';
 
@@ -227,7 +227,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
         element = child;
 
-        match = checkActive(compatPath)(url)[0];
+        match = findActivePathIndex(compatPath)(url) > -1;
       }
     });
 

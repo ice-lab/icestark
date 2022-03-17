@@ -1,7 +1,7 @@
 import Sandbox, { SandboxConstructor, SandboxProps } from '@ice/sandbox';
 import isEmpty from 'lodash.isempty';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
-import checkUrlActive, { ActivePath, PathOption, formatPath } from './util/checkActive';
+import findActivePathIndex, { ActivePath, PathOption, formatPath } from './util/checkActive';
 import {
   createSandbox,
   getUrlAssets,
@@ -135,7 +135,7 @@ export function registerMicroApp(appConfig: AppConfig, appLifecyle?: AppLifecylc
 
   const { basename: frameworkBasename } = globalConfiguration;
 
-  const checkActive = checkUrlActive(mergeFrameworkBaseToPath(activePathArray, frameworkBasename));
+  const checkActive = findActivePathIndex(mergeFrameworkBaseToPath(activePathArray, frameworkBasename));
 
   const microApp = {
     status: NOT_LOADED,
@@ -397,8 +397,10 @@ export async function createMicroApp(
 export async function mountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   // check current url before mount
-  if (appConfig && appConfig.checkActive(window.location.href) && appConfig.status !== MOUNTED) {
-    if (appConfig.mount) {
+  const shouldMount = appConfig?.mount && (appConfig?.checkActive(window.location.href) > -1);
+
+  if (shouldMount) {
+    if (appConfig?.mount) {
       await appConfig.mount({ container: appConfig.container, customProps: appConfig.props });
     }
     updateAppConfig(appName, { status: MOUNTED });

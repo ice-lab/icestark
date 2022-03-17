@@ -103,7 +103,7 @@ export function addLeadingSlash(path: string): string {
 export const pathData2String = (path: AppRoutePath, checkActive: CheckActiveReturns): string => {
   if (Array.isArray(path)) {
     // Find the matched index to set basename for microapp
-    const idx = checkActive(window.location.href)[1] ?? 0;
+    const idx = checkActive(window.location.href);
 
     return typeof path[idx] === 'string'
       ? path[idx]
