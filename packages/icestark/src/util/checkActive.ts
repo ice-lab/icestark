@@ -95,17 +95,16 @@ const findActivePath = (activePath?: PathData[] | ActiveFn): (url?: string) => s
   return (url: string) => {
     // Record matched index
     let matchedPath;
-    const ruleFnc = (path: PathData) => (checkUrl: string) => matchPath(checkUrl, path);
     const isActive = activePath.some((path) => {
       matchedPath = path?.value;
-      return ruleFnc(path)(url);
+      return matchPath(url, path);
     });
 
     return isActive ? matchedPath : false;
   };
 };
 
-export type CheckActiveReturns = ReturnType<typeof findActivePath>;
+export type FindActivePathReturn = ReturnType<typeof findActivePath>;
 
 export default findActivePath;
 

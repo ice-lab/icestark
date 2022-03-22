@@ -20,7 +20,7 @@ import { ErrorCode, formatErrMessage } from './util/error';
 import globalConfiguration, { temporaryState } from './util/globalConfiguration';
 
 import type { StartConfiguration } from './util/globalConfiguration';
-import type { CheckActiveReturns } from './util/checkActive';
+import type { FindActivePathReturn } from './util/checkActive';
 
 export type ScriptAttributes = string[] | ((url: string) => string[]);
 
@@ -65,7 +65,7 @@ export interface BaseConfig extends PathOption {
   /**
    * @private will be prefixed with `_` for it is internal.
    */
-  findActivePath?: CheckActiveReturns;
+  findActivePath?: FindActivePathReturn;
   appAssets?: Assets;
   props?: object;
   cached?: boolean;

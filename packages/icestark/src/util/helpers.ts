@@ -1,4 +1,4 @@
-import type { PathData, AppRoutePath, ActiveFn, ActivePath, CheckActiveReturns } from './checkActive';
+import type { PathData, AppRoutePath, ActiveFn, ActivePath, FindActivePathReturn } from './checkActive';
 
 export const isDev = process.env.NODE_ENV === 'development';
 
