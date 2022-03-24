@@ -3,9 +3,10 @@ import renderComponent from './util/renderComponent';
 import { AppHistory } from './appHistory';
 import { unloadMicroApp, BaseConfig, createMicroApp } from './apps';
 import { converArray2String } from './util/helpers';
-import { PathData } from './util/checkActive';
 import { callCapturedEventListeners, resetCapturedEventListeners } from './util/capturedListeners';
 import isEqual from 'lodash.isequal';
+
+import type { PathData } from './util/checkActive';
 
 interface AppRouteState {
   showComponent: boolean;

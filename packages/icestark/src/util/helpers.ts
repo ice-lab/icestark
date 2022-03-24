@@ -1,4 +1,4 @@
-import type { PathData, AppRoutePath, ActiveFn, ActivePath } from './checkActive';
+import type { PathData, AppRoutePath, ActiveFn, ActivePath, FindActivePathReturn } from './checkActive';
 
 export const isDev = process.env.NODE_ENV === 'development';
 
@@ -97,34 +97,19 @@ export function addLeadingSlash(path: string): string {
 }
 
 /**
-* It's difficult to dig out the actual path url, so comes the
-* following function.
- */
-export const getActualUrlFromPath = (path: AppRoutePath): string => {
-  if (Array.isArray(path)) {
-    return (typeof path[0] === 'string' ? path[0] : path[0].value);
-  }
-  if (isObject<PathData>(path)) {
-    return path.value;
-  }
-  return path;
-};
-
-/**
  * Get basename for micro apps to use handily.
  * A properly formatted basename has a leading slash, but not trailing slash.
  */
-export const getAppBasename = (path: AppRoutePath = '', frameworkBase?: string, appBase?: string): string => {
-  const actualPath = addLeadingSlash(getActualUrlFromPath(path));
+export const getAppBasename = (path = '', appBase?: string): string => {
+  const actualPath = addLeadingSlash(path);
 
-  const leadingSlashFrameworkBase = frameworkBase && addLeadingSlash(frameworkBase);
   const leadingSlashAppBase = appBase && addLeadingSlash(appBase);
 
   /**
   * It's preferable to use `??` bewteen leadingSlashAppBase and actualPath. But some
   * users already use the misunderstanding `basename=''`, which we have to keep things the way they are.
    */
-  return `${leadingSlashFrameworkBase}${leadingSlashAppBase || actualPath}`;
+  return `${leadingSlashAppBase || actualPath}`;
 };
 
 /**
