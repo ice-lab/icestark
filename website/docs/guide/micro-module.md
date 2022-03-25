@@ -492,6 +492,26 @@ const App = () => {
 }
 ```
 
+### 模块预执行
+
+有些场景下，比如在页面的空闲时间加载执行下一个页面加载的微模块，以加快下一页面的渲染。可以如下操作：
+
+```ts
+import { preloadModules } from '@ice/stark-module';
+
+preloadModules([{
+  name: 'moduleNameA',
+  url: 'https://localhost/moduleA.js',
+}, {
+  name: 'moduleNameB',
+  url: 'https://localhost/moduleB.js',
+}])
+```
+
+预执行不会阻塞主线程，但是不合理的设计仍可能导致请求阻塞，执行阻塞。
+
+> 预执行内部使用 [window.requestIdleCallback](https://developer.mozilla.org/zh-CN/docs/Web/API/Window/requestIdleCallback)，使得浏览器可以在不阻塞主线程的情况下预执行微模块。
+
 ## API
 
 请移步 [API -> @ice/stark-module](/docs/api/stark-module)
