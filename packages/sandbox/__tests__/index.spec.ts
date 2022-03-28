@@ -132,7 +132,7 @@ describe('eval in sandbox', () => {
 describe('callable functions in sandbox', () => {
   const sandbox = new Sandbox({ multiMode: true });
 
-  test.only('callable function with extra properties', () => {
+  test('callable function with extra properties', () => {
     // @ts-ignore
     window.axios = function(){};
     // @ts-ignore
