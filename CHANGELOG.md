@@ -2,6 +2,10 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
+## 2.7.3
+
+- [fix] empty value or `undefined` in `activePath` array will be ignored. ([#558](https://github.com/ice-lab/icestark/issues/558))
+
 ## 2.7.2
 
 - [fix] set actual basename when `activePath` is an array. ([#526](https://github.com/ice-lab/icestark/issues/526))

@@ -97,7 +97,8 @@ const findActivePath = (activePath?: PathData[] | ActiveFn): (url?: string) => s
     let matchedPath;
     const isActive = activePath.some((path) => {
       matchedPath = path?.value;
-      return matchPath(url, path);
+      // Escape when path is empty or undefined
+      return matchedPath ? matchPath(url, path) : false;
     });
 
     return isActive ? matchedPath : false;
