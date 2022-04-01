@@ -382,6 +382,9 @@ export async function createMicroApp(
       if (!appConfig.cached) {
         const appendAssets = [
           ...appConfig?.appAssets?.cssList || [],
+          // In vite development mode, styles are inserted into DOM manually.
+          // While es module natively imported twice may never excute twice.
+          // https://github.com/ice-lab/icestark/issues/555
           ...(appConfig?.loadScriptMode === 'import' ? filterRemovedAssets(importCachedAssets[appConfig.name] ?? [], ['LINK', 'STYLE']) : []),
         ];
 
