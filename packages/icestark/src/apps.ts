@@ -380,7 +380,12 @@ export async function createMicroApp(
       break;
     case UNMOUNTED:
       if (!appConfig.cached) {
-        await loadAndAppendCssAssets(appConfig?.appAssets?.cssList || [], {
+        const appendAssets = [
+          ...appConfig?.appAssets?.cssList || [],
+          ...(appConfig?.loadScriptMode === 'import' ? filterRemovedAssets(importCachedAssets[appConfig.name] ?? [], ['LINK', 'STYLE']) : []),
+        ];
+
+        await loadAndAppendCssAssets(appendAssets, {
           cacheCss: shouldCacheCss(appConfig.loadScriptMode),
           fetch,
         });
