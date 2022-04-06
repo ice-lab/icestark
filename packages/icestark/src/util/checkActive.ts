@@ -1,6 +1,7 @@
 import pathToRegexp from 'path-to-regexp';
 import urlParse from 'url-parse';
-import { isFunction, toArray, isObject, addLeadingSlash } from './helpers';
+import { ErrorCode, formatErrMessage } from './error';
+import { isFunction, toArray, isObject, addLeadingSlash, log, isDev } from './helpers';
 
 /**
  * "slash" - hashes like #/ and #/sunshine/lollipops
@@ -97,6 +98,16 @@ const findActivePath = (activePath?: PathData[] | ActiveFn): (url?: string) => s
     let matchedPath;
     const isActive = activePath.some((path) => {
       matchedPath = path?.value;
+
+      if (matchPath && isDev) {
+        log.warn(
+          formatErrMessage(
+            ErrorCode.ACTIVE_PATH_ITEM_CAN_NOT_BE_EMPTY,
+            `Each item of activePath must be string、object、array or a function. Received ${matchPath?.toString()}`,
+          ),
+        );
+      }
+
       // Escape when path is empty or undefined
       return matchedPath ? matchPath(url, path) : false;
     });
