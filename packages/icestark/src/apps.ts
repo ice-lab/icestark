@@ -301,6 +301,7 @@ async function loadApp(app: MicroApp) {
     }
   } catch (err) {
     configuration.onError(err);
+    log.error(err);
     updateAppConfig(name, { status: LOAD_ERROR });
   }
   if (lifeCycle.mount) {

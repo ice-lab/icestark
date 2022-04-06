@@ -231,7 +231,6 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       }
     });
 
-
     if (match) {
       const { name, activePath, path } = element.props as AppRouteProps;
 

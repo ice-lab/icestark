@@ -121,7 +121,6 @@ describe('AppRouter', () => {
     unmount();
   })
 
-
   test('app-multi-paths', async () => {
     (fetch as FetchMock).mockResponseOnce(umdSourceWithSetLibrary.toString());
     const { container, unmount } = render(
