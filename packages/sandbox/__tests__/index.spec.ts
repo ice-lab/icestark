@@ -129,3 +129,25 @@ describe('eval in sandbox', () => {
   });
 });
 
+describe('callable functions in sandbox', () => {
+  const sandbox = new Sandbox({ multiMode: true });
+
+  test('callable function with extra properties', () => {
+    // @ts-ignore
+    window.axios = function(){};
+    // @ts-ignore
+    axios.create = function(){};
+    let error = null;
+    try {
+      sandbox.execScriptInSandbox(
+        `
+          axios.create();
+        `,
+      );
+    } catch (e) {
+      error = e.message;
+    }
+
+    expect(error).toBe(null);
+  });
+});

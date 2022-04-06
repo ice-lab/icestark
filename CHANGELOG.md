@@ -5,6 +5,7 @@ See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/ic
 ## 2.7.3
 
 - [fix] empty value or `undefined` in `activePath` array will be ignored. ([#558](https://github.com/ice-lab/icestark/issues/558))
+- [fix] append missing styles in vite developing mode. ([#555](https://github.com/ice-lab/icestark/issues/555))
 
 ## 2.7.2
 
