@@ -9,7 +9,7 @@ export default function Error7({ args }) {
       <br />
       <h2>解决办法</h2>
 
-      <p> activePath 接受到的参数可能是 undefind、null 或者空字符。activePath 可配置的参数是 <a href="/docs/api/ice-stark#activePath">loadScriptMode</a>  </p>
+      <p> activePath 接受到的参数可能是 undefind、null 或者空字符。详见 activePath 可配置的 <a href="/docs/api/ice-stark#activePath">参数</a> </p>
     </>
   );
 }
