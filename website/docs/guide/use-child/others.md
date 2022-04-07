@@ -13,7 +13,7 @@ order: 3
 
 ## icejs 应用
 
-有关 [icejs]((https://ice.work/)) 应用接入 icestark 的细节请参考 [微前端 icestark](https://ice.work/docs/guide/advance/icestark#%E5%BE%AE%E5%BA%94%E7%94%A8)。
+有关 [icejs](https://ice.work/) 应用接入 icestark 的细节请参考 [微前端 icestark](https://ice.work/docs/guide/advance/icestark#%E5%BE%AE%E5%BA%94%E7%94%A8)。
 
 
 ## create-react-app 应用
