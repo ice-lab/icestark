@@ -103,7 +103,7 @@ const findActivePath = (activePath?: PathData[] | ActiveFn): (url?: string) => s
         log.warn(
           formatErrMessage(
             ErrorCode.ACTIVE_PATH_ITEM_CAN_NOT_BE_EMPTY,
-            `Each item of activePath must be string、object、array or a function. Received ${matchPath?.toString()}`,
+            `Each item of activePath must be string、object、array or a function. Received ${matchedPath?.toString()}`,
           ),
         );
       }
