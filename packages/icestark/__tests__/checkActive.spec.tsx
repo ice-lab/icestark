@@ -97,5 +97,17 @@ describe('checkActive', () => {
     // matched idx
     checkFnc = findActivePath(formatPath(['/test', '/seller'], {}));
     expect(checkFnc('/seller')).toEqual('/seller');
+
+    // undefined array
+    checkFnc = findActivePath(formatPath([undefined, '/seller'], {}));
+    expect(checkFnc('/')).toBeFalsy();
+
+    // nuallable array
+    checkFnc = findActivePath(formatPath([null, '/seller'], {}));
+    expect(checkFnc('/')).toBeFalsy();
+
+    // empty array
+    checkFnc = findActivePath(formatPath(['', '/seller'], {}));
+    expect(checkFnc('/')).toBeFalsy();
   })
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Error1({ args }) {
+export default function Error3({ args }) {
   return (
     <>
       <h1>#3: window.fetch not found, you need to polyfill it!</h1>

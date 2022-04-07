@@ -301,6 +301,7 @@ async function loadApp(app: MicroApp) {
     }
   } catch (err) {
     configuration.onError(err);
+    log.error(err);
     updateAppConfig(name, { status: LOAD_ERROR });
   }
   if (lifeCycle.mount) {
@@ -380,7 +381,15 @@ export async function createMicroApp(
       break;
     case UNMOUNTED:
       if (!appConfig.cached) {
-        await loadAndAppendCssAssets(appConfig?.appAssets?.cssList || [], {
+        const appendAssets = [
+          ...(appConfig?.appAssets?.cssList || []),
+          // In vite development mode, styles are inserted into DOM manually.
+          // While es module natively imported twice may never excute twice.
+          // https://github.com/ice-lab/icestark/issues/555
+          ...(appConfig?.loadScriptMode === 'import' ? filterRemovedAssets(importCachedAssets[appConfig.name] ?? [], ['LINK', 'STYLE']) : []),
+        ];
+
+        await loadAndAppendCssAssets(appendAssets, {
           cacheCss: shouldCacheCss(appConfig.loadScriptMode),
           fetch,
         });

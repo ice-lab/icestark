@@ -149,6 +149,7 @@ describe('AppRouter', () => {
     expect(container.innerHTML).toContain('test render b');
     unmount();
   });
+
   test('test for AppRoute entry -> success', done => {
     window.history.pushState({}, 'test', '/fetch-entry');
 
