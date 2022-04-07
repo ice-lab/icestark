@@ -99,7 +99,7 @@ const findActivePath = (activePath?: PathData[] | ActiveFn): (url?: string) => s
     const isActive = activePath.some((path) => {
       matchedPath = path?.value;
 
-      if (matchPath && isDev) {
+      if (!matchedPath && isDev) {
         log.warn(
           formatErrMessage(
             ErrorCode.ACTIVE_PATH_ITEM_CAN_NOT_BE_EMPTY,
