@@ -251,35 +251,6 @@ module.exports = {
 
 [https://micro-frontends.ice.work/](https://micro-frontends.ice.work/)
 
-## Ecosystem 🧼
-
-|    Project         |    Version                                 |     Docs    |   Description       |
-|----------------|-----------------------------------------|--------------|-----------|
-| [icejs] | [![icejs-status]][icejs-package] | [docs][icejs-docs] |A universal framework based on react.js|
-| [icestore] | [![icestore-status]][icestore-package] | [docs][icestore-docs] |Simple and friendly state for React|
-| [formily] | [![formily-status]][formily-package] | [docs][formily-docs] | Alibaba Group Unified Form Solution |
-| [iceworks]| [![iceworks-status]][iceworks-package] | [docs][iceworks-docs] | Universal Application Development Pack for VS Code |
-
-[icejs]: https://github.com/alibaba/ice
-[icestore]: https://github.com/ice-lab/icestore
-[iceworks]: https://github.com/ice-lab/iceworks
-[formily]: https://github.com/alibaba/formily
-
-[icejs-status]: https://img.shields.io/npm/v/ice.js.svg
-[icestore-status]: https://img.shields.io/npm/v/@ice/store.svg
-[iceworks-status]: https://vsmarketplacebadge.apphb.com/version/iceworks-team.iceworks.svg
-[formily-status]: https://img.shields.io/npm/v/@formily/react.svg
-
-[icejs-package]: https://npmjs.com/package/ice.js
-[icestore-package]: https://npmjs.com/package/@ice/store
-[iceworks-package]: https://marketplace.visualstudio.com/items?itemName=iceworks-team.iceworks
-[formily-package]: https://npmjs.com/package/@formily/react
-
-[icejs-docs]: https://ice.work/docs/guide/intro
-[icestore-docs]: https://github.com/ice-lab/icestore#icestore
-[iceworks-docs]: https://ice.work/docs/iceworks/about
-[formily-docs]: https://formilyjs.org/
-
 ## Contributors
 
 <table>
