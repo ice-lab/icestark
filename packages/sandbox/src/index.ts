@@ -1,5 +1,6 @@
 export interface SandboxProps {
   multiMode?: boolean;
+  customInjectedProxy?: any;
 }
 
 export interface SandboxConstructor {
@@ -43,10 +44,12 @@ export default class Sandbox {
 
   private originalValues = {};
 
+  private customInjectedProxy: any = {};
+
   public sandboxDisabled: boolean;
 
   constructor(props: SandboxProps = {}) {
-    const { multiMode } = props;
+    const { multiMode, customInjectedProxy } = props;
     if (!window.Proxy) {
       console.warn('proxy sandbox is not support by current browser');
       this.sandboxDisabled = true;
@@ -54,6 +57,7 @@ export default class Sandbox {
     // enable multiMode in case of create mulit sandbox in same time
     this.multiMode = multiMode;
     this.sandbox = null;
+    this.customInjectedProxy = customInjectedProxy;
   }
 
   createProxySandbox(injection?: object) {
@@ -64,6 +68,8 @@ export default class Sandbox {
     const originalRemoveEventListener = window.removeEventListener;
     const originalSetInterval = window.setInterval;
     const originalSetTimeout = window.setTimeout;
+
+    const _self = this;
 
     // hijack addEventListener
     proxyWindow.addEventListener = (eventName, fn, ...rest) => {
@@ -132,6 +138,12 @@ export default class Sandbox {
         if (targetValue !== undefined) {
           // case of addEventListener, removeEventListener, setTimeout, setInterval setted in sandbox
           return targetValue;
+        }
+
+        // search from customInjectedProxy
+        const customInjectionValue = _self.customInjectedProxy && _self.customInjectedProxy[p];
+        if (customInjectionValue) {
+          return customInjectionValue;
         }
 
         // search from injection
