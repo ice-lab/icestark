@@ -1,6 +1,6 @@
 export interface SandboxProps {
   multiMode?: boolean;
-  injection?: Record<string | symbol, any>;
+  injection?: Record<PropertyKey, any>;
 }
 
 export interface SandboxConstructor {
@@ -34,7 +34,7 @@ export default class Sandbox {
 
   private multiMode = false;
 
-  private injection: Record<string | symbol, any> = {};
+  private injection: Record<PropertyKey, any> = {};
 
   private eventListeners = {};
 
