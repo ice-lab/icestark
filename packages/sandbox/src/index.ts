@@ -71,6 +71,12 @@ export default class Sandbox {
 
     const _self = this;
 
+    // merge injection
+    this.injection = {
+      ...injection,
+      ...this.injection,
+    };
+
     // hijack addEventListener
     proxyWindow.addEventListener = (eventName, fn, ...rest) => {
       this.eventListeners[eventName] = (this.eventListeners[eventName] || []);
@@ -140,14 +146,8 @@ export default class Sandbox {
           return targetValue;
         }
 
-        // search from customInjectedProxy
-        const customInjectionValue = _self.injection && _self.injection[p];
-        if (customInjectionValue) {
-          return customInjectionValue;
-        }
-
         // search from injection
-        const injectionValue = injection && injection[p];
+        const injectionValue = _self.injection && _self.injection[p];
         if (injectionValue) {
           return injectionValue;
         }
