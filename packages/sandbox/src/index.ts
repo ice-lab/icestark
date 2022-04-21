@@ -1,6 +1,6 @@
 export interface SandboxProps {
   multiMode?: boolean;
-  injection?: any;
+  injection?: Record<string, any>;
 }
 
 export interface SandboxConstructor {
@@ -69,13 +69,8 @@ export default class Sandbox {
     const originalSetInterval = window.setInterval;
     const originalSetTimeout = window.setTimeout;
 
+    // quote `this` to be used in Proxy method
     const _self = this;
-
-    // merge injection
-    this.injection = {
-      ...injection,
-      ...this.injection,
-    };
 
     // hijack addEventListener
     proxyWindow.addEventListener = (eventName, fn, ...rest) => {
@@ -147,7 +142,7 @@ export default class Sandbox {
         }
 
         // search from injection
-        const injectionValue = _self.injection && _self.injection[p];
+        const injectionValue = (_self.injection && _self.injection[p]) || (injection && injection[p]);
         if (injectionValue) {
           return injectionValue;
         }
