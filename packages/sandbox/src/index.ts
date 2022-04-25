@@ -142,7 +142,10 @@ export default class Sandbox {
         }
 
         // search from injection
-        const injectionValue = (_self.injection && _self.injection[p]) || (injection && injection[p]);
+        const injectionValue = ({
+          ...(_self.injection),
+          ...injection,
+        })[p];
         if (injectionValue) {
           return injectionValue;
         }
