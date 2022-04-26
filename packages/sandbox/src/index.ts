@@ -34,7 +34,7 @@ export default class Sandbox {
 
   private multiMode = false;
 
-  private injection: Record<PropertyKey, any> = {};
+  private injection = {};
 
   private eventListeners = {};
 
@@ -142,10 +142,8 @@ export default class Sandbox {
         }
 
         // search from injection
-        const injectionValue = ({
-          ...(_self.injection),
-          ...injection,
-        })[p];
+        const injectionValue = _self.injection?.[p] ?? injection?.[p];
+
         if (injectionValue) {
           return injectionValue;
         }
@@ -169,6 +167,7 @@ export default class Sandbox {
 
           // Axios, Moment, and other callable functions may have additional properties.
           // Simply copy them into boundValue.
+          // eslint-disable-next-line guard-for-in
           for (const key in value) {
             boundValue[key] = value[key];
           }
