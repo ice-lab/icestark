@@ -193,9 +193,6 @@ export async function loadAppModule(appConfig: AppConfig) {
 
   const cacheId = cached ? name : undefined;
 
-  /**
-   * LoadScriptMode has the first priority
-   */
   updateAppConfig(appConfig.name, { appAssets });
 
   const cacheCss = shouldCacheCss(loadScriptMode);
@@ -446,7 +443,7 @@ export async function unmountMicroApp(appName: string) {
     }
 
     updateAppConfig(appName, { status: UNMOUNTED });
-    if (appConfig.appSandbox) {
+    if (!appConfig.cached && appConfig.appSandbox) {
       appConfig.appSandbox.clear();
       appConfig.appSandbox = null;
     }
