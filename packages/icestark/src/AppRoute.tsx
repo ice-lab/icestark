@@ -137,9 +137,9 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   }
 
   mountApp = () => {
-    const { onAppEnter } = this.props;
-
     resetCapturedEventListeners();
+
+    const { onAppEnter } = this.props;
 
     // Trigger app enter
     if (typeof onAppEnter === 'function') {

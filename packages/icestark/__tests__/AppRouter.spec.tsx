@@ -147,7 +147,7 @@ describe('AppRouter', () => {
     unmount();
   })
 
-  test('app-basename-default----aaaa', async () => {
+  test('app-cached', async () => {
     (fetch as FetchMock).mockResponseOnce(umdSourceWithSetLibrary.toString());
     const { container, unmount } = render(
       <AppRouter>
