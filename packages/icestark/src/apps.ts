@@ -228,7 +228,7 @@ export async function loadAppModule(appConfig: AppConfig) {
           fetch,
           cacheId,
         }),
-        loadAndAppendJsAssets(appAssets, { scriptAttributes }),
+        loadAndAppendJsAssets(appAssets, { scriptAttributes, cacheId }),
       ]);
       lifecycle =
         getLifecyleByLibrary() ||

@@ -41,8 +41,6 @@ export default class Sandbox {
 
   private propertyAdded = {};
 
-  private propertyModified = {};
-
   private originalValues = {};
 
   public sandboxDisabled: boolean;
@@ -59,7 +57,7 @@ export default class Sandbox {
   }
 
   createProxySandbox(injection?: object) {
-    const { propertyAdded, propertyModified, originalValues, multiMode } = this;
+    const { propertyAdded, originalValues, multiMode } = this;
     const proxyWindow = Object.create(null) as Window;
     const originalWindow = window;
     const originalAddEventListener = window.addEventListener;
@@ -105,7 +103,6 @@ export default class Sandbox {
         } else if (!originalValues.hasOwnProperty(p)) {
           // if it is already been setted in original window, record it's original value
           originalValues[p] = originalWindow[p];
-          propertyModified[p] = value;
         }
         // set new value to original window in case of jsonp, js bundle which will be execute outof sandbox
         if (!multiMode) {

@@ -6,8 +6,6 @@ import { converArray2String } from './util/helpers';
 import {
   callCapturedEventListeners,
   resetCapturedEventListeners,
-  retrieveCaptureEventListeners,
-  storeCaptureEventListeners,
 } from './util/capturedListeners';
 import isEqual from 'lodash.isequal';
 
@@ -141,11 +139,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   mountApp = () => {
     const { onAppEnter, name, cached } = this.props;
 
-    if (cached) {
-      retrieveCaptureEventListeners(name);
-    } else {
-      resetCapturedEventListeners();
-    }
+    resetCapturedEventListeners();
 
     // Trigger app enter
     if (typeof onAppEnter === 'function') {
@@ -161,10 +155,6 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
   unmountApp = () => {
     const { name, onAppLeave, cached } = this.props;
-
-    if (cached) {
-      storeCaptureEventListeners(name);
-    }
 
     // Trigger app leave
     if (typeof onAppLeave === 'function') {
