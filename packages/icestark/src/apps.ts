@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import Sandbox, { SandboxConstructor, SandboxProps } from '@ice/sandbox';
 import isEmpty from 'lodash.isempty';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
@@ -216,6 +217,7 @@ export async function loadAppModule(appConfig: AppConfig) {
       await loadAndAppendCssAssets(appAssets.cssList, {
         cacheCss,
         fetch,
+        cacheId,
       });
       lifecycle = await loadScriptByFetch(appAssets.jsList, appSandbox, fetch);
       break;
@@ -224,13 +226,14 @@ export async function loadAppModule(appConfig: AppConfig) {
         loadAndAppendCssAssets(appAssets.cssList, {
           cacheCss,
           fetch,
+          cacheId,
         }),
         loadAndAppendJsAssets(appAssets, { scriptAttributes }),
       ]);
       lifecycle =
-          getLifecyleByLibrary() ||
-          getLifecyleByRegister() ||
-          {};
+        getLifecyleByLibrary() ||
+        getLifecyleByRegister() ||
+        {};
   }
 
   if (isEmpty(lifecycle)) {
@@ -420,9 +423,6 @@ export async function mountMicroApp(appName: string) {
 
   if (shouldMount) {
     if (appConfig?.mount) {
-      if (appConfig.cached) {
-        // appConfig.appSandbox.resume();
-      }
       await appConfig.mount({ container: appConfig.container, customProps: appConfig.props });
     }
     updateAppConfig(appName, { status: MOUNTED });
@@ -448,7 +448,7 @@ export async function unmountMicroApp(appName: string) {
     updateAppConfig(appName, { status: UNMOUNTED });
     if (appConfig.appSandbox) {
       appConfig.appSandbox.clear();
-      // appConfig.appSandbox = null;
+      appConfig.appSandbox = null;
     }
     if (appConfig.unmount) {
       await appConfig.unmount({ container: appConfig.container, customProps: appConfig.props });
@@ -456,18 +456,30 @@ export async function unmountMicroApp(appName: string) {
   }
 }
 
-// unload micro app, load app bundles when create micro app
+/**
+ * uninstall micro app thoroughly
+ * @param appName
+ */
 export async function unloadMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   if (appConfig) {
+    if (appConfig.cached) {
+      log.warn(
+        formatErrMessage(
+          ErrorCode.CACHED_APP_USE_UNLOAD,
+          isDev && 'Use unmountMicroApp instead of unloadMicroApp to uninstall app {0}. This will not break the whole app but invalidate caching',
+          appName,
+        ),
+      );
+    }
+
     unmountMicroApp(appName);
 
-    if (!appConfig.cached) {
-      delete appConfig.mount;
-      delete appConfig.unmount;
-      delete appConfig.appAssets;
-      updateAppConfig(appName, { status: NOT_LOADED });
-    }
+    delete appConfig.mount;
+    delete appConfig.unmount;
+    delete appConfig.appAssets;
+
+    updateAppConfig(appName, { status: NOT_LOADED });
   } else {
     log.error(
       formatErrMessage(

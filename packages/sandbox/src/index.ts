@@ -226,16 +226,4 @@ export default class Sandbox {
       });
     }
   }
-
-  resume() {
-    if (!this.sandboxDisabled) {
-      Object.keys(this.propertyModified).forEach((key) => {
-        window[key] = this.propertyModified[key];
-      });
-
-      Object.keys(this.propertyAdded).forEach((key) => {
-        window[key] = this.propertyAdded[key];
-      });
-    }
-  }
 }
