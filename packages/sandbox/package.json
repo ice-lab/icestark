@@ -1,0 +1,42 @@
+{
+  "name": "@ice/sandbox",
+  "version": "1.1.4",
+  "description": "sandbox for execute scripts",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "rm -rf lib && tsc",
+    "watch": "tsc -w",
+    "test": "NODE_ENV=unittest pnpm jest",
+    "lint": "pnpm eslint --ext .js,.jsx,.ts,.tsx ./",
+    "prepublishOnly": "pnpm run-s lint test build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ice-lab/icestark.git"
+  },
+  "files": [
+    "lib"
+  ],
+  "keywords": [
+    "sandbox",
+    "icestark"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ice-lab/icestark/issues"
+  },
+  "homepage": "https://github.com/ice-lab/icestark#readme",
+  "devDependencies": {
+    "typescript": "^3.8.3"
+  },
+  "jest": {
+    "coverageDirectory": "./coverage/",
+    "collectCoverage": true,
+    "preset": "ts-jest",
+    "automock": false,
+    "testMatch": [ "**/__tests__/**/*.ts?(x)", "**/?(*.)+(spec|test).ts?(x)" ],
+    "setupFiles": [
+      "../../setupJest.ts"
+    ]
+  }
+}

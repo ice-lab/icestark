@@ -1,0 +1,63 @@
+{
+  "name": "@ice/stark",
+  "version": "2.7.3",
+  "description": "Icestark is a JavaScript library for multiple projects, Ice workbench solution.",
+  "scripts": {
+    "build": "rm -rf lib && tsc",
+    "watch": "tsc -w",
+    "test": "NODE_ENV=unittest pnpm jest",
+    "lint": "pnpm eslint --ext .js,.jsx,.ts,.tsx ./",
+    "prepublishOnly": "pnpm run-s lint test build"
+  },
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "ice",
+    "react",
+    "microfrontends"
+  ],
+  "bugs": {
+    "url": "https://github.com/alibaba/ice/issues"
+  },
+  "homepage": "https://github.com/ice-lab/icestark",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ice-lab/icestark.git"
+  },
+  "peerDependencies": {
+    "react": ">=15.0.0"
+  },
+  "dependencies": {
+    "@ice/sandbox": "^1.0.4",
+    "lodash.isempty": "^4.4.0",
+    "lodash.isequal": "^4.5.0",
+    "path-to-regexp": "^1.7.0",
+    "url-parse": "^1.1.9"
+  },
+  "devDependencies": {
+    "@types/path-to-regexp": "^1.7.0",
+    "@types/react": "^16.8.19",
+    "@types/url-parse": "^1.4.3",
+    "react": "^16.7.0",
+    "react-dom": "^16.7.0",
+    "typescript": "^4.3.5"
+  },
+  "jest": {
+    "coverageDirectory": "./coverage/",
+    "collectCoverage": true,
+    "preset": "ts-jest",
+    "automock": false,
+    "testMatch": [
+      "**/__tests__/**/*.ts?(x)",
+      "**/?(*.)+(spec|test).ts?(x)"
+    ],
+    "setupFiles": [
+      "../../setupJest.ts"
+    ]
+  }
+}

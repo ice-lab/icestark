@@ -1,13 +1,13 @@
 {
   "name": "@ice/stark-app",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "description": "icestark-app is a JavaScript library for icestark, used by sub-application.",
   "scripts": {
     "build": "rm -rf lib && tsc",
     "watch": "tsc -w",
-    "prepublishOnly": "npm run test && npm run build",
-    "test": "NODE_ENV=unittest jest",
-    "coverage": "codecov"
+    "test": "NODE_ENV=unittest pnpm jest",
+    "lint": "pnpm eslint --ext .js,.jsx,.ts,.tsx ./",
+    "prepublishOnly": "pnpm run-s lint test build"
   },
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -25,33 +25,21 @@
     "url": "https://github.com/ice-lab/icestark/issues"
   },
   "homepage": "https://github.com/ice-lab/icestark",
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-    }
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ice-lab/icestark.git"
   },
   "devDependencies": {
-    "@commitlint/cli": "^7.5.2",
-    "@commitlint/config-conventional": "^7.5.0",
-    "@ice/spec": "^0.1.4",
-    "@testing-library/jest-dom": "^4.2.3",
-    "@types/jest": "^24.0.12",
-    "@types/node": "^12.0.0",
-    "codecov": "^3.4.0",
-    "eslint": "^5.16.0",
-    "husky": "^2.2.0",
-    "jest": "^24.7.1",
-    "stylelint": "^10.1.0",
-    "ts-jest": "^24.0.2",
     "typescript": "^3.4.4"
   },
   "jest": {
     "coverageDirectory": "./coverage/",
     "collectCoverage": true,
-    "preset": "ts-jest"
+    "preset": "ts-jest",
+    "automock": false,
+    "testMatch": [ "**/__tests__/**/*.ts?(x)", "**/?(*.)+(spec|test).ts?(x)" ],
+    "setupFiles": [
+      "../../setupJest.ts"
+    ]
   }
 }

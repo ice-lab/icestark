@@ -34,6 +34,7 @@ module.exports = {
       collapsed: false,
       items: getDocsFromDir('guide/advanced'),
     },
+    'guide/ecosystem',
     'guide/micro-module',
   ],
   api: [

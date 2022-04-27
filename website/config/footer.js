@@ -27,7 +27,7 @@ module.exports = {
         },
         {
           label: '提交需求',
-          href: 'https://github.com/ice-lab/icestark/issues/new?assignees=&labels=bug&template=bug_report.md',
+          href: 'https://github.com/ice-lab/icestark/issues/new',
         },
       ],
     },

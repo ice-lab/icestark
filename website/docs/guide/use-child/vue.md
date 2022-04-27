@@ -6,7 +6,7 @@ order: 2
 
 ## 通过脚手架创建
 
-> 官方脚手架基于 Vue 2.0 + Vue CLI。
+> 脚手架基于 Vue 3.0 + Vite
 
 ```bash
 $ npm init ice icestark-child @vue-materials/icestark-child-app

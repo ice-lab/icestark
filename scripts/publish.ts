@@ -6,7 +6,7 @@ import { spawnSync } from 'child_process';
 import { IPackageInfo, getPackageInfos } from './getPackageInfos';
 
 if (process.env.BRANCH_NAME !== 'master') {
-  console.log('No Publish', process.env.BRANCH_NAME);
+  console.log('The current branch forbids publishing.', process.env.BRANCH_NAME);
   process.exit(0);
 }
 
@@ -25,15 +25,10 @@ function publish(pkg: string, version: string, directory: string): void {
 // Entry
 console.log('[PUBLISH] Start:');
 
-Promise.all([
-  getPackageInfos(join(__dirname, '../packages'), true),
-  getPackageInfos(join(__dirname, '../'), false),
-]).then((result: IPackageInfo[][]) => {
-
-  let publishedCount = 0;
-  // Publish
-  for (let i = 0; i < result.length; i++) {
-    const packageInfos: IPackageInfo[] = result[i];
+getPackageInfos(join(__dirname, '../packages'), true)
+  .then((packageInfos: IPackageInfo[]) => {
+    let publishedCount = 0;
+    // Publish
     for (let j = 0; j < packageInfos.length; j++) {
       const { name, directory, localVersion, shouldPublish } = packageInfos[j];
       if (shouldPublish) {
@@ -42,6 +37,5 @@ Promise.all([
         publish(name, localVersion, directory);
       }
     }
-  }
-  console.log(`[PUBLISH] Complete (count=${publishedCount}).`);
-});
+    console.log(`[PUBLISH] Complete (count=${publishedCount}).`);
+  });

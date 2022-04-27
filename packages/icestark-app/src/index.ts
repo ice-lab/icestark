@@ -8,3 +8,5 @@ export { default as appHistory } from './appHistory';
 export { default as isInIcestark } from './isInIcestark';
 export { default as AppLink } from './AppLink';
 export { default as setLibraryName } from './setLibraryName';
+
+export type { LifecycleProps } from './registerAppEnter';

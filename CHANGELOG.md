@@ -2,6 +2,26 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
+## 2.7.3
+
+- [fix] empty value or `undefined` in `activePath` array will be ignored. ([#558](https://github.com/ice-lab/icestark/issues/558))
+- [fix] append missing styles in vite developing mode. ([#555](https://github.com/ice-lab/icestark/issues/555))
+
+## 2.7.2
+
+- [fix] set actual basename when `activePath` is an array. ([#526](https://github.com/ice-lab/icestark/issues/526))
+
+## 2.7.1
+
+- [feat] improve DX a lot.
+
+## 2.7.0
+
+- [feat] cache css by default. ([#373](https://github.com/ice-lab/icestark/issues/373))
+- [feat] appHistory and <Link /> can both take state. ([#477](https://github.com/ice-lab/icestark/issues/477))
+- [chore] narrow scope of `import`'s error. ([#466](https://github.com/ice-lab/icestark/issues/466))
+- [chore] add missing props for lifecycles. ([#440](https://github.com/ice-lab/icestark/issues/440))
+
 ## 2.6.2
 
 - [fix] avoid to append duplicate assets. ([#331](https://github.com/ice-lab/icestark/issues/331))
