@@ -60,6 +60,10 @@ export default class Sandbox {
     this.injection = injection;
   }
 
+  /**
+   * create proxy sandbox
+   * @param injection @deprecated will be deprecated in the future
+   */
   createProxySandbox(injection?: object) {
     const { propertyAdded, originalValues, multiMode } = this;
     const proxyWindow = Object.create(null) as Window;
@@ -69,7 +73,7 @@ export default class Sandbox {
     const originalSetInterval = window.setInterval;
     const originalSetTimeout = window.setTimeout;
 
-    // quote `this` to be used in Proxy method
+    // `this` in Proxy traps will retarget to the trap.
     const _self = this;
 
     // hijack addEventListener
