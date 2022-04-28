@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.5
+
+- [fix] exposes `injection` through constructor.
+
 ## 1.1.4
 
 - [fix] simply copy callable funtions's extra properties.
