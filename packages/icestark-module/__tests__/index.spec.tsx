@@ -33,6 +33,28 @@ const defaultUnmount = (targetNode: HTMLElement) => {
   ReactDOM.unmountComponentAtNode(targetNode);
 };
 
+const TestModule = ({ value = 1 }: { value?: number }) => {
+  console.log('hhj-log', 'value', value);
+  return <span>{value}</span>;
+};
+registerModule({
+  name: 'moduleA',
+  render: (props: any) => {
+    return <TestModule {...props}/>
+  },
+});
+const TestHost = ({ initialValue }: { initialValue: number }) => {
+  const [value, setValue] = React.useState<number>(initialValue);
+
+  React.useEffect(() => {
+    setTimeout(() => {
+      setValue((value) => value + 1);
+    }, 500);
+  }, []);
+
+  return <MicroModule moduleName="moduleA" value={value} />;
+};
+
 const modules = [{
   name: 'selfComponent',
   url: 'http://127.0.0.1:3334/index.js',
@@ -182,6 +204,17 @@ describe('render modules', () => {
       ],
     });
   })
+
+  test('props rerender', async () => {
+    const { container, unmount } = render(<TestHost initialValue={5} />);
+    expect(container.innerHTML).toBe('<div><span>5</span></div>');
+    await new Promise<void>((resolve) => {
+      setTimeout(() => {
+        expect(container.innerHTML).toBe('<div><span>6</span></div>');
+        resolve();
+      }, 2000);
+    });
+  });
 
   test('clear module', () => {
     clearModules();
