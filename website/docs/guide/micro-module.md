@@ -383,7 +383,7 @@ import LocalComponent from './localComponent';
 
 registerModules([{
   name: 'moduleName',
-  render: () => LocalComponent,
+  render: (props) => <LocalComponent {...props} />,
 }]);
 
 const App = () => {

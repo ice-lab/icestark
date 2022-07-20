@@ -33,6 +33,12 @@ export default class MicroModule extends React.Component<any, State> {
 
   private unmout = false;
 
+  // moduleInfo 中定义的 mount 函数
+  private moduleLifecycleMount = null;
+
+  // 从 moduleInfo 配置中解析得到的模块组件
+  private moduleComponent = null;
+
   constructor(props) {
     super(props);
     this.state = {
@@ -45,8 +51,15 @@ export default class MicroModule extends React.Component<any, State> {
   }
 
   componentDidUpdate(prevProps) {
-    if (!shallowCompare(prevProps.moduleInfo || {}, this.props.moduleInfo || {})) {
+    const { moduleInfo: preModuleInfo = {}, ...preRest } = prevProps;
+    const { moduleInfo: curModuleInfo = {}, ...curRest } = this.props;
+
+    if (!shallowCompare(preModuleInfo, curModuleInfo)) {
       this.mountModule();
+    }
+    if (!shallowCompare(preRest, curRest)) {
+      // 对于除 moduleInfo 外的 props 更新，重新渲染模块
+      this.moduleLifecycleMount && this.moduleLifecycleMount(this.moduleComponent, this.mountNode, curRest);
     }
   }
 
@@ -95,6 +108,8 @@ export default class MicroModule extends React.Component<any, State> {
       try {
         const { mount, component } = await loadModule(this.moduleInfo, sandbox);
         const lifecycleMount = mount;
+        this.moduleLifecycleMount = mount;
+        this.moduleComponent = component;
 
         !this.unmout && this.setState({ loading: false });
         if (lifecycleMount && component) {
@@ -120,7 +135,7 @@ export default class MicroModule extends React.Component<any, State> {
     const { loading } = this.state;
     const { render } = this.moduleInfo || {};
 
-    const { wrapperClassName, wrapperStyle, loadingComponent } = this.props;
+    const { wrapperClassName, wrapperStyle, loadingComponent, ...restProps } = this.props;
     return loading
       ? loadingComponent
       : (
@@ -129,7 +144,7 @@ export default class MicroModule extends React.Component<any, State> {
           style={wrapperStyle}
           ref={(ref) => { this.mountNode = ref; }}
         >
-          { this.moduleInfo && this.validateRender() && render() }
+          { this.moduleInfo && this.validateRender() && render(restProps) }
         </div>
       );
   }
