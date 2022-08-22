@@ -456,7 +456,7 @@ export async function unmountMicroApp(appName: string) {
         appConfig.appSandbox = null;
       }
     }
-    
+
     if (appConfig.unmount) {
       await appConfig.unmount({ container: appConfig.container, customProps: appConfig.props });
     }
