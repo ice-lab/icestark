@@ -158,7 +158,7 @@ export function getAppConfig(appName: string) {
 }
 
 export function updateAppConfig(appName: string, config) {
-  microApps = microApps.map((microApp) => {
+  (window as any).microApps = microApps = microApps.map((microApp) => {
     if (microApp.name === appName) {
       return {
         ...microApp,
