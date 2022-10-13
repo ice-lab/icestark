@@ -84,13 +84,13 @@ event.emit('freshMessage');
 
 ## props <Badge text="2.0.0+" />
 
-icestark 还支持通过 [props](/docs/api/ice-stark#props) 将主应用数据传递给微应用。
+icestark 还支持通过 [props](../../api/ice-stark#props) 将主应用数据传递给微应用。
 
 ### 示例
 
 主应用向微应用统一注入用户信息。
 
-在主应用中通过 [props](/docs/api/ice-stark#props) 配置用户信息。
+在主应用中通过 [props](../../api/ice-stark#props) 配置用户信息。
 
 ```js
 // src/App.jsx
@@ -117,7 +117,7 @@ const App = () => {
 }
 ```
 
-微应用可以通过[生命周期函数](/docs/guide/concept/child#生命周期)获取到该数据：
+微应用可以通过[生命周期函数](../concept/child#生命周期)获取到该数据：
 
 ```js
 export function mount({ container, customProps }) {

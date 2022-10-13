@@ -104,4 +104,4 @@ const apps = [{
 
 ### 4. render/component
 
-仅使用 React 的主应用支持，具体请参考 [主应用接入 - React](/docs/guide/use-layout/react)。
+仅使用 React 的主应用支持，具体请参考 [主应用接入 - React](../use-layout/react)。
