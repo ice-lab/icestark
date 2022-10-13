@@ -73,7 +73,7 @@ ReactDOM.render(<App />, document.getElementById('root'));
 - LoadingComponent：微应用加载过程渲染的组件
 - basename：整个主应用部署在某个基础路由下
 
-更多参数请参考 [API 介绍 AppRouter](/docs/api/ice-stark#approuter)。
+更多参数请参考 [API 介绍 AppRouter](../../api/ice-stark#approuter)。
 
 ### AppRoute 配置项
 
@@ -109,7 +109,7 @@ ReactDOM.render(<App />, document.getElementById('root'));
 
 #### 微应用入口 entry/entryContent/url
 
-对于 entry/entryContent/url 方式的使用请参考文档[微应用 - 入口规范](/docs/guide/concept/child#入口规范)。在此基础上，结合 React 的能力 AppRoute 还支持了更为灵活的 component 和 render 方式配置微应用入口：
+对于 entry/entryContent/url 方式的使用请参考文档[微应用 - 入口规范](../concept/child#入口规范)。在此基础上，结合 React 的能力 AppRoute 还支持了更为灵活的 component 和 render 方式配置微应用入口：
 
 ```js
 <AppRoute
@@ -131,7 +131,7 @@ ReactDOM.render(<App />, document.getElementById('root'));
 - cached：默认 `false`，切换后是否缓存微应用，可能会引起内存占用过大问题，不建议开启
 - hashType：默认 `false`，标识微应用的路由是否为 hash 模式
 
-更多参数请参考 [API 介绍 AppRoute](/docs/api/ice-stark#approute)。
+更多参数请参考 [API 介绍 AppRoute](../../api/ice-stark#approute)。
 
 
 ## 进阶指南
