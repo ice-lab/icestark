@@ -128,7 +128,7 @@ if (isInIcestark()) {
 // nuxt.config.js
 export default {
   plugins: [{
-    src: '~plugins/mircoapp.js',
+    src: '~plugins/microapp.js',
     ssr: false
   }]
 }
