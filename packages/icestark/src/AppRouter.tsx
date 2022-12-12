@@ -232,7 +232,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     });
 
     if (match) {
-      const { name, activePath, path } = element.props as AppRouteProps;
+      const { name, activePath, path, location } = element.props as AppRouteProps;
 
       if (isFunction(activePath) && !name) {
         const err = new Error('[icestark]: name is required in AppConfig');
@@ -242,7 +242,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
       this.appKey = name || converArray2String((activePath || path) as AppRoutePath);
       const componentProps: AppRouteComponentProps = {
-        location: urlParse(url, true),
+        // Get location from props when location change controlled by react state.
+        location: location || urlParse(url, true),
         match,
         history: appHistory,
       };
