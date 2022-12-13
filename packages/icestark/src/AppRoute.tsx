@@ -21,7 +21,7 @@ interface Match<Params extends { [K in keyof Params]?: string } = {}> {
 
 interface Location<Query extends { [K in keyof Query]?: string } = {}> {
   pathname: string;
-  query: Query;
+  query?: Query;
   hash: string;
 }
 
@@ -46,6 +46,7 @@ export interface AppRouteProps extends BaseConfig {
   path?: string | string[] | PathData[];
   onAppEnter?: (appConfig: CompatibleAppConfig) => void;
   onAppLeave?: (appConfig: CompatibleAppConfig) => void;
+  location?: Location;
 }
 
 export type CompatibleAppConfig = Omit<AppRouteProps, 'componentProps' | 'cssLoading' | 'onAppEnter' | 'onAppLeave'>;
