@@ -178,4 +178,28 @@ describe('AppRouter', () => {
 
     unmount();
   })
+
+  test('app-className-custom', async () => {
+    (fetch as FetchMock).mockResponseOnce(umdSourceWithSetLibrary.toString());
+    const { container, unmount } = render(
+      <AppRouter className="ice-app-router-custom">
+        <AppRoute
+          loadScriptMode="fetch"
+          name="seller"
+          path="/seller"
+          title="小二"
+          url={[
+            '//icestark.com/index.js'
+          ]}
+        />
+      </AppRouter>
+    );
+
+    window.history.pushState({}, 'test', '/seller');
+    await delay(1000);
+
+    expect(container.querySelector('.ice-app-router-custom')).toBeTruthy();
+
+    unmount();
+  })
 })
