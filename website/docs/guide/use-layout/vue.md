@@ -5,6 +5,7 @@
 ## 通过官方脚手架创建
 
 > 该官方脚手架基于 Vue 2.0 + Vue CLI，如需使用其他框架/工程可按 [已有应用改造](./vue#已有应用改造) 的方式接入。
+> 需注意，目前 @vue-materials/icestark-layout-app 1.x 采用 Vite + icestark + vue3 框架应用。
 
 ```bash
 $ npm init ice icestark-layout @vue-materials/icestark-layout-app
@@ -23,6 +24,12 @@ $ npm i --save @ice/stark
 ```
 
 通过 `registerMicroApps` 来注册微应用：
+
+```js
+// 新版本引用方式
+import start from '@ice/stark/lib/start'
+import { registerMicroApps } from '@ice/stark/lib/apps'
+```
 
 ```js
 import { registerMicroApps, start } from '@ice/stark';
