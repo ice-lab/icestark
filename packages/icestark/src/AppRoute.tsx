@@ -3,6 +3,7 @@ import renderComponent from './util/renderComponent';
 import { AppHistory } from './appHistory';
 import { unloadMicroApp, unmountMicroApp, BaseConfig, createMicroApp } from './apps';
 import { converArray2String } from './util/helpers';
+import { started } from './start';
 import {
   callCapturedEventListeners,
   resetCapturedEventListeners,
@@ -161,7 +162,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
       onAppLeave(genCompatibleAppConfig(this.props));
     }
 
-    if (!this.validateRender()) {
+    if (!this.validateRender() && started) {
       cached ? unmountMicroApp(name) : unloadMicroApp(name);
     }
   };
