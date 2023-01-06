@@ -1,6 +1,7 @@
 import pathToRegexp from 'path-to-regexp';
 import urlParse from 'url-parse';
-import { isFunction, toArray, isObject, addLeadingSlash } from './helpers';
+import { ErrorCode, formatErrMessage } from './error';
+import { isFunction, toArray, isObject, addLeadingSlash, log, isDev } from './helpers';
 
 /**
  * "slash" - hashes like #/ and #/sunshine/lollipops
@@ -81,7 +82,7 @@ export const formatPath = (activePath?: ActivePath, options: PathOption = {}): P
  * @param activePath
  * @returns
  */
-const checkActive = (activePath?: PathData[] | ActiveFn) => {
+const findActivePath = (activePath?: PathData[] | ActiveFn): (url?: string) => string | boolean => {
   // Always activate app when activePath is not specified.
   if (!activePath) {
     return () => true;
@@ -89,17 +90,35 @@ const checkActive = (activePath?: PathData[] | ActiveFn) => {
 
   // If pass fucntion to activePath, just returns
   if (isFunction(activePath)) {
-    return activePath;
+    return (url: string) => activePath(url);
   }
 
-  return (url: string) => activePath
-    .map((rule) => {
-      return (checkUrl: string) => matchPath(checkUrl, rule);
-    })
-    .some((functionalRule) => functionalRule(url));
+  return (url: string) => {
+    // Record matched index
+    let matchedPath;
+    const isActive = activePath.some((path) => {
+      matchedPath = path?.value;
+
+      if (!matchedPath && isDev) {
+        log.warn(
+          formatErrMessage(
+            ErrorCode.ACTIVE_PATH_ITEM_CAN_NOT_BE_EMPTY,
+            `Each item of activePath must be string、object、array or a function. Received ${matchedPath?.toString()}`,
+          ),
+        );
+      }
+
+      // Escape when path is empty or undefined
+      return matchedPath ? matchPath(url, path) : false;
+    });
+
+    return isActive ? matchedPath : false;
+  };
 };
 
-export default checkActive;
+export type FindActivePathReturn = ReturnType<typeof findActivePath>;
+
+export default findActivePath;
 
 const HashPathDecoders = {
   hashbang: (path: string) => (path.charAt(0) === '!' ? path.substr(1) : path),

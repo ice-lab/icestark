@@ -74,7 +74,6 @@ interface AppConfig {
   basename?: string;
   umd?: boolean;
   loadScriptMode?: 'fetch' | 'script' | 'import';
-  checkActive?: (url: string) => boolean;
   appAssets?: Assets;
   props?: object;
   cached?: boolean;

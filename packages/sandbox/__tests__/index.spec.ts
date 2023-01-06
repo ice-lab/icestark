@@ -129,3 +129,53 @@ describe('eval in sandbox', () => {
   });
 });
 
+describe('callable functions in sandbox', () => {
+  const sandbox = new Sandbox({ multiMode: true });
+
+  test('callable function with extra properties', () => {
+    // @ts-ignore
+    window.axios = function(){};
+    // @ts-ignore
+    axios.create = function(){};
+    let error = null;
+    try {
+      sandbox.execScriptInSandbox(
+        `
+          axios.create();
+        `,
+      );
+    } catch (e) {
+      error = e.message;
+    }
+
+    expect(error).toBe(null);
+  });
+});
+
+describe('inject value to sandbox', () => {
+  const testObject = { a: 1 };
+  const testProxy = new Proxy(testObject, {
+    get(target, p, receiver) {
+        if(p === 'a') {
+          return 2;
+        }
+        return Reflect.get(target, p);
+    }
+  })
+  // in order to pass value outof sandbox to validate, set multiMode false 
+  const sandbox = new Sandbox({multiMode: false, injection: {testObject: testProxy}});
+  test('inject proxy object in sandbox', () => {
+    // @ts-ignore
+    window.testObject = testObject;
+    // @ts-ignore
+    window.result = undefined;
+    sandbox.execScriptInSandbox(
+      `
+        window.result = window.testObject.a;
+      `,
+    );
+
+    // @ts-ignore
+    expect(window.result).toBe(2);
+  })
+})

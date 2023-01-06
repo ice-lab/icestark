@@ -2,9 +2,18 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
-## 2.7.2
+## 2.8.0
 
 - [fix] When icestark unloads, avoid re-triggering 'unloadMicroApp'. ([#521](https://github.com/ice-lab/icestark/issues/521))
+
+## 2.7.3
+
+- [fix] empty value or `undefined` in `activePath` array will be ignored. ([#558](https://github.com/ice-lab/icestark/issues/558))
+- [fix] append missing styles in vite developing mode. ([#555](https://github.com/ice-lab/icestark/issues/555))
+
+## 2.7.2
+
+- [fix] set actual basename when `activePath` is an array. ([#526](https://github.com/ice-lab/icestark/issues/526))
 
 ## 2.7.1
 
@@ -80,6 +89,7 @@ See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/ic
 ## 2.2.1
 
 - [fix] css assets are unable to load when remove `umd` from sub-application.
+
 ## 2.2.0
 
 - [feat] no need to use `umd` anymore. Migrate to `loadScriptMode` or use `setLibraryName` in sub-application. ([#240](https://github.com/ice-lab/icestark/issues/240))

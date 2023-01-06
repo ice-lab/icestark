@@ -1,7 +1,7 @@
 import React from 'react';
 import CodeSnippet from './CodeSnippet'
 
-export default function Error1({ args }) {
+export default function Error6({ args }) {
   return (
     <>
       <h1>#6: The stylesheets loaded error：{args[0]}</h1>

@@ -84,3 +84,4 @@ export function resetCapturedEventListeners() {
   capturedEventListeners[CapturedEventNameEnum.POPSTATE] = [];
   capturedEventListeners[CapturedEventNameEnum.HASHCHANGE] = [];
 }
+

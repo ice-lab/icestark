@@ -7,7 +7,7 @@ import { ICESTSRK_ERROR, ICESTSRK_NOT_FOUND } from './util/constant';
 import start, { unload } from './start';
 import { AppConfig, MicroApp } from './apps';
 import { doPrefetch, Prefetch } from './util/prefetch';
-import checkActive, { AppRoutePath, formatPath } from './util/checkActive';
+import findActivePath, { AppRoutePath, formatPath } from './util/checkActive';
 import { converArray2String, isFunction, mergeFrameworkBaseToPath } from './util/helpers';
 import type { Fetch } from './util/globalConfiguration';
 
@@ -35,6 +35,7 @@ export interface AppRouterProps {
   basename?: string;
   fetch?: Fetch;
   prefetch?: Prefetch;
+  className?: string;
 }
 
 interface AppRouterState {
@@ -194,6 +195,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       LoadingComponent,
       children,
       basename: frameworkBasename,
+      className,
     } = this.props;
     const { url, appLoading, started } = this.state;
 
@@ -227,10 +229,9 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
         element = child;
 
-        match = checkActive(compatPath)(url);
+        match = !!findActivePath(compatPath)(url);
       }
     });
-
 
     if (match) {
       const { name, activePath, path } = element.props as AppRouteProps;
@@ -248,7 +249,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
         history: appHistory,
       };
       return (
-        <div>
+        <div className={className}>
           {appLoading === this.appKey ? renderComponent(LoadingComponent, {}) : null}
           {React.cloneElement(element, {
             key: this.appKey,

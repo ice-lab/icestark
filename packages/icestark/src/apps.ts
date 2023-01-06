@@ -1,7 +1,8 @@
+/* eslint-disable max-lines */
 import Sandbox, { SandboxConstructor, SandboxProps } from '@ice/sandbox';
 import isEmpty from 'lodash.isempty';
 import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
-import checkUrlActive, { ActivePath, PathOption, formatPath } from './util/checkActive';
+import findActivePathCurry, { ActivePath, PathOption, formatPath } from './util/checkActive';
 import {
   createSandbox,
   getUrlAssets,
@@ -20,6 +21,7 @@ import { ErrorCode, formatErrMessage } from './util/error';
 import globalConfiguration, { temporaryState } from './util/globalConfiguration';
 
 import type { StartConfiguration } from './util/globalConfiguration';
+import type { FindActivePathReturn } from './util/checkActive';
 
 export type ScriptAttributes = string[] | ((url: string) => string[]);
 
@@ -61,7 +63,10 @@ export interface BaseConfig extends PathOption {
    */
   umd?: boolean;
   loadScriptMode?: LoadScriptMode;
-  checkActive?: (url: string) => boolean;
+  /**
+   * @private will be prefixed with `_` for it is internal.
+   */
+  findActivePath?: FindActivePathReturn;
   appAssets?: Assets;
   props?: object;
   cached?: boolean;
@@ -131,13 +136,13 @@ export function registerMicroApp(appConfig: AppConfig, appLifecyle?: AppLifecylc
 
   const { basename: frameworkBasename } = globalConfiguration;
 
-  const checkActive = checkUrlActive(mergeFrameworkBaseToPath(activePathArray, frameworkBasename));
+  const findActivePath = findActivePathCurry(mergeFrameworkBaseToPath(activePathArray, frameworkBasename));
 
   const microApp = {
     status: NOT_LOADED,
     ...appConfig,
     appLifecycle: appLifecyle,
-    checkActive,
+    findActivePath,
   };
 
   microApps.push(microApp);
@@ -154,7 +159,7 @@ export function getAppConfig(appName: string) {
 }
 
 export function updateAppConfig(appName: string, config) {
-  microApps = microApps.map((microApp) => {
+  (window as any).microApps = microApps = microApps.map((microApp) => {
     if (microApp.name === appName) {
       return {
         ...microApp,
@@ -175,7 +180,8 @@ export async function loadAppModule(appConfig: AppConfig) {
 
   let lifecycle: ModuleLifeCycle = {};
   onLoadingApp(appConfig);
-  const { url, container, entry, entryContent, name, scriptAttributes = [], loadScriptMode, appSandbox } = appConfig;
+
+  const { url, container, entry, entryContent, name, scriptAttributes = [], loadScriptMode, appSandbox, cached } = appConfig;
   const appAssets = url ? getUrlAssets(url) : await getEntryAssets({
     root: container,
     entry,
@@ -184,6 +190,8 @@ export async function loadAppModule(appConfig: AppConfig) {
     assetsCacheKey: name,
     fetch,
   });
+
+  const cacheId = cached ? name : undefined;
 
   updateAppConfig(appConfig.name, { appAssets });
 
@@ -197,6 +205,7 @@ export async function loadAppModule(appConfig: AppConfig) {
       ], {
         cacheCss,
         fetch,
+        cacheId,
       });
       lifecycle = await loadScriptByImport(appAssets.jsList);
       // Not to handle script element temporarily.
@@ -205,6 +214,7 @@ export async function loadAppModule(appConfig: AppConfig) {
       await loadAndAppendCssAssets(appAssets.cssList, {
         cacheCss,
         fetch,
+        cacheId,
       });
       lifecycle = await loadScriptByFetch(appAssets.jsList, appSandbox, fetch);
       break;
@@ -213,13 +223,14 @@ export async function loadAppModule(appConfig: AppConfig) {
         loadAndAppendCssAssets(appAssets.cssList, {
           cacheCss,
           fetch,
+          cacheId,
         }),
-        loadAndAppendJsAssets(appAssets, { scriptAttributes }),
+        loadAndAppendJsAssets(appAssets, { scriptAttributes, cacheId }),
       ]);
       lifecycle =
-          getLifecyleByLibrary() ||
-          getLifecyleByRegister() ||
-          {};
+        getLifecyleByLibrary() ||
+        getLifecyleByRegister() ||
+        {};
   }
 
   if (isEmpty(lifecycle)) {
@@ -297,6 +308,7 @@ async function loadApp(app: MicroApp) {
     }
   } catch (err) {
     configuration.onError(err);
+    log.error(err);
     updateAppConfig(name, { status: LOAD_ERROR });
   }
   if (lifeCycle.mount) {
@@ -353,16 +365,20 @@ export async function createMicroApp(
     return null;
   }
 
-  const { container, basename, activePath, configuration: userConfiguration } = appConfig;
+  const { container, basename, activePath, configuration: userConfiguration, findActivePath } = appConfig;
 
   if (container) {
     setCache('root', container);
   }
 
-  const { basename: frameworkBasename, fetch } = userConfiguration;
+  const { fetch } = userConfiguration;
 
   if (shouldSetBasename(activePath, basename)) {
-    setCache('basename', getAppBasename(activePath, frameworkBasename, basename));
+    let pathString = findActivePath(window.location.href);
+
+    // When use `createMicroApp` lonely, `activePath` maybe not provided.
+    pathString = typeof pathString === 'string' ? pathString : '';
+    setCache('basename', getAppBasename(pathString, basename));
   }
 
   switch (appConfig.status) {
@@ -372,7 +388,15 @@ export async function createMicroApp(
       break;
     case UNMOUNTED:
       if (!appConfig.cached) {
-        await loadAndAppendCssAssets(appConfig?.appAssets?.cssList || [], {
+        const appendAssets = [
+          ...(appConfig?.appAssets?.cssList || []),
+          // In vite development mode, styles are inserted into DOM manually.
+          // While es module natively imported twice may never excute twice.
+          // https://github.com/ice-lab/icestark/issues/555
+          ...(appConfig?.loadScriptMode === 'import' ? filterRemovedAssets(importCachedAssets[appConfig.name] ?? [], ['LINK', 'STYLE']) : []),
+        ];
+
+        await loadAndAppendCssAssets(appendAssets, {
           cacheCss: shouldCacheCss(appConfig.loadScriptMode),
           fetch,
         });
@@ -392,8 +416,10 @@ export async function createMicroApp(
 export async function mountMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   // check current url before mount
-  if (appConfig && appConfig.checkActive(window.location.href) && appConfig.status !== MOUNTED) {
-    if (appConfig.mount) {
+  const shouldMount = appConfig?.mount && appConfig?.findActivePath(window.location.href);
+
+  if (shouldMount) {
+    if (appConfig?.mount) {
       await appConfig.mount({ container: appConfig.container, customProps: appConfig.props });
     }
     updateAppConfig(appName, { status: MOUNTED });
@@ -427,14 +453,29 @@ export async function unmountMicroApp(appName: string) {
   }
 }
 
-// unload micro app, load app bundles when create micro app
+/**
+ * uninstall micro app thoroughly
+ * @param appName
+ */
 export async function unloadMicroApp(appName: string) {
   const appConfig = getAppConfig(appName);
   if (appConfig) {
+    if (appConfig.cached) {
+      log.warn(
+        formatErrMessage(
+          ErrorCode.CACHED_APP_USE_UNLOAD,
+          isDev && 'Use unmountMicroApp instead of unloadMicroApp to uninstall app {0}. This will not break the whole app but invalidate caching',
+          appName,
+        ),
+      );
+    }
+
     unmountMicroApp(appName);
+
     delete appConfig.mount;
     delete appConfig.unmount;
     delete appConfig.appAssets;
+
     updateAppConfig(appName, { status: NOT_LOADED });
   } else {
     log.error(
