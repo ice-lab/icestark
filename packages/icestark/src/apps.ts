@@ -159,7 +159,7 @@ export function getAppConfig(appName: string) {
 }
 
 export function updateAppConfig(appName: string, config) {
-  (window as any).microApps = microApps = microApps.map((microApp) => {
+  microApps = microApps.map((microApp) => {
     if (microApp.name === appName) {
       return {
         ...microApp,
@@ -168,6 +168,8 @@ export function updateAppConfig(appName: string, config) {
     }
     return microApp;
   });
+  // Update global variable of microApps.
+  (window as any).microApps = microApps;
 }
 
 /**
