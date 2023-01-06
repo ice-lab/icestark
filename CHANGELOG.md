@@ -2,6 +2,10 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
+## 2.7.4
+
+- [feat] support custom `AppRoute` location by component props.
+
 ## 2.7.3
 
 - [fix] empty value or `undefined` in `activePath` array will be ignored. ([#558](https://github.com/ice-lab/icestark/issues/558))

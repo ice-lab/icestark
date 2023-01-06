@@ -134,7 +134,7 @@ export default function ExampleComponent(props) {
 
 ##### moduleExternals
 
-构建时移除三方依赖。详见 [使用进阶 - 性能优化](/docs/guide/micro-module#性能优化) 小节。
+构建时移除三方依赖。详见 [使用进阶 - 性能优化](#性能优化) 小节。
 
 - 类型：object
 - 默认值： {}
@@ -182,7 +182,7 @@ export default function ExampleComponent(props) {
 
 ## 已有项目改造为微模块
 
-将已有项目改造为微模块的方式与 [微应用](/docs/guide/use-child/react) 类似，主要包含两步：
+将已有项目改造为微模块的方式与 [微应用](./use-child/react) 类似，主要包含两步：
 
 #### 1. 应用入口导出生命周期函数
 
@@ -494,4 +494,4 @@ const App = () => {
 
 ## API
 
-请移步 [API -> @ice/stark-module](/docs/api/stark-module)
+请移步 [API -> @ice/stark-module](../api/stark-module)

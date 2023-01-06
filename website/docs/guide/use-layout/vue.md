@@ -81,5 +81,5 @@ start();
 
 #### 微应用入口 url/entry/entryContent
 
-详见 [微应用 - 入口规范](/docs/guide/concept/child#入口规范) 。
+详见 [微应用 - 入口规范](../concept/child#入口规范) 。
 
