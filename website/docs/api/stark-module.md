@@ -49,20 +49,20 @@ unmount?: (targetNode: HTMLElement) => void;
 
 ### render
 
-用于渲染一个本地模块（选填），参考 [注册本地模块](/docs/guide/micro-module#注册本地模块)。
+用于渲染一个本地模块（选填），参考 [注册本地模块](../guide/micro-module#注册本地模块)。
 
 
 ### runtime
 
-用于加载公共依赖库（选填），参考 [性能优化](/docs/guide/micro-module#性能优化)。
+用于加载公共依赖库（选填），参考 [性能优化](../guide/micro-module#性能优化)。
 
 ### mount
 
-用于自定义生命周期（选填），参考 [自定义生命周期](/docs/guide/micro-module#自定义生命周期)。
+用于自定义生命周期（选填），参考 [自定义生命周期](../guide/micro-module#自定义生命周期)。
 
 ### unmount
 
-用于自定义生命周期（选填），参考 [自定义生命周期](/docs/guide/micro-module#自定义生命周期)。
+用于自定义生命周期（选填），参考 [自定义生命周期](../guide/micro-module#自定义生命周期)。
 
 ## MicroModule
 
