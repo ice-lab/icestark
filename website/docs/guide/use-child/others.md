@@ -8,7 +8,7 @@ order: 3
 为一些使用 [`icejs`](https://ice.work/) 、[`create-react-app`](https://github.com/facebook/create-react-app)、umi 等三方框架的用户提供便利的接入指南。
 
 :::tip
-如果这里找不到您使用的框架类型，建议您通过 <a href="/docs/guide/use-child/react#已有-react-项目改造为微应用">微应用接入三步骤</a> 来改造您的应用。所有的改造逻辑都是相通的，也欢迎您提供 <a href="https://github.com/ice-lab/icestark/pulls">PR</a> 介绍您的接入经验。
+如果这里找不到您使用的框架类型，建议您通过[微应用接入三步骤](./react#已有-react-项目改造为微应用)来改造您的应用。所有的改造逻辑都是相通的，也欢迎您提供 <a href="https://github.com/ice-lab/icestark/pulls">PR</a> 介绍您的接入经验。
 :::
 
 ## icejs 应用
@@ -221,7 +221,7 @@ module.exports = {
 }
 ```
 
-由于 next.js 无法运行时指定 basePath，因此建议提前对基准路由进行强约定。比如约定 `http://localhost:3000/seller` 下渲染上述配置的 next 微应用。则主应用的 [path](/docs/api/ice-stark#approuter) 配置需要与之一一对应：
+由于 next.js 无法运行时指定 basePath，因此建议提前对基准路由进行强约定。比如约定 `http://localhost:3000/seller` 下渲染上述配置的 next 微应用。则主应用的 [path](../../api/ice-stark#approuter) 配置需要与之一一对应：
 
 ```js
 <AppRoute
@@ -231,7 +231,7 @@ module.exports = {
 </AppRoute>
 ```
 
-### 微应用通过 [entry](/docs/guide/concept/child#入口规范) 方式接入
+### 微应用通过 [entry](../concept/child#入口规范) 方式接入
 
 ```js
 <AppRoute
@@ -432,7 +432,7 @@ export class AppComponent {
 
 ### 使用 entry 或 entryContent 接入
 
-由于 Angular 默认渲染在 `<app-root></app-root>` 节点，因此建议通过 [entry](/docs/guide/concept/child#2-entry) 或 [entryContent](https://micro-frontends.ice.work/docs/guide/concept/child#3-entrycontent) 的方式接入。比如 Angular 应用部署在 `http://localhost:3333`，则主应用配置建议配置如下：
+由于 Angular 默认渲染在 `<app-root></app-root>` 节点，因此建议通过 [entry](../concept/child#2-entry) 或 [entryContent](https://micro-frontends.ice.work/docs/guide/concept/child#3-entrycontent) 的方式接入。比如 Angular 应用部署在 `http://localhost:3333`，则主应用配置建议配置如下：
 
 ```js
 <AppRouter>
@@ -451,7 +451,7 @@ https://github.com/maoxiaoke/icestark-angular-12
 
 ## Vite 应用
 
-icestark 在 [v2.6.0](/blog/02-icestark-2-6-0) 版本开始支持 ES modules 类型微应用的加载。由于目前 [Vite](https://vitejs.dev/) 是目前最为流行的基于 ES modules 的构建工具，因此本章节介绍 Vite 应用接入 icestark 的具体步骤。
+icestark 在 v2.6.0 版本开始支持 ES modules 类型微应用的加载。由于目前 [Vite](https://vitejs.dev/) 是目前最为流行的基于 ES modules 的构建工具，因此本章节介绍 Vite 应用接入 icestark 的具体步骤。
 
 ### 定义生命周期函数
 
@@ -546,11 +546,11 @@ export default defineConfig({
 
 ### 配置基准路由
 
-对于基准路由的配置，可以依照 [React 微应用接入](/docs/guide/use-child/react#2-%E5%AE%9A%E4%B9%89%E5%9F%BA%E5%87%86%E8%B7%AF%E7%94%B1) 和 [Vue 微应用接入](/docs/guide/use-child/vue#2-%E5%AE%9A%E4%B9%89%E5%9F%BA%E5%87%86%E8%B7%AF%E7%94%B1) 相同的方式改造接入。
+对于基准路由的配置，可以依照 [React 微应用接入](./react#2-%E5%AE%9A%E4%B9%89%E5%9F%BA%E5%87%86%E8%B7%AF%E7%94%B1) 和 [Vue 微应用接入](./vue#2-%E5%AE%9A%E4%B9%89%E5%9F%BA%E5%87%86%E8%B7%AF%E7%94%B1) 相同的方式改造接入。
 
 ### 主应用加载 Vite 应用
 
-主应用需要通过 `loadScriptMode: import` 来加载 ES modules 类型微应用（Vite 应用）。同时由于 Vite 应用在 dev 下注入 HMR 相关的代码，因此建议通过 [entry 方式](/docs/guide/concept/child#2-entry) 接入，保证开发和生产的配置一致性。
+主应用需要通过 `loadScriptMode: import` 来加载 ES modules 类型微应用（Vite 应用）。同时由于 Vite 应用在 dev 下注入 HMR 相关的代码，因此建议通过 [entry 方式](../concept/child#2-entry) 接入，保证开发和生产的配置一致性。
 
 ```diff
 export default class App extends React.Component {
