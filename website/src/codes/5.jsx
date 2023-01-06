@@ -1,7 +1,7 @@
 import React from 'react';
 import CodeSnippet from './CodeSnippet'
 
-export default function Error1({ args }) {
+export default function Error5({ args }) {
   return (
     <>
       <h1>#5: The script resources loaded error：{args[0]}</h1>

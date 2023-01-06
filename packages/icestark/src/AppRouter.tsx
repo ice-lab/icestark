@@ -7,7 +7,7 @@ import { ICESTSRK_ERROR, ICESTSRK_NOT_FOUND } from './util/constant';
 import start, { unload } from './start';
 import { AppConfig, MicroApp } from './apps';
 import { doPrefetch, Prefetch } from './util/prefetch';
-import checkActive, { AppRoutePath, formatPath } from './util/checkActive';
+import findActivePath, { AppRoutePath, formatPath } from './util/checkActive';
 import { converArray2String, isFunction, mergeFrameworkBaseToPath } from './util/helpers';
 import type { Fetch } from './util/globalConfiguration';
 
@@ -227,13 +227,12 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
         element = child;
 
-        match = checkActive(compatPath)(url);
+        match = !!findActivePath(compatPath)(url);
       }
     });
 
-
     if (match) {
-      const { name, activePath, path } = element.props as AppRouteProps;
+      const { name, activePath, path, location } = element.props as AppRouteProps;
 
       if (isFunction(activePath) && !name) {
         const err = new Error('[icestark]: name is required in AppConfig');
@@ -243,7 +242,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
       this.appKey = name || converArray2String((activePath || path) as AppRoutePath);
       const componentProps: AppRouteComponentProps = {
-        location: urlParse(url, true),
+        // Get location from props when location change controlled by react state.
+        location: location || urlParse(url, true),
         match,
         history: appHistory,
       };

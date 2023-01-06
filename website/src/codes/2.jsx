@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Error1({ args }) {
+export default function Error2({ args }) {
   return (
     <>
       <h1>#2: You can not use loadScriptMode = import where dynamic import is not supported by browsers.</h1>

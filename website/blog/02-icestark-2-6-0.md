@@ -50,7 +50,7 @@ hide_table_of_contents: false
 </AppRouter>
 ```
 
-对于 Vite 应用的 icestark 适配，可参考 [其他框架接入微应用 - Vite 应用](/docs/guide/use-child/others#Vite-%E5%BA%94%E7%94%A8) 进行配置。后期，我们将提供 Vite plugin 能力，使 Vite 应用的接入非常简单。
+对于 Vite 应用的 icestark 适配，可参考 [其他框架接入微应用 - Vite 应用](/../docs/guide/use-child/others#Vite-%E5%BA%94%E7%94%A8) 进行配置。后期，我们将提供 Vite plugin 能力，使 Vite 应用的接入非常简单。
 
 对于 ice.js 子应用，只需将 [`build-plugin-icestark`](https://ice.work/docs/guide/advanced/icestark) 升级到最新版本，并开启 [icejs Vite 模式](https://ice.work/docs/guide/basic/vite)，即可完成改造工作。
 
@@ -79,7 +79,7 @@ hide_table_of_contents: false
 
 ### 完善 Angular 微应用
 
-Angular 1.x 应用我们建议通过 [entry](/docs/guide/concept/child#2-entry) 方式接入，因为我们没有比较好的方式来定义 [生命周期函数](/docs/guide/concept/child#生命周期)。在 Angular 5.x 及以上的版本，我们可以通过 [bootstrapModule](https://angular.io/api/core/PlatformRef#bootstrapModule) 获取到 NgModule 实例。因此可以通过下面的方式定义生命周期函数：
+Angular 1.x 应用我们建议通过 [entry](/../docs/guide/concept/child#2-entry) 方式接入，因为我们没有比较好的方式来定义 [生命周期函数](/../docs/guide/concept/child#生命周期)。在 Angular 5.x 及以上的版本，我们可以通过 [bootstrapModule](https://angular.io/api/core/PlatformRef#bootstrapModule) 获取到 NgModule 实例。因此可以通过下面的方式定义生命周期函数：
 
 ```ts
 import { NgModuleRef } from '@angular/core';
@@ -108,7 +108,7 @@ export function unmount () {
 
 ### 修复对 location.hash 赋值 onRouteChange 触发两次的错误
 
-由于对 `window.location.hash` 进行赋值，会触发 popstate 和 hashchange 两个事件，导致钩子函数 [onRouteChange](/docs/api/ice-stark#startconfiguration) 触发两次。版本 2.6.0 修复了这个问题。
+由于对 `window.location.hash` 进行赋值，会触发 popstate 和 hashchange 两个事件，导致钩子函数 [onRouteChange](/../docs/api/ice-stark#startconfiguration) 触发两次。版本 2.6.0 修复了这个问题。
 
 
 ### 对项目配置的改造

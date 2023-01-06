@@ -3,9 +3,10 @@ import renderComponent from './util/renderComponent';
 import { AppHistory } from './appHistory';
 import { unloadMicroApp, BaseConfig, createMicroApp } from './apps';
 import { converArray2String } from './util/helpers';
-import { PathData } from './util/checkActive';
 import { callCapturedEventListeners, resetCapturedEventListeners } from './util/capturedListeners';
 import isEqual from 'lodash.isequal';
+
+import type { PathData } from './util/checkActive';
 
 interface AppRouteState {
   showComponent: boolean;
@@ -20,7 +21,7 @@ interface Match<Params extends { [K in keyof Params]?: string } = {}> {
 
 interface Location<Query extends { [K in keyof Query]?: string } = {}> {
   pathname: string;
-  query: Query;
+  query?: Query;
   hash: string;
 }
 
@@ -45,6 +46,7 @@ export interface AppRouteProps extends BaseConfig {
   path?: string | string[] | PathData[];
   onAppEnter?: (appConfig: CompatibleAppConfig) => void;
   onAppLeave?: (appConfig: CompatibleAppConfig) => void;
+  location?: Location;
 }
 
 export type CompatibleAppConfig = Omit<AppRouteProps, 'componentProps' | 'cssLoading' | 'onAppEnter' | 'onAppLeave'>;

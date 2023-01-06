@@ -285,7 +285,7 @@ describe('appendExternalScript', () => {
       scriptAttributes: [],
       id: 'js-id'
     }).catch(err =>
-      expect(err.message).toContain('js asset loaded error: '),
+      expect(err.message).toContain('icestark minified message #5:'),
     );
 
     const scripts = div.getElementsByTagName('script');

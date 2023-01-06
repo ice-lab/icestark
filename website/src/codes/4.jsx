@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Error1({ args }) {
+export default function Error4({ args }) {
   return (
     <>
       <h1>#4: Can not find app {args[0]} when call {args[1]}.</h1>

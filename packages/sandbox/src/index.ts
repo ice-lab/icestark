@@ -153,8 +153,17 @@ export default class Sandbox {
         }
 
         if (isWindowFunction(value)) {
-          // fix Illegal invocation
-          return value.bind(originalWindow);
+          // When run into some window's functions, such as `console.table`,
+          // an illegal invocation exception is thrown.
+          const boundValue = value.bind(originalWindow);
+
+          // Axios, Moment, and other callable functions may have additional properties.
+          // Simply copy them into boundValue.
+          for (const key in value) {
+            boundValue[key] = value[key];
+          }
+
+          return boundValue;
         } else {
           // case of window.clientWidth、new window.Object()
           return value;
