@@ -7,12 +7,13 @@ import {
   unmoutModule,
   clearModules,
 } from './modules';
-import MicroModule from './MicroModule';
+import MicroModule, { MicroModuleProps } from './MicroModule';
 import { preloadModules } from './preload';
 
 export {
   StarkModule,
   MicroModule,
+  MicroModuleProps,
   registerModule,
   registerModules,
   clearModules,
@@ -21,4 +22,3 @@ export {
   unmoutModule,
   preloadModules,
 };
-
