@@ -1,146 +1,214 @@
 import * as React from 'react';
-import { unmoutModule, loadModule, getModules, registerModules, ISandbox, StarkModule } from './modules';
+import {
+  cloneElement,
+  ComponentType,
+  CSSProperties,
+  isValidElement,
+  ReactElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import {
+  unmoutModule,
+  loadModule,
+  getModules,
+  registerModules,
+  ISandbox,
+  StarkModule,
+  LifecycleMount,
+} from './modules';
 import { shallowCompare } from './assist';
 
 /**
  * Render Component, compatible with Component and <Component>
  */
-export function renderComponent(Component: any, props = {}): React.ReactElement {
-  return React.isValidElement(Component) ? (
-    React.cloneElement(Component, props)
+export function renderComponent(Component: ReactElement | ComponentType, props = {}): ReactElement {
+  return isValidElement(Component) ? (
+    cloneElement(Component, props)
   ) : (
     // eslint-disable-next-line react/jsx-filename-extension
     <Component {...props} />
   );
 }
 
-interface State {
-  loading: boolean;
+export interface MicroModuleProps {
+  moduleName?: string;
+  moduleInfo?: StarkModule;
+  sandbox?: ISandbox;
+  wrapperClassName?: string;
+  wrapperStyle?: CSSProperties;
+  loadingComponent?: ReactElement;
+  handleError?: (err: any) => void;
+
+  [x: string]: any;
+}
+
+/**
+ * useMemo for moduleInfo, with shallowCompare
+ * @param moduleInfo moduleInfo from props
+ * @param moduleName moduleName from props
+ * @returns moduleInfo or undefined
+ */
+function useModuleInfo(moduleInfo?: StarkModule, moduleName?: string): StarkModule | undefined {
+  const [state, setState] = useState<StarkModule>();
+
+  useEffect(() => {
+    const next = moduleInfo || getModules().find((m) => m.name === moduleName);
+    if (!next) {
+      console.error(`[icestark] Can't find ${moduleName} module in modules config`);
+    }
+
+    setState((prev) => {
+      return shallowCompare(prev, next) ? prev : next;
+    });
+  }, [moduleInfo, moduleName]);
+
+  return state;
+}
+
+/**
+ * useRef for moduleProps, with shallowCompare
+ * @param moduleProps props for module
+ * @returns props
+ */
+function useModuleProps(props?: Record<string, any>) {
+  const [state, setState] = useState({});
+
+  useEffect(() => {
+    const next = props || {};
+    setState((prev) => {
+      return shallowCompare(prev, next) ? prev : next;
+    });
+  }, [props]);
+
+  return state;
+}
+
+function isModuleHasValidRender(moduleInfo?: StarkModule) {
+  const render = moduleInfo?.render;
+  if (render) {
+    if (typeof render === 'function') {
+      return true;
+    }
+
+    console.error('[icestark]: render should be funtion');
+  }
+
+  return false;
 }
 
 /**
  * default render component, mount all modules
  */
-export default class MicroModule extends React.Component<any, State> {
-  static defaultProps = {
-    loadingComponent: null,
-    handleError: () => {},
-  };
+export default function MicroModule({
+  moduleInfo: inputModuleInfo,
+  moduleName,
+  sandbox,
+  wrapperClassName,
+  wrapperStyle,
+  loadingComponent = null,
+  handleError,
+  ...inputModuleProps
+}: MicroModuleProps) {
+  const [loading, setLoading] = useState(false);
 
-  private moduleInfo = null;
+  const ref = useRef(null);
+  const unmounted = useRef(false);
+  const mountedInfo = useRef<StarkModule>();
+  const mountedModule = useRef<{
+    mount: LifecycleMount;
+    component: ComponentType;
+  }>();
 
-  private mountNode = null;
+  const moduleInfo = useModuleInfo(inputModuleInfo, moduleName);
+  const moduleProps = useModuleProps(inputModuleProps);
 
-  private unmout = false;
+  /**
+   * If true, render in current React context instead of mounting.
+   */
+  const isRenderValid = useMemo(() => isModuleHasValidRender(moduleInfo), [moduleInfo]);
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      loading: false,
-    };
-  }
+  const unmount = useCallback((info: StarkModule) => {
+    unmoutModule(info, ref.current);
+    mountedInfo.current = undefined;
+    mountedModule.current = undefined;
+  }, []);
 
-  componentDidMount() {
-    this.mountModule();
-  }
-
-  componentDidUpdate(prevProps) {
-    const { moduleInfo: preModuleInfo = {}, ...preRest } = prevProps;
-    const { moduleInfo: curModuleInfo = {}, ...curRest } = this.props;
-
-    if (!shallowCompare(preModuleInfo, curModuleInfo) || !shallowCompare(preRest, curRest)) {
-      this.mountModule();
-    }
-  }
-
-  componentWillUnmount() {
-    try {
-      if (!this.validateRender()) {
-        unmoutModule(this.moduleInfo, this.mountNode);
+  const mountModule = useCallback(
+    async (rerender = false) => {
+      if (!moduleInfo || unmounted.current || isModuleHasValidRender(moduleInfo)) {
+        return;
       }
-      this.unmout = true;
-    } catch (error) {
-      console.log('[icestark] error occurred when unmount module', error);
-    }
-  }
 
-  getModuleInfo() {
-    const { moduleInfo } = this.props;
-    this.moduleInfo = moduleInfo || getModules().filter((m) => m.name === this.props.moduleName)[0];
-    if (!this.moduleInfo) {
-      console.error(`[icestark] Can't find ${this.props.moduleName} module in modules config`);
-    }
-  }
+      if (rerender && mountedModule.current) {
+        const { mount, component } = mountedModule.current;
+        mount(component, ref.current, moduleProps);
+        return;
+      }
 
-  validateRender() {
-    const { render } = this.moduleInfo || {};
-
-    if (render && typeof render !== 'function') {
-      console.error('[icestark]: render should be funtion');
-    }
-    return render && typeof render === 'function';
-  }
-
-  async mountModule() {
-    if (!this.moduleInfo) {
-      console.error(`Can't find ${this.props.moduleName} module in modules config`);
-      return;
-    }
-    /**
-     * if `render` was provided, render immediately
-    */
-    if (!this.validateRender()) {
-      this.setState({ loading: true });
-
+      setLoading(true);
       try {
-        const { mount, component } = await loadModule(this.moduleInfo, this.props.sandbox);
-        const lifecycleMount = mount;
+        const { mount, component } = await loadModule(moduleInfo, sandbox);
+        // Unmounted during load
+        if (unmounted.current) {
+          unmount(moduleInfo);
+          return;
+        }
 
-        !this.unmout && this.setState({ loading: false });
-        if (lifecycleMount && component) {
-          if (this.unmout) {
-            unmoutModule(this.moduleInfo, this.mountNode);
-          } else {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { sandbox, moduleInfo, wrapperClassName, wrapperStyle, loadingComponent, handleError, ...rest } = this.props;
-            lifecycleMount(component, this.mountNode, rest);
-          }
+        setLoading(false);
+        mountedInfo.current = moduleInfo;
+        mountedModule.current = { mount, component };
+
+        if (mount && component) {
+          mount(component, ref.current, moduleProps);
         }
       } catch (err) {
-        this.setState({ loading: false });
-        this.props.handleError(err);
+        setLoading(false);
+        handleError?.(err);
       }
-    }
-  }
+    },
+    [moduleInfo, sandbox, moduleProps, handleError, unmount],
+  );
 
-  render() {
-    /**
-    * make sure moudleInfo is up to date.
-    */
-    this.getModuleInfo();
+  useEffect(() => {
+    return () => {
+      const info = mountedInfo.current;
+      try {
+        unmounted.current = true;
+        if (info && !isModuleHasValidRender(info)) {
+          unmount(info);
+        }
+      } catch (error) {
+        console.log('[icestark] error occurred when unmount module', error);
+      }
+    };
+  }, []);
 
-    const { loading } = this.state;
-    const { render } = this.moduleInfo || {};
+  useEffect(() => {
+    mountModule(mountedInfo.current === moduleInfo);
+  }, [moduleInfo, moduleProps]);
 
-    const { wrapperClassName, wrapperStyle, loadingComponent } = this.props;
-    return loading
-      ? loadingComponent
-      : (
-        <div
-          className={wrapperClassName}
-          style={wrapperStyle}
-          ref={(ref) => { this.mountNode = ref; }}
-        >
-          { this.moduleInfo && this.validateRender() && render() }
-        </div>
-      );
-  }
+  return loading ? (
+    loadingComponent
+  ) : (
+    <div className={wrapperClassName} style={wrapperStyle} ref={ref}>
+      {isRenderValid && moduleInfo.render(moduleInfo)}
+    </div>
+  );
 }
 
 /**
  * Render Modules, compatible with Render and <Render>
  */
-export function renderModules(modules: StarkModule[], render: any, componentProps?: any, sandbox?: ISandbox): React.ReactElement {
+export function renderModules(
+  modules: StarkModule[],
+  render: any,
+  componentProps?: any,
+  sandbox?: ISandbox,
+): ReactElement {
   // save match app modules in global
   registerModules(modules);
 

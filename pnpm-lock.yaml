@@ -106,8 +106,8 @@ importers:
   packages/icestark-module:
     specifiers:
       '@ice/sandbox': ^1.1.0
-      '@types/react': ^16.0.0
-      '@types/react-dom': ^16.0.0
+      '@types/react': ^16.8.0
+      '@types/react-dom': ^16.8.0
       react: ^16.13.1
       react-dom: ^16.13.1
       typescript: ^4.3.5
@@ -2201,8 +2201,8 @@ packages:
     resolution: {integrity: sha512-BoMaddIEJ6B4QVMSDu9IkVImlGOSGA1I2BQyOZHeLQ6qVOJLcLKn97+fL6dGbzWEiqDzfH4OkcveULmeq2MHFQ==}
     hasBin: true
     dependencies:
-      is-text-path: 1.0.1
       JSONStream: 1.3.5
+      is-text-path: 1.0.1
       lodash: 4.17.11
       meow: 4.0.1
       split2: 2.2.0

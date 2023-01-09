@@ -28,15 +28,15 @@
   },
   "homepage": "https://github.com/ice-lab/icestark#readme",
   "peerDependencies": {
-    "react": ">=15.0.0",
-    "react-dom": ">=15.0.0"
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
   },
   "devDependencies": {
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "typescript": "^4.3.5",
-    "@types/react": "^16.0.0",
-    "@types/react-dom": "^16.0.0"
+    "@types/react": "^16.8.0",
+    "@types/react-dom": "^16.8.0"
   },
   "dependencies": {
     "@ice/sandbox": "^1.1.0"
@@ -46,7 +46,10 @@
     "collectCoverage": true,
     "preset": "ts-jest",
     "automock": false,
-    "testMatch": [ "**/__tests__/**/*.ts?(x)", "**/?(*.)+(spec|test).ts?(x)" ],
+    "testMatch": [
+      "**/__tests__/**/*.ts?(x)",
+      "**/?(*.)+(spec|test).ts?(x)"
+    ],
     "setupFiles": [
       "../../setupJest.ts"
     ]

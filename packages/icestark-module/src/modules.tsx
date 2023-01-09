@@ -2,6 +2,10 @@ import Sandbox, { SandboxProps, SandboxConstructor } from '@ice/sandbox';
 import ModuleLoader from './loader';
 import { Runtime, parseRuntime, RuntimeInstance } from './runtimeHelper';
 import { resolveEvent, dispatchEvent } from './eventHelper';
+import { ComponentType } from 'react';
+
+export type LifecycleMount = (Component: ComponentType, targetNode: HTMLElement, props?: any) => void;
+export type LifecycleUnmount = (targetNode: HTMLElement) => void;
 
 export interface StarkModule {
   name: string;
@@ -11,8 +15,8 @@ export interface StarkModule {
    */
   render?: (props: StarkModule) => any;
   runtime?: Runtime;
-  mount?: (Component: any, targetNode: HTMLElement, props?: any) => void;
-  unmount?: (targetNode: HTMLElement) => void;
+  mount?: LifecycleMount;
+  unmount?: LifecycleUnmount;
 }
 
 export type ISandbox = boolean | SandboxProps | SandboxConstructor;
@@ -248,7 +252,11 @@ export const execModule = async (targetModule: StarkModule, sandbox?: ISandbox) 
 /**
  * load module source
  */
-export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox) => {
+export const loadModule = async (targetModule: StarkModule, sandbox?: ISandbox): Promise<{
+  mount?: LifecycleMount;
+  unmount?: LifecycleUnmount;
+  component?: ComponentType;
+}> => {
   const { name } = targetModule;
 
   const { moduleInfo, moduleCSS } = await execModule(targetModule, sandbox) as any;
