@@ -76,15 +76,21 @@ function useModuleInfo(moduleInfo?: StarkModule, moduleName?: string): StarkModu
  */
 function useModuleProps(props?: Record<string, any>) {
   const [state, setState] = useState({});
+  const ref = useRef({});
 
   useEffect(() => {
     const next = props || {};
     setState((prev) => {
-      return shallowCompare(prev, next) ? prev : next;
+      if (shallowCompare(prev, next)) {
+        return prev;
+      }
+
+      ref.current = next;
+      return next;
     });
   }, [props]);
 
-  return state;
+  return { state, ref };
 }
 
 function isModuleHasValidRender(moduleInfo?: StarkModule) {
@@ -124,7 +130,10 @@ export default function MicroModule({
   }>();
 
   const moduleInfo = useModuleInfo(inputModuleInfo, moduleName);
-  const moduleProps = useModuleProps(inputModuleProps);
+  const {
+    state: moduleProps,
+    ref: modulePropsRef,
+  } = useModuleProps(inputModuleProps);
 
   /**
    * If true, render in current React context instead of mounting.
@@ -163,7 +172,8 @@ export default function MicroModule({
         mountedModule.current = { mount, component };
 
         if (mount && component) {
-          mount(component, ref.current, moduleProps);
+          // props may change during loadModule, so use ref here.
+          mount(component, ref.current, modulePropsRef.current);
         }
       } catch (err) {
         setLoading(false);

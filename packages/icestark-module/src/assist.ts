@@ -1,5 +1,18 @@
 export function shallowCompare<T extends object>(source: T, target: T) {
   if (source === target) return true;
   if (!source || !target) return false;
-  return Object.keys(source).every((key) => source[key] === target[key]);
+
+  for (const key in source) {
+    if (source[key] !== target[key]) {
+      return false;
+    }
+  }
+
+  for (const key in target) {
+    if (!(key in source)) {
+      return false;
+    }
+  }
+
+  return true;
 }
