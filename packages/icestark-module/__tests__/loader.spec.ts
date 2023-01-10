@@ -10,7 +10,7 @@ declare global {
 }
 
 describe('module loader', () => {
-  const source = fs.readFileSync(path.resolve(__dirname, './component.js'));
+  const source = fs.readFileSync(path.resolve(__dirname, './fixtures/01-component/index.js'));
   beforeEach(() => {
     // mock fetch
     window.fetch = (url) => {

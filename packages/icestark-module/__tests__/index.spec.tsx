@@ -16,6 +16,7 @@ import {
   removeCSS,
   registerModule,
   registerModules,
+  removeModule,
 } from '../src/modules';
 import MicroModule, { renderModules, renderComponent } from '../src/MicroModule';
 
@@ -33,14 +34,15 @@ const defaultUnmount = (targetNode: HTMLElement) => {
   ReactDOM.unmountComponentAtNode(targetNode);
 };
 
+const defaultComponent = 'http://fixtures/01-component/index.js';
 const modules = [{
   name: 'selfComponent',
-  url: 'http://127.0.0.1:3334/index.js',
+  url: defaultComponent,
   mount: defaultMount,
   unmount: defaultUnmount,
 }, {
   name: 'error',
-  url: 'http://127.0.0.1:3334/error.js',
+  url: 'http://fixtures/01-error/index.js',
 }];
 
 declare global {
@@ -56,11 +58,15 @@ window.ReactDOM = ReactDOM;
 
 describe('render modules', () => {
   beforeEach(() => {
-    const source = fs.readFileSync(path.resolve(__dirname, './component.js'));
-    window.fetch = (url) => {
-      return Promise.resolve({
-        text: url.indexOf('error') === -1 ? () => source.toString() : () => 'const error = 1;',
-      });
+    window.fetch = (url: string) => {
+      const prefix = 'http://fixtures/';
+      if (url.startsWith(prefix)) {
+        return Promise.resolve({
+          text: () => fs.readFileSync(path.join(__dirname, 'fixtures', url.slice(prefix.length))),
+        });
+      }
+
+      return Promise.reject('not implemented');
     };
   });
 
@@ -119,7 +125,7 @@ describe('render modules', () => {
   });
 
   test('mountModule with default sandbox', (next) => {
-    const moduleInfo = { name: 'defaultSandbox', url: '//localhost', mount: defaultMount, unmount: defaultUnmount };
+    const moduleInfo = { name: 'defaultSandbox', url: defaultComponent, mount: defaultMount, unmount: defaultUnmount };
     const div = document.createElement('div');
     mountModule(moduleInfo, div, {}, true);
     setTimeout(() => {
@@ -131,7 +137,7 @@ describe('render modules', () => {
   });
 
   test('mountModule with custom sandbox', (next) => {
-    const moduleInfo = { name: 'customSandbox', url: '//localhost', mount: defaultMount, unmount: defaultUnmount };
+    const moduleInfo = { name: 'customSandbox', url: defaultComponent, mount: defaultMount, unmount: defaultUnmount };
     const div = document.createElement('div');
     mountModule(moduleInfo, div, {}, (Sandbox as SandboxConstructor));
     setTimeout(() => {
@@ -151,7 +157,7 @@ describe('render modules', () => {
       const moduleInfo = modules.find(({ name }) => name === 'error');
       unmoutModule(moduleInfo, container);
       expect(false).toBe(true);
-    } catch(error) {
+    } catch (error) {
       expect(true).toBe(true);
     }
   });
@@ -181,7 +187,7 @@ describe('render modules', () => {
         '//icestark.com/index.js?timeSamp=1575443657834',
       ],
     });
-  })
+  });
 
   test('clear module', () => {
     clearModules();
