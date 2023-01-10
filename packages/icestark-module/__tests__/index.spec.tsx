@@ -189,6 +189,34 @@ describe('render modules', () => {
     });
   });
 
+  describe('props rerender', () => {
+    const name = 'rerender-test-module';
+    beforeAll(() => {
+      registerModule({
+        name,
+        url: 'http://fixtures/02-state/index.js',
+        mount: defaultMount,
+        unmount: defaultUnmount,
+      });
+    });
+
+    afterAll(() => {
+      removeModule(name);
+    });
+
+    test('should rerender', (next) => {
+      const { container, rerender } = render(<MicroModule moduleName={name} value={5} />);
+
+      setTimeout(() => {
+        expect(container.innerHTML).toBe('<div><span>5, initial: 5</span></div>');
+
+        rerender(<MicroModule moduleName={name} value={6} />);
+        expect(container.innerHTML).toBe('<div><span>6, initial: 5</span></div>');
+        next();
+      }, 0);
+    });
+  });
+
   test('clear module', () => {
     clearModules();
     expect(getModules()).toStrictEqual([]);
