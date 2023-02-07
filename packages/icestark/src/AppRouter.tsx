@@ -178,6 +178,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   appEnter = (app: AppConfig) => {
     this.props.onAppEnter(app);
     if (!!this.props.prefetch) {
+      // 预加载场景需要将loading提升，否则会由于脚本阻塞进程，导致loading失效
       this.setState({ appLoading: app.name });
     }
   };
