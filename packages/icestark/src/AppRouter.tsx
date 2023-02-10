@@ -110,6 +110,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   componentWillUnmount() {
     this.unmounted = true;
     window.removeEventListener('icestark:not-found', this.triggerNotFound);
+    window.removeEventListener('icestark:error', this.triggerError);
     unload();
     this.setState({ started: false });
   }
