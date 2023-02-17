@@ -47,7 +47,9 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   static defaultProps = {
     onRouteChange: () => {},
     // eslint-disable-next-line react/jsx-filename-extension
-    ErrorComponent: ({ err }: { err: string | Error}) => <div>{ typeof err === 'string' ? err : err?.message }</div>,
+    ErrorComponent: ({ err }: { err: string | Error }) => (
+      <div>{typeof err === 'string' ? err : err?.message}</div>
+    ),
     LoadingComponent: <div>Loading...</div>,
     NotFoundComponent: <div>NotFound</div>,
     onAppEnter: () => {},
@@ -90,10 +92,10 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
      * status `started` used to make sure parent's `componentDidMount` to be invoked eariler then child's,
      * for mounting child component needs global configuration be settled.
      */
-    const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch, basename } = this.props;
+    const { shouldAssetsRemove, onAppLeave, fetch, basename } = this.props;
     start({
       onAppLeave,
-      onAppEnter,
+      onAppEnter: this.appEnter,
       onLoadingApp: this.loadingApp,
       onFinishLoading: this.finishLoading,
       onError: this.triggerError,
@@ -130,7 +132,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
               ...childElement.props,
               /**
                * name of AppRoute may be not provided, use `path` instead.
-              */
+               */
               name: name || converArray2String(path),
             };
           }
@@ -170,6 +172,14 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
 
       const { pathname, query, hash } = urlParse(url, true);
       this.props.onRouteChange(pathname, query, hash, type);
+    }
+  };
+
+  appEnter = (app: AppConfig) => {
+    this.props.onAppEnter(app);
+    if (!!this.props.prefetch) {
+      // 预加载场景需要将loading提升，否则会由于脚本阻塞进程，导致loading失效
+      this.setState({ appLoading: app.name });
     }
   };
 
@@ -256,7 +266,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
             name: this.appKey,
             componentProps,
             cssLoading: appLoading === this.appKey,
-            onAppEnter: this.props.onAppEnter,
+            onAppEnter: this.appEnter,
             onAppLeave: this.props.onAppLeave,
           })}
         </div>
