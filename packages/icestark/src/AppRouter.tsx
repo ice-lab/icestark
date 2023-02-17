@@ -164,7 +164,8 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
    * Trigger onRouteChange
    */
   handleRouteChange = (url: string, type: RouteType | 'init' | 'popstate'): void => {
-    if (!this.unmounted && url !== this.state.url) {
+    // Avoid to set undefined url.
+    if (!this.unmounted && url !== this.state.url && url) {
       this.setState({ url });
 
       const { pathname, query, hash } = urlParse(url, true);
