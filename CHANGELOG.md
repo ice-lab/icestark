@@ -6,6 +6,10 @@ See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/ic
 
 - [fix] When icestark unloads, avoid re-triggering 'unloadMicroApp'. ([#521](https://github.com/ice-lab/icestark/issues/521))
 
+## 2.7.5
+
+- [fix] avoid to set undefined url when state change.
+
 ## 2.7.4
 
 - [feat] support custom `AppRoute` location by component props.
