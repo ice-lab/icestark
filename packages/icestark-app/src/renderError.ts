@@ -1,7 +1,7 @@
 import { getCache } from './cache';
 
 /**
- * Trigger customEvent icestark:not-found
+ * Trigger customEvent icestark:error
  */
 export default (error) => {
   if (getCache('root')) {
