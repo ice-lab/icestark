@@ -1,6 +1,5 @@
 export { default as getMountNode } from './getMountNode';
-export { default as renderNotFound } from './renderNotFound';
-export { default as renderError } from './renderError';
+export { default as renderError, renderNotFound } from './renderError';
 export { default as getBasename } from './getBasename';
 export { default as setBasename } from './setBasename';
 export { default as registerAppEnter } from './registerAppEnter';
