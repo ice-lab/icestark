@@ -13,7 +13,7 @@ order: 3
 
 ## 加载模式
 
-icestark 目前支持三种加载模式，分别是 `script`、`fetch` 和 `import`，由 [loadScriptMode](/docs/api/ice-stark#loadscriptmode) 字段指定。
+icestark 目前支持三种加载模式，分别是 `script`、`fetch` 和 `import`，由 [loadScriptMode](../../api/ice-stark#loadscriptmode) 字段指定。
 
 1. `script`
 
@@ -21,15 +21,15 @@ icestark 目前支持三种加载模式，分别是 `script`、`fetch` 和 `impo
 
 2. `fetch`
 
-当指定 `loadScriptMode` 为 `fetch`，或配置微应用[沙箱模式](/docs/api/ice-stark#sandbox)时，会通过 `window.fetch` 或[用户自定义的 fetch 能力](/docs/api/ice-stark#fetch) 加载并缓存脚本资源。再次加载时，会充分利用本地内部缓存进行加载。
+当指定 `loadScriptMode` 为 `fetch`，或配置微应用[沙箱模式](../../api/ice-stark#sandbox)时，会通过 `window.fetch` 或[用户自定义的 fetch 能力](../../api/ice-stark#fetch) 加载并缓存脚本资源。再次加载时，会充分利用本地内部缓存进行加载。
 
 3. `import`
 
-加载 [ES modules](/docs/guide/use-child/others#vite-应用) 类型微应用的主要方式，该模式会通过 [Dynamic Import](https://github.com/tc39/proposal-dynamic-import) 动态加载脚本资源。
+加载 [ES modules](../use-child/others#vite-应用) 类型微应用的主要方式，该模式会通过 [Dynamic Import](https://github.com/tc39/proposal-dynamic-import) 动态加载脚本资源。
 
 ## 钩子函数
 
-icestark 在加载微应用的各个阶段提供钩子函数，方便用户监听并执行相应逻辑。详细用法可参考 [StartConfiguration](/docs/api/ice-stark#startconfiguration)
+icestark 在加载微应用的各个阶段提供钩子函数，方便用户监听并执行相应逻辑。详细用法可参考 [StartConfiguration](../../api/ice-stark#startconfiguration)
 
 | 钩子函数      | 触发时机 | 用法示例 |
 | ----------- | ----------- | ----------- |

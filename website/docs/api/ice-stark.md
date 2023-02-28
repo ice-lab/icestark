@@ -239,7 +239,7 @@ export function mount(props) {
 
 ### cached
 
-是否开启微应用切换时缓存（选填）。详细用法见 [性能优化](/docs/guide/advanced/performance#cached)
+是否开启微应用切换时缓存（选填）。详细用法见 [性能优化](../guide/advanced/performance#cached)
 
 - 类型：`boolean`
 - 默认值：`false`
@@ -377,7 +377,7 @@ basename?: string;
 
 ## React 组件
 
-对于 React 用户，我们封装了底层 API 的部分能力，以便用户可以通过 React 组件的方式快速接入 icestark。了解更多请移步 [主应用接入 - React](/docs/guide/use-layout/react)。
+对于 React 用户，我们封装了底层 API 的部分能力，以便用户可以通过 React 组件的方式快速接入 icestark。了解更多请移步 [主应用接入 - React](../guide/use-layout/react)。
 
 以下 api 均从 `@ice/stark` 导出。
 
@@ -469,7 +469,7 @@ interface AppRouteProps extends AppConfig {
 
 ## 核心 API
 
-icestark 底层能力已完全与框架解耦。这些能力使得您可以使用 [api 的方式](/docs/guide/use-child/vue) 接入 icestark。其中包含的 API 有：
+icestark 底层能力已完全与框架解耦。这些能力使得您可以使用 [api 的方式](../guide/use-child/vue) 接入 icestark。其中包含的 API 有：
 
 ### registerMicroApps <Badge text="2.0.0+" />
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.1
+
+- [fix] rerender module when props changed
+- [fix] get latest props after load module bundles
+
 ## 1.5.0
 
 - [fix] exports all library exports. ([#469](https://github.com/ice-lab/icestark/pull/469))

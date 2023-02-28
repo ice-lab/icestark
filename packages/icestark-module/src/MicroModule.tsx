@@ -92,9 +92,6 @@ export default class MicroModule extends React.Component<any, State> {
   }
 
   async mountModule() {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { sandbox, moduleInfo, wrapperClassName, wrapperStyle, loadingComponent, handleError, ...rest } = this.props;
-
     if (!this.moduleInfo) {
       console.error(`Can't find ${this.props.moduleName} module in modules config`);
       return;
@@ -106,7 +103,7 @@ export default class MicroModule extends React.Component<any, State> {
       this.setState({ loading: true });
 
       try {
-        const { mount, component } = await loadModule(this.moduleInfo, sandbox);
+        const { mount, component } = await loadModule(this.moduleInfo, this.props.sandbox);
         const lifecycleMount = mount;
         this.moduleLifecycleMount = mount;
         this.moduleComponent = component;
@@ -116,12 +113,14 @@ export default class MicroModule extends React.Component<any, State> {
           if (this.unmout) {
             unmoutModule(this.moduleInfo, this.mountNode);
           } else {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { sandbox, moduleInfo, wrapperClassName, wrapperStyle, loadingComponent, handleError, ...rest } = this.props;
             lifecycleMount(component, this.mountNode, rest);
           }
         }
       } catch (err) {
         this.setState({ loading: false });
-        handleError(err);
+        this.props.handleError(err);
       }
     }
   }

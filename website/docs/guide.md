@@ -15,7 +15,7 @@ icestark 在保证一个系统的操作体验基础上，实现各个微应用�
 icestark 可以通过简单的命令行，生成主应用和微应用模板。无论您是使用 React 还是 Vue，都可以便捷的创建符合 icestark 微前端规范的项目。这些项目均由 icestark 团队官方维护。
 
 :::tip
-如果您想将正在开发中或已开发完成的项目接入 icestark，请移步 <a href="/docs/guide/use-layout/react">主应用接入</a> 和 <a href="/docs/guide/use-child/react">微应用接入</a>。如果您使用的是 <a href="https://github.com/facebook/create-react-app">create-react-app</a> 、umi 等框架开发的应用，亦可参考 <a href="/docs/guide/use-child/others">其他框架的接入指南</a>。
+如果您想将正在开发中或已开发完成的项目接入 icestark，请移步[主应用接入](./guide/use-layout/react)和[微应用接入](./guide/use-child/react)。如果您使用的是 [create-react-app](https://github.com/facebook/create-react-app) 、umi 等框架开发的应用，亦可参考[其它框架的接入指南](./guide/use-child/others)。
 :::
 
 ### 初始化主应用
@@ -49,5 +49,5 @@ $ npm run start
 + 现代浏览器和 IE11。
 
 :::tip
-对于 IE 系列浏览器，需要提供相应的 polyfill 支持。详细介绍，请参考 <a href="/docs/faq#兼容-ie-浏览器"> 常见问题 -> 兼容 IE 浏览器 </a>
+对于 IE 系列浏览器，需要提供相应的 polyfill 支持。详细介绍，请参考[常见问题 -> 兼容 IE 浏览器](./faq#兼容-ie-浏览器)
 :::
