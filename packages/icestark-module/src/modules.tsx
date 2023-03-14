@@ -13,6 +13,11 @@ export interface StarkModule {
   runtime?: Runtime;
   mount?: (Component: any, targetNode: HTMLElement, props?: any) => void;
   unmount?: (targetNode: HTMLElement) => void;
+  /**
+   * Enable loadModuleByName in case of the situation
+   * when failed to get moudle lifecycle by noteGlobalProps.
+   */
+  loadModuleByName?: boolean;
 }
 
 export type ISandbox = boolean | SandboxProps | SandboxConstructor;
@@ -147,11 +152,11 @@ export function appendCSS(
       'error',
       () => {
         console.error(`css asset loaded error: ${url}`);
-        return resolve(true);
+        return resolve(false);
       },
       false,
     );
-    element.addEventListener('load', () => resolve(false), false);
+    element.addEventListener('load', () => resolve(true), false);
 
     root.appendChild(element);
   });
@@ -203,7 +208,7 @@ export const getImportedModule = function (name: string) {
 };
 
 export const execModule = async (targetModule: StarkModule, sandbox?: ISandbox) => {
-  const { name, url, runtime } = targetModule;
+  const { name, url, runtime, loadModuleByName } = targetModule;
   if (importModules[name]?.state === 'LOADING') {
     await resolveEvent(name);
   }
@@ -225,7 +230,7 @@ export const execModule = async (targetModule: StarkModule, sandbox?: ISandbox) 
   try {
     const { jsList, cssList } = parseUrlAssets(url);
     moduleSandbox = createSandbox(sandbox, deps);
-    const moduleInfo = await moduleLoader.execModule({ name, url: jsList }, moduleSandbox, deps);
+    const moduleInfo = await moduleLoader.execModule({ loadModuleByName, name, url: jsList }, moduleSandbox, deps);
 
     dispatchEvent(name, { detail: { state: 'LOADED' } });
 

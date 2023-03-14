@@ -52,13 +52,13 @@ export default class ModuleLoader {
       } else {
         globalWindow = window;
       }
-      const { name } = starkModule;
+      const { name, loadModuleByName } = starkModule;
       let libraryExport = '';
       // excute script in order
       try {
         sources.forEach((source, index) => {
           const lastScript = index === sources.length - 1;
-          if (lastScript) {
+          if (lastScript && !loadModuleByName) {
             noteGlobalProps(globalWindow);
           }
           // check sandbox
@@ -69,7 +69,7 @@ export default class ModuleLoader {
             // eslint-disable-next-line no-eval
             (0, eval)(source);
           }
-          if (lastScript) {
+          if (lastScript && !loadModuleByName) {
             libraryExport = getGlobalProp(globalWindow, isEsModule);
           }
         });
