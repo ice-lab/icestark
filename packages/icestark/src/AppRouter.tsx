@@ -86,6 +86,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   componentDidMount() {
     // render NotFoundComponent eventListener
     window.addEventListener('icestark:not-found', this.triggerNotFound);
+    window.addEventListener('icestark:error', this.errorEventHandler);
 
     /** lifecycle `componentWillUnmount` of pre-rendering executes later then
      * `constructor` and `componentWilllMount` of next-rendering, whereas `start` should be invoked before `unload`.
@@ -111,6 +112,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
   componentWillUnmount() {
     this.unmounted = true;
     window.removeEventListener('icestark:not-found', this.triggerNotFound);
+    window.removeEventListener('icestark:error', this.errorEventHandler);
     unload();
     this.setState({ started: false });
   }
@@ -154,6 +156,13 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     this.props.onError(err);
     this.err = err;
     this.setState({ url: ICESTSRK_ERROR });
+  };
+
+  /**
+   * error event handler
+   */
+  errorEventHandler = (e: CustomEvent): void => {
+    this.triggerError(e.detail);
   };
 
   triggerNotFound = (): void => {
