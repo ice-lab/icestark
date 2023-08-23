@@ -182,7 +182,7 @@ export default function ExampleComponent(props) {
 
 ## 已有项目改造为微模块
 
-将已有项目改造为微模块的方式与 [微应用](./use-child/react) 类似，主要包含两步：
+将已有项目改造为微模块的方式与 [微应用](use-child/react) 类似，主要包含两步：
 
 #### 1. 应用入口导出生命周期函数
 
