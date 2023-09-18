@@ -31,10 +31,10 @@ interface OriginalStateFunction {
 }
 
 let started = false;
-const originalPush: OriginalStateFunction = window.history.pushState;
-const originalReplace: OriginalStateFunction = window.history.replaceState;
-const originalAddEventListener = window.addEventListener;
-const originalRemoveEventListener = window.removeEventListener;
+let originalPush: OriginalStateFunction;
+let originalReplace: OriginalStateFunction;
+let originalAddEventListener;
+let originalRemoveEventListener;
 
 const handleStateChange = (event: PopStateEvent, url: string, method: RouteType) => {
   setHistoryEvent(event);
@@ -92,6 +92,9 @@ export function reroute(url: string, type: RouteType | 'init' | 'popstate'| 'has
  * Hijack window.history
  */
 const hijackHistory = (): void => {
+  originalPush = window.history.pushState;
+  originalReplace = window.history.replaceState;
+  
   window.history.pushState = (state: any, title: string, url?: string, ...rest) => {
     originalPush.apply(window.history, [state, title, url, ...rest]);
     const eventName = 'pushState';
@@ -123,6 +126,9 @@ const unHijackHistory = (): void => {
  * Hijack eventListener
  */
 const hijackEventListener = (): void => {
+  originalAddEventListener = window.addEventListener;
+  originalRemoveEventListener = window.removeEventListener;
+
   window.addEventListener = (eventName, fn, ...rest) => {
     if (
       typeof fn === 'function' &&
