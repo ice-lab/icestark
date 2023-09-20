@@ -4,7 +4,7 @@
 
 ## 通过官方脚手架创建
 
-> 该官方脚手架基于 Vue 2.0 + Vue CLI，如需使用其他框架/工程可按 [已有应用改造](./vue#已有应用改造) 的方式接入。
+> 该官方脚手架基于 Vue 2.0 + Vue CLI，如需使用其他框架/工程可按 [已有应用改造](vue#已有应用改造) 的方式接入。
 > 需注意，目前 @vue-materials/icestark-layout-app 1.x 采用 Vite + icestark + vue3 框架应用。
 
 ```bash
