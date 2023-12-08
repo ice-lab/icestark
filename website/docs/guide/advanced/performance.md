@@ -238,7 +238,7 @@ const App = () => {
 
 ```js
 // webpack.config.js
-mmodule.exports = {
+module.exports = {
   // ...
   externals: {
     'react': 'React',
