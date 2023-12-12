@@ -4,35 +4,35 @@
         <title>icestark Blog</title>
         <link>https://micro-frontends.ice.work/blog</link>
         <description>icestark Blog</description>
-        <lastBuildDate>Wed, 20 Sep 2023 07:39:16 GMT</lastBuildDate>
+        <lastBuildDate>Tue, 12 Dec 2023 02:31:07 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <item>
             <title><![CDATA[icestark 2.4.0]]></title>
             <link>https://micro-frontends.ice.work/blog/00-icestark-2-4-0</link>
             <guid>icestark 2.4.0</guid>
-            <pubDate>Wed, 20 Sep 2023 07:39:16 GMT</pubDate>
+            <pubDate>Tue, 12 Dec 2023 02:31:07 GMT</pubDate>
             <description><![CDATA[Announcing icestark 2.4.0]]></description>
-        </item>
-        <item>
-            <title><![CDATA[icestark 2.5.0]]></title>
-            <link>https://micro-frontends.ice.work/blog/01-icestark-2-5-0</link>
-            <guid>icestark 2.5.0</guid>
-            <pubDate>Wed, 20 Sep 2023 07:39:16 GMT</pubDate>
-            <description><![CDATA[Announcing icestark 2.5.0]]></description>
         </item>
         <item>
             <title><![CDATA[icestark 2.6.0]]></title>
             <link>https://micro-frontends.ice.work/blog/02-icestark-2-6-0</link>
             <guid>icestark 2.6.0</guid>
-            <pubDate>Wed, 20 Sep 2023 07:39:16 GMT</pubDate>
+            <pubDate>Tue, 12 Dec 2023 02:31:07 GMT</pubDate>
             <description><![CDATA[Announcing icestark 2.6.0]]></description>
+        </item>
+        <item>
+            <title><![CDATA[icestark 2.5.0]]></title>
+            <link>https://micro-frontends.ice.work/blog/01-icestark-2-5-0</link>
+            <guid>icestark 2.5.0</guid>
+            <pubDate>Tue, 12 Dec 2023 02:31:07 GMT</pubDate>
+            <description><![CDATA[Announcing icestark 2.5.0]]></description>
         </item>
         <item>
             <title><![CDATA[icestark 2.7.0]]></title>
             <link>https://micro-frontends.ice.work/blog/03-icestark-2-7-0</link>
             <guid>icestark 2.7.0</guid>
-            <pubDate>Wed, 20 Sep 2023 07:39:16 GMT</pubDate>
+            <pubDate>Tue, 12 Dec 2023 02:31:07 GMT</pubDate>
             <description><![CDATA[Announcing icestark 2.7.0]]></description>
         </item>
     </channel>
