@@ -218,6 +218,10 @@ export async function loadAppModule(appConfig: AppConfig) {
         fetch,
         cacheId,
       });
+      if (cached && appSandbox) {
+        // @ts-ignore
+        appSandbox?.active();
+      }
       lifecycle = await loadScriptByFetch(appAssets.jsList, appSandbox, fetch);
       break;
     default:
@@ -445,10 +449,16 @@ export async function unmountMicroApp(appName: string) {
     }
 
     updateAppConfig(appName, { status: UNMOUNTED });
-    if (!appConfig.cached && appConfig.appSandbox) {
-      appConfig.appSandbox.clear();
-      appConfig.appSandbox = null;
+    if (appConfig.appSandbox) {
+      if (appConfig.cached) {
+        // @ts-ignore
+        appConfig.appSandbox?.inactive();
+      } else {
+        appConfig.appSandbox.clear();
+        appConfig.appSandbox = null;
+      }
     }
+
     if (appConfig.unmount) {
       await appConfig.unmount({ container: appConfig.container, customProps: appConfig.props });
     }
