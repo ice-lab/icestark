@@ -40,7 +40,7 @@ start({
 `prefetch` 值支持三种形式：
 
 + **布尔值**：当 `prefetch` 为 `true` 时，所以微应用资源均会被 `prefetch`;
-+ **数组**：当传入值为 `name` 的数组时，只要数组中的微应用资源会被 `prefetch`;
++ **数组**：当传入值为 `name` 的数组时，只有数组中的微应用资源会被 `prefetch`;
 
 ```js
 start({
@@ -238,7 +238,7 @@ const App = () => {
 
 ```js
 // webpack.config.js
-mmodule.exports = {
+module.exports = {
   // ...
   externals: {
     'react': 'React',

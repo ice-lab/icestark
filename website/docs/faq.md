@@ -119,7 +119,7 @@ module.exports = {
 
 ## Error: Invariant failed: You should not use `<withRouter(Navigation) />` outside a `<Router>`
 
-因为 jsx 嵌套层级的关系，在主应用的 Layout 里没法使用 react-router 提供的 API，比如 `withRouter`, `Link`, `useParams` 等，具体参考文档 [主应用中路由跳转](./guide/use-layout/react#主应用中路由跳转)。
+因为 jsx 嵌套层级的关系，在主应用的 Layout 里没法使用 react-router 提供的 API，比如 `withRouter`, `Link`, `useParams` 等，具体参考文档 [主应用中路由跳转](guide/use-layout/react#主应用中路由跳转)。
 
 ## 官方 Demo 如何启用 HashRouter
 
@@ -274,7 +274,7 @@ appHistory.push('/seller', true);
 
 2. 添加 `fetch` polyfill
 
-当 [`loadScriptMode`](./api/ice-stark#loadscriptmode) 为 `fetch` 时，icestark 会使用 `window.fetch` 获取微应用静态资源，因此还需要对 `fetch` 进行 polyfill。这里，我们推荐 [whatwg-fetch](https://github.com/github/fetch)。请确保在 icestark 之前引入该资源。
+当 [`loadScriptMode`](api/ice-stark#loadscriptmode) 为 `fetch` 时，icestark 会使用 `window.fetch` 获取微应用静态资源，因此还需要对 `fetch` 进行 polyfill。这里，我们推荐 [whatwg-fetch](https://github.com/github/fetch)。请确保在 icestark 之前引入该资源。
 
 ```js
 // 入口文件
@@ -301,7 +301,7 @@ proxy sandbox is not support by current browser
 
 ## 如何解决 Script Error
 
-“Script error.” 是一个常见错误，但由于该错误不提供完整的报错信息（错误堆栈），问题排查往往无从下手。icestark 的 [scriptAttributes](./api/ice-stark#scriptattributes) 参数支持为加载的 `<script />` 资源添加 `crossorigin="anonymous"` 来解决这个问题。具体可参考 [scriptAttributes](./api/ice-stark#scriptattributes)。
+“Script error.” 是一个常见错误，但由于该错误不提供完整的报错信息（错误堆栈），问题排查往往无从下手。icestark 的 [scriptAttributes](api/ice-stark#scriptattributes) 参数支持为加载的 `<script />` 资源添加 `crossorigin="anonymous"` 来解决这个问题。具体可参考 [scriptAttributes](api/ice-stark#scriptattributes)。
 
 :::tip
 想了解更多有关 Script Error 的问题，可以参考 <a href="https://help.aliyun.com/document_detail/88579.html">“Script error.”的产生原因和解决办法</a>
@@ -325,7 +325,7 @@ const Routes = () => {
 }
 ```
 
-这样，不会导致微应用正常加载，但微应用路由没有匹配成功时导致的页面空白，而会显示 404 页面。这样，我们能清晰地知道，在 icestark 执行环境下，需要修改[微应用的 basename](./guide/use-child/react#2-定义基准路由)，使得微应用可以与当前路由匹配上。
+这样，不会导致微应用正常加载，但微应用路由没有匹配成功时导致的页面空白，而会显示 404 页面。这样，我们能清晰地知道，在 icestark 执行环境下，需要修改[微应用的 basename](guide/use-child/react#2-定义基准路由)，使得微应用可以与当前路由匹配上。
 
 ## Vite 微应用支持沙箱吗
 
@@ -338,7 +338,7 @@ const Routes = () => {
 
 ## 切换微应用，主应用样式丢失
 
-通常情况是主应用开启了 webpack [Dynamic Imports](https://webpack.js.org/guides/code-splitting/#dynamic-imports) 能力，可以通过 [shouldAssetsRemove](./api/ice-stark#shouldassetsremove) 防止错误地移除主应用的样式资源。
+通常情况是主应用开启了 webpack [Dynamic Imports](https://webpack.js.org/guides/code-splitting/#dynamic-imports) 能力，可以通过 [shouldAssetsRemove](api/ice-stark#shouldassetsremove) 防止错误地移除主应用的样式资源。
 
 ```js
 // src/App.jsx
@@ -365,5 +365,5 @@ const App = () => {
 
 ## 主应用路由之间跳转导致重复渲染
 
-如果主应用需要包含路由页面，在 [React 主应用接入](./guide/use-layout/react#主应用中如何包含路由页面) 我们推荐将主应用路由作为一个 `fallback` 微应用来使用。但由于在主应用路由切换时，上层组件状态改变会导致 `fallback` 应用重复渲染，因此推荐使用 [React.memo](https://reactjs.org/docs/react-api.html#reactmemo) 防止 React 组件重复渲染。具体示例可参考 [主应用中如何包含路由页面](./guide/use-layout/react#主应用中如何包含路由页面)
+如果主应用需要包含路由页面，在 [React 主应用接入](guide/use-layout/react#主应用中如何包含路由页面) 我们推荐将主应用路由作为一个 `fallback` 微应用来使用。但由于在主应用路由切换时，上层组件状态改变会导致 `fallback` 应用重复渲染，因此推荐使用 [React.memo](https://reactjs.org/docs/react-api.html#reactmemo) 防止 React 组件重复渲染。具体示例可参考 [主应用中如何包含路由页面](guide/use-layout/react#主应用中如何包含路由页面)
 
