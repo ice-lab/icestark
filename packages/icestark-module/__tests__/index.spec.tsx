@@ -15,7 +15,6 @@ import {
   unmoutModule,
   removeCSS,
   registerModule,
-  registerModules,
 } from '../src/modules';
 import MicroModule, { renderModules, renderComponent } from '../src/MicroModule';
 
@@ -31,6 +30,23 @@ const defaultMount = (Component: any, targetNode: HTMLElement, props?: any) => {
  */
 const defaultUnmount = (targetNode: HTMLElement) => {
   ReactDOM.unmountComponentAtNode(targetNode);
+};
+
+const TestModule = ({ value = 1 }: { value?: number }) => {
+  console.log('hhj-log', 'value', value);
+  return <span>{value}</span>;
+};
+
+const TestHost = ({ initialValue }: { initialValue: number }) => {
+  const [value, setValue] = React.useState<number>(initialValue);
+
+  React.useEffect(() => {
+    setTimeout(() => {
+      setValue((value) => value + 1);
+    }, 500);
+  }, []);
+
+  return <MicroModule moduleName="moduleA" value={value} />;
 };
 
 const modules = [{
@@ -108,7 +124,7 @@ describe('render modules', () => {
       expect(container.innerHTML).toBe('<div><div><h2>404</h2></div></div>');
       next();
     }, 0);
-  }); 
+  });
 
   test('render MicroModule with custom className and style', (next) => {
     const { container } = render(<MicroModule moduleName="selfComponent" wrapperClassName="test" wrapperStyle={{ fontSize: '14px' }} sandbox />);
@@ -182,6 +198,23 @@ describe('render modules', () => {
       ],
     });
   })
+
+  test('props rerender', async () => {
+    registerModule({
+      name: 'moduleA',
+      render: (props: any) => {
+        return <TestModule {...props}/>
+      },
+    });
+    const { container } = render(<TestHost initialValue={5} />);
+    expect(container.innerHTML).toBe('<div><span>5</span></div>');
+    await new Promise<void>((resolve) => {
+      setTimeout(() => {
+        expect(container.innerHTML).toBe('<div><span>6</span></div>');
+        resolve();
+      }, 2000);
+    });
+  });
 
   test('clear module', () => {
     clearModules();
