@@ -151,3 +151,47 @@ describe('callable functions in sandbox', () => {
     expect(error).toBe(null);
   });
 });
+
+describe('mock function cacheDeps', () => {
+  // mock window
+  const windowAsAny = (window as any);
+  test('load second dependency with first dependency in multiMode', () => {
+    windowAsAny['test'] = { a: 123, b: 456 };
+  
+    let sandbox = new Sandbox({ multiMode: true });
+
+    sandbox.execScriptInSandbox(`
+      window['test'] = { a: 234, b: 456 };
+    `);
+    const firstDepPropertyAdded = sandbox.getAddedProperties();
+    sandbox.clear();
+    sandbox = new Sandbox({ multiMode: true });
+    sandbox.createProxySandbox(firstDepPropertyAdded);
+    sandbox.execScriptInSandbox(`
+      expect(window.test.a).toBe(234);
+    `);
+    sandbox.clear();
+    expect(windowAsAny.test.a).toBe(123);
+
+  });
+
+  test('load second dependency with first dependency in singleMode', () => {
+    windowAsAny['test'] = { a: 123, b: 456 };
+  
+    let sandbox = new Sandbox({ multiMode: false });
+
+    sandbox.execScriptInSandbox(`
+      window['test'] = { a: 234, b: 456 };
+    `);
+    const firstDepPropertyAdded = sandbox.getAddedProperties();
+    sandbox.clear();
+    sandbox = new Sandbox({ multiMode: true });
+    sandbox.createProxySandbox(firstDepPropertyAdded);
+    sandbox.execScriptInSandbox(`
+      expect(window.test.a).toBe(234);
+    `);
+    sandbox.clear();
+    expect(windowAsAny.test.a).toBe(123);
+  })
+
+})
