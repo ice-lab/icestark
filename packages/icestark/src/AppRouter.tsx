@@ -35,6 +35,7 @@ export interface AppRouterProps {
   basename?: string;
   fetch?: Fetch;
   prefetch?: Prefetch;
+  className?: string;
 }
 
 interface AppRouterState {
@@ -195,6 +196,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       LoadingComponent,
       children,
       basename: frameworkBasename,
+      className,
     } = this.props;
     const { url, appLoading, started } = this.state;
 
@@ -249,7 +251,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
         history: appHistory,
       };
       return (
-        <div>
+        <div className={className}>
           {appLoading === this.appKey ? renderComponent(LoadingComponent, {}) : null}
           {React.cloneElement(element, {
             key: this.appKey,

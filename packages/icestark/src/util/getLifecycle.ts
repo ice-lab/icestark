@@ -1,5 +1,5 @@
 import { getCache, setCache } from './cache';
-import { AppLifeCycleEnum } from './appLifeCycle';
+import { AppLifeCycleEnum } from './constant';
 import type { ModuleLifeCycle } from '../apps';
 
 export function getLifecyleByLibrary() {

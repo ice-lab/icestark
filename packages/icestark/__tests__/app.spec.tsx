@@ -117,5 +117,38 @@ describe('app start', () => {
 
     const errorApp = await createMicroApp('app-error');
     expect(errorApp).toBe(null);
-  })
+  });
+
+  test('window.microApps should be equal to insider microApps', async () => {
+    let status = '';
+    registerMicroApps([
+      {
+        name: 'app7',
+        activePath: '/testapp',
+        url: ['//icestark.com/index.js'],
+        mount: () => {
+          status = MOUNTED;
+        },
+        unmount: () => {
+          status = UNMOUNTED;
+        },
+      } as AppConfig,
+    ]);
+    window.history.pushState({}, 'test', '/testapp');
+    const findMicroAppByName = (microApps, name) => microApps.filter(d => d.name === name)[0];
+    await mountMicroApp('app7');
+    expect(status).toBe(MOUNTED);
+    expect(findMicroAppByName(getMicroApps(), 'app7').status).toEqual(findMicroAppByName((window as any).microApps, 'app7').status);
+    expect(findMicroAppByName(getMicroApps(), 'app7').status).toEqual(status);
+
+    await unmountMicroApp('app7');
+    expect(status).toBe(UNMOUNTED);
+    expect(findMicroAppByName(getMicroApps(), 'app7').status).toEqual(findMicroAppByName((window as any).microApps, 'app7').status);
+    expect(findMicroAppByName(getMicroApps(), 'app7').status).toEqual(status);
+
+    await createMicroApp('app7');
+    expect(status).toBe(MOUNTED);
+    expect(findMicroAppByName(getMicroApps(), 'app7').status).toEqual(findMicroAppByName((window as any).microApps, 'app7').status);
+    expect(findMicroAppByName(getMicroApps(), 'app7').status).toEqual(status);
+  });
 });

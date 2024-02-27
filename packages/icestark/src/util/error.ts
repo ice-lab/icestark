@@ -6,6 +6,7 @@ export enum ErrorCode {
   'JS_LOAD_ERROR' = 5,
   'CSS_LOAD_ERROR' = 6,
   'ACTIVE_PATH_ITEM_CAN_NOT_BE_EMPTY' = 7,
+  'CACHED_APP_USE_UNLOAD' = 8,
 }
 
 export function normalizeMsg(msg: string, args: string[]) {

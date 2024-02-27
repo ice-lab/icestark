@@ -197,5 +197,5 @@ function unload() {
   clearMicroApps();
 }
 
-export { unload, globalConfiguration };
+export { unload, globalConfiguration, started };
 export default start;

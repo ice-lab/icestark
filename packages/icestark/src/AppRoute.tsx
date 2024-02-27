@@ -1,9 +1,13 @@
 import * as React from 'react';
 import renderComponent from './util/renderComponent';
 import { AppHistory } from './appHistory';
-import { unloadMicroApp, BaseConfig, createMicroApp } from './apps';
+import { unloadMicroApp, unmountMicroApp, BaseConfig, createMicroApp } from './apps';
 import { converArray2String } from './util/helpers';
-import { callCapturedEventListeners, resetCapturedEventListeners } from './util/capturedListeners';
+import { started } from './start';
+import {
+  callCapturedEventListeners,
+  resetCapturedEventListeners,
+} from './util/capturedListeners';
 import isEqual from 'lodash.isequal';
 
 import type { PathData } from './util/checkActive';
@@ -136,6 +140,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
   mountApp = () => {
     resetCapturedEventListeners();
+
     const { onAppEnter } = this.props;
 
     // Trigger app enter
@@ -151,15 +156,15 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
   };
 
   unmountApp = () => {
-    const { name, onAppLeave } = this.props;
+    const { name, onAppLeave, cached } = this.props;
 
     // Trigger app leave
     if (typeof onAppLeave === 'function') {
       onAppLeave(genCompatibleAppConfig(this.props));
     }
 
-    if (!this.validateRender()) {
-      unloadMicroApp(name);
+    if (!this.validateRender() && started) {
+      cached ? unmountMicroApp(name) : unloadMicroApp(name);
     }
   };
 

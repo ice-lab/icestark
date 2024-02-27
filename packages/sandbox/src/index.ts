@@ -1,5 +1,6 @@
 export interface SandboxProps {
   multiMode?: boolean;
+  injection?: Record<PropertyKey, any>;
 }
 
 export interface SandboxConstructor {
@@ -33,6 +34,8 @@ export default class Sandbox {
 
   private multiMode = false;
 
+  private injection = {};
+
   private eventListeners = {};
 
   private timeoutIds: number[] = [];
@@ -46,7 +49,7 @@ export default class Sandbox {
   public sandboxDisabled: boolean;
 
   constructor(props: SandboxProps = {}) {
-    const { multiMode } = props;
+    const { multiMode, injection } = props;
     if (!window.Proxy) {
       console.warn('proxy sandbox is not support by current browser');
       this.sandboxDisabled = true;
@@ -54,8 +57,13 @@ export default class Sandbox {
     // enable multiMode in case of create mulit sandbox in same time
     this.multiMode = multiMode;
     this.sandbox = null;
+    this.injection = injection;
   }
 
+  /**
+   * create proxy sandbox
+   * @param injection @deprecated will be deprecated in the future
+   */
   createProxySandbox(injection?: object) {
     const { propertyAdded, originalValues, multiMode } = this;
     const proxyWindow = Object.create(null) as Window;
@@ -64,6 +72,9 @@ export default class Sandbox {
     const originalRemoveEventListener = window.removeEventListener;
     const originalSetInterval = window.setInterval;
     const originalSetTimeout = window.setTimeout;
+
+    // `this` in Proxy traps will retarget to the trap.
+    const _self = this;
 
     // hijack addEventListener
     proxyWindow.addEventListener = (eventName, fn, ...rest) => {
@@ -135,7 +146,8 @@ export default class Sandbox {
         }
 
         // search from injection
-        const injectionValue = injection && injection[p];
+        const injectionValue = _self.injection?.[p] ?? injection?.[p];
+
         if (injectionValue) {
           return injectionValue;
         }
@@ -159,6 +171,7 @@ export default class Sandbox {
 
           // Axios, Moment, and other callable functions may have additional properties.
           // Simply copy them into boundValue.
+          // eslint-disable-next-line guard-for-in
           for (const key in value) {
             boundValue[key] = value[key];
           }
