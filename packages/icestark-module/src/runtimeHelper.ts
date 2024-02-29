@@ -1,23 +1,7 @@
 import Sandbox from '@ice/sandbox';
 import { any2AnyArray } from './utils';
 import { parseUrlAssets, appendCSS } from './modules';
-
-/**
- * CustomEvent Polyfill for IE.
- * See https://gist.github.com/gt3/787767e8cbf0451716a189cdcb2a0d08.
- */
-(function () {
-  if (typeof (window as any).CustomEvent === 'function') return false;
-
-  function CustomEvent(event, params) {
-    params = params || { bubbles: false, cancelable: false, detail: null };
-    const evt = document.createEvent('CustomEvent');
-    evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
-    return evt;
-  }
-
-  (window as any).CustomEvent = CustomEvent;
-})();
+import { dispatchEvent, resolveEvent } from './eventHelper';
 
 export interface RuntimeInstance {
   id: string;
@@ -71,7 +55,7 @@ export async function cacheDeps(runtime: CombineRuntime, deps: object, fetch = w
 
   if (runtimeCache[mark]?.state === 'LOADING') {
     // await util resource loaded or error
-    await new Promise((resolve) => window.addEventListener(mark, resolve));
+    await resolveEvent(mark);
   }
 
   if (runtimeCache[mark]?.state === 'LOADED') {
@@ -95,12 +79,12 @@ export async function cacheDeps(runtime: CombineRuntime, deps: object, fetch = w
     ).then((codes) => execute(codes, deps));
 
     updateRuntimeState(mark, 'LOADED');
-    window.dispatchEvent(new CustomEvent(mark, { detail: { state: 'LOADED' } }));
+    dispatchEvent(mark, { detail: { state: 'LOADED' } });
 
     return runtimeCache[mark].deps;
   } catch (e) {
     updateRuntimeState(mark, 'LOAD_ERROR');
-    window.dispatchEvent(new CustomEvent(mark, { detail: { state: 'LOAD_ERROR' } }));
+    dispatchEvent(mark, { detail: { state: 'LOAD_ERROR' } });
     console.error(`[icestark module] ${id} fetch or excute js assets error`, e);
     return Promise.reject(e);
   }

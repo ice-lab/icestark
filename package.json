@@ -6,8 +6,8 @@
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "setup": "rm -rf node_modules && rm -rf ./packages/*/node_modules && pnpm i --registry=https://registry.npmmirror.com && npm run build",
-    "build": "pnpm run clean && pnpm -r --filter ./packages run build",
-    "watch": "pnpm -r --filter ./packages --parallel run watch",
+    "build": "pnpm run clean && pnpm --filter=./packages/* run build",
+    "watch": "pnpm --parallel --filter=./packages/* run watch",
     "clean": "rimraf packages/*/lib",
     "publish:packages": "ts-node ./scripts/publish.ts",
     "publish:beta": "ts-node ./scripts/beta.ts",
