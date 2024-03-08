@@ -52,14 +52,14 @@ export default class MicroModule extends React.Component<any, State> {
 
   componentDidUpdate(prevProps) {
     const { moduleInfo: preModuleInfo = {}, ...preRest } = prevProps;
-    const { moduleInfo: curModuleInfo = {}, ...curRest } = this.props;
+    const { moduleInfo: curModuleInfo = {}, mountId, ...curRest } = this.props;
 
     if (!shallowCompare(preModuleInfo, curModuleInfo)) {
       this.mountModule();
     }
     if (!shallowCompare(preRest, curRest)) {
       // 对于除 moduleInfo 外的 props 更新，重新渲染模块
-      this.moduleLifecycleMount && this.moduleLifecycleMount(this.moduleComponent, this.mountNode, curRest);
+      this.moduleLifecycleMount && this.moduleLifecycleMount(this.moduleComponent, this.mountNode || mountId, curRest);
     }
   }
 
@@ -114,8 +114,8 @@ export default class MicroModule extends React.Component<any, State> {
             unmoutModule(this.moduleInfo, this.mountNode);
           } else {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { sandbox, moduleInfo, wrapperClassName, wrapperStyle, loadingComponent, handleError, ...rest } = this.props;
-            lifecycleMount(component, this.mountNode, rest);
+            const { sandbox, moduleInfo, wrapperClassName, wrapperStyle, loadingComponent, handleError, mountId, ...rest } = this.props;
+            lifecycleMount(component, this.mountNode || mountId, rest);
           }
         }
       } catch (err) {
@@ -134,14 +134,18 @@ export default class MicroModule extends React.Component<any, State> {
     const { loading } = this.state;
     const { render } = this.moduleInfo || {};
 
-    const { wrapperClassName, wrapperStyle, loadingComponent, ...restProps } = this.props;
+    const { wrapperClassName, wrapperStyle, loadingComponent, mountId, ...restProps } = this.props;
+    const nodeProps = {
+      className: wrapperClassName,
+      style: wrapperStyle,
+      ref: (ref) => { this.mountNode = ref; },
+      ...(mountId ? { id: mountId } : {}),
+    };
     return loading
       ? loadingComponent
       : (
         <div
-          className={wrapperClassName}
-          style={wrapperStyle}
-          ref={(ref) => { this.mountNode = ref; }}
+          {...nodeProps}
         >
           { this.moduleInfo && this.validateRender() && render(restProps) }
         </div>

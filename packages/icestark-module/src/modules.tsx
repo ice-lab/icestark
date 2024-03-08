@@ -168,7 +168,7 @@ export function appendCSS(
 
 export function removeCSS(name: string, node?: HTMLElement | Document, removeList?: string[]) {
   const linkList: NodeListOf<HTMLElement> = (node || document).querySelectorAll(
-    `link[module=${name}]`,
+    `link[module="${name}"]`,
   );
   linkList.forEach((link) => {
     // check link href if it is in remove list
