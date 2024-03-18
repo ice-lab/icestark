@@ -96,14 +96,16 @@ export default class MicroModule extends React.Component<any, State> {
         const { mount, component } = await loadModule(this.moduleInfo, sandbox);
         const lifecycleMount = mount;
 
-        !this.unmout && this.setState({ loading: false });
-        if (lifecycleMount && component) {
-          if (this.unmout) {
-            unmoutModule(this.moduleInfo, this.mountNode);
-          } else {
-            lifecycleMount(component, this.mountNode, rest);
+        !this.unmout && this.setState({ loading: false },()=>{
+          if (lifecycleMount && component) {
+            if (this.unmout) {
+              unmoutModule(this.moduleInfo, this.mountNode);
+            } else {
+              lifecycleMount(component, this.mountNode, rest);
+            }
           }
-        }
+        });
+       
       } catch (err) {
         this.setState({ loading: false });
         handleError(err);
