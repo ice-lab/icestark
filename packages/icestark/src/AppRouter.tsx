@@ -35,6 +35,8 @@ export interface AppRouterProps {
   basename?: string;
   fetch?: Fetch;
   prefetch?: Prefetch;
+  apps?: AppConfig;
+  children?: React.ReactChildren;
 }
 
 interface AppRouterState {
@@ -74,11 +76,7 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
       started: false,
     };
 
-    const { fetch, prefetch: strategy, children } = props;
-
-    if (strategy) {
-      this.prefetch(strategy, children, fetch);
-    }
+    this.tryPrefetch(props);
   }
 
   componentDidMount() {
@@ -111,6 +109,24 @@ export default class AppRouter extends React.Component<AppRouterProps, AppRouter
     window.removeEventListener('icestark:not-found', this.triggerNotFound);
     unload();
     this.setState({ started: false });
+  }
+
+  componentWillReceiveProps(nextProps: Readonly<AppRouterProps>, nextContext: any): void {
+    if (nextProps.apps !== this.props.apps) {
+      this.tryPrefetch(nextProps);
+    }
+  }
+
+  /**
+   * try to prefetch again
+   * @param props 
+   */
+  tryPrefetch(props: AppRouterProps): void {
+    const { fetch, prefetch: strategy, children } = props;
+
+    if (strategy) {
+      this.prefetch(strategy, children, fetch);
+    }
   }
 
   /**
