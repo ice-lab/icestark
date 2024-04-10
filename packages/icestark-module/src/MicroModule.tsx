@@ -59,7 +59,11 @@ export default class MicroModule extends React.Component<any, State> {
     }
     if (!shallowCompare(preRest, curRest)) {
       // 对于除 moduleInfo 外的 props 更新，重新渲染模块
-      this.moduleLifecycleMount && this.moduleLifecycleMount(this.moduleComponent, this.mountNode || mountId, curRest);
+      this.moduleLifecycleMount && this.moduleLifecycleMount(
+        this.moduleComponent,
+        this.mountNode || (mountId && document.getElementById(mountId)),
+        curRest,
+      );
     }
   }
 
@@ -115,7 +119,7 @@ export default class MicroModule extends React.Component<any, State> {
           } else {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { sandbox, moduleInfo, wrapperClassName, wrapperStyle, loadingComponent, handleError, mountId, ...rest } = this.props;
-            lifecycleMount(component, this.mountNode || mountId, rest);
+            lifecycleMount(component, this.mountNode || (mountId && document.getElementById(mountId)), rest);
           }
         }
       } catch (err) {
