@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://micro-frontends.ice.work/blog</id>
     <title>icestark Blog</title>
-    <updated>2024-04-01T03:11:29.341Z</updated>
+    <updated>2024-04-11T09:47:00.229Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://micro-frontends.ice.work/blog"/>
     <subtitle>icestark Blog</subtitle>
@@ -11,28 +11,28 @@
         <title type="html"><![CDATA[icestark 2.4.0]]></title>
         <id>icestark 2.4.0</id>
         <link href="https://micro-frontends.ice.work/blog/00-icestark-2-4-0"/>
-        <updated>2024-04-01T03:11:29.341Z</updated>
+        <updated>2024-04-11T09:47:00.229Z</updated>
         <summary type="html"><![CDATA[Announcing icestark 2.4.0]]></summary>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[icestark 2.6.0]]></title>
-        <id>icestark 2.6.0</id>
-        <link href="https://micro-frontends.ice.work/blog/02-icestark-2-6-0"/>
-        <updated>2024-04-01T03:11:29.341Z</updated>
-        <summary type="html"><![CDATA[Announcing icestark 2.6.0]]></summary>
     </entry>
     <entry>
         <title type="html"><![CDATA[icestark 2.5.0]]></title>
         <id>icestark 2.5.0</id>
         <link href="https://micro-frontends.ice.work/blog/01-icestark-2-5-0"/>
-        <updated>2024-04-01T03:11:29.341Z</updated>
+        <updated>2024-04-11T09:47:00.229Z</updated>
         <summary type="html"><![CDATA[Announcing icestark 2.5.0]]></summary>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[icestark 2.6.0]]></title>
+        <id>icestark 2.6.0</id>
+        <link href="https://micro-frontends.ice.work/blog/02-icestark-2-6-0"/>
+        <updated>2024-04-11T09:47:00.229Z</updated>
+        <summary type="html"><![CDATA[Announcing icestark 2.6.0]]></summary>
     </entry>
     <entry>
         <title type="html"><![CDATA[icestark 2.7.0]]></title>
         <id>icestark 2.7.0</id>
         <link href="https://micro-frontends.ice.work/blog/03-icestark-2-7-0"/>
-        <updated>2024-04-01T03:11:29.341Z</updated>
+        <updated>2024-04-11T09:47:00.229Z</updated>
         <summary type="html"><![CDATA[Announcing icestark 2.7.0]]></summary>
     </entry>
 </feed>
