@@ -146,7 +146,8 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     if (this.validateRender()) {
       this.setState({ showComponent: true });
     } else {
-      this.renderChild();
+      // 使用requestIdleCallback渲染子应用，可避免在预加载场景下，因executeScript中的eval函数执行js脚本，而导致的进程阻塞及页面卡顿
+      window.requestIdleCallback(() => this.renderChild());
     }
   };
 
