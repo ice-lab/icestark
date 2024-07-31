@@ -8,7 +8,7 @@ order: 3
 为一些使用 [`icejs`](https://ice.work/) 、[`create-react-app`](https://github.com/facebook/create-react-app)、umi 等三方框架的用户提供便利的接入指南。
 
 :::tip
-如果这里找不到您使用的框架类型，建议您通过[微应用接入三步骤](./react#已有-react-项目改造为微应用)来改造您的应用。所有的改造逻辑都是相通的，也欢迎您提供 <a href="https://github.com/ice-lab/icestark/pulls">PR</a> 介绍您的接入经验。
+如果这里找不到您使用的框架类型，建议您通过[微应用接入三步骤](react#已有-react-项目改造为微应用)来改造您的应用。所有的改造逻辑都是相通的，也欢迎您提供 <a href="https://github.com/ice-lab/icestark/pulls">PR</a> 介绍您的接入经验。
 :::
 
 ## icejs 应用
@@ -546,7 +546,7 @@ export default defineConfig({
 
 ### 配置基准路由
 
-对于基准路由的配置，可以依照 [React 微应用接入](./react#2-%E5%AE%9A%E4%B9%89%E5%9F%BA%E5%87%86%E8%B7%AF%E7%94%B1) 和 [Vue 微应用接入](./vue#2-%E5%AE%9A%E4%B9%89%E5%9F%BA%E5%87%86%E8%B7%AF%E7%94%B1) 相同的方式改造接入。
+对于基准路由的配置，可以依照 [React 微应用接入](react#2-%E5%AE%9A%E4%B9%89%E5%9F%BA%E5%87%86%E8%B7%AF%E7%94%B1) 和 [Vue 微应用接入](vue#2-%E5%AE%9A%E4%B9%89%E5%9F%BA%E5%87%86%E8%B7%AF%E7%94%B1) 相同的方式改造接入。
 
 ### 主应用加载 Vite 应用
 

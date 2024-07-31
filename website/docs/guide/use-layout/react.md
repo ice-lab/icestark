@@ -4,7 +4,7 @@
 
 ## 通过官方脚手架创建
 
-> 该官方脚手架基于 [icejs](https://ice.work/) 框架，如需使用其他框架/工程可按 [已有应用改造](./react#已有应用改造) 的方式接入。
+> 该官方脚手架基于 [icejs](https://ice.work/) 框架，如需使用其他框架/工程可按 [已有应用改造](react#已有应用改造) 的方式接入。
 
 ```bash
 $ npm init ice icestark-layout @icedesign/stark-layout-scaffold
