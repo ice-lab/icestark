@@ -8,6 +8,7 @@ import {
   clearModules,
 } from './modules';
 import MicroModule from './MicroModule';
+import { preloadModules } from './preload';
 
 export {
   StarkModule,
@@ -18,4 +19,6 @@ export {
   getModules,
   mountModule,
   unmoutModule,
+  preloadModules,
 };
+
