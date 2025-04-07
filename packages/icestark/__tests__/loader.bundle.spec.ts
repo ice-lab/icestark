@@ -13,23 +13,23 @@ describe('loader', () => {
     setCache('root', true);
   });
 
-  // test('load js bundle', async () => {
-  //   (fetch as FetchMock).mockResponseOnce(jsBundleSource.toString());
-  //   const lifecycle: any = await loadScriptByFetch([{
-  //     content: '//icesk.com/index.js',
-  //     type: AssetTypeEnum.EXTERNAL,
-  //   }]);
-  //   expect((!!lifecycle.mount && !!lifecycle.unmount)).toBe(true);
-  // });
+  test('load js bundle', async () => {
+    (fetch as FetchMock).mockResponseOnce(jsBundleSource.toString());
+    const lifecycle: any = await loadScriptByFetch([{
+      content: '//icesk.com/index.js',
+      type: AssetTypeEnum.EXTERNAL,
+    }]);
+    expect((!!lifecycle.mount && !!lifecycle.unmount)).toBe(true);
+  });
 
-  // test('load js bundle with sandbox', async () => {
-  //   (fetch as FetchMock).mockResponseOnce(jsBundleSource.toString());
-  //   const lifecycle: any = await loadScriptByFetch([{
-  //     content: '//icesk.com/index.js',
-  //     type: AssetTypeEnum.EXTERNAL,
-  //   }], new Sandbox());
-  //   expect((!!lifecycle.mount && !!lifecycle.unmount)).toBe(true);
-  // });
+  test('load js bundle with sandbox', async () => {
+    (fetch as FetchMock).mockResponseOnce(jsBundleSource.toString());
+    const lifecycle: any = await loadScriptByFetch([{
+      content: '//icesk.com/index.js',
+      type: AssetTypeEnum.EXTERNAL,
+    }], new Sandbox());
+    expect((!!lifecycle.mount && !!lifecycle.unmount)).toBe(true);
+  });
 
   test('load js bundle with runtime', async () => {
     const reactUMD = fs.readFileSync(path.resolve(__dirname, './global-umd-sample.js'));
