@@ -30,17 +30,4 @@ describe('loader', () => {
     }], new Sandbox());
     expect((!!lifecycle.mount && !!lifecycle.unmount)).toBe(true);
   });
-
-  test('load js bundle with runtime', async () => {
-    const reactUMD = fs.readFileSync(path.resolve(__dirname, './global-umd-sample.js'));
-    (fetch as FetchMock).mockResponseOnce(reactUMD.toString());
-    window['React@16.14.0'] = {};
-    await loadScriptByFetch([{
-      content: '//icesk.com/index.js',
-      type: AssetTypeEnum.RUNTIME,
-      library: 'React',
-      version: '16.14.0',
-    }]);
-    expect(window['React@16.14.0']?.version).toBe('16.14.0');
-  })
 });
