@@ -44,7 +44,7 @@ interface AppRouterState {
   started: boolean;
 }
 
-export default class AppRouter extends React.Component<AppRouterProps, AppRouterState> {
+export default class AppRouter extends React.Component<React.PropsWithChildren<AppRouterProps>, AppRouterState> {
   static defaultProps = {
     onRouteChange: () => {},
     // eslint-disable-next-line react/jsx-filename-extension

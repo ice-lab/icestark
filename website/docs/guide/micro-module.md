@@ -282,9 +282,10 @@ const moduleInfo = {
 const ModuleComponent = () => {
   const renderNode = useRef(null);
   useEffect(() => {
-    mountModule(moduleInfo, renderNode.current, {});
+    const dom = renderNode.current;
+    mountModule(moduleInfo, dom, {});
     return () => {
-      unmoutModule(moduleInfo, renderNode.current);
+      unmoutModule(moduleInfo, dom);
     }
   }, []);
   return (<div ref={renderNode}></div>);
