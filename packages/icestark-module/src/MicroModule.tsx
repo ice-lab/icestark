@@ -5,13 +5,30 @@ import { shallowCompare } from './assist';
 /**
  * Render Component, compatible with Component and <Component>
  */
-export function renderComponent(Component: any, props = {}): React.ReactElement {
+export function renderComponent(Component: any, props = {}) {
   return React.isValidElement(Component) ? (
     React.cloneElement(Component, props)
   ) : (
     // eslint-disable-next-line react/jsx-filename-extension
     <Component {...props} />
   );
+}
+
+export interface ModuleInfo {
+  name: string;
+  url: string;
+  mount: (component: React.ReactNode, node: HTMLElement, props?: any) => void;
+  unmount: (node: HTMLElement) => void;
+}
+
+interface MicroModuleProps {
+  moduleInfo?: ModuleInfo;
+  moduleName?: string;
+  sandbox?: ISandbox;
+  wrapperClassName?: string;
+  wrapperStyle?: React.CSSProperties;
+  loadingComponent?: React.ReactNode;
+  handleError?: (err: Error) => void;
 }
 
 interface State {
@@ -21,10 +38,14 @@ interface State {
 /**
  * default render component, mount all modules
  */
-export default class MicroModule extends React.Component<any, State> {
+export default class MicroModule extends React.Component<MicroModuleProps, State> {
   static defaultProps = {
     loadingComponent: null,
     handleError: () => {},
+  };
+
+  state: State = {
+    loading: false,
   };
 
   private moduleInfo = null;
@@ -138,7 +159,7 @@ export default class MicroModule extends React.Component<any, State> {
 /**
  * Render Modules, compatible with Render and <Render>
  */
-export function renderModules(modules: StarkModule[], render: any, componentProps?: any, sandbox?: ISandbox): React.ReactElement {
+export function renderModules(modules: StarkModule[], render: any, componentProps?: any, sandbox?: ISandbox) {
   // save match app modules in global
   registerModules(modules);
 

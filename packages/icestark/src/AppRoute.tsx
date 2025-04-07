@@ -79,18 +79,23 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
 
   private myRefBase: HTMLDivElement = null;
 
-  constructor(props) {
+  constructor(props: AppRouteProps) {
     super(props);
     this.state = {
       showComponent: false,
     };
+    const { loadScriptMode, runtime } = props;
+
+    if (loadScriptMode !== 'fetch' && runtime) {
+      console.error('[icestark] only loadScriptMode fetch and runtime can be used together');
+    }
   }
 
   componentDidMount() {
     this.mountApp();
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
+  shouldComponentUpdate(nextProps: AppRouteProps, nextState: AppRouteState) {
     const { url, title, rootId, componentProps, cssLoading, name } = this.props;
     const { showComponent } = this.state;
     if ((nextProps.component || nextProps.render && typeof nextProps.render === 'function') &&
@@ -115,7 +120,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     return true;
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: AppRouteProps) {
     const { url, title, rootId, entry, entryContent } = this.props;
 
     if (

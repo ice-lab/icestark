@@ -1,0 +1,1 @@
+window.React = { version: '16.14.0' };

@@ -23,6 +23,7 @@ const defaultFetch = window?.fetch.bind(window);
 export enum AssetTypeEnum {
   INLINE = 'inline',
   EXTERNAL = 'external',
+  RUNTIME = 'runtime',
 }
 
 export enum AssetCommentEnum {
@@ -33,6 +34,10 @@ export enum AssetCommentEnum {
 export interface Asset {
   module?: boolean;
   type: AssetTypeEnum;
+  /** Only used when type is AssetTypeEnum.RUNTIME */
+  library?: string;
+  /** Only used when type is AssetTypeEnum.RUNTIME */
+  version?: string;
   content: string;
 }
 
@@ -305,9 +310,9 @@ export function getUrlAssets(urls: string | string[]) {
   return { jsList, cssList };
 }
 
-export function fetchScripts(jsList: Asset[], fetch: Fetch = defaultFetch) {
+export function fetchScripts(jsList: Asset[], fetch: Fetch = defaultFetch): Promise<string[]> {
   return Promise.all(jsList.map((asset) => {
-    const { type, content } = asset;
+    const { type, content, library, version } = asset;
     if (type === AssetTypeEnum.INLINE) {
       return content;
     } else {
@@ -321,6 +326,15 @@ export function fetchScripts(jsList: Asset[], fetch: Fetch = defaultFetch) {
         */
         || (cachedScriptsContent[content] = fetch(content)
           .then((res) => res.text())
+          .then((text) => {
+            if (type === AssetTypeEnum.RUNTIME && version && library) {
+              const globalLib = `window.${library}`;
+              const backupLib = `window.__${library}__`;
+              const versionedLib = `window['${library}@${version}']`;
+              return `;${backupLib} = ${globalLib};${text};${versionedLib} = ${globalLib};${globalLib} = ${backupLib};`;
+            }
+            return text;
+          })
           .then((res) => `${res} \n //# sourceURL=${content}`)
         );
     }

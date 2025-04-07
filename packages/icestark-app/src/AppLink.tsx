@@ -15,14 +15,13 @@ interface To {
    */
   state?: object;
 }
-
 export type AppLinkProps = {
   to: string | To;
   hashType?: boolean;
   replace?: boolean;
   message?: string;
   children?: React.ReactNode;
-} & React.AnchorHTMLAttributes<Element>;
+} & Pick<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'onClick' | 'href' | 'className' | 'style' | 'target'>;
 
 const AppLink = (props: AppLinkProps) => {
   const { to, hashType, replace, message, children, ...rest } = props;

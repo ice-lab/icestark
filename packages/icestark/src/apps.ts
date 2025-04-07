@@ -11,6 +11,7 @@ import {
   emptyAssets,
   filterRemovedAssets,
   Assets,
+  AssetTypeEnum,
 } from './util/handleAssets';
 import { setCache } from './util/cache';
 import { loadScriptByFetch, loadScriptByImport } from './util/loaders';
@@ -42,6 +43,12 @@ export interface ModuleLifeCycle {
   bootstrap?: (props: LifecycleProps) => Promise<void> | void;
 }
 
+export interface RuntimeConfig {
+  url: string;
+  library: string;
+  version: string;
+}
+
 export interface BaseConfig extends PathOption {
   name?: string;
   url?: string | string[];
@@ -51,6 +58,7 @@ export interface BaseConfig extends PathOption {
   sandbox?: boolean | SandboxProps | SandboxConstructor;
   entry?: string;
   entryContent?: string;
+  runtime?: RuntimeConfig[];
   /**
   * basename is used for setting custom basename for child's basename.
   */
@@ -179,7 +187,7 @@ export async function loadAppModule(appConfig: AppConfig) {
 
   let lifecycle: ModuleLifeCycle = {};
   onLoadingApp(appConfig);
-  const { url, container, entry, entryContent, name, scriptAttributes = [], loadScriptMode, appSandbox } = appConfig;
+  const { url, container, entry, entryContent, name, scriptAttributes = [], loadScriptMode, appSandbox, runtime } = appConfig;
   const appAssets = url ? getUrlAssets(url) : await getEntryAssets({
     root: container,
     entry,
@@ -205,13 +213,27 @@ export async function loadAppModule(appConfig: AppConfig) {
       lifecycle = await loadScriptByImport(appAssets.jsList);
       // Not to handle script element temporarily.
       break;
-    case 'fetch':
+    case 'fetch': {
       await loadAndAppendCssAssets(appAssets.cssList, {
         cacheCss,
         fetch,
       });
-      lifecycle = await loadScriptByFetch(appAssets.jsList, appSandbox, fetch);
+      // Filter and map runtime libraries that haven't been registered in window
+      const runtimeLibs = runtime?.filter((config) => {
+        return config.version && config.library && !window[`${config.library}@${config.version}`];
+      }).map((config) => ({
+        content: config.url,
+        type: AssetTypeEnum.RUNTIME,
+        library: config.library,
+        version: config.version,
+      })) || [];
+
+      lifecycle = await loadScriptByFetch([
+        ...runtimeLibs,
+        ...appAssets.jsList,
+      ], appSandbox, fetch);
       break;
+    }
     default:
       await Promise.all([
         loadAndAppendCssAssets(appAssets.cssList, {

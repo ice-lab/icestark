@@ -23,7 +23,7 @@ import MicroModule, { renderModules, renderComponent } from '../src/MicroModule'
  * support react module render
  */
 const defaultMount = (Component: any, targetNode: HTMLElement, props?: any) => {
-  ReactDOM.render(renderComponent(Component, props), targetNode);
+  ReactDOM.render(renderComponent(Component, props) as React.ReactElement, targetNode);
 };
 
 /**
@@ -108,7 +108,7 @@ describe('render modules', () => {
       expect(container.innerHTML).toBe('<div><div><h2>404</h2></div></div>');
       next();
     }, 0);
-  }); 
+  });
 
   test('render MicroModule with custom className and style', (next) => {
     const { container } = render(<MicroModule moduleName="selfComponent" wrapperClassName="test" wrapperStyle={{ fontSize: '14px' }} sandbox />);

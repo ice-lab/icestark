@@ -36,24 +36,19 @@ function executeScripts(scripts: string[], sandbox?: Sandbox, globalwindow: Wind
 /**
  * load bundle
  */
-export function loadScriptByFetch(jsList: Asset[], sandbox?: Sandbox, fetch = window.fetch) {
-  return fetchScripts(jsList, fetch)
-    .then((scriptTexts) => {
-      const globalwindow = getGobalWindow(sandbox);
+export async function loadScriptByFetch(jsList: Asset[], sandbox?: Sandbox, fetch = window.fetch) {
+  const scriptTexts = await fetchScripts(jsList, fetch);
+  const globalwindow = getGobalWindow(sandbox);
+  const libraryExport = executeScripts(scriptTexts, sandbox, globalwindow);
+  let moduleInfo = getLifecyleByLibrary() || getLifecyleByRegister();
+  if (!moduleInfo) {
+    moduleInfo = (libraryExport ? globalwindow[libraryExport] : {}) as ModuleLifeCycle;
+    if (globalwindow[libraryExport]) {
+      delete globalwindow[libraryExport];
+    }
+  }
 
-      const libraryExport = executeScripts(scriptTexts, sandbox, globalwindow);
-
-      let moduleInfo = getLifecyleByLibrary() || getLifecyleByRegister();
-      if (!moduleInfo) {
-        moduleInfo = (libraryExport ? globalwindow[libraryExport] : {}) as ModuleLifeCycle;
-
-        if (globalwindow[libraryExport]) {
-          delete globalwindow[libraryExport];
-        }
-      }
-
-      return moduleInfo;
-    });
+  return moduleInfo;
 }
 
 /**

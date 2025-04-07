@@ -34,7 +34,9 @@
   "devDependencies": {
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "typescript": "^3.8.3"
+    "typescript": "^3.8.3",
+    "@types/react": "^16.14.57",
+    "@types/react-dom": "^16.9.25"
   },
   "dependencies": {
     "@ice/sandbox": "^1.1.0"
