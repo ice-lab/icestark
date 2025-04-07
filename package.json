@@ -12,8 +12,7 @@
     "publish:packages": "ts-node ./scripts/publish.ts",
     "publish:beta": "ts-node ./scripts/beta.ts",
     "lint": "eslint --cache --ext .js,.jsx,.ts,.tsx ./",
-    "test": "NODE_ENV=unittest jest",
-    "coverage": "codecov"
+    "test": "NODE_ENV=unittest jest"
   },
   "license": "MIT",
   "bugs": {
