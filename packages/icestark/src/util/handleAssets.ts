@@ -324,7 +324,7 @@ export function fetchScripts(jsList: Asset[], fetch: Fetch = defaultFetch): Prom
         * will be the page's origin. As a result, `//# sourceURL` appends to the generated code.
         * See https://sourcemaps.info/spec.html
         */
-        || (cachedScriptsContent[content] = fetch(content)
+        || (cachedScriptsContent[`${content}${type === AssetTypeEnum.RUNTIME ? '?runtime' : ''}`] = fetch(content)
           .then((res) => res.text())
           .then((text) => {
             if (type === AssetTypeEnum.RUNTIME && version && library) {

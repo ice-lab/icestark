@@ -2,6 +2,10 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
+# 2.8.1
+
+- [fix] support unique cache keys for JavaScript resources.
+
 ## 2.8.0
 
 - [feat] support `runtime` option to reuse the UMD library.
