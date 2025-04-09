@@ -316,15 +316,16 @@ export function fetchScripts(jsList: Asset[], fetch: Fetch = defaultFetch): Prom
     if (type === AssetTypeEnum.INLINE) {
       return content;
     } else {
+      const cacheKey = `${content}${type === AssetTypeEnum.RUNTIME ? '?runtime' : ''}`;
       // content will script url when type is AssetTypeEnum.EXTERNAL
       // eslint-disable-next-line no-return-assign
-      return cachedScriptsContent[content]
+      return cachedScriptsContent[cacheKey]
         /**
         * If code is being evaluated as a string with `eval` or via `new Function`，then the source origin
         * will be the page's origin. As a result, `//# sourceURL` appends to the generated code.
         * See https://sourcemaps.info/spec.html
         */
-        || (cachedScriptsContent[`${content}${type === AssetTypeEnum.RUNTIME ? '?runtime' : ''}`] = fetch(content)
+        || (cachedScriptsContent[cacheKey] = fetch(content)
           .then((res) => res.text())
           .then((text) => {
             if (type === AssetTypeEnum.RUNTIME && version && library) {
