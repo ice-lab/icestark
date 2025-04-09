@@ -328,8 +328,8 @@ export function fetchScripts(jsList: Asset[], fetch: Fetch = defaultFetch): Prom
           .then((res) => res.text())
           .then((text) => {
             if (type === AssetTypeEnum.RUNTIME && version && library) {
-              const globalLib = `window.${library}`;
-              const backupLib = `window.__${library}__`;
+              const globalLib = `window['${library}']`;
+              const backupLib = `window['__${library}__']`;
               const versionedLib = `window['${library}@${version}']`;
               return `;${backupLib} = ${globalLib};${text};${versionedLib} = ${globalLib};${globalLib} = ${backupLib};`;
             }
