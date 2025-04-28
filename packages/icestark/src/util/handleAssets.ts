@@ -332,7 +332,8 @@ export function fetchScripts(jsList: Asset[], fetch: Fetch = defaultFetch): Prom
               const globalLib = `window['${library}']`;
               const backupLib = `window['__${library}__']`;
               const versionedLib = `window['${library}@${version}']`;
-              return `;${backupLib} = ${globalLib};${text};${versionedLib} = ${globalLib};${globalLib} = ${backupLib};`;
+              return `;if (${globalLib}) {${backupLib} = ${globalLib};}
+${text}; ${versionedLib} = ${globalLib}; if (${backupLib}) {${globalLib} = ${backupLib};${backupLib} = undefined;}`;
             }
             return text;
           })
