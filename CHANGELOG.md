@@ -2,6 +2,10 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
+# 2.8.3
+
+- [feat] support `runtime.url` as an array for loading multiple types of resources.
+
 # 2.8.2
 
 - [fix] fix the issue that the UMD library is overwritten by undefined value.
