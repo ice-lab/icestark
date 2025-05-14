@@ -86,7 +86,7 @@ export default class AppRoute extends React.Component<AppRouteProps, AppRouteSta
     };
     const { loadScriptMode, runtime } = props;
 
-    if (loadScriptMode !== 'fetch' && runtime) {
+    if (loadScriptMode && loadScriptMode !== 'fetch' && runtime) {
       console.error('[icestark] runtime option can only be used when loadScriptMode is set to "fetch"');
     }
   }
