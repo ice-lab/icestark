@@ -310,37 +310,68 @@ export function getUrlAssets(urls: string | string[]) {
   return { jsList, cssList };
 }
 
-export function fetchScripts(jsList: Asset[], fetch: Fetch = defaultFetch): Promise<string[]> {
-  return Promise.all(jsList.map((asset) => {
-    const { type, content, library, version } = asset;
+export async function fetchScripts(jsList: Asset[], fetch: Fetch = defaultFetch): Promise<string[]> {
+  let jsBeforeRuntime = '';
+  let jsAfterRuntime = '';
+
+  jsList.forEach((asset) => {
+    if (asset.type === AssetTypeEnum.RUNTIME) {
+      const { library, version } = asset;
+      const globalLib = `window['${library}']`;
+      const backupLib = `window['__${library}__']`;
+      const versionedLib = `window['${library}@${version}']`;
+      jsBeforeRuntime = `${jsBeforeRuntime}if (${globalLib}) {${backupLib} = ${globalLib};}\n`;
+      jsAfterRuntime = `${jsAfterRuntime}${versionedLib} = ${globalLib}; if (${backupLib}) {${globalLib} = ${backupLib};${backupLib} = undefined;}\n`;
+    }
+  });
+
+  const result = await Promise.all(jsList.map(async (asset) => {
+    const { type, content } = asset;
     if (type === AssetTypeEnum.INLINE) {
-      return content;
+      return {
+        type,
+        content,
+      };
     } else {
       const cacheKey = `${content}${type === AssetTypeEnum.RUNTIME ? '?runtime' : ''}`;
       // content will script url when type is AssetTypeEnum.EXTERNAL
       // eslint-disable-next-line no-return-assign
-      return cachedScriptsContent[cacheKey]
+      return {
+        type,
+        content: cachedScriptsContent[cacheKey]
         /**
         * If code is being evaluated as a string with `eval` or via `new Function`，then the source origin
         * will be the page's origin. As a result, `//# sourceURL` appends to the generated code.
         * See https://sourcemaps.info/spec.html
         */
-        || (cachedScriptsContent[cacheKey] = fetch(content)
+        || (cachedScriptsContent[cacheKey] = await fetch(content)
           .then((res) => res.text())
-          .then((text) => {
-            if (type === AssetTypeEnum.RUNTIME && version && library) {
-              const globalLib = `window['${library}']`;
-              const backupLib = `window['__${library}__']`;
-              const versionedLib = `window['${library}@${version}']`;
-              return `;if (${globalLib}) {${backupLib} = ${globalLib};}
-${text}; ${versionedLib} = ${globalLib}; if (${backupLib}) {${globalLib} = ${backupLib};${backupLib} = undefined;}`;
-            }
-            return text;
-          })
           .then((res) => `${res} \n //# sourceURL=${content}`)
-        );
+        ),
+      };
     }
   }));
+  const scriptTexts = [];
+  let hasInsertedBeforeRuntime = false;
+
+  for (let i = 0; i < result.length; i++) {
+    const { type, content } = result[i];
+
+    // Insert jsBeforeRuntime before the first runtime script
+    if (type === AssetTypeEnum.RUNTIME && !hasInsertedBeforeRuntime) {
+      scriptTexts.push(jsBeforeRuntime);
+      hasInsertedBeforeRuntime = true;
+    }
+    // Add the script content
+    scriptTexts.push(content);
+
+    // Insert jsAfterRuntime after the runtime script
+    if (type === AssetTypeEnum.RUNTIME && result[i + 1]?.type !== AssetTypeEnum.RUNTIME) {
+      scriptTexts.push(jsAfterRuntime);
+    }
+  }
+
+  return scriptTexts;
 }
 
 // for prefetch

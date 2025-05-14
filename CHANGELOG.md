@@ -5,6 +5,7 @@ See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/ic
 # 2.8.3
 
 - [feat] support `runtime.url` as an array for loading multiple types of resources.
+- [fix] refactor fetchScripts for improved runtime asset handling.
 
 # 2.8.2
 
