@@ -256,7 +256,7 @@ export async function loadAppModule(appConfig: AppConfig) {
       }).filter(Boolean) || [];
 
       await loadAndAppendCssAssets([
-        ...appAssets.cssList || [],
+        ...appAssets.cssList,
         ...runtimeCssList,
       ], {
         cacheCss,
