@@ -374,14 +374,14 @@ function mergeThenUpdateAppConfig(name: string, configuration?: StartConfigurati
     return;
   }
 
-  const { umd, sandbox } = appConfig;
+  const { umd, sandbox, runtime } = appConfig;
 
   // Generate appSandbox
   const appSandbox = createSandbox(sandbox) as Sandbox;
 
   // Merge loadScriptMode
   const sandboxEnabled = sandbox && !appSandbox.sandboxDisabled;
-  const loadScriptMode = appConfig.loadScriptMode ?? (umd || sandboxEnabled ? 'fetch' : 'script');
+  const loadScriptMode = appConfig.loadScriptMode ?? (umd || sandboxEnabled || (runtime && runtime.length > 0) ? 'fetch' : 'script');
 
   // Merge global configuration
   const cfgs = {
