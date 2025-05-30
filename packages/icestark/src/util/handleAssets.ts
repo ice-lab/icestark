@@ -33,6 +33,7 @@ export enum AssetCommentEnum {
 
 export interface Asset {
   module?: boolean;
+  loaded?: boolean;
   type: AssetTypeEnum;
   /** Only used when type is AssetTypeEnum.RUNTIME */
   library?: string;
@@ -313,19 +314,20 @@ export function getUrlAssets(urls: string | string[]) {
 export async function fetchScripts(jsList: Asset[], fetch: Fetch = defaultFetch): Promise<string[]> {
   let jsBeforeRuntime = '';
   let jsAfterRuntime = '';
-
   jsList.forEach((asset) => {
     if (asset.type === AssetTypeEnum.RUNTIME) {
       const { library, version } = asset;
       const globalLib = `window['${library}']`;
       const backupLib = `window['__${library}__']`;
       const versionedLib = `window['${library}@${version}']`;
-      jsBeforeRuntime = `${jsBeforeRuntime}if (${globalLib}) {${backupLib} = ${globalLib};}\n`;
-      jsAfterRuntime = `${jsAfterRuntime}${versionedLib} = ${globalLib}; if (${backupLib}) {${globalLib} = ${backupLib};${backupLib} = undefined;}\n`;
+      const backupCode = `if (${globalLib}) {${backupLib} = ${globalLib};}\n`;
+      const restoreCode = `if (${backupLib}) {${globalLib} = ${backupLib};${backupLib} = undefined;}\n`;
+      jsBeforeRuntime = `${jsBeforeRuntime}${backupCode}${asset.loaded ? `${globalLib} = ${versionedLib};` : ''}`;
+      jsAfterRuntime = `${jsAfterRuntime}${asset.loaded ? '' : `${versionedLib} = ${globalLib};`}${restoreCode}`;
     }
   });
 
-  const result = await Promise.all(jsList.map(async (asset) => {
+  const result = await Promise.all(jsList.filter((asset) => !asset.loaded).map(async (asset) => {
     const { type, content } = asset;
     if (type === AssetTypeEnum.INLINE) {
       return {

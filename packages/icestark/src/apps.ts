@@ -218,7 +218,7 @@ export async function loadAppModule(appConfig: AppConfig) {
       const runtimeJsList = [];
       // Filter and map runtime libraries that haven't been registered in window
       const runtimeLibs = runtime?.filter((config) => {
-        return config.version && config.library && !window[`${config.library}@${config.version}`];
+        return config.version && config.library;
       }).map((config) => {
         // Handle both string and array URL formats
         const urls = Array.isArray(config.url) ? config.url : [config.url];
@@ -250,6 +250,7 @@ export async function loadAppModule(appConfig: AppConfig) {
         return {
           content: mainJs,
           type: AssetTypeEnum.RUNTIME,
+          loaded: Boolean(config.version && config.library && window[`${config.library}@${config.version}`]),
           library: config.library,
           version: config.version,
         };

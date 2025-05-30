@@ -5,6 +5,7 @@ See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/ic
 # 2.8.4
 
 - [fix] automatically switch to "fetch" mode when runtime is set.
+- [fix] improve runtime asset handling when runtime is loaded.
 
 # 2.8.3
 
