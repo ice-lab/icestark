@@ -1,3 +1,4 @@
+import { cachedGlobals } from './constant';
 export interface SandboxProps {
   multiMode?: boolean;
 }
@@ -99,7 +100,7 @@ export default class Sandbox {
         if (!originalWindow.hasOwnProperty(p)) {
           // record value added in sandbox
           propertyAdded[p] = value;
-        // eslint-disable-next-line no-prototype-builtins
+          // eslint-disable-next-line no-prototype-builtins
         } else if (!originalValues.hasOwnProperty(p)) {
           // if it is already been setted in original window, record it's original value
           originalValues[p] = originalWindow[p];
@@ -191,6 +192,9 @@ export default class Sandbox {
         this.createProxySandbox();
       }
       try {
+        // Concatenate scopedGlobalVariables into variable declarations to cache global variables, avoiding proxy traversal on every use.
+        const scopedGlobalVariableDefinition = cachedGlobals.length ? `const {${cachedGlobals.join(',')}}=sandbox;` : '';
+        script =scopedGlobalVariableDefinition +script
         const execScript = `with (sandbox) {;${script}\n}`;
         // eslint-disable-next-line no-new-func
         const code = new Function('sandbox', execScript).bind(this.sandbox);
