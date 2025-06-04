@@ -103,6 +103,8 @@ export default class Sandbox {
         } else if (!originalValues.hasOwnProperty(p)) {
           // if it is already been setted in original window, record it's original value
           originalValues[p] = originalWindow[p];
+          // because target in sandbox will be changed, record the change in propertyAdded, for user can get what has been changed in last-loading
+          propertyAdded[p] = value;
         }
         // set new value to original window in case of jsonp, js bundle which will be execute outof sandbox
         if (!multiMode) {
@@ -214,12 +216,15 @@ export default class Sandbox {
       // clear timeout
       this.timeoutIds.forEach((id) => window.clearTimeout(id));
       this.intervalIds.forEach((id) => window.clearInterval(id));
-      // recover original values
-      Object.keys(this.originalValues).forEach((key) => {
-        window[key] = this.originalValues[key];
-      });
+      // some properties has been in original window, when they're loaded in sandbox
+      // the change has been recorded in propertyAdded
+      // delete the modified properties
       Object.keys(this.propertyAdded).forEach((key) => {
         delete window[key];
+      });
+      // then recover original values
+      Object.keys(this.originalValues).forEach((key) => {
+        window[key] = this.originalValues[key];
       });
     }
   }
