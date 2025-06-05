@@ -2,6 +2,16 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
+# 2.8.4
+
+- [fix] automatically switch to "fetch" mode when runtime is set.
+- [fix] improve runtime asset handling when runtime is loaded.
+
+# 2.8.3
+
+- [feat] support `runtime.url` as an array for loading multiple types of resources.
+- [fix] refactor fetchScripts for improved runtime asset handling.
+
 # 2.8.2
 
 - [fix] fix the issue that the UMD library is overwritten by undefined value.

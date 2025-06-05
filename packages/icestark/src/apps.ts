@@ -1,6 +1,6 @@
 import Sandbox, { SandboxConstructor, SandboxProps } from '@ice/sandbox';
 import isEmpty from 'lodash.isempty';
-import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED } from './util/constant';
+import { NOT_LOADED, NOT_MOUNTED, LOADING_ASSETS, UNMOUNTED, LOAD_ERROR, MOUNTED, IS_CSS_REGEX } from './util/constant';
 import findActivePathCurry, { ActivePath, PathOption, formatPath } from './util/checkActive';
 import {
   createSandbox,
@@ -44,7 +44,7 @@ export interface ModuleLifeCycle {
 }
 
 export interface RuntimeConfig {
-  url: string;
+  url: string | string[];
   library: string;
   version: string;
 }
@@ -214,21 +214,58 @@ export async function loadAppModule(appConfig: AppConfig) {
       // Not to handle script element temporarily.
       break;
     case 'fetch': {
-      await loadAndAppendCssAssets(appAssets.cssList, {
+      const runtimeCssList = [];
+      const runtimeJsList = [];
+      // Filter and map runtime libraries that haven't been registered in window
+      const runtimeLibs = runtime?.filter((config) => {
+        return config.version && config.library;
+      }).map((config) => {
+        // Handle both string and array URL formats
+        const urls = Array.isArray(config.url) ? config.url : [config.url];
+        // Separate CSS and JS URLs
+        const jsUrls = [];
+        urls.forEach((configUrl) => {
+          if (IS_CSS_REGEX.test(configUrl)) {
+            runtimeCssList.push({
+              content: configUrl,
+              type: AssetTypeEnum.EXTERNAL,
+            });
+          } else {
+            jsUrls.push(configUrl);
+          }
+        });
+        if (jsUrls.length === 0) {
+          return null;
+        }
+        // Use the last JS URL as the main runtime JS
+        const mainJs = jsUrls[jsUrls.length - 1];
+        const restJs = jsUrls.slice(0, -1);
+        restJs.forEach((configUrl) => {
+          runtimeJsList.push({
+            content: configUrl,
+            type: AssetTypeEnum.EXTERNAL,
+          });
+        });
+
+        return {
+          content: mainJs,
+          type: AssetTypeEnum.RUNTIME,
+          loaded: Boolean(config.version && config.library && window[`${config.library}@${config.version}`]),
+          library: config.library,
+          version: config.version,
+        };
+      }).filter(Boolean) || [];
+
+      await loadAndAppendCssAssets([
+        ...runtimeCssList,
+        ...appAssets.cssList,
+      ], {
         cacheCss,
         fetch,
       });
-      // Filter and map runtime libraries that haven't been registered in window
-      const runtimeLibs = runtime?.filter((config) => {
-        return config.version && config.library && !window[`${config.library}@${config.version}`];
-      }).map((config) => ({
-        content: config.url,
-        type: AssetTypeEnum.RUNTIME,
-        library: config.library,
-        version: config.version,
-      })) || [];
 
       lifecycle = await loadScriptByFetch([
+        ...runtimeJsList,
         ...runtimeLibs,
         ...appAssets.jsList,
       ], appSandbox, fetch);
@@ -338,14 +375,14 @@ function mergeThenUpdateAppConfig(name: string, configuration?: StartConfigurati
     return;
   }
 
-  const { umd, sandbox } = appConfig;
+  const { umd, sandbox, runtime } = appConfig;
 
   // Generate appSandbox
   const appSandbox = createSandbox(sandbox) as Sandbox;
 
   // Merge loadScriptMode
   const sandboxEnabled = sandbox && !appSandbox.sandboxDisabled;
-  const loadScriptMode = appConfig.loadScriptMode ?? (umd || sandboxEnabled ? 'fetch' : 'script');
+  const loadScriptMode = appConfig.loadScriptMode ?? (umd || sandboxEnabled || (runtime && runtime.length > 0) ? 'fetch' : 'script');
 
   // Merge global configuration
   const cfgs = {
