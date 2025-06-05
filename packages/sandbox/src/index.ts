@@ -113,18 +113,6 @@ export default class Sandbox {
         return true;
       },
       get(target: Window, p: PropertyKey): any {
-        if (p === Symbol.unscopables) {
-          return undefined;
-        }
-        if (['top', 'window', 'self', 'globalThis'].includes(p as string)) {
-          return sandbox;
-        }
-        // proxy hasOwnProperty, in case of proxy.hasOwnProperty value represented as originalWindow.hasOwnProperty
-        if (p === 'hasOwnProperty') {
-          // eslint-disable-next-line no-prototype-builtins
-          return (key: PropertyKey) => !!target[key] || originalWindow.hasOwnProperty(key);
-        }
-
         const targetValue = target[p];
         /**
          * Falsy value like 0/ ''/ false should be trapped by proxy window.
@@ -133,10 +121,26 @@ export default class Sandbox {
           // case of addEventListener, removeEventListener, setTimeout, setInterval setted in sandbox
           return targetValue;
         }
+        if (p === Symbol.unscopables) {
+          return undefined;
+        }
+        if (['top', 'window', 'self', 'globalThis'].includes(p as string)) {
+          // eslint-disable-next-line no-param-reassign
+          target[p] = sandbox;
+          return sandbox;
+        }
+        // proxy hasOwnProperty, in case of proxy.hasOwnProperty value represented as originalWindow.hasOwnProperty
+        if (p === 'hasOwnProperty') {
+          // eslint-disable-next-line no-param-reassign, no-prototype-builtins
+          target[p] = (key: PropertyKey) => originalWindow.hasOwnProperty.call(target, key) || originalWindow.hasOwnProperty(key);
+          return target[p];
+        }
 
         // search from injection
         const injectionValue = injection && injection[p];
         if (injectionValue) {
+          // eslint-disable-next-line no-param-reassign
+          target[p] = injectionValue;
           return injectionValue;
         }
 
@@ -149,6 +153,8 @@ export default class Sandbox {
         * https://262.ecma-international.org/5.1/#sec-10.4.2
         */
         if (p === 'eval') {
+          // eslint-disable-next-line no-param-reassign
+          target[p] = value;
           return value;
         }
 
@@ -159,15 +165,17 @@ export default class Sandbox {
 
           // Axios, Moment, and other callable functions may have additional properties.
           // Simply copy them into boundValue.
+          // eslint-disable-next-line guard-for-in
           for (const key in value) {
             boundValue[key] = value[key];
           }
-
+          // eslint-disable-next-line no-param-reassign
+          target[p] = boundValue;
           return boundValue;
-        } else {
-          // case of window.clientWidth、new window.Object()
-          return value;
         }
+        // eslint-disable-next-line no-param-reassign
+        target[p] = value;
+        return value;
       },
       has(target: Window, p: PropertyKey): boolean {
         return p in target || p in originalWindow;
