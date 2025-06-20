@@ -44,7 +44,7 @@ const AppLink = (props: AppLinkProps) => {
         /*
         * Bind `replaceState` and `pushState` to window to avoid illegal invocation error
          */
-        const changeState = window.history[replace ? 'replaceState' : 'pushState'].bind(window);
+        const changeState = window.history[replace ? 'replaceState' : 'pushState'].bind(window.history);
 
         changeState(_state ?? {}, null, linkTo);
       }}
