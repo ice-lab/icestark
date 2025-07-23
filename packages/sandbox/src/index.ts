@@ -194,7 +194,7 @@ export default class Sandbox {
       try {
         // Concatenate scopedGlobalVariables into variable declarations to cache global variables, avoiding proxy traversal on every use.
         const scopedGlobalVariableDefinition = cachedGlobals.length ? `const {${cachedGlobals.join(',')}}=sandbox;` : '';
-        script =scopedGlobalVariableDefinition +script
+        script = scopedGlobalVariableDefinition + script;
         const execScript = `with (sandbox) {;${script}\n}`;
         // eslint-disable-next-line no-new-func
         const code = new Function('sandbox', execScript).bind(this.sandbox);
