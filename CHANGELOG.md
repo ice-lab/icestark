@@ -2,6 +2,10 @@
 
 See [https://github.com/ice-lab/icestark/releases](https://github.com/ice-lab/icestark/releases) for what has changed in each version of icestark.
 
+# 2.8.5
+
+- [feat] support `freezeRuntime` option to freeze the runtime library.
+
 # 2.8.4
 
 - [fix] automatically switch to "fetch" mode when runtime is set.

@@ -353,7 +353,6 @@ export async function fetchScripts(jsList: Asset[], fetch: Fetch = defaultFetch)
       const backupCode = `if (${globalLib}) {${backupLib} = ${globalLib};}\n`;
       const restoreCode = `if (${backupLib}) {${globalLib} = ${backupLib};${backupLib} = undefined;}\n`;
 
-      // 如果启用了冻结功能，添加冻结逻辑
       let lockCode = '';
       if (globalConfiguration.freezeRuntime) {
         lockCode = generateRuntimeLockCode(versionedLibKey);
