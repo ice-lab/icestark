@@ -7,6 +7,7 @@ import { toArray, isDev, formatMessage, builtInScriptAttributesMap, looseBoolean
 import { formatErrMessage, ErrorCode } from './error';
 import type { Fetch } from './globalConfiguration';
 import type { ScriptAttributes } from '../apps';
+import globalConfiguration from './globalConfiguration';
 
 const COMMENT_REGEX = /<!--.*?-->/g;
 const BASE_LOOSE_REGEX = /<base\s[^>]*href=['"]?([^'"]*)['"]?[^>]*>/;
@@ -319,10 +320,31 @@ export async function fetchScripts(jsList: Asset[], fetch: Fetch = defaultFetch)
       const { library, version } = asset;
       const globalLib = `window['${library}']`;
       const backupLib = `window['__${library}__']`;
-      const versionedLib = `window['${library}@${version}']`;
+      const versionedLibKey = `${library}@${version}`;
+      const versionedLib = `window['${versionedLibKey}']`;
       const backupCode = `if (${globalLib}) {${backupLib} = ${globalLib};}\n`;
       const restoreCode = `if (${backupLib}) {${globalLib} = ${backupLib};${backupLib} = undefined;}\n`;
-      jsBeforeRuntime = `${jsBeforeRuntime}${backupCode}${asset.loaded ? `${globalLib} = ${versionedLib};` : ''}`;
+
+      // 如果启用了冻结功能，添加冻结逻辑
+      let lockCode = '';
+      if (globalConfiguration.freezeRuntime) {
+        lockCode = `
+  Object.defineProperty(window, '${versionedLibKey}', {
+    get: function() { return this['__${versionedLibKey}_value']; },
+    set: function(value) {
+      if (this['__${versionedLibKey}_value'] === undefined) {
+        this['__${versionedLibKey}_value'] = value;
+      } else {
+        console.warn('${versionedLibKey} is locked, cannot be modified');
+      }
+    },
+    configurable: false,
+    enumerable: true
+  });
+}
+`;
+      }
+      jsBeforeRuntime = `${jsBeforeRuntime}${backupCode}${asset.loaded ? `${globalLib} = ${versionedLib};` : lockCode}`;
       jsAfterRuntime = `${jsAfterRuntime}${asset.loaded ? '' : `${versionedLib} = ${globalLib};`}${restoreCode}`;
     }
   });
