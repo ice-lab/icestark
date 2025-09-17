@@ -764,12 +764,26 @@ describe('freezeRuntime', () => {
     delete (window as any).__icestark_locked_globals;
     delete (window as any)['React@17.0.0'];
     delete (window as any)['__React@17.0.0_value'];
+
+    fetchMock.mockReset();
+
+    fetchMock.mockResolvedValue({
+      text: () => Promise.resolve('console.log("React loaded");')
+    });
+  });
+
+  afterEach(() => {
+    fetchMock.mockClear();
   });
 
   test('should freeze runtime libraries when freezeRuntime is enabled', async () => {
     // 模拟启用冻结功能
     const originalConfig = globalConfiguration.freezeRuntime;
     globalConfiguration.freezeRuntime = true;
+
+    fetchMock.mockResolvedValue({
+      text: () => Promise.resolve('console.log("React loaded");')
+    });
 
     const jsList = [
       {
@@ -792,6 +806,10 @@ describe('freezeRuntime', () => {
     // 确保冻结功能被禁用
     const originalConfig = globalConfiguration.freezeRuntime;
     globalConfiguration.freezeRuntime = false;
+
+    fetchMock.mockResolvedValue({
+      text: () => Promise.resolve('console.log("React loaded");')
+    });
 
     const jsList = [
       {
