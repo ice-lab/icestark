@@ -21,6 +21,34 @@ const cachedProcessedContent: object = {};
 
 const defaultFetch = window?.fetch.bind(window);
 
+/**
+ * Generate runtime library freeze code.
+ * Used to prevent micro apps from reloading the same version of a runtime library.
+ * @param versionedLibKey The versioned library key, formatted as "library@version"
+ * @returns The generated freeze code string
+ */
+function generateRuntimeLockCode(versionedLibKey: string): string {
+  const valueKey = `__${versionedLibKey}_value`;
+  const warningMessage = `${versionedLibKey} is locked, cannot be modified`;
+
+  return `
+Object.defineProperty(window, '${versionedLibKey}', {
+  get: function() {
+    return this['${valueKey}'];
+  },
+  set: function(value) {
+    if (this['${valueKey}'] === undefined) {
+      this['${valueKey}'] = value;
+    } else {
+      console.warn('${warningMessage}');
+    }
+  },
+  configurable: false,
+  enumerable: true
+});
+`;
+}
+
 export enum AssetTypeEnum {
   INLINE = 'inline',
   EXTERNAL = 'external',
@@ -328,21 +356,7 @@ export async function fetchScripts(jsList: Asset[], fetch: Fetch = defaultFetch)
       // 如果启用了冻结功能，添加冻结逻辑
       let lockCode = '';
       if (globalConfiguration.freezeRuntime) {
-        lockCode = `
-  Object.defineProperty(window, '${versionedLibKey}', {
-    get: function() { return this['__${versionedLibKey}_value']; },
-    set: function(value) {
-      if (this['__${versionedLibKey}_value'] === undefined) {
-        this['__${versionedLibKey}_value'] = value;
-      } else {
-        console.warn('${versionedLibKey} is locked, cannot be modified');
-      }
-    },
-    configurable: false,
-    enumerable: true
-  });
-}
-`;
+        lockCode = generateRuntimeLockCode(versionedLibKey);
       }
       jsBeforeRuntime = `${jsBeforeRuntime}${backupCode}${asset.loaded ? `${globalLib} = ${versionedLib};` : lockCode}`;
       jsAfterRuntime = `${jsAfterRuntime}${asset.loaded ? '' : `${versionedLib} = ${globalLib};`}${restoreCode}`;
