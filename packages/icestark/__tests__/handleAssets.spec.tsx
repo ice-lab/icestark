@@ -836,7 +836,7 @@ describe('freezeRuntime', () => {
         if ((this as any)['__React@17.0.0_value'] === undefined) {
           (this as any)['__React@17.0.0_value'] = value;
         }
-        // 忽略后续的修改
+        // Ignore subsequent modifications
       },
       configurable: false,
       enumerable: true
