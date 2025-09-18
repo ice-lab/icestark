@@ -760,7 +760,7 @@ describe('replaceImportIdentifier', () => {
 
 describe('freezeRuntime', () => {
   beforeEach(() => {
-    // 清理全局状态
+    // Clean up global state
     delete (window as any).__icestark_locked_globals;
     delete (window as any)['React@17.0.0'];
     delete (window as any)['__React@17.0.0_value'];
