@@ -21,6 +21,8 @@ const cachedProcessedContent: object = {};
 
 const defaultFetch = window?.fetch.bind(window);
 
+const GLOBAL_LOCKED_MAP = new Map<string, boolean>();
+
 /**
  * Generate runtime library freeze code.
  * Used to prevent micro apps from reloading the same version of a runtime library.
@@ -354,10 +356,11 @@ export async function fetchScripts(jsList: Asset[], fetch: Fetch = defaultFetch)
       const restoreCode = `if (${backupLib}) {${globalLib} = ${backupLib};${backupLib} = undefined;}\n`;
 
       let lockCode = '';
-      if (globalConfiguration.freezeRuntime) {
+      if (globalConfiguration.freezeRuntime && !GLOBAL_LOCKED_MAP.has(versionedLibKey)) {
         lockCode = generateRuntimeLockCode(versionedLibKey);
+        GLOBAL_LOCKED_MAP.set(versionedLibKey, true);
       }
-      jsBeforeRuntime = `${jsBeforeRuntime}${backupCode}${asset.loaded ? `${globalLib} = ${versionedLib};` : lockCode}`;
+      jsBeforeRuntime = `${jsBeforeRuntime}${backupCode}${asset.loaded ? `${globalLib} = ${versionedLib};` : ''}${lockCode}`;
       jsAfterRuntime = `${jsAfterRuntime}${asset.loaded ? '' : `${versionedLib} = ${globalLib};`}${restoreCode}`;
     }
   });
