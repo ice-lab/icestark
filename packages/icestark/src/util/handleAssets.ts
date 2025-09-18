@@ -356,7 +356,11 @@ export async function fetchScripts(jsList: Asset[], fetch: Fetch = defaultFetch)
       const restoreCode = `if (${backupLib}) {${globalLib} = ${backupLib};${backupLib} = undefined;}\n`;
 
       let lockCode = '';
-      if (globalConfiguration.freezeRuntime && !GLOBAL_LOCKED_MAP.has(versionedLibKey)) {
+      if (
+        globalConfiguration.freezeRuntime &&
+        !GLOBAL_LOCKED_MAP.has(versionedLibKey) &&
+        typeof Object.defineProperty === 'function'
+      ) {
         lockCode = generateRuntimeLockCode(versionedLibKey);
         GLOBAL_LOCKED_MAP.set(versionedLibKey, true);
       }
