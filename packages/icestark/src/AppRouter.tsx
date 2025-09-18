@@ -35,6 +35,7 @@ export interface AppRouterProps {
   basename?: string;
   fetch?: Fetch;
   prefetch?: Prefetch;
+  freezeRuntime?: boolean;
 }
 
 interface AppRouterState {
@@ -58,6 +59,7 @@ export default class AppRouter extends React.Component<React.PropsWithChildren<A
     basename: '',
     fetch: window.fetch,
     prefetch: false,
+    freezeRuntime: false,
   };
 
   private unmounted = false;
@@ -90,7 +92,7 @@ export default class AppRouter extends React.Component<React.PropsWithChildren<A
      * status `started` used to make sure parent's `componentDidMount` to be invoked eariler then child's,
      * for mounting child component needs global configuration be settled.
      */
-    const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch, basename } = this.props;
+    const { shouldAssetsRemove, onAppEnter, onAppLeave, fetch, basename, freezeRuntime } = this.props;
     start({
       onAppLeave,
       onAppEnter,
@@ -100,6 +102,7 @@ export default class AppRouter extends React.Component<React.PropsWithChildren<A
       reroute: this.handleRouteChange,
       fetch,
       basename,
+      freezeRuntime,
       ...(shouldAssetsRemove ? { shouldAssetsRemove } : {}),
     });
 

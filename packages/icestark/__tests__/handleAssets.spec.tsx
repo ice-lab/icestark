@@ -17,8 +17,10 @@ import {
   getUrlAssets,
   isAbsoluteUrl,
   replaceImportIdentifier,
+  fetchScripts,
 } from '../src/util/handleAssets';
 import { setCache } from '../src/util/cache';
+import globalConfiguration from '../src/util/globalConfiguration';
 
 const originalLocation = window.location;
 
@@ -754,4 +756,100 @@ describe('replaceImportIdentifier', () => {
     expect(target).toContain('import RefreshRuntime from "http://localhost:3000/@react-refresh"')
     expect(target).toContain('window.__vite_plugin_react_preamble_installed__ = true')
   })
+});
+
+describe('freezeRuntime', () => {
+  beforeEach(() => {
+    // Clean up global state
+    delete (window as any).__icestark_locked_globals;
+    delete (window as any)['React@17.0.0'];
+    delete (window as any)['__React@17.0.0_value'];
+
+    fetchMock.mockReset();
+
+    fetchMock.mockResolvedValue({
+      text: () => Promise.resolve('console.log("React loaded");')
+    });
+  });
+
+  afterEach(() => {
+    fetchMock.mockClear();
+  });
+
+  test('should freeze runtime libraries when freezeRuntime is enabled', async () => {
+    // Mock enabling freeze functionality
+    const originalConfig = globalConfiguration.freezeRuntime;
+    globalConfiguration.freezeRuntime = true;
+
+    fetchMock.mockResolvedValue({
+      text: () => Promise.resolve('console.log("React loaded");')
+    });
+
+    const jsList = [
+      {
+        type: AssetTypeEnum.RUNTIME,
+        library: 'React',
+        version: '17.0.0',
+        content: 'https://unpkg.com/react@17.0.0/umd/react.production.min.js',
+        loaded: false,
+      },
+    ];
+
+    const scriptTexts = await fetchScripts(jsList, fetchMock);
+
+    const combinedScript = scriptTexts.join('');
+    expect(combinedScript).toContain('Object.defineProperty(window, \'React@17.0.0\'');
+    globalConfiguration.freezeRuntime = originalConfig;
+  });
+
+  test('should not freeze runtime libraries when freezeRuntime is disabled', async () => {
+    // Ensure freeze functionality is disabled
+    const originalConfig = globalConfiguration.freezeRuntime;
+    globalConfiguration.freezeRuntime = false;
+
+    fetchMock.mockResolvedValue({
+      text: () => Promise.resolve('console.log("React loaded");')
+    });
+
+    const jsList = [
+      {
+        type: AssetTypeEnum.RUNTIME,
+        library: 'React',
+        version: '17.0.0',
+        content: 'https://unpkg.com/react@17.0.0/umd/react.production.min.js',
+        loaded: false,
+      },
+    ];
+
+    const scriptTexts = await fetchScripts(jsList, fetchMock);
+
+    const combinedScript = scriptTexts.join('');
+    expect(combinedScript).not.toContain('Object.defineProperty(window, \'React@17.0.0\'');
+
+    globalConfiguration.freezeRuntime = originalConfig;
+  });
+
+  test('should prevent modification of frozen runtime libraries', () => {
+    Object.defineProperty(window, 'React@17.0.0', {
+      get: function() { return (this as any)['__React@17.0.0_value']; },
+      set: function(value) {
+        if ((this as any)['__React@17.0.0_value'] === undefined) {
+          (this as any)['__React@17.0.0_value'] = value;
+        }
+        // Ignore subsequent modifications
+      },
+      configurable: false,
+      enumerable: true
+    });
+
+    (window as any)['React@17.0.0'] = { version: '17.0.0' };
+    expect((window as any)['React@17.0.0']).toEqual({ version: '17.0.0' });
+
+    (window as any)['React@17.0.0'] = { version: '18.0.0' };
+    expect((window as any)['React@17.0.0']).toEqual({ version: '17.0.0' });
+
+    // Cleanup
+    delete (window as any)['React@17.0.0'];
+    delete (window as any)['__React@17.0.0_value'];
+  });
 });

@@ -27,6 +27,12 @@ export interface StartConfiguration {
   fetch?: Fetch;
   prefetch?: Prefetch;
   basename?: string;
+  /**
+   * Whether to freeze the runtime library to prevent accidental modifications.
+   * When set to true, the versioned runtime library (e.g., window['React@17.0.0'])
+   * will not be modifiable after its initial assignment.
+   */
+  freezeRuntime?: boolean;
 }
 
 const globalConfiguration: StartConfiguration = {
@@ -42,6 +48,7 @@ const globalConfiguration: StartConfiguration = {
   fetch: window.fetch,
   prefetch: false,
   basename: '',
+  freezeRuntime: false,
 };
 
 export default globalConfiguration;

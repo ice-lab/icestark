@@ -7,6 +7,7 @@ import { toArray, isDev, formatMessage, builtInScriptAttributesMap, looseBoolean
 import { formatErrMessage, ErrorCode } from './error';
 import type { Fetch } from './globalConfiguration';
 import type { ScriptAttributes } from '../apps';
+import globalConfiguration from './globalConfiguration';
 
 const COMMENT_REGEX = /<!--.*?-->/g;
 const BASE_LOOSE_REGEX = /<base\s[^>]*href=['"]?([^'"]*)['"]?[^>]*>/;
@@ -19,6 +20,36 @@ const cachedStyleContent: object = {};
 const cachedProcessedContent: object = {};
 
 const defaultFetch = window?.fetch.bind(window);
+
+const GLOBAL_LOCKED_MAP = new Map<string, boolean>();
+
+/**
+ * Generate runtime library freeze code.
+ * Used to prevent micro apps from reloading the same version of a runtime library.
+ * @param versionedLibKey The versioned library key, formatted as "library@version"
+ * @returns The generated freeze code string
+ */
+function generateRuntimeLockCode(versionedLibKey: string): string {
+  const valueKey = `__${versionedLibKey}_value`;
+  const warningMessage = `${versionedLibKey} is locked, cannot be modified`;
+
+  return `
+Object.defineProperty(window, '${versionedLibKey}', {
+  get: function() {
+    return this['${valueKey}'];
+  },
+  set: function(value) {
+    if (this['${valueKey}'] === undefined) {
+      this['${valueKey}'] = value;
+    } else {
+      console.warn('${warningMessage}');
+    }
+  },
+  configurable: false,
+  enumerable: true
+});
+`;
+}
 
 export enum AssetTypeEnum {
   INLINE = 'inline',
@@ -319,10 +350,21 @@ export async function fetchScripts(jsList: Asset[], fetch: Fetch = defaultFetch)
       const { library, version } = asset;
       const globalLib = `window['${library}']`;
       const backupLib = `window['__${library}__']`;
-      const versionedLib = `window['${library}@${version}']`;
+      const versionedLibKey = `${library}@${version}`;
+      const versionedLib = `window['${versionedLibKey}']`;
       const backupCode = `if (${globalLib}) {${backupLib} = ${globalLib};}\n`;
       const restoreCode = `if (${backupLib}) {${globalLib} = ${backupLib};${backupLib} = undefined;}\n`;
-      jsBeforeRuntime = `${jsBeforeRuntime}${backupCode}${asset.loaded ? `${globalLib} = ${versionedLib};` : ''}`;
+
+      let lockCode = '';
+      if (
+        globalConfiguration.freezeRuntime &&
+        !GLOBAL_LOCKED_MAP.has(versionedLibKey) &&
+        typeof Object.defineProperty === 'function'
+      ) {
+        lockCode = generateRuntimeLockCode(versionedLibKey);
+        GLOBAL_LOCKED_MAP.set(versionedLibKey, true);
+      }
+      jsBeforeRuntime = `${jsBeforeRuntime}${backupCode}${asset.loaded ? `${globalLib} = ${versionedLib};` : ''}${lockCode}`;
       jsAfterRuntime = `${jsAfterRuntime}${asset.loaded ? '' : `${versionedLib} = ${globalLib};`}${restoreCode}`;
     }
   });
