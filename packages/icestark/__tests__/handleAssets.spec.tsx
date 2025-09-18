@@ -760,7 +760,7 @@ describe('replaceImportIdentifier', () => {
 
 describe('freezeRuntime', () => {
   beforeEach(() => {
-    // 清理全局状态
+    // Clean up global state
     delete (window as any).__icestark_locked_globals;
     delete (window as any)['React@17.0.0'];
     delete (window as any)['__React@17.0.0_value'];
@@ -777,7 +777,7 @@ describe('freezeRuntime', () => {
   });
 
   test('should freeze runtime libraries when freezeRuntime is enabled', async () => {
-    // 模拟启用冻结功能
+    // Mock enabling freeze functionality
     const originalConfig = globalConfiguration.freezeRuntime;
     globalConfiguration.freezeRuntime = true;
 
@@ -803,7 +803,7 @@ describe('freezeRuntime', () => {
   });
 
   test('should not freeze runtime libraries when freezeRuntime is disabled', async () => {
-    // 确保冻结功能被禁用
+    // Ensure freeze functionality is disabled
     const originalConfig = globalConfiguration.freezeRuntime;
     globalConfiguration.freezeRuntime = false;
 
@@ -836,7 +836,7 @@ describe('freezeRuntime', () => {
         if ((this as any)['__React@17.0.0_value'] === undefined) {
           (this as any)['__React@17.0.0_value'] = value;
         }
-        // 忽略后续的修改
+        // Ignore subsequent modifications
       },
       configurable: false,
       enumerable: true
@@ -848,7 +848,7 @@ describe('freezeRuntime', () => {
     (window as any)['React@17.0.0'] = { version: '18.0.0' };
     expect((window as any)['React@17.0.0']).toEqual({ version: '17.0.0' });
 
-    // 清理
+    // Cleanup
     delete (window as any)['React@17.0.0'];
     delete (window as any)['__React@17.0.0_value'];
   });
