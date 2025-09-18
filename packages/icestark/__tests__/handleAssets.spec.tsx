@@ -803,7 +803,7 @@ describe('freezeRuntime', () => {
   });
 
   test('should not freeze runtime libraries when freezeRuntime is disabled', async () => {
-    // 确保冻结功能被禁用
+    // Ensure freeze functionality is disabled
     const originalConfig = globalConfiguration.freezeRuntime;
     globalConfiguration.freezeRuntime = false;
 
