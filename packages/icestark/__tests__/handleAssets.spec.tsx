@@ -848,7 +848,7 @@ describe('freezeRuntime', () => {
     (window as any)['React@17.0.0'] = { version: '18.0.0' };
     expect((window as any)['React@17.0.0']).toEqual({ version: '17.0.0' });
 
-    // 清理
+    // Cleanup
     delete (window as any)['React@17.0.0'];
     delete (window as any)['__React@17.0.0_value'];
   });
