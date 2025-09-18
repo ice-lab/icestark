@@ -777,7 +777,7 @@ describe('freezeRuntime', () => {
   });
 
   test('should freeze runtime libraries when freezeRuntime is enabled', async () => {
-    // 模拟启用冻结功能
+    // Mock enabling freeze functionality
     const originalConfig = globalConfiguration.freezeRuntime;
     globalConfiguration.freezeRuntime = true;
 
