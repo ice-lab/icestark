@@ -47,6 +47,8 @@ export interface RuntimeConfig {
   url: string | string[];
   library: string;
   version: string;
+  /** Force reload even if versioned instance exists */
+  independent?: boolean;
 }
 
 export interface BaseConfig extends PathOption {
@@ -112,6 +114,23 @@ let microApps: MicroApp[] = [];
 
 function getAppNames() {
   return microApps.map((app) => app.name);
+}
+
+function isRuntimeLibraryLoaded(config: RuntimeConfig): boolean {
+  if (config.independent) {
+    return false;
+  }
+
+  const hasVersionedInstance = Boolean(
+    config.version &&
+    config.library &&
+    window[`${config.library}@${config.version}`],
+  );
+
+  const whitelistLibraries = ['React', 'ReactDOM'];
+  const isWhitelisted = whitelistLibraries.includes(config.library);
+
+  return isWhitelisted ? hasVersionedInstance : false;
 }
 
 export function getMicroApps() {
@@ -250,7 +269,7 @@ export async function loadAppModule(appConfig: AppConfig) {
         return {
           content: mainJs,
           type: AssetTypeEnum.RUNTIME,
-          loaded: Boolean(config.version && config.library && window[`${config.library}@${config.version}`]),
+          loaded: isRuntimeLibraryLoaded(config),
           library: config.library,
           version: config.version,
         };
